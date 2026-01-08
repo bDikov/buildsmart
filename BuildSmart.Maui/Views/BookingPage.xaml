@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             x:Class="BuildSmart.Maui.Views.BookingPage"
+             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:DataType="viewModels:BookingPageViewModel"
+             Title="New Booking">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+            <Label Text="{Binding TradesmanName, StringFormat='Book service with {0}'}" 
+                   FontSize="20" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Preferred Date" FontAttributes="Bold"/>
+                <DatePicker Date="{Binding RequestedDate}" MinimumDate="{x:Static sys:DateTime.Today}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Job Description" FontAttributes="Bold"/>
+                <Editor Text="{Binding JobDescription}" 
+                        Placeholder="Describe the work you need done..."
+                        HeightRequest="150"
+                        AutoSize="Disabled"/>
+            </VerticalStackLayout>
+
+            <Button Text="Confirm Booking" 
+                    Command="{Binding ConfirmBookingCommand}"
+                    BackgroundColor="#1565C0"
+                    TextColor="White"
+                    HeightRequest="50"
+                    CornerRadius="25"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}, TargetNullValue=True}"/>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,21 @@
+query GetTradesmanProfiles {
+  tradesmanProfiles {
+    id
+    averageRating
+    isVerified
+    user {
+      id
+      firstName
+      lastName
+      profilePictureUrl
+      location
+      bio
+    }
+    skills {
+        serviceCategory {
+            name
+        }
+        verificationStatus
+    }
+  }
+}

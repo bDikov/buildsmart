@@ -1,0 +1,12 @@
+{
+  "schema": {
+    "url": "https://localhost:44378/graphql",
+    "type": "code"
+  },
+  "client": {
+    "output": {
+      "fileName": "BuildSmartClient.g.cs",
+      "outputPath": "Generated"
+    }
+  }
+}

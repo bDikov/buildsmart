@@ -1,0 +1,12 @@
+
+{
+  "schema": "GraphQL/schema.graphql",
+  "documents": "**/*.graphql",
+  "extensions": {
+    "strawberryShake": {
+      "name": "BuildSmartApiClient",
+      "namespace": "BuildSmart.Maui.GraphQL",
+      "url": "https://localhost:44378/graphql"
+    }
+  }
+}

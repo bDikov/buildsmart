@@ -1,0 +1,6 @@
+mutation UpdateCategoryStatus($categoryId: UUID!, $newStatus: CategoryStatus!) {
+  updateCategoryStatus(categoryId: $categoryId, newStatus: $newStatus) {
+    id
+    status
+  }
+}

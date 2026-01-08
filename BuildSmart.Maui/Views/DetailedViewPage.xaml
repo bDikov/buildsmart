@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BuildSmart.Maui.Views.DetailedViewPage"
+             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:DataType="viewModels:DetailedViewPageViewModel"
+             Title="User Profile">
+    <VerticalStackLayout Spacing="10" Padding="20">
+        <Label Text="First Name:" FontSize="Medium" />
+        <Label Text="{Binding User.FirstName}" FontSize="Large" />
+
+        <Label Text="Last Name:" FontSize="Medium" />
+        <Label Text="{Binding User.LastName}" FontSize="Large" />
+
+        <Label Text="Email:" FontSize="Medium" />
+        <Label Text="{Binding User.Email}" FontSize="Large" />
+
+        <Label Text="Role:" FontSize="Medium" />
+        <Label Text="{Binding User.Role}" FontSize="Large" />
+    </VerticalStackLayout>
+</ContentPage>

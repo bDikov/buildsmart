@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+COPY . .
+
+# Restore dependencies
+RUN dotnet restore BuildSmart.Tests.sln
+
+COPY docker/run-test.ps1 .

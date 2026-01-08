@@ -1,0 +1,8 @@
+query GetServiceCategories {
+    serviceCategories {
+        id
+        name
+        description
+        templateStructure
+    }
+}

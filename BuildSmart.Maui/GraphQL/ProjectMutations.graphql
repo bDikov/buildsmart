@@ -1,0 +1,31 @@
+mutation CreateProject($homeownerId: UUID!, $title: String!, $description: String!) {
+    createProject(homeownerId: $homeownerId, title: $title, description: $description) {
+        id
+        title
+        status
+    }
+}
+
+mutation AddJobToProject(
+    $projectId: UUID!, 
+    $categoryId: UUID!, 
+    $title: String!, 
+    $jobDetailsJson: String!, 
+    $estimatedSubtotal: Decimal,
+    $currency: String!,
+    $imageUrls: [String!]!
+) {
+    addJobToProject(
+        projectId: $projectId,
+        categoryId: $categoryId,
+        title: $title,
+        jobDetailsJson: $jobDetailsJson,
+        estimatedSubtotal: $estimatedSubtotal,
+        currency: $currency,
+        imageUrls: $imageUrls
+    ) {
+        id
+        title
+        amendmentCount
+    }
+}

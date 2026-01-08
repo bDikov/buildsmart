@@ -1,0 +1,12 @@
+mutation CreateBooking($homeownerId: UUID!, $tradesmanProfileId: UUID!, $requestedDate: DateTime!, $jobDescription: String!) {
+  createBooking(
+    homeownerId: $homeownerId
+    tradesmanProfileId: $tradesmanProfileId
+    requestedDate: $requestedDate
+    jobDescription: $jobDescription
+  ) {
+    id
+    status
+    requestedDate
+  }
+}

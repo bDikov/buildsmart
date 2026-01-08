@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BuildSmart.Maui.Views.CreateAccountPage"
+             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:DataType="viewModels:CreateAccountPageViewModel"
+             Title="Create Account">
+    <VerticalStackLayout Spacing="10" Padding="20">
+        <Label Text="First Name:" />
+        <Entry Text="{Binding FirstName}" />
+
+        <Label Text="Last Name:" />
+        <Entry Text="{Binding LastName}" />
+
+        <Label Text="Email:" />
+        <Entry Text="{Binding Email}" Keyboard="Email" />
+
+        <Label Text="Password:" />
+        <Entry Text="{Binding Password}" IsPassword="True" />
+
+        <Button Text="Create Account" Command="{Binding CreateAccountCommand}" />
+    </VerticalStackLayout>
+</ContentPage>

@@ -1,0 +1,235 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"The root query object."
+type Query {
+  "Gets a queryable list of tradesman profiles."
+  tradesmanProfiles: [TradesmanProfile!]!
+  "Gets the currently authenticated user."
+  currentUser: User
+  "Gets a list of all active service categories."
+  serviceCategories: [ServiceCategory!]!
+  "Gets all service categories, regardless of status. (Admin only)"
+  allServiceCategories: [ServiceCategory!]!
+}
+
+"The root mutation object."
+type Mutation {
+  "Hashes all existing plain-text passwords in the database. This is a one-time operation."
+  migratePasswords: Int!
+  "Authenticates a user and returns a JWT."
+  login(email: String! password: String!): String!
+  "Creates a new user in the system."
+  registerUser(firstName: String! lastName: String! email: String! password: String!): User!
+  "Creates a new service booking request."
+  createBooking(homeownerId: UUID! tradesmanProfileId: UUID! requestedDate: DateTime! jobDescription: String!): Booking!
+  "Submits a review and updates the tradesman's average rating."
+  submitReview(bookingId: UUID! homeownerId: UUID! rating: Int! comment: String!): Review!
+  
+  "Creates a new project for a homeowner."
+  createProject(homeownerId: UUID! title: String! description: String!): Project!
+  
+  "Adds a sub-job to a project using the Wizard output."
+  addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! estimatedSubtotal: Decimal currency: String! imageUrls: [String!]!): JobPost!
+  
+  "Submits a bid for a specific job post."
+  submitBid(tradesmanProfileId: UUID! jobPostId: UUID! subtotal: Decimal! currency: String! comment: String): Bid!
+  
+  "Accepts a bid and creates a funded booking."
+  acceptBid(bidId: UUID!): Booking!
+  
+  "Creates a new service category with a smart blueprint template."
+  createServiceCategory(name: String!, description: String, templateStructure: String!): ServiceCategory!
+
+  "Creates or updates a service category. If ID is null, creates a new one."
+  saveCategory(id: UUID, name: String!, description: String, templateStructure: String!): ServiceCategory!
+
+  "Updates the status of a service category. (Admin only)"
+  updateCategoryStatus(categoryId: UUID!, newStatus: CategoryStatus!): ServiceCategory!
+}
+
+"Represents the specific profile for a tradesman."
+type TradesmanProfile {
+  id: UUID!
+  userId: UUID!
+  averageRating: Float!
+  isVerified: Boolean!
+  user: User!
+  skills: [TradesmanSkill!]!
+  portfolioEntries: [PortfolioEntry!]!
+  bookings: [Booking!]!
+  reviews: [Review!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"Represents a specific skill or service category offered by a tradesman."
+type TradesmanSkill {
+    id: UUID!
+    verificationStatus: SkillVerificationStatus!
+    serviceCategory: ServiceCategory!
+}
+
+type ServiceCategory {
+  id: UUID!
+  name: String!
+  description: String
+  status: CategoryStatus!
+  templateStructure: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Project {
+    id: UUID!
+    title: String!
+    description: String!
+    status: ProjectStatus!
+    homeowner: User!
+    jobPosts: [JobPost!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type JobPost {
+    id: UUID!
+    title: String!
+    description: String!
+    jobDetails: String!
+    location: String
+    imageUrls: [String!]!
+    estimatedBudget: Amount
+    amendmentCount: Int!
+    status: JobPostStatus!
+    project: Project!
+    serviceCategory: ServiceCategory!
+    bids: [Bid!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Bid {
+    id: UUID!
+    amount: Amount!
+    comment: String
+    linkedAmendmentVersion: Int!
+    isAccepted: Boolean!
+    isRejected: Boolean!
+    isOutdated: Boolean!
+    jobPost: JobPost!
+    tradesmanProfile: TradesmanProfile!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+"Represents a user of the application."
+type User {
+  id: UUID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phoneNumber: String
+  role: UserRoleTypes!
+  bio: String
+  location: String
+  profilePictureUrl: String
+  isEmailVerified: Boolean!
+  tradesmanProfile: TradesmanProfile
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"Represents a booking."
+type Booking {
+  id: UUID!
+  requestedDate: DateTime!
+  scheduledDate: DateTime
+  jobDescription: String
+  status: BookingStatusTypes!
+  homeownerId: UUID!
+  tradesmanProfileId: UUID!
+  agreedBidAmount: Amount
+  totalEscrowAmount: Amount
+  homeowner: User!
+  tradesmanProfile: TradesmanProfile!
+  review: Review
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Review {
+  id: UUID!
+  rating: Int!
+  comment: String
+  bookingId: UUID!
+  booking: Booking!
+  homeowner: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Amount {
+  currency: String!
+  subtotal: Decimal!
+  tax: Decimal!
+  total: Decimal!
+}
+
+type PortfolioEntry {
+  id: UUID!
+  title: String!
+  description: String
+  imageUrl: String!
+  videoUrl: String
+  tradesmanProfileId: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum UserRoleTypes {
+  HOMEOWNER
+  TRADESMAN
+  ADMIN
+}
+
+enum BookingStatusTypes {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  DECLINED
+}
+
+enum CategoryStatus {
+    DRAFT
+    ACTIVE
+    ARCHIVED
+}
+
+enum SkillVerificationStatus {
+    UNVERIFIED
+    PORTFOLIO_VERIFIED
+    COMMUNITY_VERIFIED
+    LICENSE_VERIFIED
+}
+
+enum ProjectStatus {
+    ACTIVE
+    COMPLETED
+    ARCHIVED
+}
+
+enum JobPostStatus {
+    DRAFT
+    OPEN
+    BIDDING_CLOSED
+    CONTRACTED
+    CANCELLED
+    EXPIRED
+}
+
+scalar DateTime
+scalar UUID
+scalar Decimal

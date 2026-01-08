@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BuildSmart.Maui.Views.TradesmanDetailsPage"
+             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:DataType="viewModels:TradesmanDetailsViewModel"
+             Title="Details"
+             BackgroundColor="#f0f2f5">
+
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="15" Padding="0,0,0,20">
+                <!-- Header with Gradient/Image -->
+                <Grid HeightRequest="200">
+                    <BoxView Color="#1565C0" HeightRequest="150" VerticalOptions="Start"/>
+                    <Frame CornerRadius="60" HeightRequest="120" WidthRequest="120" 
+                           HorizontalOptions="Center" VerticalOptions="End" 
+                           Padding="0" HasShadow="True" BorderColor="White">
+                        <Image Source="{Binding Tradesman.User.ProfilePictureUrl, TargetNullValue='dotnet_bot.png'}" 
+                               Aspect="AspectFill"/>
+                    </Frame>
+                </Grid>
+
+                <!-- Basic Info -->
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="5">
+                    <Label Text="{Binding Tradesman.User.FirstName}" 
+                           FontSize="22" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    <Label Text="{Binding Tradesman.Skills[0].ServiceCategory.Name, TargetNullValue='General'}" 
+                           TextColor="Gray" HorizontalOptions="Center"/>
+                    <Label Text="{Binding Tradesman.AverageRating, StringFormat='⭐ {0:F1}'}" 
+                           TextColor="#FBC02D" HorizontalOptions="Center"/>
+                     <Label Text="{Binding Tradesman.User.Location}" 
+                           TextColor="Gray" FontSize="12" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <!-- Bio -->
+                <Frame Margin="15,0" Padding="15" CornerRadius="10">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="About" FontAttributes="Bold" FontSize="16"/>
+                        <Label Text="{Binding Tradesman.User.Bio}" TextColor="#333"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Portfolio -->
+                <VerticalStackLayout Spacing="10" Margin="15,0">
+                    <Label Text="Portfolio" FontAttributes="Bold" FontSize="16"/>
+                    <ScrollView Orientation="Horizontal">
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Tradesman.PortfolioEntries}" Spacing="10">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Padding="0" CornerRadius="8" WidthRequest="150" HeightRequest="150" HasShadow="False" BorderColor="LightGray">
+                                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill"/>
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+
+                <!-- Reviews -->
+                <VerticalStackLayout Spacing="10" Margin="15,0">
+                    <Label Text="Reviews" FontAttributes="Bold" FontSize="16"/>
+                    <StackLayout BindableLayout.ItemsSource="{Binding Tradesman.Reviews}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="10" CornerRadius="8" BackgroundColor="White" HasShadow="True">
+                                    <VerticalStackLayout Spacing="5">
+                                        <HorizontalStackLayout Spacing="10">
+                                            <Label Text="{Binding Homeowner.FirstName}" FontAttributes="Bold"/>
+                                            <Label Text="{Binding Rating, StringFormat='⭐ {0}'}" TextColor="#FBC02D"/>
+                                        </HorizontalStackLayout>
+                                        <Label Text="{Binding Comment}" TextColor="#555"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Book Button -->
+        <Button Grid.Row="1" Text="Book Now" 
+                Command="{Binding BookNowCommand}"
+                Margin="20" BackgroundColor="#1565C0" TextColor="White" FontAttributes="Bold" CornerRadius="25" HeightRequest="50"/>
+        
+        <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                           Color="{StaticResource Primary}"
+                           Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>

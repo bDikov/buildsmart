@@ -1,0 +1,46 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+publish/
+
+# Rider
+.idea/
+
+# User-specific files
+*.DS_Store
+
+# Tool-specific files
+.DS_Store
+.toolstarget
+.vspscc
+*.DotSettings.user
+
+# Other
+*.nupkg
+*.pfx
+*.pem
+
+# Local config
+appsettings.Development.json
+secrets.json
+
+# Gemini CLI temp files
+.gemini/
+
+# Docker
+docker-compose.override.yml
