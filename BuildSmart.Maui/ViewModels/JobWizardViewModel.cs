@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace BuildSmart.Maui.ViewModels;
 
@@ -21,6 +22,9 @@ public partial class JobWizardViewModel : ObservableObject
 
     // This will be used in a later step for dynamic forms
     public Dictionary<string, object> WizardAnswers { get; private set; } = new();
+
+    [ObservableProperty]
+    private ObservableCollection<WizardQuestionViewModel> _questions = new();
 
     [ObservableProperty]
     private bool _isBusy;
@@ -67,10 +71,67 @@ public partial class JobWizardViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void GoToNextStep()
+    public async Task GoToNextStep()
     {
+        if (CurrentStep == 0)
+        {
+            if (string.IsNullOrWhiteSpace(ProjectTitle))
+            {
+                await Shell.Current.DisplayAlert("Required", "Please enter a project title.", "OK");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(ProjectDescription))
+            {
+                await Shell.Current.DisplayAlert("Required", "Please enter a project description.", "OK");
+                return;
+            }
+        }
+
+        if (CurrentStep == 1)
+        {
+             if (!_selectableCategories.Any(c => c.IsSelected))
+             {
+                 await Shell.Current.DisplayAlert("Required", "Please select at least one category.", "OK");
+                 return;
+             }
+             GenerateQuestions();
+        }
+
         // In a real app, you'd validate here, e.g., ensure at least one category is selected
         CurrentStep++;
+    }
+
+    private void GenerateQuestions()
+    {
+        Questions.Clear();
+        var selected = SelectableCategories.Where(c => c.IsSelected).ToList();
+        foreach (var cat in selected)
+        {
+            if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
+            {
+                try
+                {
+                    var template = JsonNode.Parse(cat.Category.TemplateStructure);
+                    if (template?["questions"] is JsonArray qArray)
+                    {
+                        foreach (var qNode in qArray)
+                        {
+                            if (qNode is JsonObject qObj)
+                            {
+                                Questions.Add(new WizardQuestionViewModel
+                                {
+                                    Id = qObj["id"]?.GetValue<string>() ?? "",
+                                    Text = qObj["text"]?.GetValue<string>() ?? "",
+                                    Type = qObj["type"]?.GetValue<string>() ?? "text",
+                                    CategoryName = cat.Category.Name
+                                });
+                            }
+                        }
+                    }
+                }
+                catch { /* Ignore parse errors */ }
+            }
+        }
     }
 
     [RelayCommand]
@@ -106,10 +167,22 @@ public partial class JobWizardViewModel : ObservableObject
             var projectResult = await _apiClient.CreateProject.ExecuteAsync(userId, ProjectTitle, ProjectDescription);
             if (projectResult.Errors.Count > 0)
             {
-                 await Shell.Current.DisplayAlert("Error", "Failed to create project.", "OK");
+                 var errorMsg = string.Join("\n", projectResult.Errors.Select(e => e.Message));
+                 await Shell.Current.DisplayAlert("Error", $"Failed to create project: {errorMsg}", "OK");
                  return;
             }
             var projectId = projectResult.Data.CreateProject.Id;
+
+            // Prepare answers
+            WizardAnswers.Clear();
+            var dynamicAnswers = Questions.Select(q => new
+            {
+                id = q.Id,
+                question = q.Text,
+                answer = q.Answer
+            }).ToList();
+            
+            WizardAnswers["dynamicQuestions"] = dynamicAnswers;
 
             // Loop and create a job for each selected category
             foreach (var selectedCategory in selected)

@@ -8,70 +8,45 @@ using System.Text.Json.Nodes;
 
 namespace BuildSmart.Maui.ViewModels.Admin;
 
-[QueryProperty(nameof(CategoryId), "id")]
-
+[QueryProperty(nameof(CategoryIdAsString), "id")]
 public partial class CategoryDetailViewModel : ObservableObject
-
 {
-
     public static List<string> QuestionTypes => new() { "text", "number", "boolean" };
-
-    
 
     private readonly IBuildSmartApiClient _apiClient;
 
-
-
-    [ObservableProperty]
-
-    private Guid? _categoryId; // Correctly nullable
-
-    
+    public string CategoryIdAsString { set => OnSetCategoryId(value); }
 
     [ObservableProperty]
+    private Guid? _categoryId;
 
+    [ObservableProperty]
     private string _categoryName;
 
-    
-
     [ObservableProperty]
-
     private string _categoryDescription;
 
-
-
     [ObservableProperty]
-
     private ObservableCollection<QuestionViewModel> _questions = new();
 
-
-
     public CategoryDetailViewModel(IBuildSmartApiClient apiClient)
-
     {
-
         _apiClient = apiClient;
-
         _categoryName = string.Empty;
-
         _categoryDescription = string.Empty;
-
     }
 
-
-
-    partial void OnCategoryIdChanged(Guid? value) // Correctly nullable
-
+    private void OnSetCategoryId(string idAsString)
     {
-
-        if (value.HasValue && value.Value != Guid.Empty)
-
+        if (Guid.TryParse(idAsString, out Guid result))
         {
-
-            LoadCategoryDetailsAsync(value.Value);
-
+            CategoryId = result;
+            LoadCategoryDetailsAsync(result);
         }
-
+        else
+        {
+            CategoryId = null;
+        }
     }
 
 

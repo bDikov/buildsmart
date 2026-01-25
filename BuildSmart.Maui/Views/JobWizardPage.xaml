@@ -47,13 +47,29 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Step 2: Dynamic Wizard (Simplified for MVP) -->
-        <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=2}" Padding="20">
-            <Label Text="Project Details" FontSize="20" HorizontalOptions="Center" />
-            <Label Text="This is where dynamic questions for each selected category would appear." TextColor="Gray" HorizontalOptions="Center" Margin="0,10"/>
-            
-            <Button Text="Review Project" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
-        </StackLayout>
+        <!-- Step 2: Dynamic Wizard -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=2}">
+            <VerticalStackLayout Padding="20" Spacing="15">
+                <Label Text="Project Details" FontSize="20" HorizontalOptions="Center" FontAttributes="Bold"/>
+                
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Questions}" Spacing="15">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WizardQuestionViewModel">
+                            <Frame Padding="15" CornerRadius="10" BorderColor="LightGray">
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="{Binding CategoryName}" FontSize="10" TextColor="#1565C0" FontAttributes="Bold" TextTransform="Uppercase"/>
+                                    <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" />
+                                    <Entry Text="{Binding Answer}" Placeholder="Type your answer here..." />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Button Text="Review Project" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
+                <Button Text="Back" Command="{Binding GoToPreviousStepCommand}" BackgroundColor="Transparent" TextColor="Gray"/>
+            </VerticalStackLayout>
+        </ScrollView>
 
         <!-- Step 3: Review -->
         <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=3}" Padding="20">

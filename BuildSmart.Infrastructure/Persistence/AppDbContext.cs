@@ -57,4 +57,34 @@ public class AppDbContext : DbContext
             await SaveChangesAsync();
         }
     }
+
+    public async Task SeedHomeownerUser()
+    {
+        if (!Users.Any(u => u.Email == "homeowner@buildsmart.com"))
+        {
+            var homeownerId = Guid.NewGuid();
+            var homeownerUser = new User
+            {
+                Id = homeownerId,
+                FirstName = "Home",
+                LastName = "Owner",
+                Email = "homeowner@buildsmart.com",
+                HashedPassword = BCrypt.Net.BCrypt.HashPassword("Homeowner123!"),
+                Role = UserRoleTypes.Homeowner,
+                IsEmailVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            homeownerUser.HomeownerProfile = new HomeownerProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = homeownerId,
+                Address = "123 Smart St"
+            };
+
+            await Users.AddAsync(homeownerUser);
+            await SaveChangesAsync();
+        }
+    }
 }

@@ -165,6 +165,7 @@ public partial class Program
 		                var context = services.GetRequiredService<AppDbContext>();
 		                context.Database.Migrate(); // Apply any pending migrations
 		                await context.SeedAdminUser(); // Seed the admin user
+		                await context.SeedHomeownerUser(); // Seed the homeowner user
 		            }
 		            catch (Exception ex)
 		            {

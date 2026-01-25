@@ -64,7 +64,7 @@ public class JobPostService : IJobPostService
         var homeowner = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId);
         if (homeowner?.HomeownerProfile == null)
         {
-             // Fallback or error
+             throw new InvalidOperationException("User does not have a Homeowner profile. Please complete your profile first.");
         }
         else
         {
