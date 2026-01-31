@@ -77,3 +77,27 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 *   **Entity Framework Core**: The infrastructure layer uses EF Core for data access.
 *   **.NET MAUI with MVVM**: The client application is built with .NET MAUI and likely follows the MVVM pattern.
 *   **Testing**: The project has a dedicated test project using xUnit, Moq, and Snapshot testing.
+
+### Manual Migrations
+
+**IMPORTANT:** The Gemini agent is configured to **never** execute migration commands automatically.
+
+#### Package Manager Console (Visual Studio)
+If using the Package Manager Console, use these commands (Set `BuildSmart.Infrastructure` as Default Project):
+```powershell
+Add-Migration <MigrationName> -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api
+Update-Database -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api
+```
+
+#### .NET CLI (Terminal)
+If using the terminal, use these commands:
+```powershell
+dotnet ef migrations add <MigrationName> --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+```
+
+*   **Agent Responsibility**: The agent modifies Entity classes and provides these commands.
+*   **User Responsibility**: The user must execute these commands to update the database schema.
+
+## Domain Model Changes
+*   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.

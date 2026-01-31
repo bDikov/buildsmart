@@ -14,6 +14,8 @@ public partial class JobWizardViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<SelectableCategoryViewModel> _selectableCategories = new();
 
+    private List<SelectableCategoryViewModel> _allCategories = new();
+
     [ObservableProperty]
     private string _projectTitle = string.Empty;
     
@@ -54,9 +56,17 @@ public partial class JobWizardViewModel : ObservableObject
             else if (result.Data?.ServiceCategories != null)
             {
                 SelectableCategories.Clear();
+                _allCategories.Clear();
+
                 foreach (var cat in result.Data.ServiceCategories)
                 {
-                    SelectableCategories.Add(new SelectableCategoryViewModel(cat));
+                    var viewModel = new SelectableCategoryViewModel(cat);
+                    _allCategories.Add(viewModel);
+
+                    if (!cat.IsGlobal)
+                    {
+                        SelectableCategories.Add(viewModel);
+                    }
                 }
             }
         }
@@ -104,8 +114,23 @@ public partial class JobWizardViewModel : ObservableObject
     private void GenerateQuestions()
     {
         Questions.Clear();
-        var selected = SelectableCategories.Where(c => c.IsSelected).ToList();
-        foreach (var cat in selected)
+        
+        // 1. Get Global Categories (Available in the full list loaded in LoadCategoriesAsync)
+        // We need to access the full list. Since SelectableCategories is just a view model wrapper, 
+        // we might need to store the raw data or check the properties.
+        // Assuming SelectableCategories was populated from All Service Categories.
+        
+        // However, LoadCategoriesAsync calls GetServiceCategories.ExecuteAsync().
+        // We updated that query to include 'isGlobal'.
+        
+        var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
+        var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+        
+        // Combine: Global first, then Selected
+        // Avoid duplicates if a global category is also selected (though unlikely in UI if we filter)
+        var allApplicableCategories = globalCategories.Union(selectedCategories).ToList();
+
+        foreach (var cat in allApplicableCategories)
         {
             if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
             {

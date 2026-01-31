@@ -34,7 +34,8 @@ public partial class CategoryManagementViewModel : ObservableObject
 			if (result.Errors.Count == 0 && result.Data?.AllServiceCategories is not null)
 			{
 				Categories.Clear();
-				foreach (var category in result.Data.AllServiceCategories)
+				// Filter out Global categories from the main list
+				foreach (var category in result.Data.AllServiceCategories.Where(c => !c.IsGlobal))
 				{
 					Categories.Add(category);
 				}
@@ -49,6 +50,38 @@ public partial class CategoryManagementViewModel : ObservableObject
 			IsBusy = false;
 		}
 	}
+
+    [RelayCommand]
+    private async Task ManageGlobalQuestionsAsync()
+    {
+        try 
+        {
+            IsBusy = true;
+            // Fetch all to find the global one
+            var result = await _apiClient.GetAllServiceCategories.ExecuteAsync();
+            var globalCat = result.Data?.AllServiceCategories?.FirstOrDefault(c => c.IsGlobal);
+
+            if (globalCat != null)
+            {
+                // Edit existing
+                await Shell.Current.GoToAsync($"{nameof(Views.Admin.CategoryDetailPage)}?id={globalCat.Id}");
+            }
+            else
+            {
+                // Create new Global Category (handled by passing a special flag or just creating it here?)
+                // Better UX: Pass a flag "isGlobalMode=true" to the detail page
+                await Shell.Current.GoToAsync($"{nameof(Views.Admin.CategoryDetailPage)}?isGlobalMode=true");
+            }
+        }
+        catch (Exception ex)
+        {
+             await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
 	[RelayCommand]
 	private async Task UpdateStatusAsync(IGetAllServiceCategories_AllServiceCategories category)

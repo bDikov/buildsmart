@@ -44,7 +44,7 @@ type Mutation {
   createServiceCategory(name: String!, description: String, templateStructure: String!): ServiceCategory!
 
   "Creates or updates a service category. If ID is null, creates a new one."
-  saveCategory(id: UUID, name: String!, description: String, templateStructure: String!): ServiceCategory!
+  saveCategory(id: UUID, name: String!, description: String, isGlobal: Boolean!, templateStructure: String!, status: CategoryStatus): ServiceCategory!
 
   "Updates the status of a service category. (Admin only)"
   updateCategoryStatus(categoryId: UUID!, newStatus: CategoryStatus!): ServiceCategory!
@@ -77,6 +77,7 @@ type ServiceCategory {
   name: String!
   description: String
   status: CategoryStatus!
+  isGlobal: Boolean!
   templateStructure: String!
   createdAt: DateTime!
   updatedAt: DateTime!

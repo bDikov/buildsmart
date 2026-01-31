@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 namespace BuildSmart.Maui.ViewModels.Admin;
 
 [QueryProperty(nameof(CategoryIdAsString), "id")]
+[QueryProperty(nameof(IsGlobalModeAsString), "isGlobalMode")]
 public partial class CategoryDetailViewModel : ObservableObject
 {
     public static List<string> QuestionTypes => new() { "text", "number", "boolean" };
@@ -16,6 +17,7 @@ public partial class CategoryDetailViewModel : ObservableObject
     private readonly IBuildSmartApiClient _apiClient;
 
     public string CategoryIdAsString { set => OnSetCategoryId(value); }
+    public string IsGlobalModeAsString { set => OnSetIsGlobalMode(value); }
 
     [ObservableProperty]
     private Guid? _categoryId;
@@ -27,6 +29,17 @@ public partial class CategoryDetailViewModel : ObservableObject
     private string _categoryDescription;
 
     [ObservableProperty]
+    private CategoryStatus _status = CategoryStatus.Draft;
+
+    public List<CategoryStatus> AllStatuses => Enum.GetValues<CategoryStatus>().ToList();
+
+    [ObservableProperty]
+    private bool _isGlobal;
+    
+    [ObservableProperty]
+    private bool _isGlobalSwitchVisible = true; // Default to true, hide if in Global Mode
+
+    [ObservableProperty]
     private ObservableCollection<QuestionViewModel> _questions = new();
 
     public CategoryDetailViewModel(IBuildSmartApiClient apiClient)
@@ -34,6 +47,17 @@ public partial class CategoryDetailViewModel : ObservableObject
         _apiClient = apiClient;
         _categoryName = string.Empty;
         _categoryDescription = string.Empty;
+    }
+
+    private void OnSetIsGlobalMode(string value)
+    {
+        if (bool.TryParse(value, out bool isGlobalMode) && isGlobalMode)
+        {
+            IsGlobal = true;
+            IsGlobalSwitchVisible = false;
+            CategoryName = "Global Questions";
+            CategoryDescription = "Questions applied to all job posts.";
+        }
     }
 
     private void OnSetCategoryId(string idAsString)
@@ -75,7 +99,12 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                     CategoryDescription = category.Description ?? string.Empty;
 
+                    IsGlobal = category.IsGlobal;
+
+                    Status = category.Status;
                     
+                    // If we are editing a global category, hide the switch so it can't be turned off accidentally
+                    if (IsGlobal) IsGlobalSwitchVisible = false;
 
                     if (!string.IsNullOrWhiteSpace(category.TemplateStructure))
 
@@ -205,7 +234,7 @@ public partial class CategoryDetailViewModel : ObservableObject
 
             // The CategoryId property is already a Guid?, so we can pass it directly.
 
-            var result = await _apiClient.SaveCategory.ExecuteAsync(CategoryId, CategoryName, CategoryDescription, templateStructureJson);
+            var result = await _apiClient.SaveCategory.ExecuteAsync(CategoryId, CategoryName, CategoryDescription, IsGlobal, templateStructureJson, Status);
 
 
 

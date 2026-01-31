@@ -192,37 +192,45 @@ public class Mutation
 	        return category;
 	    }
 	
-	    [Authorize(Roles = new[] { "Admin" })]
-	    public async Task<ServiceCategory> SaveCategory(
-	        Guid? id,
-	        string name,
-	        string? description,
-	        string templateStructure,
-	        [Service] IUnitOfWork unitOfWork)
-	    {
-	        ServiceCategory category;
-	        if (id.HasValue && id.Value != Guid.Empty)
-	        {
-	            // Update existing
-	            category = await unitOfWork.ServiceCategories.GetByIdAsync(id.Value) ?? throw new GraphQLException("Category not found.");
-	            category.Name = name;
-	            category.Description = description;
-	            category.TemplateStructure = templateStructure;
-	            unitOfWork.ServiceCategories.Update(category);
-	        }
-	        else
-	        {
-	            // Create new
-	            category = new ServiceCategory
-	            {
-	                Name = name,
-	                Description = description,
-	                TemplateStructure = templateStructure,
-	                Status = CategoryStatus.Draft // Always start as Draft
-	            };
-	            await unitOfWork.ServiceCategories.AddAsync(category);
-	        }
-	        await unitOfWork.SaveChangesAsync();
-	        return category;
-	    }
+    [Authorize(Roles = new[] { "Admin" })]
+    public async Task<ServiceCategory> SaveCategory(
+        Guid? id,
+        string name,
+        string? description,
+        bool isGlobal,
+        string templateStructure,
+        CategoryStatus? status,
+        [Service] IUnitOfWork unitOfWork)
+    {
+        ServiceCategory category;
+        if (id.HasValue && id.Value != Guid.Empty)
+        {
+            // Update existing
+            category = await unitOfWork.ServiceCategories.GetByIdAsync(id.Value) ?? throw new GraphQLException("Category not found.");
+            category.Name = name;
+            category.Description = description;
+            category.IsGlobal = isGlobal;
+            category.TemplateStructure = templateStructure;
+            if (status.HasValue)
+            {
+                category.Status = status.Value;
+            }
+            unitOfWork.ServiceCategories.Update(category);
+        }
+        else
+        {
+            // Create new
+            category = new ServiceCategory
+            {
+                Name = name,
+                Description = description,
+                IsGlobal = isGlobal,
+                TemplateStructure = templateStructure,
+                Status = status ?? CategoryStatus.Draft
+            };
+            await unitOfWork.ServiceCategories.AddAsync(category);
+        }
+        await unitOfWork.SaveChangesAsync();
+        return category;
+    }
 	}

@@ -1,8 +1,9 @@
 query GetServiceCategories {
-    serviceCategories {
-        id
-        name
-        description
-        templateStructure
-    }
+  serviceCategories {
+    id
+    name
+    description
+    isGlobal
+    templateStructure
+  }
 }
