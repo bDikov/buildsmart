@@ -13,4 +13,22 @@
             Route="FeedPage" />
     </FlyoutItem>
 
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="15" Spacing="5">
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,0,0,10" />
+            <Button Text="Profile Settings" 
+                    Clicked="OnProfileSettingsClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Black"
+                    HorizontalOptions="Start"
+                    FontSize="16" />
+            <Button Text="Logout" 
+                    Clicked="OnLogoutClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Red"
+                    HorizontalOptions="Start"
+                    FontSize="16" />
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
+
 </Shell>

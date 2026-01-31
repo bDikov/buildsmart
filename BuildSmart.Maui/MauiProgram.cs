@@ -67,6 +67,7 @@ public static class MauiProgram
 
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
+		builder.Services.AddTransient<AppShell>();
 		builder.Services.AddTransient<CategoryManagementPage>();
 		builder.Services.AddTransient<CategoryManagementViewModel>();
 		builder.Services.AddTransient<CategoryDetailPage>();
