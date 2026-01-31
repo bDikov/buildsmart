@@ -2,9 +2,18 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
              x:Class="BuildSmart.Maui.Views.JobWizardPage"
              x:DataType="vm:JobWizardViewModel"
              Title="Create Project">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StepToProgressConverter x:Key="StepToProgressConverter" />
+            <converters:StepVisibleConverter x:Key="StepVisibleConverter" />
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:BoolToColorConverter x:Key="ErrorColorConverter" TrueColor="Red" FalseColor="Black" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *">
         <!-- Progress Bar -->
@@ -13,10 +22,10 @@
 
         <!-- Step 0: Basic Info -->
         <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=0}" Padding="20">
-            <Label Text="Project Title" FontSize="18" FontAttributes="Bold" />
+            <Label Text="Project Title" FontSize="18" FontAttributes="Bold" TextColor="{Binding TitleHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Entry Text="{Binding ProjectTitle}" Placeholder="e.g., Kitchen Remodel" Margin="0,0,0,10"/>
             
-            <Label Text="Description" FontSize="18" FontAttributes="Bold" />
+            <Label Text="Description" FontSize="18" FontAttributes="Bold" TextColor="{Binding DescriptionHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Editor Text="{Binding ProjectDescription}" HeightRequest="100" Placeholder="Describe your project..." />
 
             <Button Text="Next: Select Category" 
@@ -29,7 +38,7 @@
         <ScrollView Grid.Row="1" 
                     IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=1}">
             <VerticalStackLayout Padding="20" Spacing="10">
-                <Label Text="Select Job Categories" FontSize="20" FontAttributes="Bold" />
+                <Label Text="Select Job Categories" FontSize="20" FontAttributes="Bold" TextColor="{Binding CategorySelectionHasError, Converter={StaticResource ErrorColorConverter}}"/>
                 <CollectionView ItemsSource="{Binding SelectableCategories}"
                                 SelectionMode="None">
                     <CollectionView.ItemTemplate>
@@ -58,7 +67,10 @@
                             <Frame Padding="15" CornerRadius="10" BorderColor="LightGray">
                                 <VerticalStackLayout Spacing="5">
                                     <Label Text="{Binding CategoryName}" FontSize="10" TextColor="#1565C0" FontAttributes="Bold" TextTransform="Uppercase"/>
-                                    <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" />
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" TextColor="{Binding HasError, Converter={StaticResource ErrorColorConverter}}"/>
+                                        <Label Text="*" FontSize="16" TextColor="Red" IsVisible="{Binding IsRequired}" />
+                                    </HorizontalStackLayout>
                                     <Entry Text="{Binding Answer}" Placeholder="Type your answer here..." />
                                 </VerticalStackLayout>
                             </Frame>

@@ -22,6 +22,15 @@ public partial class JobWizardViewModel : ObservableObject
     [ObservableProperty]
     private string _projectDescription = string.Empty;
 
+    [ObservableProperty]
+    private bool _titleHasError;
+
+    [ObservableProperty]
+    private bool _descriptionHasError;
+
+    [ObservableProperty]
+    private bool _categorySelectionHasError;
+
     // This will be used in a later step for dynamic forms
     public Dictionary<string, object> WizardAnswers { get; private set; } = new();
 
@@ -85,14 +94,12 @@ public partial class JobWizardViewModel : ObservableObject
     {
         if (CurrentStep == 0)
         {
-            if (string.IsNullOrWhiteSpace(ProjectTitle))
+            TitleHasError = string.IsNullOrWhiteSpace(ProjectTitle);
+            DescriptionHasError = string.IsNullOrWhiteSpace(ProjectDescription);
+
+            if (TitleHasError || DescriptionHasError)
             {
-                await Shell.Current.DisplayAlert("Required", "Please enter a project title.", "OK");
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(ProjectDescription))
-            {
-                await Shell.Current.DisplayAlert("Required", "Please enter a project description.", "OK");
+                await Shell.Current.DisplayAlert("Required", "Please enter a project title and description.", "OK");
                 return;
             }
         }
@@ -101,10 +108,31 @@ public partial class JobWizardViewModel : ObservableObject
         {
              if (!_selectableCategories.Any(c => c.IsSelected))
              {
+                 CategorySelectionHasError = true;
                  await Shell.Current.DisplayAlert("Required", "Please select at least one category.", "OK");
                  return;
              }
+             CategorySelectionHasError = false;
              GenerateQuestions();
+        }
+
+        if (CurrentStep == 2)
+        {
+            // Reset errors first
+            foreach (var q in Questions) q.HasError = false;
+
+            var missingQuestions = Questions.Where(q => q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
+            
+            if (missingQuestions.Any())
+            {
+                foreach (var q in missingQuestions)
+                {
+                    q.HasError = true;
+                }
+                
+                await Shell.Current.DisplayAlert("Required", "Please answer all required questions marked with (*).", "OK");
+                return;
+            }
         }
 
         // In a real app, you'd validate here, e.g., ensure at least one category is selected
@@ -148,6 +176,7 @@ public partial class JobWizardViewModel : ObservableObject
                                     Id = qObj["id"]?.GetValue<string>() ?? "",
                                     Text = qObj["text"]?.GetValue<string>() ?? "",
                                     Type = qObj["type"]?.GetValue<string>() ?? "text",
+                                    IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
                                     CategoryName = cat.Category.Name
                                 });
                             }
@@ -169,6 +198,14 @@ public partial class JobWizardViewModel : ObservableObject
     public async Task SubmitProjectAsync()
     {
         if (IsBusy) return;
+
+        // Validate Required Questions
+        var missingAnswers = Questions.Where(q => q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
+        if (missingAnswers.Any())
+        {
+            await Shell.Current.DisplayAlert("Required", "Please answer all required questions marked with (*).", "OK");
+            return;
+        }
 
         var selected = SelectableCategories.Where(c => c.IsSelected).ToList();
         if (!selected.Any())

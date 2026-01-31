@@ -132,7 +132,9 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                                         Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
 
-                                        Type = qObj["type"]?.GetValue<string>() ?? "text"
+                                        Type = qObj["type"]?.GetValue<string>() ?? "text",
+                                        
+                                        IsRequired = qObj["required"]?.GetValue<bool>() ?? false
 
                                     });
 
@@ -212,7 +214,8 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                     ["text"] = q.Text,
 
-                    ["type"] = q.Type
+                    ["type"] = q.Type,
+                    ["required"] = q.IsRequired
 
                 }).ToArray());
 

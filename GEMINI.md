@@ -101,3 +101,13 @@ dotnet ef database update --project BuildSmart.Infrastructure --startup-project 
 
 ## Domain Model Changes
 *   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
+
+## New Features
+*   **Global Categories**: 
+    *   Admins can create "Global" categories. Questions defined in these categories are automatically added to *every* job post wizard, regardless of the specific category selected by the user.
+    *   Global categories are hidden from the standard category selection list in the Job Wizard but are processed in the background.
+    *   Admins can manage the status (Draft, Active, Archived) of global categories.
+*   **Required Questions**:
+    *   Admins can mark specific questions within a category (Global or Regular) as "Required".
+    *   In the Job Wizard, required questions are visually marked with a red asterisk (*).
+    *   The Job Wizard prevents project submission if any required questions are left unanswered.

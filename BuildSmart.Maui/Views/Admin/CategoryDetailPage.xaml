@@ -38,7 +38,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:QuestionViewModel">
                         <Frame Padding="10" Margin="0,5" BorderColor="Gainsboro" CornerRadius="8">
-                            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto" RowSpacing="10" ColumnSpacing="10">
+                            <Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="*, Auto" RowSpacing="10" ColumnSpacing="10">
                                 
                                 <Label Grid.Row="0" Grid.Column="0" Text="Question Text" FontSize="12" />
                                 <Entry Grid.Row="1" Grid.Column="0" Text="{Binding Text}" Placeholder="Enter question text" />
@@ -48,7 +48,12 @@
                                         ItemsSource="{Binding Source={x:Static vm:CategoryDetailViewModel.QuestionTypes}}"
                                         SelectedItem="{Binding Type}" />
 
-                                <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" 
+                                <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10" VerticalOptions="Center">
+                                    <Label Text="Required?" VerticalOptions="Center" />
+                                    <CheckBox IsChecked="{Binding IsRequired}" />
+                                </HorizontalStackLayout>
+
+                                <Button Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" 
                                         Text="Remove" 
                                         VerticalOptions="Center"
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CategoryDetailViewModel}}, Path=RemoveQuestionCommand}"
