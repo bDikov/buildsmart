@@ -153,6 +153,7 @@ public class Mutation
 		Guid categoryId,
 		string title,
 		string jobDetailsJson,
+		string? location,
 		decimal? estimatedSubtotal,
 		string currency,
 		List<string> imageUrls,
@@ -162,11 +163,16 @@ public class Mutation
 			? Amount.Create(currency, estimatedSubtotal.Value)
 			: null;
 
+		// Fallback: If location is not provided, use a default or fetch from project/homeowner?
+		// For now, if null, we pass "Remote" or similar to avoid DB crash, but ideally UI sends it.
+		var finalLocation = location ?? "Not Specified";
+
 		return await jobPostService.AddJobToProjectAsync(
 			projectId,
 			categoryId,
 			title,
 			jobDetailsJson,
+			finalLocation,
 			budget,
 			imageUrls
 		);

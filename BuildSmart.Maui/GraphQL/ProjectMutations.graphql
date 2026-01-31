@@ -11,6 +11,7 @@ mutation AddJobToProject(
     $categoryId: UUID!, 
     $title: String!, 
     $jobDetailsJson: String!, 
+    $location: String,
     $estimatedSubtotal: Decimal,
     $currency: String!,
     $imageUrls: [String!]!
@@ -20,6 +21,7 @@ mutation AddJobToProject(
         categoryId: $categoryId,
         title: $title,
         jobDetailsJson: $jobDetailsJson,
+        location: $location,
         estimatedSubtotal: $estimatedSubtotal,
         currency: $currency,
         imageUrls: $imageUrls

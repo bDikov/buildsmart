@@ -11,7 +11,8 @@ public interface IJobPostService
         Guid projectId, 
         Guid categoryId, 
         string title, 
-        string jobDetailsJson, 
+        string jobDetailsJson,
+        string location,
         Amount? estimatedBudget,
         List<string> imageUrls);
 

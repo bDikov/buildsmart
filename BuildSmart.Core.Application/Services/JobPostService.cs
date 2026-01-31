@@ -36,6 +36,7 @@ public class JobPostService : IJobPostService
         Guid categoryId, 
         string title, 
         string jobDetailsJson, 
+        string location,
         Amount? estimatedBudget,
         List<string> imageUrls)
     {
@@ -53,6 +54,7 @@ public class JobPostService : IJobPostService
             Title = title,
             JobDetails = jobDetailsJson,
             Description = $"Job for {category.Name}: {title}", // Placeholder, ideally generated from Wizard
+            Location = location,
             EstimatedBudget = estimatedBudget,
             ImageUrls = imageUrls,
             CreatedAt = DateTime.UtcNow,

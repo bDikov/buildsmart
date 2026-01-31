@@ -34,7 +34,7 @@ type Mutation {
   createProject(homeownerId: UUID! title: String! description: String!): Project!
   
   "Adds a sub-job to a project using the Wizard output."
-  addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! estimatedSubtotal: Decimal currency: String! imageUrls: [String!]!): JobPost!
+  addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! location: String estimatedSubtotal: Decimal currency: String! imageUrls: [String!]!): JobPost!
   
   "Submits a bid for a specific job post."
   submitBid(tradesmanProfileId: UUID! jobPostId: UUID! subtotal: Decimal! currency: String! comment: String): Bid!

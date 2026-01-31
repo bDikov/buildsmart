@@ -35,7 +35,7 @@ public class MutationType : ObjectType<Mutation>
             .Description("Creates a new project for a homeowner.")
             .Authorize(roles: new[] { "Homeowner" });
 
-        descriptor.Field(m => m.AddJobToProject(default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.AddJobToProject(default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Adds a sub-job to a project using the Wizard output.")
             .Authorize(roles: new[] { "Homeowner" });
 

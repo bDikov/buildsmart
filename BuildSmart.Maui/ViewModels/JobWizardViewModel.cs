@@ -23,10 +23,16 @@ public partial class JobWizardViewModel : ObservableObject
     private string _projectDescription = string.Empty;
 
     [ObservableProperty]
+    private string _projectLocation = string.Empty;
+
+    [ObservableProperty]
     private bool _titleHasError;
 
     [ObservableProperty]
     private bool _descriptionHasError;
+
+    [ObservableProperty]
+    private bool _locationHasError;
 
     [ObservableProperty]
     private bool _categorySelectionHasError;
@@ -96,10 +102,11 @@ public partial class JobWizardViewModel : ObservableObject
         {
             TitleHasError = string.IsNullOrWhiteSpace(ProjectTitle);
             DescriptionHasError = string.IsNullOrWhiteSpace(ProjectDescription);
+            LocationHasError = string.IsNullOrWhiteSpace(ProjectLocation);
 
-            if (TitleHasError || DescriptionHasError)
+            if (TitleHasError || DescriptionHasError || LocationHasError)
             {
-                await Shell.Current.DisplayAlert("Required", "Please enter a project title and description.", "OK");
+                await Shell.Current.DisplayAlert("Required", "Please enter a project title, description, and location.", "OK");
                 return;
             }
         }
@@ -255,6 +262,7 @@ public partial class JobWizardViewModel : ObservableObject
                     selectedCategory.Category.Id,
                     selectedCategory.Category.Name, // Use category name for the job title
                     answersJson,
+                    ProjectLocation,
                     null, "USD", new List<string>()
                 );
             }

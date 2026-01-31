@@ -25,6 +25,9 @@
             <Label Text="Project Title" FontSize="18" FontAttributes="Bold" TextColor="{Binding TitleHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Entry Text="{Binding ProjectTitle}" Placeholder="e.g., Kitchen Remodel" Margin="0,0,0,10"/>
             
+            <Label Text="Location" FontSize="18" FontAttributes="Bold" TextColor="{Binding LocationHasError, Converter={StaticResource ErrorColorConverter}}"/>
+            <Entry Text="{Binding ProjectLocation}" Placeholder="e.g., New York, NY" Margin="0,0,0,10"/>
+
             <Label Text="Description" FontSize="18" FontAttributes="Bold" TextColor="{Binding DescriptionHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Editor Text="{Binding ProjectDescription}" HeightRequest="100" Placeholder="Describe your project..." />
 
