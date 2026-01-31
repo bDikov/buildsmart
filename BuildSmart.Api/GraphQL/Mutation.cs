@@ -19,10 +19,10 @@ public class Mutation
 	}
 
 	public async Task<string> Login(
-        string email, 
-        string password, 
-        [Service] IUnitOfWork unitOfWork, 
-        [Service] IConfiguration configuration)
+		string email,
+		string password,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IConfiguration configuration)
 	{
 		var user = await unitOfWork.Users.GetByEmailAsync(email);
 
@@ -40,7 +40,7 @@ public class Mutation
 		{
 			throw new GraphQLException(new Error("Invalid credentials", "AUTH_INVALID_CREDENTIALS"));
 		}
-        
+
 		var issuer = configuration["Jwt:Issuer"];
 		var audience = configuration["Jwt:Audience"];
 		var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]!);
@@ -63,6 +63,7 @@ public class Mutation
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		return tokenHandler.WriteToken(token);
 	}
+
 	public async Task<User> RegisterUser(
 		string firstName,
 		string lastName,
@@ -71,6 +72,19 @@ public class Mutation
 		[Service] IAuthService authService)
 	{
 		return await authService.RegisterUserAsync(firstName, lastName, email, password);
+	}
+
+	[Authorize]
+	public async Task<User> UpdateUserProfile(
+		Guid userId,
+		string firstName,
+		string lastName,
+		string? bio,
+		string? location,
+		string? profilePictureUrl,
+		[Service] IAuthService authService)
+	{
+		return await authService.UpdateUserProfileAsync(userId, firstName, lastName, bio, location, profilePictureUrl);
 	}
 
 	public async Task<Booking> CreateBooking(
@@ -178,59 +192,59 @@ public class Mutation
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
-	    public async Task<ServiceCategory> UpdateCategoryStatus(
-	        Guid categoryId, 
-	        CategoryStatus newStatus, 
-	        [Service] IUnitOfWork unitOfWork)
-	    {
-	        var category = await unitOfWork.ServiceCategories.GetByIdAsync(categoryId) 
-	            ?? throw new GraphQLException("Category not found.");
-	
-	        category.Status = newStatus;
-	        unitOfWork.ServiceCategories.Update(category);
-	        await unitOfWork.SaveChangesAsync();
-	        return category;
-	    }
-	
-    [Authorize(Roles = new[] { "Admin" })]
-    public async Task<ServiceCategory> SaveCategory(
-        Guid? id,
-        string name,
-        string? description,
-        bool isGlobal,
-        string templateStructure,
-        CategoryStatus? status,
-        [Service] IUnitOfWork unitOfWork)
-    {
-        ServiceCategory category;
-        if (id.HasValue && id.Value != Guid.Empty)
-        {
-            // Update existing
-            category = await unitOfWork.ServiceCategories.GetByIdAsync(id.Value) ?? throw new GraphQLException("Category not found.");
-            category.Name = name;
-            category.Description = description;
-            category.IsGlobal = isGlobal;
-            category.TemplateStructure = templateStructure;
-            if (status.HasValue)
-            {
-                category.Status = status.Value;
-            }
-            unitOfWork.ServiceCategories.Update(category);
-        }
-        else
-        {
-            // Create new
-            category = new ServiceCategory
-            {
-                Name = name,
-                Description = description,
-                IsGlobal = isGlobal,
-                TemplateStructure = templateStructure,
-                Status = status ?? CategoryStatus.Draft
-            };
-            await unitOfWork.ServiceCategories.AddAsync(category);
-        }
-        await unitOfWork.SaveChangesAsync();
-        return category;
-    }
+	public async Task<ServiceCategory> UpdateCategoryStatus(
+			Guid categoryId,
+			CategoryStatus newStatus,
+			[Service] IUnitOfWork unitOfWork)
+	{
+		var category = await unitOfWork.ServiceCategories.GetByIdAsync(categoryId)
+			?? throw new GraphQLException("Category not found.");
+
+		category.Status = newStatus;
+		unitOfWork.ServiceCategories.Update(category);
+		await unitOfWork.SaveChangesAsync();
+		return category;
 	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<ServiceCategory> SaveCategory(
+		Guid? id,
+		string name,
+		string? description,
+		bool isGlobal,
+		string templateStructure,
+		CategoryStatus? status,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		ServiceCategory category;
+		if (id.HasValue && id.Value != Guid.Empty)
+		{
+			// Update existing
+			category = await unitOfWork.ServiceCategories.GetByIdAsync(id.Value) ?? throw new GraphQLException("Category not found.");
+			category.Name = name;
+			category.Description = description;
+			category.IsGlobal = isGlobal;
+			category.TemplateStructure = templateStructure;
+			if (status.HasValue)
+			{
+				category.Status = status.Value;
+			}
+			unitOfWork.ServiceCategories.Update(category);
+		}
+		else
+		{
+			// Create new
+			category = new ServiceCategory
+			{
+				Name = name,
+				Description = description,
+				IsGlobal = isGlobal,
+				TemplateStructure = templateStructure,
+				Status = status ?? CategoryStatus.Draft
+			};
+			await unitOfWork.ServiceCategories.AddAsync(category);
+		}
+		await unitOfWork.SaveChangesAsync();
+		return category;
+	}
+}

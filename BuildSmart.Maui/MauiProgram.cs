@@ -25,8 +25,11 @@ public static class MauiProgram
 
 		// Configure StrawberryShake GraphQL Client
 
-		builder.Services.AddSingleton<IAuthService, AuthService>();
-		builder.Services.AddTransient<AuthHeaderHandler>();
+		        builder.Services.AddSingleton<IMediaPicker>(MediaPicker.Default);
+		        builder.Services.AddSingleton<IFilePicker>(FilePicker.Default); // Good practice to add commonly used essentials
+		
+		        // Services
+		        builder.Services.AddSingleton<IAuthService, AuthService>();		builder.Services.AddTransient<AuthHeaderHandler>();
 		builder.Services.AddTransient<LoggingHandler>();
 
 		// Register Strawberry Shake with fluent configuration
@@ -65,6 +68,9 @@ public static class MauiProgram
 		builder.Services.AddTransient<JobWizardPage>();
 		builder.Services.AddTransient<JobWizardViewModel>();
 
+        builder.Services.AddTransient<UserProfilePage>();
+        builder.Services.AddTransient<UserProfileViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
 		builder.Services.AddTransient<AppShell>();
@@ -83,6 +89,7 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
 		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
+        Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
 		builder.Logging.AddDebug();
 
 		return builder.Build();

@@ -1,4 +1,5 @@
 using BuildSmart.Maui.Services;
+using BuildSmart.Maui.Views;
 
 namespace BuildSmart.Maui;
 
@@ -16,7 +17,8 @@ public partial class AdminShell : Shell
 
 	private async void OnProfileSettingsClicked(object sender, EventArgs e)
 	{
-		await DisplayAlert("Profile Settings", "Profile settings coming soon!", "OK");
+		Shell.Current.FlyoutIsPresented = false;
+		await Shell.Current.GoToAsync(nameof(UserProfilePage));
 	}
 
 	private async void OnLogoutClicked(object sender, EventArgs e)

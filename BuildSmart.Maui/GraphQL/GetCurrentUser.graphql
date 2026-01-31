@@ -6,5 +6,8 @@ query GetCurrentUser {
     email
     phoneNumber
     role
+    bio
+    location
+    profilePictureUrl
   }
 }

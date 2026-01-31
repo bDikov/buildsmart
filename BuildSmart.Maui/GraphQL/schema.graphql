@@ -23,6 +23,8 @@ type Mutation {
   login(email: String! password: String!): String!
   "Creates a new user in the system."
   registerUser(firstName: String! lastName: String! email: String! password: String!): User!
+  "Updates the user's profile information."
+  updateUserProfile(userId: UUID!, firstName: String!, lastName: String!, bio: String, location: String, profilePictureUrl: String): User!
   "Creates a new service booking request."
   createBooking(homeownerId: UUID! tradesmanProfileId: UUID! requestedDate: DateTime! jobDescription: String!): Booking!
   "Submits a review and updates the tradesman's average rating."
