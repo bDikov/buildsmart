@@ -17,6 +17,17 @@ public class QueryType : ObjectType<Query>
 		descriptor.Field(q => q.GetCurrentUser(default!, default!))
 			.Description("Gets the currently authenticated user.")
 			.Type<UserType>()
-			.Authorize(roles: new[] { "Homeowner", "Tradesman", "Admin" }); // Explicitly authorize for these roles
+			.Authorize(roles: new[] { "Homeowner", "Tradesman", "Admin" });
+
+        descriptor.Field(q => q.GetServiceCategories(default!))
+            .Description("Gets a list of all active service categories.");
+
+        descriptor.Field(q => q.GetAllServiceCategories(default!))
+            .Description("Gets all service categories, regardless of status. (Admin only)")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(q => q.GetMyProjects(default!, default!))
+            .Description("Gets the projects created by the authenticated homeowner.")
+            .Authorize(roles: new[] { "Homeowner" });
 	}
 }

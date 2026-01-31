@@ -58,9 +58,18 @@ public class JobPost : BaseEntity
     
     public void Publish()
     {
-        if (Status == JobPostStatus.Draft)
+        if (Status == JobPostStatus.Draft || Status == JobPostStatus.UnderReview)
         {
             Status = JobPostStatus.Open;
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void SubmitForReview()
+    {
+        if (Status == JobPostStatus.Draft)
+        {
+            Status = JobPostStatus.UnderReview;
             UpdatedAt = DateTime.UtcNow;
         }
     }

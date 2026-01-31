@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:Class="BuildSmart.Maui.Views.MyProjectsPage"
+             x:DataType="vm:MyProjectsViewModel"
+             Title="My Projects">
+
+    <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadProjectsCommand}">
+        <Grid>
+            <!-- Empty State -->
+            <VerticalStackLayout IsVisible="{Binding IsEmpty}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                <Label Text="You haven't posted any projects yet." HorizontalOptions="Center" TextColor="Gray" />
+                <Button Text="Create Project" Command="{Binding CreateProjectCommand}" />
+            </VerticalStackLayout>
+
+            <!-- Projects List -->
+            <CollectionView ItemsSource="{Binding Projects}" IsVisible="{Binding IsEmpty, Converter={StaticResource InverseBoolConverter}}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="15" Margin="10,5" CornerRadius="10" BorderColor="LightGray">
+                            <VerticalStackLayout Spacing="5">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Grid.Column="1" Text="{Binding Status}" FontSize="12" TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+                                </Grid>
+                                
+                                <Label Text="{Binding Description}" MaxLines="2" LineBreakMode="TailTruncation" TextColor="Gray" />
+                                
+                                <BoxView HeightRequest="1" Color="LightGray" Margin="0,5" />
+                                
+                                <Label Text="Jobs:" FontSize="12" FontAttributes="Bold" />
+                                <StackLayout BindableLayout.ItemsSource="{Binding JobPosts}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="*, Auto" Padding="0,2">
+                                                <Label Grid.Column="0" Text="{Binding ServiceCategory.Name}" FontSize="14" />
+                                                <Label Grid.Column="1" Text="{Binding Status}" FontSize="12" TextColor="Orange" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </StackLayout>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </RefreshView>
+</ContentPage>

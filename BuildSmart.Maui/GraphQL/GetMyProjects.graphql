@@ -1,0 +1,22 @@
+query GetMyProjects {
+  myProjects {
+    id
+    title
+    description
+    status
+    createdAt
+    jobPosts {
+      id
+      title
+      description
+      status
+      estimatedBudget {
+        total
+        currency
+      }
+      serviceCategory {
+        name
+      }
+    }
+  }
+}

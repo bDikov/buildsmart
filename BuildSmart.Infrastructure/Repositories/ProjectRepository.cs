@@ -25,6 +25,7 @@ public class ProjectRepository : IProjectRepository
         return await _context.Projects
             .Where(p => p.HomeownerId == homeownerId)
             .Include(p => p.JobPosts)
+                .ThenInclude(jp => jp.ServiceCategory)
             .ToListAsync();
     }
 

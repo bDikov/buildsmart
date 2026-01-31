@@ -13,6 +13,13 @@
             Route="FeedPage" />
     </FlyoutItem>
 
+    <FlyoutItem Title="My Projects" Icon="dotnet_bot.png">
+        <ShellContent
+            Title="My Projects"
+            ContentTemplate="{DataTemplate views:MyProjectsPage}"
+            Route="MyProjectsPage" />
+    </FlyoutItem>
+
     <Shell.FlyoutFooter>
         <VerticalStackLayout Padding="15" Spacing="5">
             <BoxView HeightRequest="1" Color="LightGray" Margin="0,0,0,10" />

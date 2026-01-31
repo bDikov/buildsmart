@@ -61,6 +61,8 @@ public class JobPostService : IJobPostService
             UpdatedAt = DateTime.UtcNow
         };
 
+        jobPost.SubmitForReview(); // Set status to UnderReview
+
         // Note: We need to handle the HomeownerProfileId correctly.
         // Usually, a User has a HomeownerProfile.
         var homeowner = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId);

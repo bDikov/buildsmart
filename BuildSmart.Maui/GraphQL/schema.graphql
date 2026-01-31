@@ -13,6 +13,8 @@ type Query {
   serviceCategories: [ServiceCategory!]!
   "Gets all service categories, regardless of status. (Admin only)"
   allServiceCategories: [ServiceCategory!]!
+  "Gets the projects created by the authenticated homeowner."
+  myProjects: [Project!]!
 }
 
 "The root mutation object."
@@ -226,6 +228,7 @@ enum ProjectStatus {
 
 enum JobPostStatus {
     DRAFT
+    UNDER_REVIEW
     OPEN
     BIDDING_CLOSED
     CONTRACTED

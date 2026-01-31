@@ -51,7 +51,8 @@ public partial class Program
 		builder.Services.AddScoped<ITradesmanProfileRepository, TradesmanProfileRepository>();
 		builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 		builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-		builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>(); // Corrected line
+		builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+        builder.Services.AddScoped<IProjectRepository, ProjectRepository>(); // Added ProjectRepository registration
 
 		// Add Application Services (Business Logic)
 		builder.Services.AddScoped<IBookingService, BookingService>();

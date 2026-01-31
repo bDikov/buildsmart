@@ -268,7 +268,7 @@ public partial class JobWizardViewModel : ObservableObject
             }
 
             await Shell.Current.DisplayAlert("Success", "Project posted with all selected jobs!", "OK");
-            await Shell.Current.GoToAsync("//FeedPage");
+            await Shell.Current.GoToAsync("//MyProjectsPage");
         }
         catch (Exception ex)
         {
