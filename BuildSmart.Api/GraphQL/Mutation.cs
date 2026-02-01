@@ -148,6 +148,36 @@ public class Mutation
 		return await jobPostService.CreateProjectAsync(homeownerId, title, description);
 	}
 
+    [Authorize]
+    public async Task<bool> DeleteProject(
+        Guid projectId,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IUnitOfWork unitOfWork)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new GraphQLException("Project not found.");
+        }
+
+        // Security Check: Ensure the user owns the project or is an Admin
+        var isAdmin = claimsPrincipal.IsInRole(UserRoleTypes.Admin.ToString());
+        if (!isAdmin && project.HomeownerId != userId)
+        {
+            throw new GraphQLException(new Error("You do not have permission to delete this project.", "AUTH_NOT_AUTHORIZED"));
+        }
+        
+        await unitOfWork.Projects.DeleteAsync(projectId);
+        await unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
 	public async Task<JobPost> AddJobToProject(
 		Guid projectId,
 		Guid categoryId,

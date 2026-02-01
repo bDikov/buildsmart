@@ -52,6 +52,9 @@ type Mutation {
 
   "Updates the status of a service category. (Admin only)"
   updateCategoryStatus(categoryId: UUID!, newStatus: CategoryStatus!): ServiceCategory!
+
+  "Deletes a project by ID."
+  deleteProject(projectId: UUID!): Boolean!
 }
 
 "Represents the specific profile for a tradesman."

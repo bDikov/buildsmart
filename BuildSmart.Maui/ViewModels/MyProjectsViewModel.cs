@@ -84,4 +84,43 @@ public partial class MyProjectsViewModel : ObservableObject
                 { "Project", project }
             });
     }
+
+    [RelayCommand]
+    private async Task DeleteProjectAsync(IGetMyProjects_MyProjects project)
+    {
+        if (project == null) return;
+
+        bool confirm = await Shell.Current.DisplayAlert("Delete Project", $"Are you sure you want to delete '{project.Title}'?", "Yes", "No");
+        if (!confirm) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.DeleteProject.ExecuteAsync(project.Id);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors.First().Message, "OK");
+                return;
+            }
+
+            if (result.Data?.DeleteProject == true)
+            {
+                Projects.Remove(project);
+                IsEmpty = !Projects.Any();
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Error", "Failed to delete project.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }

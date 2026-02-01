@@ -38,4 +38,13 @@ public class ProjectRepository : IProjectRepository
     {
         _context.Projects.Update(project);
     }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var project = await _context.Projects.FindAsync(id);
+        if (project != null)
+        {
+            _context.Projects.Remove(project);
+        }
+    }
 }
