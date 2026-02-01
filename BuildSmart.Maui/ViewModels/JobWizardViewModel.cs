@@ -257,7 +257,7 @@ public partial class JobWizardViewModel : ObservableObject
             foreach (var selectedCategory in selected)
             {
                 var answersJson = JsonSerializer.Serialize(WizardAnswers);
-                await _apiClient.AddJobToProject.ExecuteAsync(
+                var jobResult = await _apiClient.AddJobToProject.ExecuteAsync(
                     projectId,
                     selectedCategory.Category.Id,
                     selectedCategory.Category.Name, // Use category name for the job title
@@ -265,6 +265,12 @@ public partial class JobWizardViewModel : ObservableObject
                     ProjectLocation,
                     null, "USD", new List<string>()
                 );
+
+                if (jobResult.Errors.Count > 0)
+                {
+                    var msg = string.Join(", ", jobResult.Errors.Select(e => e.Message));
+                    await Shell.Current.DisplayAlert("Job Creation Failed", $"Failed to add job for {selectedCategory.Category.Name}: {msg}", "OK");
+                }
             }
 
             await Shell.Current.DisplayAlert("Success", "Project posted with all selected jobs!", "OK");

@@ -82,7 +82,18 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 
 **IMPORTANT:** The Gemini agent is configured to **never** execute migration commands automatically.
 
-#### Package Manager Console (Visual Studio)
+### Git and Version Control
+
+**STRICT RULE:** The Gemini agent must **NEVER EVER** execute `git add`, `git commit`, or `git push` commands unless the user explicitly gives a specific instruction to do so and then confirms it. The user prefers to manage version control manually through Visual Studio.
+
+### Verification Protocol
+
+**ALWAYS RUN BUILD:** When modifying code to fix errors or add features, the agent must **execute `dotnet build`** immediately after the changes to verify them. Do not rely solely on reading previous log files. Active verification is required.
+
+## Domain Model Changes
+*   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
+*   **JobPost**: Fixed `HomeownerProfileId` mapping in `JobPostService` to prevent FK violations.
+*   **GraphQL Schema**: Aligned `JobPostStatus` and other Enums to use `UPPER_CASE` in `schema.graphql` to match HotChocolate's default server serialization (`UNDER_REVIEW`).
 If using the Package Manager Console, use these commands (Set `BuildSmart.Infrastructure` as Default Project):
 ```powershell
 Add-Migration <MigrationName> -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api

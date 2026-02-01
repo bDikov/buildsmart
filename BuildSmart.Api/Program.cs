@@ -43,7 +43,7 @@ public partial class Program
 		// Add DbContext and PostgreSQL Connection
 		builder.Services.AddDbContext<AppDbContext>(options =>
 			options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly("BuildSmart.Infrastructure")));
+				b => b.MigrationsAssembly("BuildSmart.Infrastructure")));
 
 		// Add Repositories and UnitOfWork
 		builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -52,13 +52,13 @@ public partial class Program
 		builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 		builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 		builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
-        builder.Services.AddScoped<IProjectRepository, ProjectRepository>(); // Added ProjectRepository registration
+		builder.Services.AddScoped<IProjectRepository, ProjectRepository>(); // Added ProjectRepository registration
 
 		// Add Application Services (Business Logic)
 		builder.Services.AddScoped<IBookingService, BookingService>();
 		builder.Services.AddScoped<ITradesmanProfileService, TradesmanProfileService>();
 		builder.Services.AddScoped<IReviewService, ReviewService>();
-        builder.Services.AddScoped<IJobPostService, JobPostService>();
+		builder.Services.AddScoped<IJobPostService, JobPostService>();
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -72,8 +72,9 @@ public partial class Program
 				ValidateAudience = true,
 				ValidateLifetime = true,
 				ValidateIssuerSigningKey = true,
-				                ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
-				                ValidAudience = builder.Configuration["Jwt:Audience"]!,				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+				ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
+				ValidAudience = builder.Configuration["Jwt:Audience"]!,
+				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
 				RoleClaimType = ClaimTypes.Role // Explicitly set the role claim type
 			};
 		})
@@ -131,10 +132,10 @@ public partial class Program
 		// Add GraphQL Services (Hot Chocolate)
 		builder.Services
 			.AddGraphQLServer()
-			.AddQueryType<QueryType>()
-			.AddMutationType<MutationType>()
-			.AddType<TradesmanProfileType>()
-            .AddType<TradesmanSkillType>() // Added
+	.AddQueryType<QueryType>()
+	.AddMutationType<MutationType>()
+	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
+			.AddType<TradesmanSkillType>() // Added
 			.AddType<UserType>()
 			.AddType<BookingType>()
 			.AddType<ReviewType>()
@@ -155,27 +156,27 @@ public partial class Program
 
 		// Add other services like CORS, etc.
 
-		        var app = builder.Build();
-		
-		        // Apply migrations and seed data
-		        using (var scope = app.Services.CreateScope())
-		        {
-		            var services = scope.ServiceProvider;
-		            try
-		            {
-		                var context = services.GetRequiredService<AppDbContext>();
-		                context.Database.Migrate(); // Apply any pending migrations
-		                await context.SeedAdminUser(); // Seed the admin user
-		                await context.SeedHomeownerUser(); // Seed the homeowner user
-		            }
-		            catch (Exception ex)
-		            {
-		                var logger = services.GetRequiredService<ILogger<Program>>();
-		                logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-		            }
-		        }
-		
-		        // --- 2. Configure the HTTP request pipeline ---
+		var app = builder.Build();
+
+		// Apply migrations and seed data
+		using (var scope = app.Services.CreateScope())
+		{
+			var services = scope.ServiceProvider;
+			try
+			{
+				var context = services.GetRequiredService<AppDbContext>();
+				context.Database.Migrate(); // Apply any pending migrations
+				await context.SeedAdminUser(); // Seed the admin user
+				await context.SeedHomeownerUser(); // Seed the homeowner user
+			}
+			catch (Exception ex)
+			{
+				var logger = services.GetRequiredService<ILogger<Program>>();
+				logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+			}
+		}
+
+		// --- 2. Configure the HTTP request pipeline ---
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseDeveloperExceptionPage();

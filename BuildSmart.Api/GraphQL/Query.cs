@@ -1,5 +1,6 @@
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Infrastructure.Persistence;
 using HotChocolate.Authorization;
 using System.Security.Claims;
 
@@ -43,16 +44,29 @@ public class Query
 		[Service] IProjectRepository projectRepository)
 	{
 		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-        Console.WriteLine($"[GetMyProjects] User Claim: {userIdClaim?.Value}");
-
-		if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
-            Console.WriteLine("[GetMyProjects] Failed to parse User ID.");
-			return Enumerable.Empty<Project>();
+			throw new GraphQLException("Invalid user ID in token.");
 		}
 
-        var projects = await projectRepository.GetProjectsByHomeownerAsync(userId);
-        Console.WriteLine($"[GetMyProjects] Found {projects.Count()} projects for user {userId}.");
+		var projects = await projectRepository.GetProjectsByHomeownerAsync(userId);
+		Console.WriteLine($"[GetMyProjects] Found {projects.Count()} projects for user {userId}.");
+		foreach (var p in projects)
+		{
+			Console.WriteLine($" - Project {p.Id}: {p.Title}, Jobs: {p.JobPosts?.Count ?? 0}");
+		}
 		return projects;
 	}
-}
+
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
+	public IQueryable<JobPost> GetAllJobPosts([Service] AppDbContext context) => context.JobPosts;
+
+	        [UseProjection]
+
+	        [UseFiltering]
+
+	        [UseSorting]
+
+	        public IQueryable<Project> GetAllProjects([Service] AppDbContext context) => context.Projects;}

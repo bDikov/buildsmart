@@ -2,12 +2,14 @@ using BuildSmart.Maui.GraphQL;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using BuildSmart.Maui.Views;
 
 namespace BuildSmart.Maui.ViewModels;
 
 public partial class MyProjectsViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private bool _isFirstLoad = true;
 
     [ObservableProperty]
     private ObservableCollection<IGetMyProjects_MyProjects> _projects = new();
@@ -26,7 +28,7 @@ public partial class MyProjectsViewModel : ObservableObject
     [RelayCommand]
     private async Task CreateProjectAsync()
     {
-        await Shell.Current.GoToAsync(nameof(Views.JobWizardPage));
+        await Shell.Current.GoToAsync(nameof(JobWizardPage));
     }
 
     [RelayCommand]
@@ -49,21 +51,37 @@ public partial class MyProjectsViewModel : ObservableObject
             Projects.Clear();
             if (result.Data?.MyProjects != null)
             {
-                foreach (var project in result.Data.MyProjects)
+                var sortedProjects = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).ToList();
+                foreach (var project in sortedProjects)
                 {
                     Projects.Add(project);
                 }
-            }
 
-            IsEmpty = Projects.Count == 0;
+                IsEmpty = !Projects.Any();
+
+                // Auto-navigation removed as per user request to see list first
+            }
+            else 
+            {
+                 IsEmpty = true;
+            }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Error", $"Unexpected error: {ex.Message}", "OK");
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task GoToDetails(IGetMyProjects_MyProjects project)
+    {
+            await Shell.Current.GoToAsync(nameof(ProjectDetailPage), new Dictionary<string, object>
+            {
+                { "Project", project }
+            });
     }
 }

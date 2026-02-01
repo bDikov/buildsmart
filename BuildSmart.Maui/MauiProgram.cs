@@ -74,6 +74,9 @@ public static class MauiProgram
         builder.Services.AddTransient<MyProjectsPage>();
         builder.Services.AddTransient<MyProjectsViewModel>();
 
+        builder.Services.AddTransient<ProjectDetailPage>();
+        builder.Services.AddTransient<ProjectDetailViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
 		builder.Services.AddTransient<AppShell>();
@@ -94,6 +97,7 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
         Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
         Routing.RegisterRoute(nameof(MyProjectsPage), typeof(MyProjectsPage));
+        Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
 		builder.Logging.AddDebug();
 
 		return builder.Build();

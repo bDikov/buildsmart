@@ -46,11 +46,19 @@ public class JobPostService : IJobPostService
         var category = await _unitOfWork.ServiceCategories.GetByIdAsync(categoryId)
             ?? throw new ArgumentException("Category not found");
 
+        // Note: We need to handle the HomeownerProfileId correctly.
+        // Usually, a User has a HomeownerProfile.
+        var homeowner = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId);
+        if (homeowner?.HomeownerProfile == null)
+        {
+             throw new InvalidOperationException("User does not have a Homeowner profile. Please complete your profile first.");
+        }
+
         var jobPost = new JobPost
         {
             ProjectId = projectId,
             ServiceCategoryId = categoryId,
-            HomeownerProfileId = project.HomeownerId, // Assuming HomeownerId is the same as ProfileId for now, but let's check
+            HomeownerProfileId = homeowner.HomeownerProfile.Id, // Set correct Profile ID
             Title = title,
             JobDetails = jobDetailsJson,
             Description = $"Job for {category.Name}: {title}", // Placeholder, ideally generated from Wizard
@@ -62,18 +70,6 @@ public class JobPostService : IJobPostService
         };
 
         jobPost.SubmitForReview(); // Set status to UnderReview
-
-        // Note: We need to handle the HomeownerProfileId correctly.
-        // Usually, a User has a HomeownerProfile.
-        var homeowner = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId);
-        if (homeowner?.HomeownerProfile == null)
-        {
-             throw new InvalidOperationException("User does not have a Homeowner profile. Please complete your profile first.");
-        }
-        else
-        {
-            jobPost.HomeownerProfileId = homeowner.HomeownerProfile.Id;
-        }
 
         await _unitOfWork.JobPosts.AddAsync(jobPost);
         await _unitOfWork.SaveChangesAsync();
