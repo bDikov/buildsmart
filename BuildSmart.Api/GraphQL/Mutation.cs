@@ -208,6 +208,31 @@ public class Mutation
 		);
 	}
 
+    public async Task<bool> SaveJobPostDraft(
+        Guid jobPostId,
+        string jobDetailsJson,
+        string? description,
+        string? location,
+        decimal? estimatedSubtotal,
+        string currency,
+        [Service] IJobPostService jobPostService)
+    {
+        Amount? budget = estimatedSubtotal.HasValue
+            ? Amount.Create(currency, estimatedSubtotal.Value)
+            : null;
+
+        await jobPostService.SaveDraftAsync(jobPostId, jobDetailsJson, description, location, budget);
+        return true;
+    }
+
+    public async Task<bool> SubmitJobPost(
+        Guid jobPostId,
+        [Service] IJobPostService jobPostService)
+    {
+        await jobPostService.SubmitJobPostAsync(jobPostId);
+        return true;
+    }
+
 	public async Task<Bid> SubmitBid(
 		Guid tradesmanProfileId,
 		Guid jobPostId,

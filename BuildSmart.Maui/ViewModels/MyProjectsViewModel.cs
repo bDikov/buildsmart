@@ -79,10 +79,20 @@ public partial class MyProjectsViewModel : ObservableObject
     [RelayCommand]
     private async Task GoToDetails(IGetMyProjects_MyProjects project)
     {
+        if (project.Status == ProjectStatus.Draft)
+        {
+            await Shell.Current.GoToAsync(nameof(JobWizardPage), new Dictionary<string, object>
+            {
+                { "ProjectId", project.Id }
+            });
+        }
+        else
+        {
             await Shell.Current.GoToAsync(nameof(ProjectDetailPage), new Dictionary<string, object>
             {
                 { "Project", project }
             });
+        }
     }
 
     [RelayCommand]

@@ -16,7 +16,23 @@ public class Project : BaseEntity
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
 
     // Overall status of the project
-    public ProjectStatus Status { get; private set; } = ProjectStatus.Active;
+    public ProjectStatus Status { get; private set; } = ProjectStatus.Draft;
+
+    public void SubmitForReview()
+    {
+        // Allow transition from Draft to UnderReview
+        if (Status == ProjectStatus.Draft)
+        {
+            Status = ProjectStatus.UnderReview;
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void Publish()
+    {
+        Status = ProjectStatus.Active;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public void Complete()
     {

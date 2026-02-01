@@ -16,12 +16,14 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *">
-        <!-- Progress Bar -->
-        <ProgressBar Progress="{Binding CurrentStep, Converter={StaticResource StepToProgressConverter}}" 
-                     Grid.Row="0" Margin="10" />
+        <!-- Progress Bar & Title -->
+        <VerticalStackLayout Grid.Row="0" Margin="10">
+            <Label Text="{Binding CurrentStepTitle}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" />
+            <ProgressBar Progress="{Binding CurrentStep, Converter={StaticResource StepToProgressConverter}}" Margin="0,5,0,0" />
+        </VerticalStackLayout>
 
         <!-- Step 0: Basic Info -->
-        <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=0}" Padding="20">
+        <StackLayout Grid.Row="1" IsVisible="{Binding IsInfoStepVisible}" Padding="20">
             <Label Text="Project Title" FontSize="18" FontAttributes="Bold" TextColor="{Binding TitleHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Entry Text="{Binding ProjectTitle}" Placeholder="e.g., Kitchen Remodel" Margin="0,0,0,10"/>
             
@@ -39,7 +41,7 @@
 
         <!-- Step 1: Category Selection -->
         <ScrollView Grid.Row="1" 
-                    IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=1}">
+                    IsVisible="{Binding IsCategoryStepVisible}">
             <VerticalStackLayout Padding="20" Spacing="10">
                 <Label Text="Select Job Categories" FontSize="20" FontAttributes="Bold" TextColor="{Binding CategorySelectionHasError, Converter={StaticResource ErrorColorConverter}}"/>
                 <CollectionView ItemsSource="{Binding SelectableCategories}"
@@ -59,11 +61,9 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Step 2: Dynamic Wizard -->
-        <ScrollView Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=2}">
+        <!-- Dynamic Questions Step (Reused for all question steps) -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding IsQuestionStepVisible}">
             <VerticalStackLayout Padding="20" Spacing="15">
-                <Label Text="Project Details" FontSize="20" HorizontalOptions="Center" FontAttributes="Bold"/>
-                
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Questions}" Spacing="15">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:WizardQuestionViewModel">
@@ -81,13 +81,13 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <Button Text="Review Project" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
+                <Button Text="Next" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
                 <Button Text="Back" Command="{Binding GoToPreviousStepCommand}" BackgroundColor="Transparent" TextColor="Gray"/>
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Step 3: Review -->
-        <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=3}" Padding="20">
+        <!-- Review Step -->
+        <StackLayout Grid.Row="1" IsVisible="{Binding IsReviewStepVisible}" Padding="20">
             <Label Text="Review &amp; Submit" FontSize="22" FontAttributes="Bold" />
             
             <Label Text="Title:" FontAttributes="Bold" Margin="0,10,0,0"/>

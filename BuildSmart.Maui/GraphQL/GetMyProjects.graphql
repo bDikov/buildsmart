@@ -9,13 +9,18 @@ query GetMyProjects {
       id
       title
       description
+      jobDetails
+      location
       status
       estimatedBudget {
         total
         currency
       }
       serviceCategory {
+        id
         name
+        isGlobal
+        templateStructure
       }
     }
   }

@@ -55,6 +55,12 @@ type Mutation {
 
   "Deletes a project by ID."
   deleteProject(projectId: UUID!): Boolean!
+
+  "Saves a draft of a job post without validation."
+  saveJobPostDraft(jobPostId: UUID! jobDetailsJson: String! description: String location: String estimatedSubtotal: Decimal currency: String!): Boolean!
+
+  "Validates and submits a job post for review."
+  submitJobPost(jobPostId: UUID!): Boolean!
 }
 
 "Represents the specific profile for a tradesman."
@@ -224,6 +230,8 @@ enum SkillVerificationStatus {
 }
 
 enum ProjectStatus {
+    DRAFT
+    UNDER_REVIEW
     ACTIVE
     COMPLETED
     ARCHIVED

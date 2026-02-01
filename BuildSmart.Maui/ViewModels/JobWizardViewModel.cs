@@ -7,282 +7,515 @@ using System.Text.Json.Nodes;
 
 namespace BuildSmart.Maui.ViewModels;
 
-public partial class JobWizardViewModel : ObservableObject
+public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 {
-    private readonly IBuildSmartApiClient _apiClient;
+	private readonly IBuildSmartApiClient _apiClient;
 
-    [ObservableProperty]
-    private ObservableCollection<SelectableCategoryViewModel> _selectableCategories = new();
+	// --- Steps & Visibility ---
+	private List<WizardStep> _wizardSteps = new();
 
-    private List<SelectableCategoryViewModel> _allCategories = new();
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(IsInfoStepVisible))]
+	[NotifyPropertyChangedFor(nameof(IsCategoryStepVisible))]
+	[NotifyPropertyChangedFor(nameof(IsQuestionStepVisible))]
+	[NotifyPropertyChangedFor(nameof(IsReviewStepVisible))]
+	[NotifyPropertyChangedFor(nameof(CurrentStepTitle))]
+	private int _currentStep = 0;
 
-    [ObservableProperty]
-    private string _projectTitle = string.Empty;
-    
-    [ObservableProperty]
-    private string _projectDescription = string.Empty;
+	public bool IsInfoStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Info;
+	public bool IsCategoryStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.CategorySelection;
+	public bool IsQuestionStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Questions;
+	public bool IsReviewStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Review;
 
-    [ObservableProperty]
-    private string _projectLocation = string.Empty;
+	public string CurrentStepTitle => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count ? _wizardSteps[CurrentStep].Title : "";
 
-    [ObservableProperty]
-    private bool _titleHasError;
+	// --- Data ---
+	[ObservableProperty]
+	private ObservableCollection<SelectableCategoryViewModel> _selectableCategories = new();
 
-    [ObservableProperty]
-    private bool _descriptionHasError;
+	private List<SelectableCategoryViewModel> _allCategories = new();
 
-    [ObservableProperty]
-    private bool _locationHasError;
+	[ObservableProperty]
+	private string _projectTitle = string.Empty;
 
-    [ObservableProperty]
-    private bool _categorySelectionHasError;
+	[ObservableProperty]
+	private string _projectDescription = string.Empty;
 
-    // This will be used in a later step for dynamic forms
-    public Dictionary<string, object> WizardAnswers { get; private set; } = new();
+	[ObservableProperty]
+	private string _projectLocation = string.Empty;
 
-    [ObservableProperty]
-    private ObservableCollection<WizardQuestionViewModel> _questions = new();
+	// Errors
+	[ObservableProperty] private bool _titleHasError;
 
-    [ObservableProperty]
-    private bool _isBusy;
+	[ObservableProperty] private bool _descriptionHasError;
+	[ObservableProperty] private bool _locationHasError;
+	[ObservableProperty] private bool _categorySelectionHasError;
 
-    [ObservableProperty]
-    private int _currentStep = 0;
+	// Answers Storage
+	// Key: QuestionId, Value: Answer
+	private Dictionary<string, string> _masterAnswerKey = new();
 
-    public JobWizardViewModel(IBuildSmartApiClient apiClient)
-    {
-        _apiClient = apiClient;
-        LoadCategoriesAsync();
-    }
+	[ObservableProperty]
+	private ObservableCollection<WizardQuestionViewModel> _questions = new();
 
-    [RelayCommand]
-    public async Task LoadCategoriesAsync()
-    {
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.GetServiceCategories.ExecuteAsync();
+	[ObservableProperty]
+	private bool _isBusy;
 
-            if (result.Errors.Count > 0)
-            {
-                var errorMessages = string.Join(", ", result.Errors.Select(e => e.Message));
-                await Shell.Current.DisplayAlert("GraphQL Error", errorMessages, "OK");
-            }
-            else if (result.Data?.ServiceCategories != null)
-            {
-                SelectableCategories.Clear();
-                _allCategories.Clear();
+	private Guid? _currentProjectId;
+	private Dictionary<Guid, Guid> _currentJobPostIds = new();
 
-                foreach (var cat in result.Data.ServiceCategories)
-                {
-                    var viewModel = new SelectableCategoryViewModel(cat);
-                    _allCategories.Add(viewModel);
+	// Legacy property for backward compatibility if needed, but we use _masterAnswerKey now
+	public Dictionary<string, object> WizardAnswers { get; private set; } = new();
 
-                    if (!cat.IsGlobal)
-                    {
-                        SelectableCategories.Add(viewModel);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", $"Failed to load categories: {ex.Message}", "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+	public JobWizardViewModel(IBuildSmartApiClient apiClient)
+	{
+		_apiClient = apiClient;
+		InitializeSteps();
+		LoadCategoriesAsync();
+	}
 
-    [RelayCommand]
-    public async Task GoToNextStep()
-    {
-        if (CurrentStep == 0)
-        {
-            TitleHasError = string.IsNullOrWhiteSpace(ProjectTitle);
-            DescriptionHasError = string.IsNullOrWhiteSpace(ProjectDescription);
-            LocationHasError = string.IsNullOrWhiteSpace(ProjectLocation);
+	private void InitializeSteps()
+	{
+		_wizardSteps.Clear();
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = "Basic Info" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
+		// Default placeholder
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
+	}
 
-            if (TitleHasError || DescriptionHasError || LocationHasError)
-            {
-                await Shell.Current.DisplayAlert("Required", "Please enter a project title, description, and location.", "OK");
-                return;
-            }
-        }
+	public void ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		if (query.ContainsKey("ProjectId"))
+		{
+			if (Guid.TryParse(query["ProjectId"].ToString(), out var projectId))
+			{
+				_currentProjectId = projectId;
+				MainThread.BeginInvokeOnMainThread(async () => await LoadExistingProjectAsync(projectId));
+			}
+		}
+	}
 
-        if (CurrentStep == 1)
-        {
-             if (!_selectableCategories.Any(c => c.IsSelected))
-             {
-                 CategorySelectionHasError = true;
-                 await Shell.Current.DisplayAlert("Required", "Please select at least one category.", "OK");
-                 return;
-             }
-             CategorySelectionHasError = false;
-             GenerateQuestions();
-        }
+	private async Task LoadExistingProjectAsync(Guid projectId)
+	{
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.GetMyProjects.ExecuteAsync();
+			if (result.Data?.MyProjects != null)
+			{
+				var project = result.Data.MyProjects.FirstOrDefault(p => p.Id == projectId);
+				if (project != null)
+				{
+					ProjectTitle = project.Title;
+					ProjectDescription = project.Description;
 
-        if (CurrentStep == 2)
-        {
-            // Reset errors first
-            foreach (var q in Questions) q.HasError = false;
+					var firstJob = project.JobPosts.FirstOrDefault();
+					if (firstJob != null)
+					{
+						ProjectLocation = firstJob.Location ?? "";
+					}
 
-            var missingQuestions = Questions.Where(q => q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
-            
-            if (missingQuestions.Any())
-            {
-                foreach (var q in missingQuestions)
-                {
-                    q.HasError = true;
-                }
-                
-                await Shell.Current.DisplayAlert("Required", "Please answer all required questions marked with (*).", "OK");
-                return;
-            }
-        }
+					var selectedCategoryIds = project.JobPosts.Select(j => j.ServiceCategory.Id).ToList();
 
-        // In a real app, you'd validate here, e.g., ensure at least one category is selected
-        CurrentStep++;
-    }
+					if (!_allCategories.Any())
+					{
+						await LoadCategoriesAsync();
+					}
 
-    private void GenerateQuestions()
-    {
-        Questions.Clear();
-        
-        // 1. Get Global Categories (Available in the full list loaded in LoadCategoriesAsync)
-        // We need to access the full list. Since SelectableCategories is just a view model wrapper, 
-        // we might need to store the raw data or check the properties.
-        // Assuming SelectableCategories was populated from All Service Categories.
-        
-        // However, LoadCategoriesAsync calls GetServiceCategories.ExecuteAsync().
-        // We updated that query to include 'isGlobal'.
-        
-        var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
-        var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
-        
-        // Combine: Global first, then Selected
-        // Avoid duplicates if a global category is also selected (though unlikely in UI if we filter)
-        var allApplicableCategories = globalCategories.Union(selectedCategories).ToList();
+					foreach (var cat in SelectableCategories)
+					{
+						if (selectedCategoryIds.Contains(cat.Category.Id))
+						{
+							cat.IsSelected = true;
+						}
+					}
 
-        foreach (var cat in allApplicableCategories)
-        {
-            if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
-            {
-                try
-                {
-                    var template = JsonNode.Parse(cat.Category.TemplateStructure);
-                    if (template?["questions"] is JsonArray qArray)
-                    {
-                        foreach (var qNode in qArray)
-                        {
-                            if (qNode is JsonObject qObj)
-                            {
-                                Questions.Add(new WizardQuestionViewModel
-                                {
-                                    Id = qObj["id"]?.GetValue<string>() ?? "",
-                                    Text = qObj["text"]?.GetValue<string>() ?? "",
-                                    Type = qObj["type"]?.GetValue<string>() ?? "text",
-                                    IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
-                                    CategoryName = cat.Category.Name
-                                });
-                            }
-                        }
-                    }
-                }
-                catch { /* Ignore parse errors */ }
-            }
-        }
-    }
+					_currentJobPostIds.Clear();
+					foreach (var job in project.JobPosts)
+					{
+						_currentJobPostIds[job.ServiceCategory.Id] = job.Id;
+					}
 
-    [RelayCommand]
-    public void GoToPreviousStep()
-    {
-        if (CurrentStep > 0) CurrentStep--;
-    }
+					// Generate Dynamic Steps based on loaded categories
+					GenerateDynamicSteps();
 
-    [RelayCommand]
-    public async Task SubmitProjectAsync()
-    {
-        if (IsBusy) return;
+					// Pre-fill answers
+					if (firstJob != null && !string.IsNullOrEmpty(firstJob.JobDetails))
+					{
+						try
+						{
+							var flatAnswers = JsonSerializer.Deserialize<Dictionary<string, string>>(firstJob.JobDetails);
+							if (flatAnswers != null)
+							{
+								foreach (var kvp in flatAnswers)
+								{
+									_masterAnswerKey[kvp.Key] = kvp.Value;
+								}
+							}
+						}
+						catch { /* Ignore legacy format */ }
+					}
 
-        // Validate Required Questions
-        var missingAnswers = Questions.Where(q => q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
-        if (missingAnswers.Any())
-        {
-            await Shell.Current.DisplayAlert("Required", "Please answer all required questions marked with (*).", "OK");
-            return;
-        }
+					// Move to the first Question step (Index 2) if categories present
+					if (selectedCategoryIds.Any() && _wizardSteps.Count > 2)
+					{
+						CurrentStep = 2;
+						LoadStepData(CurrentStep);
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", $"Failed to load draft: {ex.Message}", "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 
-        var selected = SelectableCategories.Where(c => c.IsSelected).ToList();
-        if (!selected.Any())
-        {
-            await Shell.Current.DisplayAlert("Error", "Please select at least one category.", "OK");
-            return;
-        }
+	[RelayCommand]
+	public async Task LoadCategoriesAsync()
+	{
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.GetServiceCategories.ExecuteAsync();
 
-        try
-        {
-            IsBusy = true;
+			if (result.Errors.Count > 0)
+			{
+				var errorMessages = string.Join(", ", result.Errors.Select(e => e.Message));
+				await Shell.Current.DisplayAlert("GraphQL Error", errorMessages, "OK");
+			}
+			else if (result.Data?.ServiceCategories != null)
+			{
+				SelectableCategories.Clear();
+				_allCategories.Clear();
 
-            var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-            if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null)
-            {
-                await Shell.Current.DisplayAlert("Error", "Please login first.", "OK");
-                return;
-            }
-            var userId = userResult.Data.CurrentUser.Id;
+				foreach (var cat in result.Data.ServiceCategories)
+				{
+					var viewModel = new SelectableCategoryViewModel(cat);
+					_allCategories.Add(viewModel);
 
-            var projectResult = await _apiClient.CreateProject.ExecuteAsync(userId, ProjectTitle, ProjectDescription);
-            if (projectResult.Errors.Count > 0)
-            {
-                 var errorMsg = string.Join("\n", projectResult.Errors.Select(e => e.Message));
-                 await Shell.Current.DisplayAlert("Error", $"Failed to create project: {errorMsg}", "OK");
-                 return;
-            }
-            var projectId = projectResult.Data.CreateProject.Id;
+					if (!cat.IsGlobal)
+					{
+						SelectableCategories.Add(viewModel);
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", $"Failed to load categories: {ex.Message}", "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 
-            // Prepare answers
-            WizardAnswers.Clear();
-            var dynamicAnswers = Questions.Select(q => new
-            {
-                id = q.Id,
-                question = q.Text,
-                answer = q.Answer
-            }).ToList();
-            
-            WizardAnswers["dynamicQuestions"] = dynamicAnswers;
+	[RelayCommand]
+	public async Task GoToNextStep()
+	{
+		if (CurrentStep >= _wizardSteps.Count) return;
 
-            // Loop and create a job for each selected category
-            foreach (var selectedCategory in selected)
-            {
-                var answersJson = JsonSerializer.Serialize(WizardAnswers);
-                var jobResult = await _apiClient.AddJobToProject.ExecuteAsync(
-                    projectId,
-                    selectedCategory.Category.Id,
-                    selectedCategory.Category.Name, // Use category name for the job title
-                    answersJson,
-                    ProjectLocation,
-                    null, "USD", new List<string>()
-                );
+		var currentStepType = _wizardSteps[CurrentStep].Type;
 
-                if (jobResult.Errors.Count > 0)
-                {
-                    var msg = string.Join(", ", jobResult.Errors.Select(e => e.Message));
-                    await Shell.Current.DisplayAlert("Job Creation Failed", $"Failed to add job for {selectedCategory.Category.Name}: {msg}", "OK");
-                }
-            }
+		if (currentStepType == WizardStepType.Info)
+		{
+			if (!ValidateInfoStep()) return;
+		}
+		else if (currentStepType == WizardStepType.CategorySelection)
+		{
+			if (!ValidateCategoryStep()) return;
 
-            await Shell.Current.DisplayAlert("Success", "Project posted with all selected jobs!", "OK");
-            await Shell.Current.GoToAsync("//MyProjectsPage");
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+			GenerateDynamicSteps();
+			await SaveDraftAsync();
+		}
+		else if (currentStepType == WizardStepType.Questions)
+		{
+			if (!ValidateQuestionsStep()) return;
+
+			// Save current questions to master key
+			foreach (var q in Questions)
+			{
+				if (!string.IsNullOrEmpty(q.Answer))
+					_masterAnswerKey[q.Id] = q.Answer;
+			}
+
+			await SaveDraftAsync();
+		}
+
+		if (CurrentStep < _wizardSteps.Count - 1)
+		{
+			CurrentStep++;
+			LoadStepData(CurrentStep);
+		}
+	}
+
+	[RelayCommand]
+	public void GoToPreviousStep()
+	{
+		if (CurrentStep > 0)
+		{
+			CurrentStep--;
+			LoadStepData(CurrentStep);
+		}
+	}
+
+	private void LoadStepData(int stepIndex)
+	{
+		var step = _wizardSteps[stepIndex];
+
+		// Always refresh questions if it's a question step
+		if (step.Type == WizardStepType.Questions)
+		{
+			Questions.Clear();
+			foreach (var q in step.Questions)
+			{
+				if (_masterAnswerKey.TryGetValue(q.Id, out var savedAns))
+				{
+					q.Answer = savedAns;
+				}
+				Questions.Add(q);
+			}
+		}
+	}
+
+	private void GenerateDynamicSteps()
+	{
+		// Keep first 2 steps (Info, Category)
+		var baseSteps = _wizardSteps.Take(2).ToList();
+		_wizardSteps.Clear();
+		_wizardSteps.AddRange(baseSteps);
+
+		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
+		var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+
+		// 1. Global Questions Step
+		var globalQuestions = ExtractQuestions(globalCategories);
+		if (globalQuestions.Any())
+		{
+			_wizardSteps.Add(new WizardStep
+			{
+				Type = WizardStepType.Questions,
+				Title = "General Questions",
+				Questions = globalQuestions
+			});
+		}
+
+		// 2. Specific Category Steps
+		foreach (var cat in selectedCategories)
+		{
+			var catQuestions = ExtractQuestions(new List<SelectableCategoryViewModel> { cat });
+			if (catQuestions.Any())
+			{
+				_wizardSteps.Add(new WizardStep
+				{
+					Type = WizardStepType.Questions,
+					Title = $"{cat.Category.Name} Questions",
+					Questions = catQuestions
+				});
+			}
+		}
+
+		// 3. Review Step
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
+	}
+
+	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
+	{
+		var list = new List<WizardQuestionViewModel>();
+		foreach (var cat in categories)
+		{
+			if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
+			{
+				try
+				{
+					var template = JsonNode.Parse(cat.Category.TemplateStructure);
+					if (template?["questions"] is JsonArray qArray)
+					{
+						foreach (var qNode in qArray)
+						{
+							if (qNode is JsonObject qObj)
+							{
+								list.Add(new WizardQuestionViewModel
+								{
+									Id = qObj["id"]?.GetValue<string>() ?? "",
+									Text = qObj["text"]?.GetValue<string>() ?? "",
+									Type = qObj["type"]?.GetValue<string>() ?? "text",
+									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
+									CategoryName = cat.Category.Name
+								});
+							}
+						}
+					}
+				}
+				catch { }
+			}
+		}
+		return list;
+	}
+
+	private bool ValidateInfoStep()
+	{
+		TitleHasError = string.IsNullOrWhiteSpace(ProjectTitle);
+		DescriptionHasError = string.IsNullOrWhiteSpace(ProjectDescription);
+		LocationHasError = string.IsNullOrWhiteSpace(ProjectLocation);
+
+		if (TitleHasError || DescriptionHasError || LocationHasError)
+		{
+			Shell.Current.DisplayAlert("Required", "Please enter a project title, description, and location.", "OK");
+			return false;
+		}
+		return true;
+	}
+
+	private bool ValidateCategoryStep()
+	{
+		if (!_selectableCategories.Any(c => c.IsSelected))
+		{
+			CategorySelectionHasError = true;
+			Shell.Current.DisplayAlert("Required", "Please select at least one category.", "OK");
+			return false;
+		}
+		CategorySelectionHasError = false;
+		return true;
+	}
+
+	private bool ValidateQuestionsStep()
+	{
+		var missingQuestions = Questions.Where(q => q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
+		if (missingQuestions.Any())
+		{
+			foreach (var q in missingQuestions) q.HasError = true;
+			Shell.Current.DisplayAlert("Required", "Please answer all required questions marked with (*).", "OK");
+			return false;
+		}
+		return true;
+	}
+
+	public async Task SaveDraftAsync()
+	{
+		if (IsBusy) return;
+		try
+		{
+			IsBusy = true;
+
+			if (_currentProjectId == null)
+			{
+				var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
+				if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
+				var userId = userResult.Data.CurrentUser.Id;
+
+				var projectResult = await _apiClient.CreateProject.ExecuteAsync(userId, ProjectTitle, ProjectDescription);
+				if (projectResult.Errors.Count > 0)
+				{
+					await Shell.Current.DisplayAlert("Error", "Failed to create project draft.", "OK");
+					return;
+				}
+				_currentProjectId = projectResult.Data.CreateProject.Id;
+			}
+
+			var selected = SelectableCategories.Where(c => c.IsSelected).ToList();
+
+			var answersJson = JsonSerializer.Serialize(_masterAnswerKey);
+
+			foreach (var cat in selected)
+			{
+				if (!_currentJobPostIds.ContainsKey(cat.Category.Id))
+				{
+					var jobResult = await _apiClient.AddJobToProject.ExecuteAsync(
+						_currentProjectId.Value,
+						cat.Category.Id,
+						cat.Category.Name,
+						answersJson,
+						ProjectLocation,
+						null, "USD", new List<string>()
+					);
+
+					if (jobResult.Data?.AddJobToProject != null)
+					{
+						_currentJobPostIds[cat.Category.Id] = jobResult.Data.AddJobToProject.Id;
+					}
+				}
+				else
+				{
+					var jobId = _currentJobPostIds[cat.Category.Id];
+					await _apiClient.SaveJobPostDraft.ExecuteAsync(
+						jobId,
+						answersJson,
+						ProjectDescription,
+						ProjectLocation,
+						null, "USD"
+					);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"Auto-save failed: {ex.Message}");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	public async Task SubmitProject()
+	{
+		if (IsBusy) return;
+
+		// Ensure everything is saved
+		await SaveDraftAsync();
+
+		if (_currentJobPostIds.Count == 0)
+		{
+			await Shell.Current.DisplayAlert("Error", "No jobs to submit.", "OK");
+			return;
+		}
+
+		try
+		{
+			IsBusy = true;
+			foreach (var jobId in _currentJobPostIds.Values)
+			{
+				var result = await _apiClient.SubmitJobPost.ExecuteAsync(jobId);
+				if (result.Errors.Count > 0)
+				{
+					var msg = string.Join("\n", result.Errors.Select(e => e.Message));
+					await Shell.Current.DisplayAlert("Submission Failed", msg, "OK");
+					return;
+				}
+			}
+
+			await Shell.Current.DisplayAlert("Success", "Project submitted for review!", "OK");
+			await Shell.Current.GoToAsync("//MyProjectsPage");
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	public class WizardStep
+	{
+		public WizardStepType Type { get; set; }
+		public string Title { get; set; } = string.Empty;
+		public List<WizardQuestionViewModel> Questions { get; set; } = new();
+	}
+
+	public enum WizardStepType
+	{
+		Info,
+		CategorySelection,
+		Questions,
+		Review
+	}
 }
