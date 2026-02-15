@@ -41,7 +41,17 @@ public class JobPostService : IJobPostService
         var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
             ?? throw new ArgumentException("Job post not found");
 
-        jobPost.ApproveScope(finalScope);
+        if (jobPost.Status == JobPostStatus.WaitingForAdminReview)
+        {
+            // Idempotency: If already waiting for admin, allow updating the text without throwing
+            jobPost.UserEditedScope = finalScope;
+            jobPost.Description = finalScope;
+            jobPost.UpdatedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            jobPost.ApproveScope(finalScope);
+        }
 
         _unitOfWork.JobPosts.Update(jobPost);
         await _unitOfWork.SaveChangesAsync();
@@ -54,16 +64,30 @@ public class JobPostService : IJobPostService
 
         if (approved)
         {
-            jobPost.AdminApproveScope();
-            jobPost.Publish(); // Sets timestamp if needed, but AdminApproveScope already sets to Open.
-            // TODO: Notify Tradesmen here
+            if (jobPost.Status == JobPostStatus.Open)
+            {
+                // Idempotent: Already approved
+                jobPost.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                jobPost.AdminApproveScope();
+                jobPost.Publish();
+            }
         }
         else
         {
-            jobPost.AdminRejectScope(feedback ?? "Rejected without feedback.");
+            if (jobPost.Status == JobPostStatus.Rejected)
+            {
+                // Idempotent: Already rejected, just update feedback
+                jobPost.AdminFeedback = feedback ?? "Rejected without feedback.";
+                jobPost.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                jobPost.AdminRejectScope(feedback ?? "Rejected without feedback.");
+            }
         }
-
-        jobPost.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.JobPosts.Update(jobPost);
         await _unitOfWork.SaveChangesAsync();

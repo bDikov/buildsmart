@@ -1,6 +1,7 @@
 using BuildSmart.Maui.GraphQL;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
 
 namespace BuildSmart.Maui.ViewModels;
 
@@ -28,31 +29,58 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
         {
             Job = job;
             EditableScope = job.GeneratedScope ?? string.Empty;
+            Console.WriteLine($"[ScopeReview] SUCCESS: Job loaded with ID: {Job.Id}");
+        }
+        else
+        {
+            Console.WriteLine("[ScopeReview] ERROR: Received invalid Job object or ID.");
         }
     }
 
     [RelayCommand]
     private async Task ApproveAsync()
     {
-        if (IsBusy || Job == null) return;
+        if (Job == null)
+        {
+            await Shell.Current.DisplayAlert("Error", "Job data is missing. Please go back and try again.", "OK");
+            return;
+        }
+
+        if (Job.Id == Guid.Empty)
+        {
+            await Shell.Current.DisplayAlert("Error", "Job ID is empty. This is a synchronization error. Please refresh your projects.", "OK");
+            return;
+        }
+
+        if (IsBusy) return;
 
         try
         {
             IsBusy = true;
-            var result = await _apiClient.ApproveJobScope.ExecuteAsync(Job.Id, EditableScope);
+            Console.WriteLine($"[ScopeReview] Sending Approve mutation for Job: {Job.Id}...");
+            
+            var result = await _apiClient.ApproveJobScope.ExecuteAsync(Job.Id, EditableScope ?? string.Empty);
 
             if (result.Errors.Count > 0)
             {
-                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                await Shell.Current.DisplayAlert("Server Error", result.Errors[0].Message, "OK");
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", "Scope approved and sent to Admin for final check.", "OK");
+            await Shell.Current.DisplayAlert("Success", "Scope approved and sent to Admin.", "OK");
             await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+            // Handle common transition errors gracefully
+            if (ex.Message.Contains("WaitingForAdminReview") || ex.Message.Contains("status OPEN"))
+            {
+                await Shell.Current.GoToAsync("..");
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("System Error", ex.Message, "OK");
+            }
         }
         finally
         {

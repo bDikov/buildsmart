@@ -3,39 +3,73 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels.Admin"
              xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
              x:Class="BuildSmart.Maui.Views.Admin.AdminJobReviewPage"
              x:DataType="vm:AdminJobReviewViewModel"
              Title="Job Scope Reviews">
 
-    <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadJobsCommand}">
-        <Grid>
-            <VerticalStackLayout IsVisible="{Binding IsEmpty}" VerticalOptions="Center" HorizontalOptions="Center">
-                <Label Text="No jobs pending review." TextColor="Gray" />
-            </VerticalStackLayout>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
-            <CollectionView ItemsSource="{Binding Jobs}" IsVisible="{Binding IsEmpty, Converter={StaticResource InverseBoolConverter}}">
+    <Grid RowDefinitions="*, Auto">
+        <!-- List of Jobs -->
+        <RefreshView Grid.Row="0" IsRefreshing="{Binding IsBusy}" Command="{Binding LoadJobsCommand}">
+            <CollectionView ItemsSource="{Binding Jobs}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="graphql:IGetJobsForReview_JobPostsForReview">
-                        <Frame Margin="10" Padding="15" BorderColor="LightGray">
-                            <VerticalStackLayout Spacing="5">
-                                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
-                                <Label Text="{Binding Project.Title}" FontSize="12" TextColor="Gray" />
-                                <Label Text="{Binding Project.Homeowner.FirstName, StringFormat='Owner: {0}'}" FontSize="12" />
+                        <Frame Margin="10,5" Padding="15" BorderColor="LightGray">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                    <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                                    <Label Text="{Binding Project.Homeowner.FirstName, StringFormat='Owner: {0}'}" FontSize="12" TextColor="Gray"/>
+                                </VerticalStackLayout>
                                 
-                                <BoxView HeightRequest="1" Color="LightGray" Margin="0,5" />
-                                
-                                <Label Text="Edited Scope:" FontAttributes="Bold" FontSize="14" />
-                                <Label Text="{Binding UserEditedScope}" FontSize="13" />
-
-                                <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,10,0,0">
-                                    <Button Grid.Column="0" Text="Approve" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=ApproveJobCommand}" CommandParameter="{Binding .}" BackgroundColor="Green" TextColor="White" />
-                                    <Button Grid.Column="1" Text="Reject" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=RejectJobCommand}" CommandParameter="{Binding .}" BackgroundColor="Red" TextColor="White" />
-                                </Grid>
-                            </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="Review" 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=ViewJobDetailsCommand}"
+                                        CommandParameter="{Binding .}"
+                                        HeightRequest="35" FontSize="12" />
+                            </Grid>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </Grid>
-    </RefreshView>
+        </RefreshView>
+
+        <!-- Selected Job Details Panel -->
+        <Frame Grid.Row="1" IsVisible="{Binding CurrentJobDetails.Count, Converter={StaticResource InverseBoolConverter}, ConverterParameter=Invert}" BackgroundColor="#F0F0F0" Padding="15" Margin="0" CornerRadius="20" HasShadow="True">
+            <ScrollView MaximumHeightRequest="400">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Review Job Scope" FontSize="18" FontAttributes="Bold" TextColor="Black" />
+                    
+                    <Label Text="Q&amp;A Context:" FontAttributes="Bold" FontSize="14" />
+                    <StackLayout BindableLayout.ItemsSource="{Binding CurrentJobDetails}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:QAPair">
+                                <VerticalStackLayout Margin="0,5">
+                                    <Label Text="{Binding Question}" FontSize="12" TextColor="Gray" FontAttributes="Italic" />
+                                    <Label Text="{Binding Answer}" FontSize="13" TextColor="Black" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
+
+                    <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
+
+                    <Label Text="User Edited Scope (To Approve):" FontAttributes="Bold" FontSize="14" />
+                    <!-- Binding to the selected job in the VM would be better, but we only have CurrentJobDetails list here. 
+                         We need the job object too. Let's add SelectedJob property to VM. -->
+                    <!-- For now, the actions are context-free but we need the ID. 
+                         I'll assume the VM tracks the 'SelectedJob' internally when ViewJobDetails is called. -->
+                    
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,20,0,0">
+                        <Button Grid.Column="0" Text="Approve" Command="{Binding ApproveJobCommand}" CommandParameter="{Binding SelectedJob}" BackgroundColor="Green" TextColor="White" />
+                        <Button Grid.Column="1" Text="Reject" Command="{Binding RejectJobCommand}" CommandParameter="{Binding SelectedJob}" BackgroundColor="Red" TextColor="White" />
+                    </Grid>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Frame>
+    </Grid>
 </ContentPage>

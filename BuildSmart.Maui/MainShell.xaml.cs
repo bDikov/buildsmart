@@ -16,6 +16,13 @@ public partial class MainShell : Shell
         _signalRService = signalRService;
 		InitializeComponent();
 
+        // Register Routes
+        Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
+        Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
+        Routing.RegisterRoute("scope_review", typeof(ScopeReviewPage));
+        Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
+        Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
+
         // Connect to SignalR
         MainThread.BeginInvokeOnMainThread(async () => await _signalRService.ConnectAsync());
 	}

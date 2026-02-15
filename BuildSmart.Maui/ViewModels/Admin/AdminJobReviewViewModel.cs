@@ -2,8 +2,15 @@ using BuildSmart.Maui.GraphQL;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Text.Json.Nodes;
 
 namespace BuildSmart.Maui.ViewModels.Admin;
+
+public partial class QAPair : ObservableObject
+{
+    public string Question { get; set; } = string.Empty;
+    public string Answer { get; set; } = string.Empty;
+}
 
 public partial class AdminJobReviewViewModel : ObservableObject
 {
@@ -18,10 +25,19 @@ public partial class AdminJobReviewViewModel : ObservableObject
     private ObservableCollection<IGetJobsForReview_JobPostsForReview> _jobs = new();
 
     [ObservableProperty]
+    private ObservableCollection<QAPair> _currentJobDetails = new();
+
+    [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
     private bool _isEmpty;
+
+    [ObservableProperty]
+    private IGetJobsForReview_JobPostsForReview? _selectedJob;
+
+    [ObservableProperty]
+    private bool _isDetailsVisible;
 
     [RelayCommand]
     public async Task LoadJobsAsync()
@@ -61,6 +77,43 @@ public partial class AdminJobReviewViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ViewJobDetails(IGetJobsForReview_JobPostsForReview? job)
+    {
+        SelectedJob = job;
+        CurrentJobDetails.Clear();
+        IsDetailsVisible = false;
+
+        if (job == null) return;
+        try
+        {
+            if (string.IsNullOrEmpty(job.JobDetails) || string.IsNullOrEmpty(job.ServiceCategory.TemplateStructure)) return;
+
+            var answers = JsonNode.Parse(job.JobDetails);
+            var template = JsonNode.Parse(job.ServiceCategory.TemplateStructure);
+
+            if (template?["questions"] is JsonArray qArray)
+            {
+                foreach (var qNode in qArray)
+                {
+                    var id = qNode?["id"]?.GetValue<string>();
+                    var text = qNode?["text"]?.GetValue<string>();
+
+                    if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(text))
+                    {
+                        var answer = answers?[id]?.GetValue<string>() ?? "(No Answer)";
+                        CurrentJobDetails.Add(new QAPair { Question = text, Answer = answer });
+                    }
+                }
+            }
+            IsDetailsVisible = CurrentJobDetails.Any();
+        }
+        catch (Exception ex)
+        {
+            Shell.Current.DisplayAlert("Parsing Error", ex.Message, "OK");
+        }
+    }
+
+    [RelayCommand]
     private async Task ApproveJobAsync(IGetJobsForReview_JobPostsForReview job)
     {
         bool confirm = await Shell.Current.DisplayAlert("Confirm", $"Approve scope for '{job.Title}'?", "Yes", "No");
@@ -72,8 +125,8 @@ public partial class AdminJobReviewViewModel : ObservableObject
     [RelayCommand]
     private async Task RejectJobAsync(IGetJobsForReview_JobPostsForReview job)
     {
-        string feedback = await Shell.Current.DisplayActionSheet("Select Reason", "Cancel", null, "Incomplete info", "Vague description", "Other");
-        if (feedback == "Cancel" || feedback == null) return;
+        string feedback = await Shell.Current.DisplayPromptAsync("Reject Job", "Please provide a reason for rejection:", "Reject", "Cancel", "Reason...");
+        if (string.IsNullOrWhiteSpace(feedback)) return;
 
         await PerformReview(job.Id, false, feedback);
     }
@@ -91,8 +144,9 @@ public partial class AdminJobReviewViewModel : ObservableObject
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", approved ? "Job published to tradesmen." : "Feedback sent to homeowner.", "OK");
+            await Shell.Current.DisplayAlert("Success", approved ? "Job published to tradesmen." : "Job rejected and feedback sent.", "OK");
             await LoadJobsAsync();
+            CurrentJobDetails.Clear(); // Clear details after action
         }
         catch (Exception ex)
         {

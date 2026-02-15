@@ -97,14 +97,12 @@ public static class MauiProgram
 
 		Routing.RegisterRoute(nameof(DetailedViewPage), typeof(DetailedViewPage));
 		Routing.RegisterRoute(nameof(CreateAccountPage), typeof(CreateAccountPage));
-		Routing.RegisterRoute(nameof(FeedPage), typeof(FeedPage));
 		Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
 		Routing.RegisterRoute(nameof(BookingPage), typeof(BookingPage));
 		Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
 		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
         Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
-        Routing.RegisterRoute(nameof(MyProjectsPage), typeof(MyProjectsPage));
         Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
         Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
 		builder.Logging.AddDebug();

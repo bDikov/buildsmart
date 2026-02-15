@@ -6,8 +6,10 @@ query GetJobsForReview {
     generatedScope
     userEditedScope
     status
+    jobDetails
     serviceCategory {
       name
+      templateStructure
     }
     project {
       title

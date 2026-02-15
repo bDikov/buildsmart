@@ -11,6 +11,9 @@ query GetMyProjects {
       description
       jobDetails
       location
+      project {
+        id
+      }
       status
       generatedScope
       userEditedScope

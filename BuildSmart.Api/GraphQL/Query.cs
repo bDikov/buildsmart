@@ -39,6 +39,9 @@ public class Query
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
 	public IQueryable<JobPost> GetJobPostsForReview([Service] AppDbContext context)
 	{
 		return context.JobPosts.Where(j => j.Status == Core.Domain.Enums.JobPostStatus.WaitingForAdminReview);

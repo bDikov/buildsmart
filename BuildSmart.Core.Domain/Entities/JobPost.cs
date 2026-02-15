@@ -132,7 +132,7 @@ public class JobPost : BaseEntity
 	    {
 	        if (Status != JobPostStatus.WaitingForUserReview)
 	        {
-	            throw new InvalidOperationException("Job is not waiting for user review.");
+	            throw new InvalidOperationException($"Job is not waiting for user review. Current Status: {Status}");
 	        }
 	        
 	        UserEditedScope = finalScope;
@@ -145,7 +145,7 @@ public class JobPost : BaseEntity
 	    {
 	        if (Status != JobPostStatus.WaitingForAdminReview)
 	        {
-	            throw new InvalidOperationException("Job is not waiting for admin review.");
+	            throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
 	        }
 	        
 	        Status = JobPostStatus.Open;
@@ -156,7 +156,7 @@ public class JobPost : BaseEntity
 	    {
 	        if (Status != JobPostStatus.WaitingForAdminReview)
 	        {
-	            throw new InvalidOperationException("Job is not waiting for admin review.");
+	            throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
 	        }
 	        
 	        Status = JobPostStatus.Rejected;
