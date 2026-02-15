@@ -1,11 +1,13 @@
 using HotChocolate.AspNetCore;
 using BuildSmart.Api.GraphQL;
 using BuildSmart.Api.GraphQL.Types;
-using BuildSmart.Api.Middleware;
+using BuildSmart.Api.Workers;
+using BuildSmart.Api.Hubs; // Added
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Application.Services;
 using BuildSmart.Infrastructure.Persistence;
 using BuildSmart.Infrastructure.Persistence.Repositories; // Required for accessing IConfiguration
+using BuildSmart.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -53,6 +55,7 @@ public partial class Program
 		builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 		builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 		builder.Services.AddScoped<IProjectRepository, ProjectRepository>(); // Added ProjectRepository registration
+        builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 		// Add Application Services (Business Logic)
 		builder.Services.AddScoped<IBookingService, BookingService>();
@@ -61,6 +64,11 @@ public partial class Program
 		builder.Services.AddScoped<IJobPostService, JobPostService>();
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
+
+		// --- Background Services (Scope Generation) ---
+		builder.Services.AddSingleton<IScopeGenerationQueue, ScopeGenerationQueue>();
+		builder.Services.AddHostedService<ScopeGenerationWorker>();
+		builder.Services.AddScoped<IAiService, MockAiService>();
 
 		// --- JWT Authentication Setup ---
 		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -97,6 +105,7 @@ public partial class Program
 		});
 
 		builder.Services.AddControllers();
+        builder.Services.AddSignalR(); // Added SignalR
 
 		// Add Swagger Services
 		builder.Services.AddSwaggerGen(c =>
@@ -196,6 +205,7 @@ public partial class Program
 
 		// This is the endpoint that our MAUI and Blazor apps will call
 		app.MapGraphQL("/graphql");
+        app.MapHub<NotificationHub>("/hubs/notifications"); // Added Hub mapping
 
 		app.MapControllers();
 

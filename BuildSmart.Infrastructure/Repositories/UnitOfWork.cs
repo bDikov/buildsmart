@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IProjectRepository Projects { get; }
     public IJobPostRepository JobPosts { get; }
     public IBidRepository Bids { get; }
+    public INotificationRepository Notifications { get; }
 
 	public UnitOfWork(AppDbContext context)
 	{
@@ -29,6 +30,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         Projects = new ProjectRepository(_context);
         JobPosts = new JobPostRepository(_context);
         Bids = new BidRepository(_context);
+        Notifications = new NotificationRepository(_context);
 	}
 
 	/// <summary>

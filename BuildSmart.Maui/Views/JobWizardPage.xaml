@@ -74,7 +74,21 @@
                                         <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" TextColor="{Binding HasError, Converter={StaticResource ErrorColorConverter}}"/>
                                         <Label Text="*" FontSize="16" TextColor="Red" IsVisible="{Binding IsRequired}" />
                                     </HorizontalStackLayout>
-                                    <Entry Text="{Binding Answer}" Placeholder="Type your answer here..." />
+                                    
+                                    <!-- Text Input -->
+                                    <Entry Text="{Binding Answer}" Placeholder="Type your answer here..." IsVisible="{Binding IsText}" />
+                                    
+                                    <!-- Choice Input -->
+                                    <Picker ItemsSource="{Binding Options}" 
+                                            SelectedItem="{Binding Answer}"
+                                            Title="Select an option"
+                                            IsVisible="{Binding IsChoice}" />
+
+                                    <!-- Boolean Input -->
+                                    <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsBoolean}">
+                                        <CheckBox IsChecked="{Binding BoolAnswer}" Color="#1565C0" />
+                                        <Label Text="Yes" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
                                 </VerticalStackLayout>
                             </Frame>
                         </DataTemplate>
@@ -94,7 +108,7 @@
             <Label Text="{Binding ProjectTitle}" />
 
             <Label Text="Selected Categories:" FontAttributes="Bold" Margin="0,10,0,0"/>
-            <CollectionView ItemsSource="{Binding SelectableCategories}" >
+            <CollectionView ItemsSource="{Binding SelectableCategories}" HeightRequest="50">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:SelectableCategoryViewModel">
                         <!-- Only show selected items -->
@@ -102,6 +116,20 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
+            <Label Text="Job Details:" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <ScrollView HeightRequest="200">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding AnswersList}" Spacing="5" Margin="10,5">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Key}" FontSize="12" TextColor="Gray" />
+                                <Label Text="{Binding Value}" FontSize="14" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
 
             <Button Text="Post Project" 
                     Command="{Binding SubmitProjectCommand}" 

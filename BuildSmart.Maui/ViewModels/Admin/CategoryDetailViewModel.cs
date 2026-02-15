@@ -12,7 +12,7 @@ namespace BuildSmart.Maui.ViewModels.Admin;
 [QueryProperty(nameof(IsGlobalModeAsString), "isGlobalMode")]
 public partial class CategoryDetailViewModel : ObservableObject
 {
-    public static List<string> QuestionTypes => new() { "text", "number", "boolean" };
+    public static List<string> QuestionTypes => new() { "text", "number", "boolean", "choice" };
 
     private readonly IBuildSmartApiClient _apiClient;
 
@@ -126,112 +126,147 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                                 {
 
-                                    Questions.Add(new QuestionViewModel
+                                                                                                            Questions.Add(new QuestionViewModel
 
-                                    {                                        Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
+                                                                                                            {
 
-                                        Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
+                                                                                                                Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
 
-                                        Type = qObj["type"]?.GetValue<string>() ?? "text",
-                                        
-                                        IsRequired = qObj["required"]?.GetValue<bool>() ?? false
+                                                                                                                Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
 
-                                    });
+                                                                                                                                                        Type = qObj["type"]?.GetValue<string>() ?? "text",
 
-                                }
+                                                                                                                                                        IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
 
-                            }
+                                                                                                                                                        Options = qObj["options"] is JsonArray opts 
 
-                        }
+                                                                                                                                                            ? new ObservableCollection<OptionViewModel>(opts.Select(o => new OptionViewModel(o?.GetValue<string>() ?? string.Empty)))
 
-                    }
+                                                                                                                                                            : new ObservableCollection<OptionViewModel>()
 
-                }
+                                                                                                                                                    });
 
-            }
+                                                                                                                                                }
 
-        }
+                                                                                                                                            }
 
-        catch (Exception ex)
+                                                                                                                                        }
 
-        {
+                                                                                                                                    }
 
-            await Shell.Current.DisplayAlert("Load Error", ex.ToString(), "OK");
+                                                                                                                                }
 
-        }
+                                                                                                                            }
 
-    }
+                                                                                                                        }
 
+                                                                                                                        catch (Exception ex)
 
+                                                                                                                        {
 
-    [RelayCommand]
+                                                                                                                            await Shell.Current.DisplayAlert("Load Error", ex.ToString(), "OK");
 
-    private void AddNewQuestion()
+                                                                                                                        }
 
-    {
+                                                                                                                    }
 
-        Questions.Add(new QuestionViewModel());
+                                                                                                                
 
-    }
+                                                                                                                    [RelayCommand]
 
+                                                                                                                    private void AddNewQuestion()
 
+                                                                                                                    {
 
-    [RelayCommand]
+                                                                                                                        Questions.Add(new QuestionViewModel());
 
-    private void RemoveQuestion(QuestionViewModel question)
+                                                                                                                    }
 
-    {
+                                                                                                                
 
-        if (question != null)
+                                                                                                                    [RelayCommand]
 
-        {
+                                                                                                                    private void RemoveQuestion(QuestionViewModel question)
 
-            Questions.Remove(question);
+                                                                                                                    {
 
-        }
+                                                                                                                        if (question != null)
 
-    }
+                                                                                                                        {
 
+                                                                                                                            Questions.Remove(question);
 
+                                                                                                                        }
 
-    [RelayCommand]
+                                                                                                                    }
 
-    private async Task SaveCategoryAsync()
+                                                                                                                
 
-    {
+                                                                                                                    [RelayCommand]
 
-        try
+                                                                                                                    private async Task SaveCategoryAsync()
 
-        {
+                                                                                                                    {
 
-            var questionNodes = new JsonArray(
+                                                                                                                        try
 
-                Questions.Select(q => new JsonObject
+                                                                                                                        {
 
-                {
+                                                                                                                            var questionNodes = new JsonArray();
 
-                    ["id"] = q.Id,
+                                                                                                                
 
-                    ["text"] = q.Text,
+                                                                                                                            foreach (var q in Questions)
 
-                    ["type"] = q.Type,
-                    ["required"] = q.IsRequired
+                                                                                                                            {
 
-                }).ToArray());
+                                                                                                                                var qObj = new JsonObject
 
+                                                                                                                                {
 
+                                                                                                                                    ["id"] = q.Id,
 
-            var template = new JsonObject
+                                                                                                                                    ["text"] = q.Text,
 
-            {
+                                                                                                                                    ["type"] = q.Type,
 
-                ["questions"] = questionNodes
+                                                                                                                                    ["required"] = q.IsRequired
 
-            };
+                                                                                                                                };
 
-            
+                                                                                                                
 
-            var templateStructureJson = template.ToJsonString();
+                                                                                                                                if (q.IsChoiceType && q.Options.Any())
+
+                                                                                                                                {
+
+                                                                                                                                    var optsArray = new JsonArray();
+
+                                                                                                                                    foreach (var o in q.Options) optsArray.Add(o.Value);
+
+                                                                                                                                    qObj["options"] = optsArray;
+
+                                                                                                                                }
+
+                                                                                                                
+
+                                                                                                                                questionNodes.Add(qObj);
+
+                                                                                                                            }
+
+                                                                                                                
+
+                                                                                                                            var template = new JsonObject
+
+                                                                                                                            {
+
+                                                                                                                                ["questions"] = questionNodes
+
+                                                                                                                            };
+
+                                                                                                                            
+
+                                                                                                                            var templateStructureJson = template.ToJsonString();
 
             
 

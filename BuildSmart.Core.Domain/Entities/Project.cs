@@ -15,8 +15,13 @@ public class Project : BaseEntity
     // A project can consist of multiple specific jobs (e.g., "Plumbing", "Electrical")
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
 
+    /// <summary>
+    /// High-level summary of the entire project, aggregated from all job posts.
+    /// </summary>
+    public string? GeneralSummary { get; set; }
+
     // Overall status of the project
-    public ProjectStatus Status { get; private set; } = ProjectStatus.Draft;
+    public ProjectStatus Status { get; private set; } = ProjectStatus.Active;
 
     public void SubmitForReview()
     {

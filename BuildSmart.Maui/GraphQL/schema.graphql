@@ -15,6 +15,20 @@ type Query {
   allServiceCategories: [ServiceCategory!]!
   "Gets the projects created by the authenticated homeowner."
   myProjects: [Project!]!
+  "Gets unread notifications for the current user."
+  myNotifications: [Notification!]!
+  "Gets job posts waiting for admin review."
+  jobPostsForReview: [JobPost!]!
+}
+
+type Notification {
+    id: UUID!
+    title: String!
+    message: String!
+    isRead: Boolean!
+    relatedEntityId: UUID
+    relatedEntityType: String
+    createdAt: DateTime!
 }
 
 "The root mutation object."
@@ -61,6 +75,15 @@ type Mutation {
 
   "Validates and submits a job post for review."
   submitJobPost(jobPostId: UUID!): Boolean!
+
+  "Submits a job post for AI scope generation."
+  submitJobForScopeGeneration(jobPostId: UUID!): Boolean!
+
+  "Approves the AI-generated scope for a job post."
+  approveJobScope(jobPostId: UUID!, finalScope: String!): Boolean!
+
+  "Reviews the job post scope (Admin only)."
+  adminReviewJobScope(jobPostId: UUID!, approved: Boolean!, feedback: String): Boolean!
 }
 
 "Represents the specific profile for a tradesman."
@@ -101,6 +124,7 @@ type Project {
     title: String!
     description: String!
     status: ProjectStatus!
+    generalSummary: String
     homeowner: User!
     jobPosts: [JobPost!]!
     createdAt: DateTime!
@@ -111,6 +135,9 @@ type JobPost {
     id: UUID!
     title: String!
     description: String!
+    generatedScope: String
+    userEditedScope: String
+    adminFeedback: String
     jobDetails: String!
     location: String
     imageUrls: [String!]!
@@ -239,12 +266,16 @@ enum ProjectStatus {
 
 enum JobPostStatus {
     DRAFT
+    GENERATING_SCOPE
+    WAITING_FOR_USER_REVIEW
+    WAITING_FOR_ADMIN_REVIEW
     UNDER_REVIEW
     OPEN
     BIDDING_CLOSED
     CONTRACTED
     CANCELLED
     EXPIRED
+    REJECTED
 }
 
 scalar DateTime

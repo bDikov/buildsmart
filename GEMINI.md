@@ -77,6 +77,7 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 *   **Entity Framework Core**: The infrastructure layer uses EF Core for data access.
 *   **.NET MAUI with MVVM**: The client application is built with .NET MAUI and likely follows the MVVM pattern.
 *   **Testing**: The project has a dedicated test project using xUnit, Moq, and Snapshot testing.
+*   **AI Integration**: The platform uses Google Gemini 1.5 Pro for automated construction scope generation. See `AI_IMPLEMENTATION.md` for technical details.
 
 ### Manual Migrations
 
@@ -122,3 +123,23 @@ dotnet ef database update --project BuildSmart.Infrastructure --startup-project 
     *   Admins can mark specific questions within a category (Global or Regular) as "Required".
     *   In the Job Wizard, required questions are visually marked with a red asterisk (*).
     *   The Job Wizard prevents project submission if any required questions are left unanswered.
+*   **Smart Scope Generation (AI Workflow)**:
+    *   **Workflow**: Jobs now follow a multi-stage approval flow: `Draft` -> `GeneratingScope` -> `WaitingForUserReview` -> `WaitingForAdminReview` -> `Open`.
+    *   **Background Worker**: A new `ScopeGenerationWorker` processes jobs asynchronously using a `MockAiService` (to be replaced by Gemini/OpenAI).
+    *   **Homeowner UI**: Added a **"Generate Smart Scope"** button in Project Details. Users can review and edit AI-generated text on the new **Scope Review Page**.
+    *   **Admin Approval**: Admins have a new **"Job Reviews"** dashboard to approve or reject (with feedback) the final scope before it goes live to tradesmen.
+*   **Project Navigation**:
+    *   Removed auto-navigation to the latest project in "My Projects".
+    *   Users can now tap any project card to view specific details.
+
+## AI Integration Reference
+### System Prompt for Scope Generation
+**Role**: Expert Construction Manager / Quantity Surveyor.
+**Goal**: Transform raw Q&A into a Markdown Scope of Work including:
+1. Project Overview
+2. Detailed Tasks (inferring technical sub-tasks)
+3. Materials (Contractor vs Owner supplied)
+4. Site Logistics
+5. Exclusions
+**Tone**: Technical, Professional, Objective.
+

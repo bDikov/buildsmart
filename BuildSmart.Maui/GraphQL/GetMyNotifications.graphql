@@ -1,0 +1,9 @@
+query GetMyNotifications {
+  myNotifications {
+    id
+    title
+    message
+    relatedEntityId
+    createdAt
+  }
+}

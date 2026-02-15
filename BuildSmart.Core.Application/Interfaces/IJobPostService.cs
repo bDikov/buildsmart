@@ -13,10 +13,16 @@ public interface IJobPostService
         string title, 
         string jobDetailsJson,
         string location,
-                Amount? estimatedBudget,
-                List<string> imageUrls);
-        
-            Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
+        Amount? estimatedBudget,
+        List<string> imageUrls);
+    
+    Task SubmitJobForScopeGenerationAsync(Guid jobPostId);
+    
+    Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);
+    
+    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback);
+
+    Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
             
             Task SaveDraftAsync(Guid jobPostId, string jobDetailsJson, string? description, string? location, Amount? estimatedBudget);
             

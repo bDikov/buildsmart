@@ -1,0 +1,24 @@
+query GetJobsForReview {
+  jobPostsForReview {
+    id
+    title
+    description
+    generatedScope
+    userEditedScope
+    status
+    serviceCategory {
+      name
+    }
+    project {
+      title
+      homeowner {
+        firstName
+        lastName
+      }
+    }
+  }
+}
+
+mutation AdminReviewJobScope($jobPostId: UUID!, $approved: Boolean!, $feedback: String) {
+  adminReviewJobScope(jobPostId: $jobPostId, approved: $approved, feedback: $feedback)
+}

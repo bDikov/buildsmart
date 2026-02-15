@@ -252,6 +252,36 @@ public class Mutation
 		return await jobPostService.AcceptBidAsync(bidId);
 	}
 
+	[Authorize]
+	public async Task<bool> SubmitJobForScopeGeneration(
+		Guid jobPostId,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.SubmitJobForScopeGenerationAsync(jobPostId);
+		return true;
+	}
+
+	[Authorize]
+	public async Task<bool> ApproveJobScope(
+		Guid jobPostId,
+		string finalScope,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.ApproveJobScopeAsync(jobPostId, finalScope);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> AdminReviewJobScope(
+		Guid jobPostId,
+		bool approved,
+		string? feedback,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.AdminReviewJobScopeAsync(jobPostId, approved, feedback);
+		return true;
+	}
+
 	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<ServiceCategory> UpdateCategoryStatus(
 			Guid categoryId,

@@ -29,7 +29,9 @@ public static class MauiProgram
 		        builder.Services.AddSingleton<IFilePicker>(FilePicker.Default); // Good practice to add commonly used essentials
 		
 		        // Services
-		        builder.Services.AddSingleton<IAuthService, AuthService>();		builder.Services.AddTransient<AuthHeaderHandler>();
+		        builder.Services.AddSingleton<IAuthService, AuthService>();
+                builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
+                builder.Services.AddTransient<AuthHeaderHandler>();
 		builder.Services.AddTransient<LoggingHandler>();
 
 		// Register Strawberry Shake with fluent configuration
@@ -77,6 +79,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ProjectDetailPage>();
         builder.Services.AddTransient<ProjectDetailViewModel>();
 
+        builder.Services.AddTransient<ScopeReviewPage>();
+        builder.Services.AddTransient<ScopeReviewViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
 		builder.Services.AddTransient<AppShell>();
@@ -84,6 +89,9 @@ public static class MauiProgram
 		builder.Services.AddTransient<CategoryManagementViewModel>();
 		builder.Services.AddTransient<CategoryDetailPage>();
 		builder.Services.AddTransient<CategoryDetailViewModel>();
+
+		builder.Services.AddTransient<AdminJobReviewPage>();
+		builder.Services.AddTransient<AdminJobReviewViewModel>();
 
 		builder.Services.AddSingleton<MainShell>();
 
@@ -98,6 +106,7 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
         Routing.RegisterRoute(nameof(MyProjectsPage), typeof(MyProjectsPage));
         Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
+        Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
 		builder.Logging.AddDebug();
 
 		return builder.Build();

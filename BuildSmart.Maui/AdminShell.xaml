@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:BuildSmart.Maui.Views"
+    xmlns:admin="clr-namespace:BuildSmart.Maui.Views.Admin"
     Shell.FlyoutBehavior="Flyout">
 
     <FlyoutItem Title="Management">
@@ -11,6 +12,10 @@
             Title="Categories"
             ContentTemplate="{DataTemplate views:CategoryManagementPage}"
             Route="CategoryManagementPage" />
+        <ShellContent
+            Title="Job Reviews"
+            ContentTemplate="{DataTemplate admin:AdminJobReviewPage}"
+            Route="AdminJobReviewPage" />
     </FlyoutItem>
     
     <FlyoutItem Title="User View">

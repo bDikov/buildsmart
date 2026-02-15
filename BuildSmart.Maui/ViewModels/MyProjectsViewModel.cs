@@ -3,12 +3,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using BuildSmart.Maui.Views;
+using BuildSmart.Maui.Services;
 
 namespace BuildSmart.Maui.ViewModels;
 
 public partial class MyProjectsViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly SignalRService _signalRService;
     private bool _isFirstLoad = true;
 
     [ObservableProperty]
@@ -20,9 +22,20 @@ public partial class MyProjectsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isEmpty;
 
-    public MyProjectsViewModel(IBuildSmartApiClient apiClient)
+    public MyProjectsViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+        
+        // Subscribe to notifications
+        _signalRService.NotificationReceived += OnNotificationReceived;
+    }
+
+    private void OnNotificationReceived(string title, string message)
+    {
+        // Reload projects when ANY notification is received (simple approach)
+        // In a real app, we might check if the notification is relevant to projects
+        MainThread.BeginInvokeOnMainThread(async () => await LoadProjectsAsync());
     }
 
     [RelayCommand]

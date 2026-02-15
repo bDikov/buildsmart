@@ -12,6 +12,9 @@ query GetMyProjects {
       jobDetails
       location
       status
+      generatedScope
+      userEditedScope
+      adminFeedback
       estimatedBudget {
         total
         currency

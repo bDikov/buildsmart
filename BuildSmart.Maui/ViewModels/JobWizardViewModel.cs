@@ -51,15 +51,27 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[ObservableProperty] private bool _locationHasError;
 	[ObservableProperty] private bool _categorySelectionHasError;
 
-	// Answers Storage
 	// Key: QuestionId, Value: Answer
 	private Dictionary<string, string> _masterAnswerKey = new();
+    private Dictionary<string, string> _questionTextCache = new();
 
 	[ObservableProperty]
 	private ObservableCollection<WizardQuestionViewModel> _questions = new();
 
 	[ObservableProperty]
 	private bool _isBusy;
+
+    public ObservableCollection<KeyValuePair<string, string>> AnswersList { get; } = new();
+
+    private void RefreshAnswersList()
+    {
+        AnswersList.Clear();
+        foreach (var kvp in _masterAnswerKey)
+        {
+            var text = _questionTextCache.TryGetValue(kvp.Key, out var qText) ? qText : kvp.Key;
+            AnswersList.Add(new KeyValuePair<string, string>(text, kvp.Value));
+        }
+    }
 
 	private Guid? _currentProjectId;
 	private Dictionary<Guid, Guid> _currentJobPostIds = new();
@@ -281,6 +293,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				Questions.Add(q);
 			}
 		}
+        else if (step.Type == WizardStepType.Review)
+        {
+            RefreshAnswersList();
+        }
 	}
 
 	private void GenerateDynamicSteps()
@@ -324,39 +340,175 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
 	}
 
-	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
-	{
-		var list = new List<WizardQuestionViewModel>();
-		foreach (var cat in categories)
+		private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
+
 		{
-			if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
+
+			var list = new List<WizardQuestionViewModel>();
+
+			foreach (var cat in categories)
+
 			{
-				try
+
+	            System.Diagnostics.Debug.WriteLine($"Processing Category: {cat.Category.Name}");
+
+	            System.Diagnostics.Debug.WriteLine($"TemplateStructure: {cat.Category.TemplateStructure}");
+
+	
+
+				if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
+
 				{
-					var template = JsonNode.Parse(cat.Category.TemplateStructure);
-					if (template?["questions"] is JsonArray qArray)
+
+					try
+
 					{
-						foreach (var qNode in qArray)
+
+						var template = JsonNode.Parse(cat.Category.TemplateStructure);
+
+	                    if (template == null)
+
+	                    {
+
+	                        System.Diagnostics.Debug.WriteLine("Template parsed to NULL");
+
+	                        continue;
+
+	                    }
+
+	
+
+						if (template["questions"] is JsonArray qArray)
+
 						{
-							if (qNode is JsonObject qObj)
+
+	                        System.Diagnostics.Debug.WriteLine($"Found {qArray.Count} questions in JSON array.");
+
+							foreach (var qNode in qArray)
+
 							{
-								list.Add(new WizardQuestionViewModel
-								{
-									Id = qObj["id"]?.GetValue<string>() ?? "",
-									Text = qObj["text"]?.GetValue<string>() ?? "",
-									Type = qObj["type"]?.GetValue<string>() ?? "text",
-									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
-									CategoryName = cat.Category.Name
-								});
+
+																if (qNode is JsonObject qObj)
+
+								
+
+																{
+
+								
+
+									                                var qType = qObj["type"]?.GetValue<string>() ?? "text";
+
+								                                    var qText = qObj["text"]?.GetValue<string>() ?? "";
+
+								                                    var qId = qObj["id"]?.GetValue<string>() ?? "";
+
+								
+
+									                                var qOptions = new List<string>();
+
+								
+
+									                                if (qObj["options"] is JsonArray opts)
+
+								
+
+									                                {
+
+								
+
+									                                    qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
+
+								
+
+									                                }
+
+								
+
+									                                if (!string.IsNullOrEmpty(qId)) _questionTextCache[qId] = qText;
+
+								
+
+																	list.Add(new WizardQuestionViewModel
+
+								
+
+																	{
+
+								
+
+																		Id = qId,
+
+								
+
+																		Text = qText,
+
+								
+
+																		Type = qType,
+
+								
+
+																		CategoryName = cat.Category.Name,
+
+								
+
+																		IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
+
+								
+
+									                                    Options = qOptions,
+
+								
+
+								                                        Answer = qType == "boolean" ? "False" : ""
+
+								
+
+																	});
+
+								
+
+																}
+
 							}
+
 						}
+
+	                    else
+
+	                    {
+
+	                        System.Diagnostics.Debug.WriteLine("'questions' array NOT found in template.");
+
+	                    }
+
 					}
+
+					catch (Exception ex)
+
+	                {
+
+	                    System.Diagnostics.Debug.WriteLine($"Error parsing template: {ex}");
+
+	                }
+
 				}
-				catch { }
+
+	            else
+
+	            {
+
+	                 System.Diagnostics.Debug.WriteLine("TemplateStructure is EMPTY or NULL.");
+
+	            }
+
 			}
+
+	        System.Diagnostics.Debug.WriteLine($"Total extracted questions: {list.Count}");
+
+			return list;
+
 		}
-		return list;
-	}
 
 	private bool ValidateInfoStep()
 	{

@@ -31,3 +31,11 @@ mutation AddJobToProject(
         amendmentCount
     }
 }
+
+mutation SubmitJobForScopeGeneration($jobPostId: UUID!) {
+    submitJobForScopeGeneration(jobPostId: $jobPostId)
+}
+
+mutation ApproveJobScope($jobPostId: UUID!, $finalScope: String!) {
+    approveJobScope(jobPostId: $jobPostId, finalScope: $finalScope)
+}

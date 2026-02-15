@@ -3,10 +3,14 @@ namespace BuildSmart.Core.Domain.Enums;
 public enum JobPostStatus
 {
     Draft = 0,
-    UnderReview = 1, // Added
-    Open = 2,        // Shifted from 1, but explicit now
-    BiddingClosed = 3,
-    Contracted = 4,
-    Cancelled = 5,
-    Expired = 6
+    GeneratingScope = 1,
+    WaitingForUserReview = 2,
+    WaitingForAdminReview = 3,
+    UnderReview = 4, // Deprecated, use WaitingForAdminReview
+    Open = 5,
+    BiddingClosed = 6,
+    Contracted = 7,
+    Cancelled = 8,
+    Expired = 9,
+    Rejected = 10
 }

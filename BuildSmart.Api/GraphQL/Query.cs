@@ -38,6 +38,12 @@ public class Query
 		return categoryRepository.GetQueryable();
 	}
 
+	[Authorize(Roles = new[] { "Admin" })]
+	public IQueryable<JobPost> GetJobPostsForReview([Service] AppDbContext context)
+	{
+		return context.JobPosts.Where(j => j.Status == Core.Domain.Enums.JobPostStatus.WaitingForAdminReview);
+	}
+
 	[Authorize(Roles = new[] { "Homeowner" })]
 	public async Task<IEnumerable<Project>> GetMyProjects(
 		ClaimsPrincipal claimsPrincipal,
@@ -57,6 +63,20 @@ public class Query
 		}
 		return projects;
 	}
+
+    [Authorize]
+    public async Task<IEnumerable<Notification>> GetMyNotifications(
+        ClaimsPrincipal claimsPrincipal,
+        [Service] INotificationRepository notificationRepository)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user ID in token.");
+        }
+
+        return await notificationRepository.GetUnreadByUserIdAsync(userId);
+    }
 
 	[UseProjection]
 	[UseFiltering]

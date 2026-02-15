@@ -7,12 +7,17 @@ public partial class MainShell : Shell
 {
 	private readonly IAuthService _authService;
 	private readonly IServiceProvider _serviceProvider;
+    private readonly SignalRService _signalRService;
 
-	public MainShell(IAuthService authService, IServiceProvider serviceProvider)
+	public MainShell(IAuthService authService, IServiceProvider serviceProvider, SignalRService signalRService)
 	{
 		_authService = authService;
 		_serviceProvider = serviceProvider;
+        _signalRService = signalRService;
 		InitializeComponent();
+
+        // Connect to SignalR
+        MainThread.BeginInvokeOnMainThread(async () => await _signalRService.ConnectAsync());
 	}
 
 	private async void OnProfileSettingsClicked(object sender, EventArgs e)

@@ -9,10 +9,64 @@ namespace BuildSmart.Core.Application.Services;
 public class JobPostService : IJobPostService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IScopeGenerationQueue _scopeGenerationQueue;
 
-    public JobPostService(IUnitOfWork unitOfWork)
+    public JobPostService(IUnitOfWork unitOfWork, IScopeGenerationQueue scopeGenerationQueue)
     {
         _unitOfWork = unitOfWork;
+        _scopeGenerationQueue = scopeGenerationQueue;
+    }
+
+    public async Task SubmitJobForScopeGenerationAsync(Guid jobPostId)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        if (jobPost.Status != JobPostStatus.Draft && jobPost.Status != JobPostStatus.Rejected)
+        {
+            throw new InvalidOperationException("Only Draft or Rejected jobs can be submitted for scope generation.");
+        }
+
+        jobPost.SubmitForScopeGeneration();
+
+        _unitOfWork.JobPosts.Update(jobPost);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Queue for background processing
+        await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
+    }
+
+    public async Task ApproveJobScopeAsync(Guid jobPostId, string finalScope)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        jobPost.ApproveScope(finalScope);
+
+        _unitOfWork.JobPosts.Update(jobPost);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        if (approved)
+        {
+            jobPost.AdminApproveScope();
+            jobPost.Publish(); // Sets timestamp if needed, but AdminApproveScope already sets to Open.
+            // TODO: Notify Tradesmen here
+        }
+        else
+        {
+            jobPost.AdminRejectScope(feedback ?? "Rejected without feedback.");
+        }
+
+        jobPost.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.JobPosts.Update(jobPost);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description)
@@ -70,10 +124,14 @@ public class JobPostService : IJobPostService
             UpdatedAt = DateTime.UtcNow
         };
 
-        jobPost.SubmitForReview(); // Set status to UnderReview
+        // Auto-trigger scope generation
+        jobPost.SubmitForScopeGeneration();
 
         await _unitOfWork.JobPosts.AddAsync(jobPost);
         await _unitOfWork.SaveChangesAsync();
+
+        // Fire and forget background task
+        await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
 
         return jobPost;
     }
