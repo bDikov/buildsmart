@@ -33,6 +33,7 @@ public interface IUnitOfWork
 
     IProjectRepository Projects { get; }
     IJobPostRepository JobPosts { get; }
+    IJobPostFeedbackRepository JobPostFeedbacks { get; }
     IBidRepository Bids { get; }
     INotificationRepository Notifications { get; }
 

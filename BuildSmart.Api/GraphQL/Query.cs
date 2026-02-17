@@ -44,7 +44,19 @@ public class Query
     [UseSorting]
 	public IQueryable<JobPost> GetJobPostsForReview([Service] AppDbContext context)
 	{
-		return context.JobPosts.Where(j => j.Status == Core.Domain.Enums.JobPostStatus.WaitingForAdminReview);
+		return context.JobPosts.Where(j => j.Status == Core.Domain.Enums.JobPostStatus.WaitingForAdminReview || j.Status == Core.Domain.Enums.JobPostStatus.UnderReview);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
+	public IQueryable<Project> GetProjectsForReview([Service] AppDbContext context)
+	{
+		return context.Projects.Where(p => 
+            p.Status == Core.Domain.Enums.ProjectStatus.UnderReview || 
+            p.JobPosts.Any(j => j.Status == Core.Domain.Enums.JobPostStatus.WaitingForAdminReview || j.Status == Core.Domain.Enums.JobPostStatus.UnderReview)
+        );
 	}
 
 	[Authorize(Roles = new[] { "Homeowner" })]

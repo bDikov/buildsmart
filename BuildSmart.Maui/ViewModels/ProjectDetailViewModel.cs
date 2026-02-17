@@ -129,4 +129,35 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
             await Shell.Current.DisplayAlert("Navigation Error", ex.Message, "OK");
         }
     }
+
+    [RelayCommand]
+    private async Task RespondToAdminAsync(IGetMyProjects_MyProjects_JobPosts job)
+    {
+        string response = await Shell.Current.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
+        if (string.IsNullOrWhiteSpace(response)) return;
+
+        try
+        {
+            IsBusy = true;
+            // Note: AddJobFeedback mutation might need to be imported or available in this context
+            var result = await _apiClient.AddJobFeedback.ExecuteAsync(job.Id, response);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("Success", "Response sent to Admin.", "OK");
+            await ReloadProjectAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }

@@ -49,6 +49,32 @@
                                     <Label Text="{Binding GeneratedScope}" FontSize="12" TextColor="Black" />
                                 </VerticalStackLayout>
 
+                                <!-- Clarification Thread -->
+                                <VerticalStackLayout Margin="0,10" Spacing="5">
+                                    <Label Text="Admin Clarifications:" FontAttributes="Bold" FontSize="12" TextColor="{StaticResource Primary}"/>
+                                    <StackLayout BindableLayout.ItemsSource="{Binding Feedbacks}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Frame Padding="8" Margin="0,2" BorderColor="LightGray" HasShadow="False" BackgroundColor="White">
+                                                    <VerticalStackLayout Spacing="2">
+                                                        <HorizontalStackLayout Spacing="5">
+                                                            <Label Text="{Binding Author.FirstName, StringFormat='{0}:'}" FontSize="10" FontAttributes="Bold" />
+                                                            <Label Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="Green" FontSize="9" FontAttributes="Bold" />
+                                                        </HorizontalStackLayout>
+                                                        <Label Text="{Binding Text}" FontSize="12" />
+                                                    </VerticalStackLayout>
+                                                </Frame>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </StackLayout>
+                                    
+                                    <Button Text="Respond to Admin" 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=RespondToAdminCommand}"
+                                            CommandParameter="{Binding .}"
+                                            HeightRequest="30" FontSize="10" Padding="10,0"
+                                            BackgroundColor="Gray" TextColor="White" HorizontalOptions="Start"/>
+                                </VerticalStackLayout>
+
                                 <Button Text="Edit Answers" 
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=EditAnswersCommand}"
                                         CommandParameter="{Binding .}"

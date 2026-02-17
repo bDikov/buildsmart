@@ -67,7 +67,9 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", "Scope approved and sent to Admin.", "OK");
+            await Shell.Current.DisplayAlert("Success", "Scope approved and sent to Admin for final review.", "OK");
+            
+            // Redirect back to Project Details
             await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)

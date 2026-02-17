@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
 	    public DbSet<Project> Projects { get; set; } = null!;
 	    public DbSet<JobPost> JobPosts { get; set; } = null!;
 	    public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
+        public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
 	    public DbSet<Bid> Bids { get; set; } = null!;
 	
 		public DbSet<Booking> Bookings { get; set; } = null!;

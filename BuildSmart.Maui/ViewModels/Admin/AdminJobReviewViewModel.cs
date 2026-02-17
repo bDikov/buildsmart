@@ -22,7 +22,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    private ObservableCollection<IGetJobsForReview_JobPostsForReview> _jobs = new();
+    private ObservableCollection<IGetProjectsForReview_ProjectsForReview> _projects = new();
 
     [ObservableProperty]
     private ObservableCollection<QAPair> _currentJobDetails = new();
@@ -34,10 +34,13 @@ public partial class AdminJobReviewViewModel : ObservableObject
     private bool _isEmpty;
 
     [ObservableProperty]
-    private IGetJobsForReview_JobPostsForReview? _selectedJob;
+    private IGetProjectsForReview_ProjectsForReview_JobPosts? _selectedJob;
 
     [ObservableProperty]
     private bool _isDetailsVisible;
+
+    [ObservableProperty]
+    private string _newFeedbackText = string.Empty;
 
     [RelayCommand]
     public async Task LoadJobsAsync()
@@ -47,7 +50,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            var result = await _apiClient.GetJobsForReview.ExecuteAsync();
+            var result = await _apiClient.GetProjectsForReview.ExecuteAsync();
 
             if (result.Errors.Count > 0)
             {
@@ -55,16 +58,156 @@ public partial class AdminJobReviewViewModel : ObservableObject
                 return;
             }
 
-            Jobs.Clear();
-            if (result.Data?.JobPostsForReview != null)
+            Projects.Clear();
+            if (result.Data?.ProjectsForReview != null)
             {
-                foreach (var job in result.Data.JobPostsForReview)
+                foreach (var project in result.Data.ProjectsForReview)
                 {
-                    Jobs.Add(job);
+                    Projects.Add(project);
                 }
             }
             
-            IsEmpty = !Jobs.Any();
+            IsEmpty = !Projects.Any();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+            [RelayCommand]
+            private async Task ViewJobDetails(IGetProjectsForReview_ProjectsForReview_JobPosts? job)
+            {
+                SelectedJob = job;
+                CurrentJobDetails.Clear();
+                
+                if (job == null)
+                {
+                    IsDetailsVisible = false;
+                    return;
+                }
+        
+                IsDetailsVisible = true;
+        
+                // Add Metadata
+                CurrentJobDetails.Add(new QAPair { Question = "Job Location", Answer = job.Location ?? "Not Specified" });
+                if (job.EstimatedBudget != null)
+                {
+                    CurrentJobDetails.Add(new QAPair { Question = "Estimated Budget", Answer = $"{job.EstimatedBudget.Total} {job.EstimatedBudget.Currency}" });
+                }
+        
+                try
+                {
+                    if (!string.IsNullOrEmpty(job.JobDetails))
+                    {
+                        var answers = JsonNode.Parse(job.JobDetails);
+                        
+                        // Fetch ALL active categories to find matching questions (including Global ones)
+                        var categoriesResult = await _apiClient.GetServiceCategories.ExecuteAsync();
+                        var allRelevantCategories = new List<string>();
+                        
+                        if (categoriesResult.Data?.ServiceCategories != null)
+                        {
+                            foreach (var cat in categoriesResult.Data.ServiceCategories)
+                            {
+                                // Match if it's the job's category OR if it's a Global category
+                                if (cat.Name == job.ServiceCategory.Name || cat.IsGlobal)
+                                {
+                                    if (!string.IsNullOrEmpty(cat.TemplateStructure))
+                                    {
+                                        var template = JsonNode.Parse(cat.TemplateStructure);
+                                        if (template?["questions"] is JsonArray qArray)
+                                        {
+                                            foreach (var qNode in qArray)
+                                            {
+                                                var id = qNode?["id"]?.GetValue<string>();
+                                                var text = qNode?["text"]?.GetValue<string>();
+        
+                                                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(text))
+                                                {
+                                                    var answer = answers?[id]?.GetValue<string>();
+                                                    if (!string.IsNullOrEmpty(answer))
+                                                    {
+                                                        CurrentJobDetails.Add(new QAPair { Question = text, Answer = answer });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+        
+                        // If after checking categories we have no questions (or if parsing failed), 
+                        // show raw data so nothing is hidden.
+                        if (CurrentJobDetails.Count <= 2 && answers is JsonObject obj)
+                        {
+                            foreach (var kvp in obj)
+                            {
+                                // Skip keys that might have been added by metadata
+                                if (kvp.Key == "location" || kvp.Key == "budget") continue;
+                                CurrentJobDetails.Add(new QAPair { Question = kvp.Key, Answer = kvp.Value?.ToString() ?? "(Empty)" });
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Parsing Error: {ex.Message}");
+                }
+            }    [RelayCommand]
+    private void CloseDetails()
+    {
+        IsDetailsVisible = false;
+        SelectedJob = null;
+    }
+
+    [RelayCommand]
+    private async Task ApproveJobAsync(IGetProjectsForReview_ProjectsForReview_JobPosts? job)
+    {
+        if (job == null) return;
+        bool confirm = await Shell.Current.DisplayAlert("Confirm", $"Approve scope for '{job.Title}'?", "Yes", "No");
+        if (!confirm) return;
+
+        await PerformReview(job.Id, true, null);
+    }
+
+    [RelayCommand]
+    private async Task RejectJobAsync(IGetProjectsForReview_ProjectsForReview_JobPosts? job)
+    {
+        if (job == null) return;
+        string feedback = await Shell.Current.DisplayPromptAsync("Reject Job", "Please provide a reason for rejection:", "Reject", "Cancel", "Reason...");
+        if (string.IsNullOrWhiteSpace(feedback)) return;
+
+        await PerformReview(job.Id, false, feedback);
+    }
+
+    [RelayCommand]
+    private async Task AddFeedbackAsync()
+    {
+        if (SelectedJob == null || string.IsNullOrWhiteSpace(NewFeedbackText)) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.AddJobFeedback.ExecuteAsync(SelectedJob.Id, NewFeedbackText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            NewFeedbackText = string.Empty;
+            await LoadJobsAsync(); // Reload to show new feedback
+            // Re-select job to refresh panel
+            var updatedProject = Projects.FirstOrDefault(p => p.JobPosts.Any(j => j.Id == SelectedJob.Id));
+            var updatedJob = updatedProject?.JobPosts.FirstOrDefault(j => j.Id == SelectedJob.Id);
+            if (updatedJob != null) ViewJobDetails(updatedJob);
         }
         catch (Exception ex)
         {
@@ -77,58 +220,32 @@ public partial class AdminJobReviewViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ViewJobDetails(IGetJobsForReview_JobPostsForReview? job)
+    private async Task ResolveFeedbackAsync(Guid feedbackId)
     {
-        SelectedJob = job;
-        CurrentJobDetails.Clear();
-        IsDetailsVisible = false;
-
-        if (job == null) return;
         try
         {
-            if (string.IsNullOrEmpty(job.JobDetails) || string.IsNullOrEmpty(job.ServiceCategory.TemplateStructure)) return;
+            IsBusy = true;
+            var result = await _apiClient.ResolveJobFeedback.ExecuteAsync(feedbackId);
 
-            var answers = JsonNode.Parse(job.JobDetails);
-            var template = JsonNode.Parse(job.ServiceCategory.TemplateStructure);
-
-            if (template?["questions"] is JsonArray qArray)
+            if (result.Errors.Count > 0)
             {
-                foreach (var qNode in qArray)
-                {
-                    var id = qNode?["id"]?.GetValue<string>();
-                    var text = qNode?["text"]?.GetValue<string>();
-
-                    if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(text))
-                    {
-                        var answer = answers?[id]?.GetValue<string>() ?? "(No Answer)";
-                        CurrentJobDetails.Add(new QAPair { Question = text, Answer = answer });
-                    }
-                }
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
             }
-            IsDetailsVisible = CurrentJobDetails.Any();
+
+            await LoadJobsAsync();
+            var updatedProject = Projects.FirstOrDefault(p => p.JobPosts.Any(j => j.Feedbacks.Any(f => f.Id == feedbackId)));
+            var updatedJob = updatedProject?.JobPosts.FirstOrDefault(j => j.Feedbacks.Any(f => f.Id == feedbackId));
+            if (updatedJob != null) ViewJobDetails(updatedJob);
         }
         catch (Exception ex)
         {
-            Shell.Current.DisplayAlert("Parsing Error", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
         }
-    }
-
-    [RelayCommand]
-    private async Task ApproveJobAsync(IGetJobsForReview_JobPostsForReview job)
-    {
-        bool confirm = await Shell.Current.DisplayAlert("Confirm", $"Approve scope for '{job.Title}'?", "Yes", "No");
-        if (!confirm) return;
-
-        await PerformReview(job.Id, true, null);
-    }
-
-    [RelayCommand]
-    private async Task RejectJobAsync(IGetJobsForReview_JobPostsForReview job)
-    {
-        string feedback = await Shell.Current.DisplayPromptAsync("Reject Job", "Please provide a reason for rejection:", "Reject", "Cancel", "Reason...");
-        if (string.IsNullOrWhiteSpace(feedback)) return;
-
-        await PerformReview(job.Id, false, feedback);
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task PerformReview(Guid jobId, bool approved, string? feedback)
@@ -145,8 +262,10 @@ public partial class AdminJobReviewViewModel : ObservableObject
             }
 
             await Shell.Current.DisplayAlert("Success", approved ? "Job published to tradesmen." : "Job rejected and feedback sent.", "OK");
+            
+            // Fix: Close details and refresh list
+            CloseDetails();
             await LoadJobsAsync();
-            CurrentJobDetails.Clear(); // Clear details after action
         }
         catch (Exception ex)
         {

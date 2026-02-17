@@ -72,6 +72,8 @@ public class JobPost : BaseEntity
 
 	public ICollection<Bid> Bids { get; set; } = new List<Bid>();
 
+	public ICollection<JobPostFeedback> Feedbacks { get; set; } = new List<JobPostFeedback>();
+
 	// --- Domain Methods ---
 
 	public void Publish()
@@ -87,7 +89,7 @@ public class JobPost : BaseEntity
 	{
 		if (Status == JobPostStatus.Draft)
 		{
-			Status = JobPostStatus.UnderReview;
+			Status = JobPostStatus.WaitingForAdminReview;
 			UpdatedAt = DateTime.UtcNow;
 		}
 	}

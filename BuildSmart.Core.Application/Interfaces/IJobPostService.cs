@@ -30,4 +30,7 @@ public interface IJobPostService
         
             Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, Amount amount, string? comment);    
     Task<Booking> AcceptBidAsync(Guid bidId);
+
+    Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
+    Task ResolveFeedbackAsync(Guid feedbackId);
 }

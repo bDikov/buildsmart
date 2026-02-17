@@ -28,6 +28,9 @@ public class JobPostService : IJobPostService
         }
 
         jobPost.SubmitForScopeGeneration();
+        
+        // Reset feedback when submitting a fix
+        jobPost.AdminFeedback = null;
 
         _unitOfWork.JobPosts.Update(jobPost);
         await _unitOfWork.SaveChangesAsync();
@@ -347,5 +350,41 @@ public class JobPostService : IJobPostService
         await _unitOfWork.SaveChangesAsync();
 
         return booking;
+    }
+
+    public async Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        var feedback = new JobPostFeedback
+        {
+            JobPostId = jobPostId,
+            AuthorId = authorId,
+            Text = text,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.JobPostFeedbacks.AddAsync(feedback);
+        
+        // If it's the homeowner responding to a rejected job, 
+        // we might want to automatically signal that it's ready for review again
+        // but we'll leave that to the specific workflow actions for now.
+
+        await _unitOfWork.SaveChangesAsync();
+        return feedback;
+    }
+
+    public async Task ResolveFeedbackAsync(Guid feedbackId)
+    {
+        var feedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(feedbackId)
+            ?? throw new ArgumentException("Feedback not found");
+
+        feedback.IsResolved = true;
+        feedback.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.JobPostFeedbacks.Update(feedback);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

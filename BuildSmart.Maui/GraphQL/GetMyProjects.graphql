@@ -28,6 +28,17 @@ query GetMyProjects {
         isGlobal
         templateStructure
       }
+      feedbacks {
+        id
+        text
+        isResolved
+        createdAt
+        author {
+          id
+          firstName
+          lastName
+        }
+      }
     }
   }
 }

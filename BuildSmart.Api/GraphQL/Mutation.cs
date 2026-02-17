@@ -282,6 +282,31 @@ public class Mutation
 		return true;
 	}
 
+    [Authorize]
+    public async Task<JobPostFeedback> AddJobFeedback(
+        Guid jobPostId,
+        string text,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IJobPostService jobPostService)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        return await jobPostService.AddFeedbackAsync(jobPostId, userId, text);
+    }
+
+    [Authorize(Roles = new[] { "Admin" })]
+    public async Task<bool> ResolveJobFeedback(
+        Guid feedbackId,
+        [Service] IJobPostService jobPostService)
+    {
+        await jobPostService.ResolveFeedbackAsync(feedbackId);
+        return true;
+    }
+
 	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<ServiceCategory> UpdateCategoryStatus(
 			Guid categoryId,

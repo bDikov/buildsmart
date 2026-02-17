@@ -11,65 +11,204 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:StringIsNotNullOrEmptyConverter x:Key="StringIsNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
     <Grid RowDefinitions="*, Auto">
-        <!-- List of Jobs -->
+        <!-- List of Projects containing Jobs -->
         <RefreshView Grid.Row="0" IsRefreshing="{Binding IsBusy}" Command="{Binding LoadJobsCommand}">
-            <CollectionView ItemsSource="{Binding Jobs}" SelectionMode="None">
+            <CollectionView ItemsSource="{Binding Projects}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="graphql:IGetJobsForReview_JobPostsForReview">
-                        <Frame Margin="10,5" Padding="15" BorderColor="LightGray">
-                            <Grid ColumnDefinitions="*, Auto">
-                                <VerticalStackLayout Grid.Column="0" Spacing="5">
-                                    <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
-                                    <Label Text="{Binding Project.Homeowner.FirstName, StringFormat='Owner: {0}'}" FontSize="12" TextColor="Gray"/>
-                                </VerticalStackLayout>
-                                
-                                <Button Grid.Column="1" Text="Review" 
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=ViewJobDetailsCommand}"
-                                        CommandParameter="{Binding .}"
-                                        HeightRequest="35" FontSize="12" />
-                            </Grid>
+                    <DataTemplate x:DataType="graphql:IGetProjectsForReview_ProjectsForReview">
+                        <Frame Margin="10,5" Padding="15" BorderColor="LightGray" HasShadow="False">
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <VerticalStackLayout Grid.Column="0">
+                                        <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
+                                        <Label Text="{Binding Homeowner.FirstName, StringFormat='Owner: {0}'}" FontSize="12" TextColor="Gray"/>
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1" Text="{Binding Status}" FontSize="11" TextColor="{StaticResource Primary}" FontAttributes="Bold" VerticalOptions="Start" />
+                                </Grid>
+
+                                <BoxView HeightRequest="1" Color="#EEEEEE" />
+
+                                <!-- Jobs within this Project -->
+                                <StackLayout BindableLayout.ItemsSource="{Binding JobPosts}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="graphql:IGetProjectsForReview_ProjectsForReview_JobPosts">
+                                            <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                                <VerticalStackLayout Grid.Column="0">
+                                                    <Label Text="{Binding Title}" FontSize="14" FontAttributes="Bold" />
+                                                    <Label Text="{Binding ServiceCategory.Name}" FontSize="11" TextColor="Gray" />
+                                                </VerticalStackLayout>
+                                                
+                                                <Button Grid.Column="1" Text="Review Task" 
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=ViewJobDetailsCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        HeightRequest="35" 
+                                                        FontSize="11" 
+                                                        BackgroundColor="{StaticResource Primary}" 
+                                                        TextColor="White" 
+                                                        Padding="10,0" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </StackLayout>
+                            </VerticalStackLayout>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
 
-        <!-- Selected Job Details Panel -->
-        <Frame Grid.Row="1" IsVisible="{Binding CurrentJobDetails.Count, Converter={StaticResource InverseBoolConverter}, ConverterParameter=Invert}" BackgroundColor="#F0F0F0" Padding="15" Margin="0" CornerRadius="20" HasShadow="True">
-            <ScrollView MaximumHeightRequest="400">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Review Job Scope" FontSize="18" FontAttributes="Bold" TextColor="Black" />
+        <!-- Selected Job Details Panel Overlay -->
+        <Border Grid.Row="1" IsVisible="{Binding IsDetailsVisible}" BackgroundColor="#212121" StrokeThickness="0" Padding="0" Margin="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="0" />
+            </Border.StrokeShape>
+            <ScrollView MaximumHeightRequest="700">
+                <VerticalStackLayout Spacing="15" Padding="20">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Text="Review Job Scope" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="{Binding SelectedJob.Project.Title, StringFormat='Project: {0}'}" FontSize="14" TextColor="{StaticResource PrimaryDark}" />
+                            <HorizontalStackLayout Spacing="5">
+                                <Label Text="Owner:" FontSize="12" TextColor="#ACACAC" />
+                                <Label Text="{Binding SelectedJob.Project.Homeowner.FirstName}" FontSize="12" TextColor="White" FontAttributes="Bold" />
+                                <Label Text="{Binding SelectedJob.Project.Homeowner.LastName}" FontSize="12" TextColor="White" FontAttributes="Bold" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="X" Command="{Binding CloseDetailsCommand}" BackgroundColor="Transparent" TextColor="White" FontSize="18" FontAttributes="Bold" Padding="10" MinimumHeightRequest="40" MinimumWidthRequest="40" />
+                    </Grid>
+
+                    <!-- Project Overview Section -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Project Context &amp; All Sections:" FontAttributes="Bold" FontSize="15" TextColor="#ACACAC" />
+                        <Border Stroke="#404040" BackgroundColor="#2D2D2D" Padding="12">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="{Binding SelectedJob.Project.Description}" FontSize="14" TextColor="White" LineBreakMode="WordWrap" />
+                                
+                                <Label Text="Project Jobs/Sections:" FontSize="12" FontAttributes="Bold" TextColor="#ACACAC" Margin="0,5,0,0"/>
+                                <StackLayout BindableLayout.ItemsSource="{Binding SelectedJob.Project.JobPosts}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="graphql:IGetProjectsForReview_ProjectsForReview_JobPosts">
+                                            <HorizontalStackLayout Spacing="10">
+                                                <Ellipse WidthRequest="6" HeightRequest="6" Fill="{StaticResource Primary}" VerticalOptions="Center"/>
+                                                <Label Text="{Binding Title}" FontSize="12" TextColor="White" />
+                                                <Label Text="{Binding Status, StringFormat='({0})'}" FontSize="11" TextColor="#ACACAC" />
+                                            </HorizontalStackLayout>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </StackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Previous Rejection Feedback -->
+                    <VerticalStackLayout Spacing="5" IsVisible="{Binding SelectedJob.AdminFeedback, Converter={StaticResource StringIsNotNullOrEmptyConverter}}">
+                        <Label Text="Previous Rejection Reason:" FontAttributes="Bold" FontSize="15" TextColor="#F44336" />
+                        <Border Stroke="#F44336" BackgroundColor="#3D1D1D" Padding="12">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            <Label Text="{Binding SelectedJob.AdminFeedback}" FontSize="14" TextColor="#FFCDD2" LineBreakMode="WordWrap" />
+                        </Border>
+                    </VerticalStackLayout>
                     
-                    <Label Text="Q&amp;A Context:" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="Q&amp;A Context (Specific to this Job):" FontAttributes="Bold" FontSize="15" TextColor="#ACACAC" />
                     <StackLayout BindableLayout.ItemsSource="{Binding CurrentJobDetails}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="vm:QAPair">
                                 <VerticalStackLayout Margin="0,5">
-                                    <Label Text="{Binding Question}" FontSize="12" TextColor="Gray" FontAttributes="Italic" />
-                                    <Label Text="{Binding Answer}" FontSize="13" TextColor="Black" />
+                                    <Label Text="{Binding Question}" FontSize="12" TextColor="#919191" FontAttributes="Italic" />
+                                    <Label Text="{Binding Answer}" FontSize="14" TextColor="White" />
                                 </VerticalStackLayout>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </StackLayout>
 
-                    <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
+                    <BoxView HeightRequest="1" Color="#404040" Margin="0,5" />
 
-                    <Label Text="User Edited Scope (To Approve):" FontAttributes="Bold" FontSize="14" />
-                    <!-- Binding to the selected job in the VM would be better, but we only have CurrentJobDetails list here. 
-                         We need the job object too. Let's add SelectedJob property to VM. -->
-                    <!-- For now, the actions are context-free but we need the ID. 
-                         I'll assume the VM tracks the 'SelectedJob' internally when ViewJobDetails is called. -->
-                    
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,20,0,0">
-                        <Button Grid.Column="0" Text="Approve" Command="{Binding ApproveJobCommand}" CommandParameter="{Binding SelectedJob}" BackgroundColor="Green" TextColor="White" />
-                        <Button Grid.Column="1" Text="Reject" Command="{Binding RejectJobCommand}" CommandParameter="{Binding SelectedJob}" BackgroundColor="Red" TextColor="White" />
+                    <!-- Threaded Feedback Section -->
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Clarifications &amp; Feedback Thread:" FontAttributes="Bold" FontSize="15" TextColor="#ACACAC" />
+                        
+                        <StackLayout BindableLayout.ItemsSource="{Binding SelectedJob.Feedbacks}">
+                            <BindableLayout.EmptyView>
+                                <Label Text="No clarifications yet." TextColor="#6E6E6E" FontSize="13" FontAttributes="Italic" HorizontalOptions="Center" Margin="0,10" />
+                            </BindableLayout.EmptyView>
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="graphql:IGetProjectsForReview_ProjectsForReview_JobPosts_Feedbacks">
+                                    <Border Stroke="#404040" BackgroundColor="#1A1A1A" Padding="10" Margin="0,2">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="5" />
+                                        </Border.StrokeShape>
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Label Text="{Binding Author.FirstName, StringFormat='{0}:'}" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+                                                    <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="#6E6E6E" VerticalOptions="Center" />
+                                                    <Label Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="#4CAF50" FontSize="10" FontAttributes="Bold" />
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding Text}" FontSize="13" TextColor="White" LineBreakMode="WordWrap" />
+                                            </VerticalStackLayout>
+                                            
+                                            <Button Grid.Column="1" Text="Resolve" 
+                                                    IsVisible="{Binding IsResolved, Converter={StaticResource InverseBoolConverter}}"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=ResolveFeedbackCommand}"
+                                                    CommandParameter="{Binding Id}"
+                                                    FontSize="10" HeightRequest="25" Padding="5,0" BackgroundColor="#404040" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+
+                        <!-- Add New Feedback -->
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10" Margin="0,5,0,0">
+                            <Editor Text="{Binding NewFeedbackText}" Placeholder="Ask for clarification..." 
+                                    TextColor="White" PlaceholderColor="#6E6E6E" AutoSize="TextChanges"
+                                    BackgroundColor="#2D2D2D" MinimumHeightRequest="40" FontSize="13" />
+                            <Button Grid.Column="1" Text="Send" Command="{Binding AddFeedbackCommand}" 
+                                    BackgroundColor="{StaticResource Primary}" TextColor="White" FontSize="12" HeightRequest="40" Padding="15,0" />
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <BoxView HeightRequest="1" Color="#404040" Margin="0,5" />
+
+                    <!-- Scope Comparison -->
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="Original AI Scope:" FontAttributes="Bold" FontSize="13" TextColor="#ACACAC" />
+                            <Border Stroke="#404040" BackgroundColor="#1A1A1A" Padding="10">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="5" />
+                                </Border.StrokeShape>
+                                <Label Text="{Binding SelectedJob.GeneratedScope}" FontSize="12" TextColor="#ACACAC" LineBreakMode="WordWrap" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="5">
+                            <Label Text="User Proposed Scope:" FontAttributes="Bold" FontSize="13" TextColor="#4CAF50" />
+                            <Border Stroke="#4CAF50" BackgroundColor="#2D2D2D" Padding="10">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="5" />
+                                </Border.StrokeShape>
+                                <Label Text="{Binding SelectedJob.UserEditedScope}" FontSize="13" TextColor="White" LineBreakMode="WordWrap" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="15" Margin="0,10,0,10">
+                        <Button Grid.Column="0" Text="Approve" Command="{Binding ApproveJobCommand}" CommandParameter="{Binding SelectedJob}" BackgroundColor="#4CAF50" TextColor="White" FontAttributes="Bold" HeightRequest="50" CornerRadius="10" />
+                        <Button Grid.Column="1" Text="Reject" Command="{Binding RejectJobCommand}" CommandParameter="{Binding SelectedJob}" BackgroundColor="#F44336" TextColor="White" FontAttributes="Bold" HeightRequest="50" CornerRadius="10" />
                     </Grid>
                 </VerticalStackLayout>
             </ScrollView>
-        </Frame>
+        </Border>
     </Grid>
 </ContentPage>

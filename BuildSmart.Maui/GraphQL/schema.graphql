@@ -19,6 +19,8 @@ type Query {
   myNotifications: [Notification!]!
   "Gets job posts waiting for admin review."
   jobPostsForReview: [JobPost!]!
+  "Gets projects waiting for admin review."
+  projectsForReview: [Project!]!
 }
 
 type Notification {
@@ -84,6 +86,23 @@ type Mutation {
 
   "Reviews the job post scope (Admin only)."
   adminReviewJobScope(jobPostId: UUID!, approved: Boolean!, feedback: String): Boolean!
+
+  "Adds a feedback/clarification message to a job post."
+  addJobFeedback(jobPostId: UUID!, text: String!): JobPostFeedback!
+
+  "Resolves a specific feedback item (Admin only)."
+  resolveJobFeedback(feedbackId: UUID!): Boolean!
+}
+
+type JobPostFeedback {
+    id: UUID!
+    jobPostId: UUID!
+    authorId: UUID!
+    author: User!
+    text: String!
+    isResolved: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }
 
 "Represents the specific profile for a tradesman."
@@ -147,6 +166,7 @@ type JobPost {
     project: Project!
     serviceCategory: ServiceCategory!
     bids: [Bid!]!
+    feedbacks: [JobPostFeedback!]!
     createdAt: DateTime!
     updatedAt: DateTime!
 }
