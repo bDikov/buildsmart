@@ -8,70 +8,69 @@ using System.Text.Json.Nodes;
 
 namespace BuildSmart.Maui.ViewModels.Admin;
 
-[QueryProperty(nameof(CategoryId), "id")]
-
+[QueryProperty(nameof(CategoryIdAsString), "id")]
+[QueryProperty(nameof(IsGlobalModeAsString), "isGlobalMode")]
 public partial class CategoryDetailViewModel : ObservableObject
-
 {
-
-    public static List<string> QuestionTypes => new() { "text", "number", "boolean" };
-
-    
+    public static List<string> QuestionTypes => new() { "text", "number", "boolean", "choice" };
 
     private readonly IBuildSmartApiClient _apiClient;
 
-
-
-    [ObservableProperty]
-
-    private Guid? _categoryId; // Correctly nullable
-
-    
+    public string CategoryIdAsString { set => OnSetCategoryId(value); }
+    public string IsGlobalModeAsString { set => OnSetIsGlobalMode(value); }
 
     [ObservableProperty]
+    private Guid? _categoryId;
 
+    [ObservableProperty]
     private string _categoryName;
 
-    
-
     [ObservableProperty]
-
     private string _categoryDescription;
 
+    [ObservableProperty]
+    private CategoryStatus _status = CategoryStatus.Draft;
 
+    public List<CategoryStatus> AllStatuses => Enum.GetValues<CategoryStatus>().ToList();
 
     [ObservableProperty]
+    private bool _isGlobal;
+    
+    [ObservableProperty]
+    private bool _isGlobalSwitchVisible = true; // Default to true, hide if in Global Mode
 
+    [ObservableProperty]
     private ObservableCollection<QuestionViewModel> _questions = new();
 
-
-
     public CategoryDetailViewModel(IBuildSmartApiClient apiClient)
-
     {
-
         _apiClient = apiClient;
-
         _categoryName = string.Empty;
-
         _categoryDescription = string.Empty;
-
     }
 
-
-
-    partial void OnCategoryIdChanged(Guid? value) // Correctly nullable
-
+    private void OnSetIsGlobalMode(string value)
     {
-
-        if (value.HasValue && value.Value != Guid.Empty)
-
+        if (bool.TryParse(value, out bool isGlobalMode) && isGlobalMode)
         {
-
-            LoadCategoryDetailsAsync(value.Value);
-
+            IsGlobal = true;
+            IsGlobalSwitchVisible = false;
+            CategoryName = "Global Questions";
+            CategoryDescription = "Questions applied to all job posts.";
         }
+    }
 
+    private void OnSetCategoryId(string idAsString)
+    {
+        if (Guid.TryParse(idAsString, out Guid result))
+        {
+            CategoryId = result;
+            LoadCategoryDetailsAsync(result);
+        }
+        else
+        {
+            CategoryId = null;
+        }
     }
 
 
@@ -100,7 +99,12 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                     CategoryDescription = category.Description ?? string.Empty;
 
+                    IsGlobal = category.IsGlobal;
+
+                    Status = category.Status;
                     
+                    // If we are editing a global category, hide the switch so it can't be turned off accidentally
+                    if (IsGlobal) IsGlobalSwitchVisible = false;
 
                     if (!string.IsNullOrWhiteSpace(category.TemplateStructure))
 
@@ -122,115 +126,153 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                                 {
 
-                                    Questions.Add(new QuestionViewModel
+                                                                                                            Questions.Add(new QuestionViewModel
 
-                                    {                                        Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
+                                                                                                            {
 
-                                        Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
+                                                                                                                Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
 
-                                        Type = qObj["type"]?.GetValue<string>() ?? "text"
+                                                                                                                Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
 
-                                    });
+                                                                                                                                                        Type = qObj["type"]?.GetValue<string>() ?? "text",
 
-                                }
+                                                                                                                                                        IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
 
-                            }
+                                                                                                                                                        Options = qObj["options"] is JsonArray opts 
 
-                        }
+                                                                                                                                                            ? new ObservableCollection<OptionViewModel>(opts.Select(o => new OptionViewModel(o?.GetValue<string>() ?? string.Empty)))
 
-                    }
+                                                                                                                                                            : new ObservableCollection<OptionViewModel>()
 
-                }
+                                                                                                                                                    });
 
-            }
+                                                                                                                                                }
 
-        }
+                                                                                                                                            }
 
-        catch (Exception ex)
+                                                                                                                                        }
 
-        {
+                                                                                                                                    }
 
-            await Shell.Current.DisplayAlert("Load Error", ex.ToString(), "OK");
+                                                                                                                                }
 
-        }
+                                                                                                                            }
 
-    }
+                                                                                                                        }
 
+                                                                                                                        catch (Exception ex)
 
+                                                                                                                        {
 
-    [RelayCommand]
+                                                                                                                            await Shell.Current.DisplayAlert("Load Error", ex.ToString(), "OK");
 
-    private void AddNewQuestion()
+                                                                                                                        }
 
-    {
+                                                                                                                    }
 
-        Questions.Add(new QuestionViewModel());
+                                                                                                                
 
-    }
+                                                                                                                    [RelayCommand]
 
+                                                                                                                    private void AddNewQuestion()
 
+                                                                                                                    {
 
-    [RelayCommand]
+                                                                                                                        Questions.Add(new QuestionViewModel());
 
-    private void RemoveQuestion(QuestionViewModel question)
+                                                                                                                    }
 
-    {
+                                                                                                                
 
-        if (question != null)
+                                                                                                                    [RelayCommand]
 
-        {
+                                                                                                                    private void RemoveQuestion(QuestionViewModel question)
 
-            Questions.Remove(question);
+                                                                                                                    {
 
-        }
+                                                                                                                        if (question != null)
 
-    }
+                                                                                                                        {
 
+                                                                                                                            Questions.Remove(question);
 
+                                                                                                                        }
 
-    [RelayCommand]
+                                                                                                                    }
 
-    private async Task SaveCategoryAsync()
+                                                                                                                
 
-    {
+                                                                                                                    [RelayCommand]
 
-        try
+                                                                                                                    private async Task SaveCategoryAsync()
 
-        {
+                                                                                                                    {
 
-            var questionNodes = new JsonArray(
+                                                                                                                        try
 
-                Questions.Select(q => new JsonObject
+                                                                                                                        {
 
-                {
+                                                                                                                            var questionNodes = new JsonArray();
 
-                    ["id"] = q.Id,
+                                                                                                                
 
-                    ["text"] = q.Text,
+                                                                                                                            foreach (var q in Questions)
 
-                    ["type"] = q.Type
+                                                                                                                            {
 
-                }).ToArray());
+                                                                                                                                var qObj = new JsonObject
 
+                                                                                                                                {
 
+                                                                                                                                    ["id"] = q.Id,
 
-            var template = new JsonObject
+                                                                                                                                    ["text"] = q.Text,
 
-            {
+                                                                                                                                    ["type"] = q.Type,
 
-                ["questions"] = questionNodes
+                                                                                                                                    ["required"] = q.IsRequired
 
-            };
+                                                                                                                                };
 
-            
+                                                                                                                
 
-            var templateStructureJson = template.ToJsonString();
+                                                                                                                                if (q.IsChoiceType && q.Options.Any())
+
+                                                                                                                                {
+
+                                                                                                                                    var optsArray = new JsonArray();
+
+                                                                                                                                    foreach (var o in q.Options) optsArray.Add(o.Value);
+
+                                                                                                                                    qObj["options"] = optsArray;
+
+                                                                                                                                }
+
+                                                                                                                
+
+                                                                                                                                questionNodes.Add(qObj);
+
+                                                                                                                            }
+
+                                                                                                                
+
+                                                                                                                            var template = new JsonObject
+
+                                                                                                                            {
+
+                                                                                                                                ["questions"] = questionNodes
+
+                                                                                                                            };
+
+                                                                                                                            
+
+                                                                                                                            var templateStructureJson = template.ToJsonString();
 
             
 
             // The CategoryId property is already a Guid?, so we can pass it directly.
 
-            var result = await _apiClient.SaveCategory.ExecuteAsync(CategoryId, CategoryName, CategoryDescription, templateStructureJson);
+            var result = await _apiClient.SaveCategory.ExecuteAsync(CategoryId, CategoryName, CategoryDescription, IsGlobal, templateStructureJson, Status);
 
 
 

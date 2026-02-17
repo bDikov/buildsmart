@@ -1,0 +1,10 @@
+mutation UpdateUserProfile($userId: UUID!, $firstName: String!, $lastName: String!, $bio: String, $location: String, $profilePictureUrl: String) {
+  updateUserProfile(userId: $userId, firstName: $firstName, lastName: $lastName, bio: $bio, location: $location, profilePictureUrl: $profilePictureUrl) {
+    id
+    firstName
+    lastName
+    bio
+    location
+    profilePictureUrl
+  }
+}

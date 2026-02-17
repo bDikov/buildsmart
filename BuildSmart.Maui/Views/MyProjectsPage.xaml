@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             x:Class="BuildSmart.Maui.Views.MyProjectsPage"
+             x:DataType="vm:MyProjectsViewModel"
+             Title="My Projects">
+
+    <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadProjectsCommand}">
+        <Grid>
+            <!-- Empty State -->
+            <VerticalStackLayout IsVisible="{Binding IsEmpty}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                <Label Text="You haven't posted any projects yet." HorizontalOptions="Center" TextColor="Gray" />
+                <Button Text="Create Project" Command="{Binding CreateProjectCommand}" />
+            </VerticalStackLayout>
+
+            <!-- Projects List -->
+            <CollectionView ItemsSource="{Binding Projects}" IsVisible="{Binding IsEmpty, Converter={StaticResource InverseBoolConverter}}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Delete"
+                                               BackgroundColor="Red"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyProjectsViewModel}}, Path=DeleteProjectCommand}"
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Frame Padding="15" Margin="10,5" CornerRadius="10" BorderColor="LightGray">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyProjectsViewModel}}, Path=GoToDetailsCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                                <VerticalStackLayout Spacing="5">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Label Grid.Column="0" 
+                                               Text="{Binding Title, TargetNullValue='(No Title)'}" 
+                                               FontSize="18" 
+                                               FontAttributes="Bold" 
+                                               TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                        <Label Grid.Column="1" 
+                                               Text="{Binding Status}" 
+                                               FontSize="12" 
+                                               TextColor="{StaticResource Primary}" 
+                                               FontAttributes="Bold" />
+                                    </Grid>
+                                    
+                                    <Label Text="{Binding Description, TargetNullValue='(No Description)'}" 
+                                           MaxLines="2" 
+                                           LineBreakMode="TailTruncation" 
+                                           TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                    
+                                    <BoxView HeightRequest="1" Color="LightGray" Margin="0,5" />
+                                    
+                                    <StackLayout>
+                                        <Label Text="Jobs:" 
+                                               FontSize="12" 
+                                               FontAttributes="Bold" 
+                                               TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                    </StackLayout>
+
+                                    <StackLayout BindableLayout.ItemsSource="{Binding JobPosts}">
+                                        <BindableLayout.EmptyView>
+                                            <Label Text="No specific jobs added." FontSize="10" FontAttributes="Italic" TextColor="Gray" Margin="5,0"/>
+                                        </BindableLayout.EmptyView>
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts">
+                                                <Frame Padding="10" Margin="0,5" BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#333333}" BorderColor="Transparent">
+                                                    <Grid ColumnDefinitions="*, Auto">
+                                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                            <Label Text="{Binding ServiceCategory.Name, TargetNullValue='Unknown Category'}" 
+                                                                   FontSize="14" 
+                                                                   FontAttributes="Bold"
+                                                                   TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                                            <Label Text="{Binding Title}" 
+                                                                   FontSize="12" 
+                                                                   TextColor="Gray"/>
+                                                        </VerticalStackLayout>
+                                                        <Label Grid.Column="1" 
+                                                               Text="{Binding Status}" 
+                                                               FontSize="12" 
+                                                               TextColor="{AppThemeBinding Light=#E65100, Dark=#FF9800}" 
+                                                               VerticalOptions="Center"
+                                                               FontAttributes="Bold"/>
+                                                    </Grid>
+                                                </Frame>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </StackLayout>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </RefreshView>
+</ContentPage>

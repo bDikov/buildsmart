@@ -20,11 +20,14 @@ public class AppDbContext : DbContext
 	    public DbSet<Project> Projects { get; set; } = null!;
 	    public DbSet<JobPost> JobPosts { get; set; } = null!;
 	    public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
+        public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
 	    public DbSet<Bid> Bids { get; set; } = null!;
 	
 		public DbSet<Booking> Bookings { get; set; } = null!;
 	    public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;
 		public DbSet<Review> Reviews { get; set; } = null!;
+        public DbSet<Notification> Notifications { get; set; } = null!; // Added
+
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
 	{
@@ -54,6 +57,36 @@ public class AppDbContext : DbContext
                 UpdatedAt = DateTime.UtcNow
             };
             await Users.AddAsync(adminUser);
+            await SaveChangesAsync();
+        }
+    }
+
+    public async Task SeedHomeownerUser()
+    {
+        if (!Users.Any(u => u.Email == "homeowner@buildsmart.com"))
+        {
+            var homeownerId = Guid.NewGuid();
+            var homeownerUser = new User
+            {
+                Id = homeownerId,
+                FirstName = "Home",
+                LastName = "Owner",
+                Email = "homeowner@buildsmart.com",
+                HashedPassword = BCrypt.Net.BCrypt.HashPassword("Homeowner123!"),
+                Role = UserRoleTypes.Homeowner,
+                IsEmailVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            homeownerUser.HomeownerProfile = new HomeownerProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = homeownerId,
+                Address = "123 Smart St"
+            };
+
+            await Users.AddAsync(homeownerUser);
             await SaveChangesAsync();
         }
     }

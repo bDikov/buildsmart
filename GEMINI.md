@@ -77,3 +77,69 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 *   **Entity Framework Core**: The infrastructure layer uses EF Core for data access.
 *   **.NET MAUI with MVVM**: The client application is built with .NET MAUI and likely follows the MVVM pattern.
 *   **Testing**: The project has a dedicated test project using xUnit, Moq, and Snapshot testing.
+*   **AI Integration**: The platform uses Google Gemini 1.5 Pro for automated construction scope generation. See `AI_IMPLEMENTATION.md` for technical details.
+
+### Manual Migrations
+
+**IMPORTANT:** The Gemini agent is configured to **never** execute migration commands automatically.
+
+### Git and Version Control
+
+**STRICT RULE:** The Gemini agent must **NEVER EVER** execute `git add`, `git commit`, or `git push` commands unless the user explicitly gives a specific instruction to do so and then confirms it. The user prefers to manage version control manually through Visual Studio.
+
+### Verification Protocol
+
+**ALWAYS RUN BUILD:** When modifying code to fix errors or add features, the agent must **execute `dotnet build`** immediately after the changes to verify them. Do not rely solely on reading previous log files. Active verification is required.
+
+## Domain Model Changes
+*   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
+*   **JobPost**: Fixed `HomeownerProfileId` mapping in `JobPostService` to prevent FK violations.
+*   **GraphQL Schema**: Aligned `JobPostStatus` and other Enums to use `UPPER_CASE` in `schema.graphql` to match HotChocolate's default server serialization (`UNDER_REVIEW`).
+If using the Package Manager Console, use these commands (Set `BuildSmart.Infrastructure` as Default Project):
+```powershell
+Add-Migration <MigrationName> -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api
+Update-Database -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api
+```
+
+#### .NET CLI (Terminal)
+If using the terminal, use these commands:
+```powershell
+dotnet ef migrations add <MigrationName> --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+```
+
+*   **Agent Responsibility**: The agent modifies Entity classes and provides these commands.
+*   **User Responsibility**: The user must execute these commands to update the database schema.
+
+## Domain Model Changes
+*   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
+
+## New Features
+*   **Global Categories**: 
+    *   Admins can create "Global" categories. Questions defined in these categories are automatically added to *every* job post wizard, regardless of the specific category selected by the user.
+    *   Global categories are hidden from the standard category selection list in the Job Wizard but are processed in the background.
+    *   Admins can manage the status (Draft, Active, Archived) of global categories.
+*   **Required Questions**:
+    *   Admins can mark specific questions within a category (Global or Regular) as "Required".
+    *   In the Job Wizard, required questions are visually marked with a red asterisk (*).
+    *   The Job Wizard prevents project submission if any required questions are left unanswered.
+*   **Smart Scope Generation (AI Workflow)**:
+    *   **Workflow**: Jobs now follow a multi-stage approval flow: `Draft` -> `GeneratingScope` -> `WaitingForUserReview` -> `WaitingForAdminReview` -> `Open`.
+    *   **Background Worker**: A new `ScopeGenerationWorker` processes jobs asynchronously using a `MockAiService` (to be replaced by Gemini/OpenAI).
+    *   **Homeowner UI**: Added a **"Generate Smart Scope"** button in Project Details. Users can review and edit AI-generated text on the new **Scope Review Page**.
+    *   **Admin Approval**: Admins have a new **"Job Reviews"** dashboard to approve or reject (with feedback) the final scope before it goes live to tradesmen.
+*   **Project Navigation**:
+    *   Removed auto-navigation to the latest project in "My Projects".
+    *   Users can now tap any project card to view specific details.
+
+## AI Integration Reference
+### System Prompt for Scope Generation
+**Role**: Expert Construction Manager / Quantity Surveyor.
+**Goal**: Transform raw Q&A into a Markdown Scope of Work including:
+1. Project Overview
+2. Detailed Tasks (inferring technical sub-tasks)
+3. Materials (Contractor vs Owner supplied)
+4. Site Logistics
+5. Exclusions
+**Tone**: Technical, Professional, Objective.
+

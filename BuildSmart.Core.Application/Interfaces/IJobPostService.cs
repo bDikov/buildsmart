@@ -11,13 +11,26 @@ public interface IJobPostService
         Guid projectId, 
         Guid categoryId, 
         string title, 
-        string jobDetailsJson, 
+        string jobDetailsJson,
+        string location,
         Amount? estimatedBudget,
         List<string> imageUrls);
+    
+    Task SubmitJobForScopeGenerationAsync(Guid jobPostId);
+    
+    Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);
+    
+    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback);
 
     Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
-    
-    Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, Amount amount, string? comment);
-    
+            
+            Task SaveDraftAsync(Guid jobPostId, string jobDetailsJson, string? description, string? location, Amount? estimatedBudget);
+            
+            Task SubmitJobPostAsync(Guid jobPostId);
+        
+            Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, Amount amount, string? comment);    
     Task<Booking> AcceptBidAsync(Guid bidId);
+
+    Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
+    Task ResolveFeedbackAsync(Guid feedbackId);
 }

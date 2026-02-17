@@ -71,6 +71,27 @@ public class AuthService : IAuthService
         return user;
     }
 
+    public async Task<User> UpdateUserProfileAsync(Guid userId, string firstName, string lastName, string? bio, string? location, string? profilePictureUrl)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new Exception("User not found.");
+        }
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+        user.Bio = bio;
+        user.Location = location;
+        user.ProfilePictureUrl = profilePictureUrl;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return user;
+    }
+
     public async Task<bool> VerifyEmailAsync(string token)
     {
         var user = await _unitOfWork.Users.GetByVerificationTokenAsync(token);

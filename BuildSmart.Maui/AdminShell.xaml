@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:BuildSmart.Maui.Views"
+    xmlns:admin="clr-namespace:BuildSmart.Maui.Views.Admin"
     Shell.FlyoutBehavior="Flyout">
 
     <FlyoutItem Title="Management">
@@ -11,6 +12,10 @@
             Title="Categories"
             ContentTemplate="{DataTemplate views:CategoryManagementPage}"
             Route="CategoryManagementPage" />
+        <ShellContent
+            Title="Job Reviews"
+            ContentTemplate="{DataTemplate admin:AdminJobReviewPage}"
+            Route="AdminJobReviewPage" />
     </FlyoutItem>
     
     <FlyoutItem Title="User View">
@@ -19,5 +24,23 @@
             ContentTemplate="{DataTemplate views:FeedPage}"
             Route="AdminDashboard" />
     </FlyoutItem>
+
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="15" Spacing="5">
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,0,0,10" />
+            <Button Text="Profile Settings" 
+                    Clicked="OnProfileSettingsClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Black"
+                    HorizontalOptions="Start"
+                    FontSize="16" />
+            <Button Text="Logout" 
+                    Clicked="OnLogoutClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Red"
+                    HorizontalOptions="Start"
+                    FontSize="16" />
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
 
 </Shell>

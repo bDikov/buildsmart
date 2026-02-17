@@ -11,6 +11,7 @@ mutation AddJobToProject(
     $categoryId: UUID!, 
     $title: String!, 
     $jobDetailsJson: String!, 
+    $location: String,
     $estimatedSubtotal: Decimal,
     $currency: String!,
     $imageUrls: [String!]!
@@ -20,6 +21,7 @@ mutation AddJobToProject(
         categoryId: $categoryId,
         title: $title,
         jobDetailsJson: $jobDetailsJson,
+        location: $location,
         estimatedSubtotal: $estimatedSubtotal,
         currency: $currency,
         imageUrls: $imageUrls
@@ -28,4 +30,12 @@ mutation AddJobToProject(
         title
         amendmentCount
     }
+}
+
+mutation SubmitJobForScopeGeneration($jobPostId: UUID!) {
+    submitJobForScopeGeneration(jobPostId: $jobPostId)
+}
+
+mutation ApproveJobScope($jobPostId: UUID!, $finalScope: String!) {
+    approveJobScope(jobPostId: $jobPostId, finalScope: $finalScope)
 }

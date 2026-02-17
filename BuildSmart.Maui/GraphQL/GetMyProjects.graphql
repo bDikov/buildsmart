@@ -1,0 +1,44 @@
+query GetMyProjects {
+  myProjects {
+    id
+    title
+    description
+    status
+    createdAt
+    jobPosts {
+      id
+      title
+      description
+      jobDetails
+      location
+      project {
+        id
+      }
+      status
+      generatedScope
+      userEditedScope
+      adminFeedback
+      estimatedBudget {
+        total
+        currency
+      }
+      serviceCategory {
+        id
+        name
+        isGlobal
+        templateStructure
+      }
+      feedbacks {
+        id
+        text
+        isResolved
+        createdAt
+        author {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+}

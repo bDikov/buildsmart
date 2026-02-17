@@ -2,21 +2,35 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
              x:Class="BuildSmart.Maui.Views.JobWizardPage"
              x:DataType="vm:JobWizardViewModel"
              Title="Create Project">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StepToProgressConverter x:Key="StepToProgressConverter" />
+            <converters:StepVisibleConverter x:Key="StepVisibleConverter" />
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:BoolToColorConverter x:Key="ErrorColorConverter" TrueColor="Red" FalseColor="Black" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *">
-        <!-- Progress Bar -->
-        <ProgressBar Progress="{Binding CurrentStep, Converter={StaticResource StepToProgressConverter}}" 
-                     Grid.Row="0" Margin="10" />
+        <!-- Progress Bar & Title -->
+        <VerticalStackLayout Grid.Row="0" Margin="10">
+            <Label Text="{Binding CurrentStepTitle}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" />
+            <ProgressBar Progress="{Binding CurrentStep, Converter={StaticResource StepToProgressConverter}}" Margin="0,5,0,0" />
+        </VerticalStackLayout>
 
         <!-- Step 0: Basic Info -->
-        <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=0}" Padding="20">
-            <Label Text="Project Title" FontSize="18" FontAttributes="Bold" />
+        <StackLayout Grid.Row="1" IsVisible="{Binding IsInfoStepVisible}" Padding="20">
+            <Label Text="Project Title" FontSize="18" FontAttributes="Bold" TextColor="{Binding TitleHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Entry Text="{Binding ProjectTitle}" Placeholder="e.g., Kitchen Remodel" Margin="0,0,0,10"/>
             
-            <Label Text="Description" FontSize="18" FontAttributes="Bold" />
+            <Label Text="Location" FontSize="18" FontAttributes="Bold" TextColor="{Binding LocationHasError, Converter={StaticResource ErrorColorConverter}}"/>
+            <Entry Text="{Binding ProjectLocation}" Placeholder="e.g., New York, NY" Margin="0,0,0,10"/>
+
+            <Label Text="Description" FontSize="18" FontAttributes="Bold" TextColor="{Binding DescriptionHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Editor Text="{Binding ProjectDescription}" HeightRequest="100" Placeholder="Describe your project..." />
 
             <Button Text="Next: Select Category" 
@@ -27,9 +41,9 @@
 
         <!-- Step 1: Category Selection -->
         <ScrollView Grid.Row="1" 
-                    IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=1}">
+                    IsVisible="{Binding IsCategoryStepVisible}">
             <VerticalStackLayout Padding="20" Spacing="10">
-                <Label Text="Select Job Categories" FontSize="20" FontAttributes="Bold" />
+                <Label Text="Select Job Categories" FontSize="20" FontAttributes="Bold" TextColor="{Binding CategorySelectionHasError, Converter={StaticResource ErrorColorConverter}}"/>
                 <CollectionView ItemsSource="{Binding SelectableCategories}"
                                 SelectionMode="None">
                     <CollectionView.ItemTemplate>
@@ -47,23 +61,54 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Step 2: Dynamic Wizard (Simplified for MVP) -->
-        <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=2}" Padding="20">
-            <Label Text="Project Details" FontSize="20" HorizontalOptions="Center" />
-            <Label Text="This is where dynamic questions for each selected category would appear." TextColor="Gray" HorizontalOptions="Center" Margin="0,10"/>
-            
-            <Button Text="Review Project" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
-        </StackLayout>
+        <!-- Dynamic Questions Step (Reused for all question steps) -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding IsQuestionStepVisible}">
+            <VerticalStackLayout Padding="20" Spacing="15">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Questions}" Spacing="15">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WizardQuestionViewModel">
+                            <Frame Padding="15" CornerRadius="10" BorderColor="LightGray">
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="{Binding CategoryName}" FontSize="10" TextColor="#1565C0" FontAttributes="Bold" TextTransform="Uppercase"/>
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" TextColor="{Binding HasError, Converter={StaticResource ErrorColorConverter}}"/>
+                                        <Label Text="*" FontSize="16" TextColor="Red" IsVisible="{Binding IsRequired}" />
+                                    </HorizontalStackLayout>
+                                    
+                                    <!-- Text Input -->
+                                    <Entry Text="{Binding Answer}" Placeholder="Type your answer here..." IsVisible="{Binding IsText}" />
+                                    
+                                    <!-- Choice Input -->
+                                    <Picker ItemsSource="{Binding Options}" 
+                                            SelectedItem="{Binding Answer}"
+                                            Title="Select an option"
+                                            IsVisible="{Binding IsChoice}" />
 
-        <!-- Step 3: Review -->
-        <StackLayout Grid.Row="1" IsVisible="{Binding CurrentStep, Converter={StaticResource StepVisibleConverter}, ConverterParameter=3}" Padding="20">
+                                    <!-- Boolean Input -->
+                                    <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsBoolean}">
+                                        <CheckBox IsChecked="{Binding BoolAnswer}" Color="#1565C0" />
+                                        <Label Text="Yes" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Button Text="Next" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
+                <Button Text="Back" Command="{Binding GoToPreviousStepCommand}" BackgroundColor="Transparent" TextColor="Gray"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Review Step -->
+        <StackLayout Grid.Row="1" IsVisible="{Binding IsReviewStepVisible}" Padding="20">
             <Label Text="Review &amp; Submit" FontSize="22" FontAttributes="Bold" />
             
             <Label Text="Title:" FontAttributes="Bold" Margin="0,10,0,0"/>
             <Label Text="{Binding ProjectTitle}" />
 
             <Label Text="Selected Categories:" FontAttributes="Bold" Margin="0,10,0,0"/>
-            <CollectionView ItemsSource="{Binding SelectableCategories}" >
+            <CollectionView ItemsSource="{Binding SelectableCategories}" HeightRequest="50">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:SelectableCategoryViewModel">
                         <!-- Only show selected items -->
@@ -71,6 +116,20 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
+            <Label Text="Job Details:" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <ScrollView HeightRequest="200">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding AnswersList}" Spacing="5" Margin="10,5">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Key}" FontSize="12" TextColor="Gray" />
+                                <Label Text="{Binding Value}" FontSize="14" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
 
             <Button Text="Post Project" 
                     Command="{Binding SubmitProjectCommand}" 

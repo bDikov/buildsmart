@@ -1,0 +1,3 @@
+mutation SaveJobPostDraft($jobPostId: UUID!, $jobDetailsJson: String!, $description: String, $location: String, $estimatedSubtotal: Decimal, $currency: String!) {
+  saveJobPostDraft(jobPostId: $jobPostId, jobDetailsJson: $jobDetailsJson, description: $description, location: $location, estimatedSubtotal: $estimatedSubtotal, currency: $currency)
+}

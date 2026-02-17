@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
+             x:Class="BuildSmart.Maui.Views.ProjectDetailPage"
+             x:DataType="vm:ProjectDetailViewModel"
+             Title="Project Details">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringIsNotNullOrEmptyConverter x:Key="StringIsNotNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="{Binding Project.Title}" FontSize="24" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+            <Label Text="{Binding Project.Status}" FontSize="14" TextColor="{StaticResource Primary}" />
+            <Label Text="{Binding Project.Description}" TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Job Posts" FontSize="18" FontAttributes="Bold" />
+
+            <StackLayout BindableLayout.ItemsSource="{Binding Project.JobPosts}">
+                <BindableLayout.EmptyView>
+                    <Label Text="No jobs found in this project." TextColor="Red" />
+                </BindableLayout.EmptyView>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts">
+                        <Frame Padding="15" Margin="0,5" BorderColor="LightGray" BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#333333}">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Label Text="{Binding ServiceCategory.Name}" TextColor="Gray" FontSize="12"/>
+                                <Label Text="{Binding Status}" TextColor="Orange" FontSize="12" FontAttributes="Bold"/>
+                                <Label Text="{Binding Description}" TextColor="Gray" Margin="0,5,0,0"/>
+
+                                <!-- Admin Feedback -->
+                                <VerticalStackLayout IsVisible="{Binding AdminFeedback, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Margin="0,10">
+                                    <Label Text="Admin Feedback:" FontAttributes="Bold" TextColor="#D32F2F" FontSize="12"/>
+                                    <Label Text="{Binding AdminFeedback}" TextColor="#D32F2F" FontSize="13" />
+                                </VerticalStackLayout>
+
+                                <!-- Generated Scope View -->
+                                <VerticalStackLayout IsVisible="{Binding GeneratedScope, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Margin="0,10,0,0">
+                                    <Label Text="AI Generated Scope:" FontSize="12" FontAttributes="Bold" TextColor="#1565C0"/>
+                                    <Label Text="{Binding GeneratedScope}" FontSize="12" TextColor="Black" />
+                                </VerticalStackLayout>
+
+                                <!-- Clarification Thread -->
+                                <VerticalStackLayout Margin="0,10" Spacing="5">
+                                    <Label Text="Admin Clarifications:" FontAttributes="Bold" FontSize="12" TextColor="{StaticResource Primary}"/>
+                                    <StackLayout BindableLayout.ItemsSource="{Binding Feedbacks}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Frame Padding="8" Margin="0,2" BorderColor="LightGray" HasShadow="False" BackgroundColor="White">
+                                                    <VerticalStackLayout Spacing="2">
+                                                        <HorizontalStackLayout Spacing="5">
+                                                            <Label Text="{Binding Author.FirstName, StringFormat='{0}:'}" FontSize="10" FontAttributes="Bold" />
+                                                            <Label Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="Green" FontSize="9" FontAttributes="Bold" />
+                                                        </HorizontalStackLayout>
+                                                        <Label Text="{Binding Text}" FontSize="12" />
+                                                    </VerticalStackLayout>
+                                                </Frame>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </StackLayout>
+                                    
+                                    <Button Text="Respond to Admin" 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=RespondToAdminCommand}"
+                                            CommandParameter="{Binding .}"
+                                            HeightRequest="30" FontSize="10" Padding="10,0"
+                                            BackgroundColor="Gray" TextColor="White" HorizontalOptions="Start"/>
+                                </VerticalStackLayout>
+
+                                <Button Text="Edit Answers" 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=EditAnswersCommand}"
+                                        CommandParameter="{Binding .}"
+                                        HeightRequest="40"
+                                        FontSize="12"
+                                        BackgroundColor="#FFA000"
+                                        TextColor="White"
+                                        Margin="0,10,0,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="IsVisible" Value="False" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Text="Generate Smart Scope" 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=SubmitForGenerationCommand}"
+                                        CommandParameter="{Binding .}"
+                                        HeightRequest="40"
+                                        FontSize="12"
+                                        Margin="0,10,0,0">
+                                    <Button.Triggers>
+                                        <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Draft">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                        <!-- Hide for others -->
+                                        <MultiTrigger TargetType="Button">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding Status}" Value="Draft" />
+                                            </MultiTrigger.Conditions>
+                                            <!-- This is a bit complex in XAML, easier to just hide by default -->
+                                        </MultiTrigger>
+                                    </Button.Triggers>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="IsVisible" Value="False" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Draft">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Text="Review AI Scope" 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=ReviewScopeCommand}"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="Green"
+                                        TextColor="White"
+                                        HeightRequest="40"
+                                        FontSize="12">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="IsVisible" Value="False" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="WaitingForUserReview">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

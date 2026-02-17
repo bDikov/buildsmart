@@ -25,8 +25,13 @@ public static class MauiProgram
 
 		// Configure StrawberryShake GraphQL Client
 
-		builder.Services.AddSingleton<IAuthService, AuthService>();
-		builder.Services.AddTransient<AuthHeaderHandler>();
+		        builder.Services.AddSingleton<IMediaPicker>(MediaPicker.Default);
+		        builder.Services.AddSingleton<IFilePicker>(FilePicker.Default); // Good practice to add commonly used essentials
+		
+		        // Services
+		        builder.Services.AddSingleton<IAuthService, AuthService>();
+                builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
+                builder.Services.AddTransient<AuthHeaderHandler>();
 		builder.Services.AddTransient<LoggingHandler>();
 
 		// Register Strawberry Shake with fluent configuration
@@ -65,23 +70,41 @@ public static class MauiProgram
 		builder.Services.AddTransient<JobWizardPage>();
 		builder.Services.AddTransient<JobWizardViewModel>();
 
+        builder.Services.AddTransient<UserProfilePage>();
+        builder.Services.AddTransient<UserProfileViewModel>();
+
+        builder.Services.AddTransient<MyProjectsPage>();
+        builder.Services.AddTransient<MyProjectsViewModel>();
+
+        builder.Services.AddTransient<ProjectDetailPage>();
+        builder.Services.AddTransient<ProjectDetailViewModel>();
+
+        builder.Services.AddTransient<ScopeReviewPage>();
+        builder.Services.AddTransient<ScopeReviewViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
+		builder.Services.AddTransient<AppShell>();
 		builder.Services.AddTransient<CategoryManagementPage>();
 		builder.Services.AddTransient<CategoryManagementViewModel>();
 		builder.Services.AddTransient<CategoryDetailPage>();
 		builder.Services.AddTransient<CategoryDetailViewModel>();
 
+		builder.Services.AddTransient<AdminJobReviewPage>();
+		builder.Services.AddTransient<AdminJobReviewViewModel>();
+
 		builder.Services.AddSingleton<MainShell>();
 
 		Routing.RegisterRoute(nameof(DetailedViewPage), typeof(DetailedViewPage));
 		Routing.RegisterRoute(nameof(CreateAccountPage), typeof(CreateAccountPage));
-		Routing.RegisterRoute(nameof(FeedPage), typeof(FeedPage));
 		Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
 		Routing.RegisterRoute(nameof(BookingPage), typeof(BookingPage));
 		Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
 		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
+        Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
+        Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
+        Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
 		builder.Logging.AddDebug();
 
 		return builder.Build();

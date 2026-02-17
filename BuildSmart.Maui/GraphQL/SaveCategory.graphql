@@ -1,6 +1,7 @@
-mutation SaveCategory($id: UUID, $name: String!, $description: String, $templateStructure: String!) {
-  saveCategory(id: $id, name: $name, description: $description, templateStructure: $templateStructure) {
+mutation SaveCategory($id: UUID, $name: String!, $description: String, $isGlobal: Boolean!, $templateStructure: String!, $status: CategoryStatus) {
+  saveCategory(id: $id, name: $name, description: $description, isGlobal: $isGlobal, templateStructure: $templateStructure, status: $status) {
     id
     name
+    status
   }
 }

@@ -4,6 +4,7 @@ query GetAllServiceCategories {
     name
     description
     status
+    isGlobal
     templateStructure
   }
 }

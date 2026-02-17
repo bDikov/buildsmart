@@ -8,4 +8,5 @@ public interface IProjectRepository
     Task<IEnumerable<Project>> GetProjectsByHomeownerAsync(Guid homeownerId);
     Task AddAsync(Project project);
     void Update(Project project);
+    Task DeleteAsync(Guid id);
 }

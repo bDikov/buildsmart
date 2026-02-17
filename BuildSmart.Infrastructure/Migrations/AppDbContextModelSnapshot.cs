@@ -174,6 +174,9 @@ namespace BuildSmart.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AdminFeedback")
+                        .HasColumnType("text");
+
                     b.Property<int>("AmendmentCount")
                         .HasColumnType("integer");
 
@@ -184,6 +187,9 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("GeneratedScope")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("HomeownerProfileId")
                         .HasColumnType("uuid");
@@ -218,6 +224,9 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserEditedScope")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("HomeownerProfileId");
@@ -227,6 +236,40 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasIndex("ServiceCategoryId");
 
                     b.ToTable("JobPosts", (string)null);
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("JobPostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("JobPostId");
+
+                    b.ToTable("JobPostFeedbacks");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostQuestion", b =>
@@ -299,6 +342,45 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("TradesmanSkills", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RelatedEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.PortfolioEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -352,6 +434,9 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("GeneralSummary")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("HomeownerId")
                         .HasColumnType("uuid");
@@ -428,6 +513,9 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsGlobal")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -897,6 +985,25 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostFeedback", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("JobPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("JobPost");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostQuestion", b =>
                 {
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
@@ -933,6 +1040,17 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("ServiceCategory");
 
                     b.Navigation("TradesmanProfile");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.PortfolioEntry", b =>
@@ -1005,6 +1123,8 @@ namespace BuildSmart.Infrastructure.Migrations
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPost", b =>
                 {
                     b.Navigation("Bids");
+
+                    b.Navigation("Feedbacks");
 
                     b.Navigation("Questions");
                 });

@@ -19,10 +19,10 @@ public class Mutation
 	}
 
 	public async Task<string> Login(
-        string email, 
-        string password, 
-        [Service] IUnitOfWork unitOfWork, 
-        [Service] IConfiguration configuration)
+		string email,
+		string password,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IConfiguration configuration)
 	{
 		var user = await unitOfWork.Users.GetByEmailAsync(email);
 
@@ -40,7 +40,7 @@ public class Mutation
 		{
 			throw new GraphQLException(new Error("Invalid credentials", "AUTH_INVALID_CREDENTIALS"));
 		}
-        
+
 		var issuer = configuration["Jwt:Issuer"];
 		var audience = configuration["Jwt:Audience"];
 		var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]!);
@@ -63,6 +63,7 @@ public class Mutation
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		return tokenHandler.WriteToken(token);
 	}
+
 	public async Task<User> RegisterUser(
 		string firstName,
 		string lastName,
@@ -71,6 +72,19 @@ public class Mutation
 		[Service] IAuthService authService)
 	{
 		return await authService.RegisterUserAsync(firstName, lastName, email, password);
+	}
+
+	[Authorize]
+	public async Task<User> UpdateUserProfile(
+		Guid userId,
+		string firstName,
+		string lastName,
+		string? bio,
+		string? location,
+		string? profilePictureUrl,
+		[Service] IAuthService authService)
+	{
+		return await authService.UpdateUserProfileAsync(userId, firstName, lastName, bio, location, profilePictureUrl);
 	}
 
 	public async Task<Booking> CreateBooking(
@@ -134,11 +148,42 @@ public class Mutation
 		return await jobPostService.CreateProjectAsync(homeownerId, title, description);
 	}
 
+    [Authorize]
+    public async Task<bool> DeleteProject(
+        Guid projectId,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IUnitOfWork unitOfWork)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new GraphQLException("Project not found.");
+        }
+
+        // Security Check: Ensure the user owns the project or is an Admin
+        var isAdmin = claimsPrincipal.IsInRole(UserRoleTypes.Admin.ToString());
+        if (!isAdmin && project.HomeownerId != userId)
+        {
+            throw new GraphQLException(new Error("You do not have permission to delete this project.", "AUTH_NOT_AUTHORIZED"));
+        }
+        
+        await unitOfWork.Projects.DeleteAsync(projectId);
+        await unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
 	public async Task<JobPost> AddJobToProject(
 		Guid projectId,
 		Guid categoryId,
 		string title,
 		string jobDetailsJson,
+		string? location,
 		decimal? estimatedSubtotal,
 		string currency,
 		List<string> imageUrls,
@@ -148,15 +193,45 @@ public class Mutation
 			? Amount.Create(currency, estimatedSubtotal.Value)
 			: null;
 
+		// Fallback: If location is not provided, use a default or fetch from project/homeowner?
+		// For now, if null, we pass "Remote" or similar to avoid DB crash, but ideally UI sends it.
+		var finalLocation = location ?? "Not Specified";
+
 		return await jobPostService.AddJobToProjectAsync(
 			projectId,
 			categoryId,
 			title,
 			jobDetailsJson,
+			finalLocation,
 			budget,
 			imageUrls
 		);
 	}
+
+    public async Task<bool> SaveJobPostDraft(
+        Guid jobPostId,
+        string jobDetailsJson,
+        string? description,
+        string? location,
+        decimal? estimatedSubtotal,
+        string currency,
+        [Service] IJobPostService jobPostService)
+    {
+        Amount? budget = estimatedSubtotal.HasValue
+            ? Amount.Create(currency, estimatedSubtotal.Value)
+            : null;
+
+        await jobPostService.SaveDraftAsync(jobPostId, jobDetailsJson, description, location, budget);
+        return true;
+    }
+
+    public async Task<bool> SubmitJobPost(
+        Guid jobPostId,
+        [Service] IJobPostService jobPostService)
+    {
+        await jobPostService.SubmitJobPostAsync(jobPostId);
+        return true;
+    }
 
 	public async Task<Bid> SubmitBid(
 		Guid tradesmanProfileId,
@@ -177,52 +252,115 @@ public class Mutation
 		return await jobPostService.AcceptBidAsync(bidId);
 	}
 
-	[Authorize(Roles = new[] { "Admin" })]
-	    public async Task<ServiceCategory> UpdateCategoryStatus(
-	        Guid categoryId, 
-	        CategoryStatus newStatus, 
-	        [Service] IUnitOfWork unitOfWork)
-	    {
-	        var category = await unitOfWork.ServiceCategories.GetByIdAsync(categoryId) 
-	            ?? throw new GraphQLException("Category not found.");
-	
-	        category.Status = newStatus;
-	        unitOfWork.ServiceCategories.Update(category);
-	        await unitOfWork.SaveChangesAsync();
-	        return category;
-	    }
-	
-	    [Authorize(Roles = new[] { "Admin" })]
-	    public async Task<ServiceCategory> SaveCategory(
-	        Guid? id,
-	        string name,
-	        string? description,
-	        string templateStructure,
-	        [Service] IUnitOfWork unitOfWork)
-	    {
-	        ServiceCategory category;
-	        if (id.HasValue && id.Value != Guid.Empty)
-	        {
-	            // Update existing
-	            category = await unitOfWork.ServiceCategories.GetByIdAsync(id.Value) ?? throw new GraphQLException("Category not found.");
-	            category.Name = name;
-	            category.Description = description;
-	            category.TemplateStructure = templateStructure;
-	            unitOfWork.ServiceCategories.Update(category);
-	        }
-	        else
-	        {
-	            // Create new
-	            category = new ServiceCategory
-	            {
-	                Name = name,
-	                Description = description,
-	                TemplateStructure = templateStructure,
-	                Status = CategoryStatus.Draft // Always start as Draft
-	            };
-	            await unitOfWork.ServiceCategories.AddAsync(category);
-	        }
-	        await unitOfWork.SaveChangesAsync();
-	        return category;
-	    }
+	[Authorize]
+	public async Task<bool> SubmitJobForScopeGeneration(
+		Guid jobPostId,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.SubmitJobForScopeGenerationAsync(jobPostId);
+		return true;
 	}
+
+	[Authorize]
+	public async Task<bool> ApproveJobScope(
+		Guid jobPostId,
+		string finalScope,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.ApproveJobScopeAsync(jobPostId, finalScope);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> AdminReviewJobScope(
+		Guid jobPostId,
+		bool approved,
+		string? feedback,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.AdminReviewJobScopeAsync(jobPostId, approved, feedback);
+		return true;
+	}
+
+    [Authorize]
+    public async Task<JobPostFeedback> AddJobFeedback(
+        Guid jobPostId,
+        string text,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IJobPostService jobPostService)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        return await jobPostService.AddFeedbackAsync(jobPostId, userId, text);
+    }
+
+    [Authorize(Roles = new[] { "Admin" })]
+    public async Task<bool> ResolveJobFeedback(
+        Guid feedbackId,
+        [Service] IJobPostService jobPostService)
+    {
+        await jobPostService.ResolveFeedbackAsync(feedbackId);
+        return true;
+    }
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<ServiceCategory> UpdateCategoryStatus(
+			Guid categoryId,
+			CategoryStatus newStatus,
+			[Service] IUnitOfWork unitOfWork)
+	{
+		var category = await unitOfWork.ServiceCategories.GetByIdAsync(categoryId)
+			?? throw new GraphQLException("Category not found.");
+
+		category.Status = newStatus;
+		unitOfWork.ServiceCategories.Update(category);
+		await unitOfWork.SaveChangesAsync();
+		return category;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<ServiceCategory> SaveCategory(
+		Guid? id,
+		string name,
+		string? description,
+		bool isGlobal,
+		string templateStructure,
+		CategoryStatus? status,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		ServiceCategory category;
+		if (id.HasValue && id.Value != Guid.Empty)
+		{
+			// Update existing
+			category = await unitOfWork.ServiceCategories.GetByIdAsync(id.Value) ?? throw new GraphQLException("Category not found.");
+			category.Name = name;
+			category.Description = description;
+			category.IsGlobal = isGlobal;
+			category.TemplateStructure = templateStructure;
+			if (status.HasValue)
+			{
+				category.Status = status.Value;
+			}
+			unitOfWork.ServiceCategories.Update(category);
+		}
+		else
+		{
+			// Create new
+			category = new ServiceCategory
+			{
+				Name = name,
+				Description = description,
+				IsGlobal = isGlobal,
+				TemplateStructure = templateStructure,
+				Status = status ?? CategoryStatus.Draft
+			};
+			await unitOfWork.ServiceCategories.AddAsync(category);
+		}
+		await unitOfWork.SaveChangesAsync();
+		return category;
+	}
+}

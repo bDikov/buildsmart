@@ -6,11 +6,36 @@
     xmlns:views="clr-namespace:BuildSmart.Maui.Views"
     Shell.FlyoutBehavior="Flyout">
 
-    <FlyoutItem Title="Feed" Icon="dotnet_bot.png">
+    <FlyoutItem Title="Feed" Icon="dotnet_bot.png" Route="Feed">
         <ShellContent
             Title="Feed"
             ContentTemplate="{DataTemplate views:FeedPage}"
             Route="FeedPage" />
     </FlyoutItem>
+
+    <FlyoutItem Title="My Projects" Icon="dotnet_bot.png" Route="Projects">
+        <ShellContent
+            Title="My Projects"
+            ContentTemplate="{DataTemplate views:MyProjectsPage}"
+            Route="MyProjectsPage" />
+    </FlyoutItem>
+
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="15" Spacing="5">
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,0,0,10" />
+            <Button Text="Profile Settings" 
+                    Clicked="OnProfileSettingsClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Black"
+                    HorizontalOptions="Start"
+                    FontSize="16" />
+            <Button Text="Logout" 
+                    Clicked="OnLogoutClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Red"
+                    HorizontalOptions="Start"
+                    FontSize="16" />
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
 
 </Shell>

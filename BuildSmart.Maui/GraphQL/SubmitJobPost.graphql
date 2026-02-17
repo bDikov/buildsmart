@@ -1,0 +1,3 @@
+mutation SubmitJobPost($jobPostId: UUID!) {
+  submitJobPost(jobPostId: $jobPostId)
+}

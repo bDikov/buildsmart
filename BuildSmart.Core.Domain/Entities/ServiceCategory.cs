@@ -8,6 +8,11 @@ public class ServiceCategory : BaseEntity
 	public string Name { get; set; } = null!;
 	public string? Description { get; set; }
     public CategoryStatus Status { get; set; } = CategoryStatus.Draft;
+    
+    /// <summary>
+    /// If true, this category's questions are applied to ALL jobs, regardless of specific category selection.
+    /// </summary>
+    public bool IsGlobal { get; set; } = false;
 
     /// <summary>
     /// Stores the JSON structure for the "Smart Blueprint" questionnaire.

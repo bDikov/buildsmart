@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:Class="BuildSmart.Maui.Views.ScopeReviewPage"
+             x:DataType="vm:ScopeReviewViewModel"
+             Title="Review AI Scope">
+
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="15">
+            <Label Text="AI Generated Scope of Work" FontSize="20" FontAttributes="Bold" />
+            <Label Text="Please review and edit the generated description below before submitting for Admin approval." FontSize="14" TextColor="Gray" />
+
+            <Frame BorderColor="LightGray" Padding="5" HasShadow="False">
+                <Editor Text="{Binding EditableScope}" 
+                        AutoSize="TextChanges" 
+                        MinimumHeightRequest="300" 
+                        Placeholder="Edit the scope here..." />
+            </Frame>
+
+            <Button Text="Approve &amp; Submit" 
+                    Command="{Binding ApproveCommand}" 
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                    BackgroundColor="{StaticResource Primary}" 
+                    TextColor="White" 
+                    HeightRequest="50" 
+                    CornerRadius="25" />
+            
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

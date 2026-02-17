@@ -33,7 +33,12 @@ public class JobPostConfiguration : IEntityTypeConfiguration<JobPost>
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>()
             )
-            .HasColumnType("jsonb");
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<string>>(
+                (c1, c2) => c1.SequenceEqual(c2),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
+        
+        builder.Property(jp => jp.ImageUrls).HasColumnType("jsonb");
 
         builder.OwnsOne(jp => jp.EstimatedBudget, amount =>
         {

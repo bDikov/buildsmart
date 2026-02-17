@@ -33,7 +33,9 @@ public interface IUnitOfWork
 
     IProjectRepository Projects { get; }
     IJobPostRepository JobPosts { get; }
+    IJobPostFeedbackRepository JobPostFeedbacks { get; }
     IBidRepository Bids { get; }
+    INotificationRepository Notifications { get; }
 
 	/// <summary>
 	/// Saves all changes made in this unit of work to the underlying database

@@ -57,7 +57,7 @@ public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
 
             // For testing purposes, we'll just create a ClaimsPrincipal from the token's claims
             // In a real scenario, you would also validate the token's signature, issuer, audience, etc.
-            var identity = new ClaimsIdentity(jsonToken.Claims, SchemeName);
+            var identity = new ClaimsIdentity(jsonToken.Claims, SchemeName, ClaimTypes.Name, ClaimTypes.Role);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, SchemeName);
             return AuthenticateResult.Success(ticket);

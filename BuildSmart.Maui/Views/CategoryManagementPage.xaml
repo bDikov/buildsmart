@@ -6,8 +6,28 @@
              x:DataType="vm:CategoryManagementViewModel"
              x:Class="BuildSmart.Maui.Views.CategoryManagementPage"
              Title="Category Management">
-    <Grid RowDefinitions="*, Auto">
-        <CollectionView ItemsSource="{Binding Categories}" Grid.Row="0" SelectionMode="Single">
+    <Grid RowDefinitions="Auto, Auto, *">
+        
+        <!-- Header / Global Config -->
+        <Frame Grid.Row="0" Margin="10" Padding="15" BackgroundColor="#F5F5F5" BorderColor="LightGray">
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Global Configuration" FontAttributes="Bold" FontSize="16" />
+                <Label Text="Manage questions that appear on ALL job posts." FontSize="12" TextColor="Gray" />
+                <Button Text="Edit Global Questions" 
+                        Command="{Binding ManageGlobalQuestionsCommand}" 
+                        Margin="0,10,0,0" 
+                        BackgroundColor="#512BD4" TextColor="White" />
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Categories List Header -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Padding="15,0,15,5">
+            <Label Text="Service Categories" FontAttributes="Bold" FontSize="18" VerticalOptions="End" />
+            <Button Grid.Column="1" Text="+ New Category" Command="{Binding GoToNewCategoryDetailPageCommand}" HeightRequest="35" FontSize="12" />
+        </Grid>
+
+        <!-- Categories List -->
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Categories}" SelectionMode="Single">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="gql:IGetAllServiceCategories_AllServiceCategories">
                     <Frame Margin="10" Padding="10" BorderColor="LightGray">
@@ -29,7 +49,5 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        
-        <Button Grid.Row="1" Text="+ Add New Category" Command="{Binding GoToNewCategoryDetailPageCommand}" Margin="10" />
     </Grid>
 </ContentPage>
