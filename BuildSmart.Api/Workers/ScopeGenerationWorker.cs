@@ -14,18 +14,15 @@ public class ScopeGenerationWorker : BackgroundService
     private readonly IScopeGenerationQueue _taskQueue;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ScopeGenerationWorker> _logger;
-    private readonly IHubContext<NotificationHub> _hubContext;
 
     public ScopeGenerationWorker(
         IScopeGenerationQueue taskQueue,
         IServiceProvider serviceProvider,
-        ILogger<ScopeGenerationWorker> logger,
-        IHubContext<NotificationHub> hubContext)
+        ILogger<ScopeGenerationWorker> logger)
     {
         _taskQueue = taskQueue;
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _hubContext = hubContext;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -68,6 +65,8 @@ public class ScopeGenerationWorker : BackgroundService
 
         try
         {
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
             // 1. Generate the Scope using AI
             var generatedScope = await aiService.GenerateJobScopeAsync(jobPost);
 
@@ -76,29 +75,18 @@ public class ScopeGenerationWorker : BackgroundService
 
             // 3. Save Changes
             unitOfWork.JobPosts.Update(jobPost);
-            
-            // 4. Create Notification
-            var notification = new Notification
-            {
-                UserId = jobPost.Project.HomeownerId,
-                Title = "Scope Ready",
-                Message = $"The AI scope for '{jobPost.Title}' is ready for your review.",
-                RelatedEntityId = jobPost.Id,
-                RelatedEntityType = "JobPost",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            await unitOfWork.Notifications.AddAsync(notification);
-
             await unitOfWork.SaveChangesAsync();
 
-            // 5. Send Real-time Notification
-            await _hubContext.Clients.Group(notification.UserId.ToString())
-                .SendAsync("ReceiveNotification", notification.Title, notification.Message);
+            // 4. Send Real-time Notification
+            await notificationService.SendNotificationAsync(
+                jobPost.Project.HomeownerId,
+                "Scope Ready",
+                $"The AI scope for '{jobPost.Title}' is ready for your review.",
+                jobPost.Id,
+                "JobPost"
+            );
 
             _logger.LogInformation("Scope generated successfully for Job {JobId}.", jobPostId);
-
-            // Optional: Trigger notification to user here
         }
         catch (Exception ex)
         {

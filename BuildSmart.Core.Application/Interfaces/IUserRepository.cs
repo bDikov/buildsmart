@@ -21,4 +21,6 @@ public interface IUserRepository
 	void Delete(User user);
 
 	Task<User?> GetByVerificationTokenAsync(string token);
+
+	IQueryable<User> GetQueryable();
 }

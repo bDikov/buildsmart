@@ -57,7 +57,7 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-                <Button Text="Next" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
+                <Button Text="{Binding NextButtonText}" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
             </VerticalStackLayout>
         </ScrollView>
 
@@ -95,8 +95,12 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <Button Text="Next" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
-                <Button Text="Back" Command="{Binding GoToPreviousStepCommand}" BackgroundColor="Transparent" TextColor="Gray"/>
+                <Button Text="{Binding NextButtonText}" Command="{Binding GoToNextStepCommand}" Margin="0,20,0,0" />
+                <Button Text="Back" 
+                        Command="{Binding GoToPreviousStepCommand}" 
+                        BackgroundColor="Transparent" 
+                        TextColor="Gray"
+                        IsVisible="{Binding IsEditing, Converter={StaticResource InverseBoolConverter}}" />
             </VerticalStackLayout>
         </ScrollView>
 

@@ -20,6 +20,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[NotifyPropertyChangedFor(nameof(IsQuestionStepVisible))]
 	[NotifyPropertyChangedFor(nameof(IsReviewStepVisible))]
 	[NotifyPropertyChangedFor(nameof(CurrentStepTitle))]
+    [NotifyPropertyChangedFor(nameof(NextButtonText))]
 	private int _currentStep = 0;
 
 	public bool IsInfoStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Info;
@@ -28,6 +29,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	public bool IsReviewStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Review;
 
 	public string CurrentStepTitle => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count ? _wizardSteps[CurrentStep].Title : "";
+
+    public string NextButtonText => (IsEditing && CurrentStep == _wizardSteps.Count - 1) ? "Save & Re-generate" : "Next";
 
 	// --- Data ---
 	[ObservableProperty]
@@ -61,6 +64,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private bool _isBusy;
 
+	[ObservableProperty]
+	private bool _isEditing;
+
     public ObservableCollection<KeyValuePair<string, string>> AnswersList { get; } = new();
 
     private void RefreshAnswersList()
@@ -74,6 +80,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
     }
 
 	private Guid? _currentProjectId;
+	private Guid? _targetJobPostId;
+	private Guid? _targetCategoryId;
 	private Dictionary<Guid, Guid> _currentJobPostIds = new();
 
 	// Legacy property for backward compatibility if needed, but we use _masterAnswerKey now
@@ -97,11 +105,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
+		if (query.TryGetValue("JobPostId", out var jpid) && Guid.TryParse(jpid.ToString(), out var jobId))
+			_targetJobPostId = jobId;
+
+		if (query.TryGetValue("TargetCategoryId", out var tcid) && Guid.TryParse(tcid.ToString(), out var catId))
+			_targetCategoryId = catId;
+
 		if (query.ContainsKey("ProjectId"))
 		{
 			if (Guid.TryParse(query["ProjectId"].ToString(), out var projectId))
 			{
 				_currentProjectId = projectId;
+				IsEditing = true;
 				MainThread.BeginInvokeOnMainThread(async () => await LoadExistingProjectAsync(projectId));
 			}
 		}
@@ -121,7 +136,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					ProjectTitle = project.Title;
 					ProjectDescription = project.Description;
 
-					var firstJob = project.JobPosts.FirstOrDefault();
+					var firstJob = project.JobPosts.FirstOrDefault(j => j.Id == _targetJobPostId) 
+						?? project.JobPosts.FirstOrDefault();
 					if (firstJob != null)
 					{
 						ProjectLocation = firstJob.Location ?? "";
@@ -168,12 +184,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						catch { /* Ignore legacy format */ }
 					}
 
-					// Move to the first Question step (Index 2) if categories present
-					if (selectedCategoryIds.Any() && _wizardSteps.Count > 2)
+					// Position at the correct step
+					if (_targetCategoryId != null)
 					{
-						CurrentStep = 2;
-						LoadStepData(CurrentStep);
+						CurrentStep = 0; // The only step in single-edit mode
 					}
+					else if (selectedCategoryIds.Any() && _wizardSteps.Count > 2)
+					{
+						CurrentStep = 2; // Skip Info/Category in full project edit mode
+					}
+
+					LoadStepData(CurrentStep);
+					RefreshVisibility();
 				}
 			}
 		}
@@ -185,6 +207,16 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			IsBusy = false;
 		}
+	}
+
+	private void RefreshVisibility()
+	{
+		OnPropertyChanged(nameof(IsInfoStepVisible));
+		OnPropertyChanged(nameof(IsCategoryStepVisible));
+		OnPropertyChanged(nameof(IsQuestionStepVisible));
+		OnPropertyChanged(nameof(IsReviewStepVisible));
+		OnPropertyChanged(nameof(CurrentStepTitle));
+		OnPropertyChanged(nameof(NextButtonText));
 	}
 
 	[RelayCommand]
@@ -264,6 +296,46 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			CurrentStep++;
 			LoadStepData(CurrentStep);
 		}
+		else if (IsEditing)
+		{
+			// We are on the last question step and in Edit mode.
+			await SaveAndRegenerateAsync();
+		}
+	}
+
+	private async Task SaveAndRegenerateAsync()
+	{
+		if (IsBusy) return;
+		try 
+		{
+			IsBusy = true;
+			await SaveDraftAsync();
+			
+			var jobsToRegenerate = _targetJobPostId != null 
+				? new List<Guid> { _targetJobPostId.Value }
+				: _currentJobPostIds.Values.ToList();
+
+			foreach (var jobId in jobsToRegenerate)
+			{
+				var result = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+				if (result.Errors.Count > 0)
+				{
+					await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+					return;
+				}
+			}
+			
+			await Shell.Current.DisplayAlert("Success", "Answers updated. AI is re-generating your scope.", "OK");
+			await Shell.Current.GoToAsync(".."); // Go back to Project Details
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
 	}
 
 	[RelayCommand]
@@ -301,10 +373,31 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private void GenerateDynamicSteps()
 	{
-		// Keep first 2 steps (Info, Category)
-		var baseSteps = _wizardSteps.Take(2).ToList();
 		_wizardSteps.Clear();
-		_wizardSteps.AddRange(baseSteps);
+
+		if (_targetCategoryId != null)
+		{
+			// Edit Single Job Mode: Filter to specific category
+			var targetCat = _allCategories.FirstOrDefault(c => c.Category.Id == _targetCategoryId);
+			if (targetCat != null)
+			{
+				var catQuestions = ExtractQuestions(new List<SelectableCategoryViewModel> { targetCat });
+				if (catQuestions.Any())
+				{
+					_wizardSteps.Add(new WizardStep
+					{
+						Type = WizardStepType.Questions,
+						Title = $"{targetCat.Category.Name} Questions",
+						Questions = catQuestions
+					});
+				}
+			}
+			return;
+		}
+
+		// Normal Project Creation Flow
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = "Basic Info" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
 
 		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
 		var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
@@ -337,7 +430,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 
 		// 3. Review Step
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
+		if (!IsEditing)
+		{
+			_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
+		}
 	}
 
 		private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)

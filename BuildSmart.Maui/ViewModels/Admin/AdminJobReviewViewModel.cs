@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Text.Json.Nodes;
+using BuildSmart.Maui.Services;
 
 namespace BuildSmart.Maui.ViewModels.Admin;
 
@@ -15,10 +16,29 @@ public partial class QAPair : ObservableObject
 public partial class AdminJobReviewViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly SignalRService _signalRService;
 
-    public AdminJobReviewViewModel(IBuildSmartApiClient apiClient)
+    public AdminJobReviewViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+
+        _signalRService.NotificationReceived += OnNotificationReceived;
+    }
+
+    private void OnNotificationReceived(string title, string message)
+    {
+        MainThread.BeginInvokeOnMainThread(async () => {
+            await LoadJobsAsync();
+            
+            // If a job is selected, try to refresh its details too
+            if (SelectedJob != null)
+            {
+                var updatedProject = Projects.FirstOrDefault(p => p.JobPosts.Any(j => j.Id == SelectedJob.Id));
+                var updatedJob = updatedProject?.JobPosts.FirstOrDefault(j => j.Id == SelectedJob.Id);
+                if (updatedJob != null) await ViewJobDetails(updatedJob);
+            }
+        });
     }
 
     [ObservableProperty]

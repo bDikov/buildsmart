@@ -66,51 +66,17 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
     {
         try
         {
-            // Navigate to Wizard in Edit mode
+            // Navigate to Wizard in Edit mode for a SPECIFIC job/category
             await Shell.Current.GoToAsync(nameof(JobWizardPage), new Dictionary<string, object>
             {
                 { "ProjectId", job.Project.Id },
-                // Ideally we pass the JobPostId to target specific job editing, 
-                // but Wizard logic currently loads by ProjectId.
-                // We might need to ensure Wizard loads the *correct* job if multiple exist.
-                // Current Wizard logic: "if (!allCategories.Any()) await LoadCategoriesAsync(); ... foreach cat in SelectableCategories..."
-                // It loads ALL categories selected in the project.
-                // So editing answers for ONE job implies editing the project wizard.
-                // This is acceptable for now.
+                { "JobPostId", job.Id },
+                { "TargetCategoryId", job.ServiceCategory.Id }
             });
         }
         catch (Exception ex)
         {
             await Shell.Current.DisplayAlert("Navigation Error", ex.Message, "OK");
-        }
-    }
-
-    [RelayCommand]
-    private async Task SubmitForGenerationAsync(IGetMyProjects_MyProjects_JobPosts job)
-    {
-        if (IsBusy) return;
-
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(job.Id);
-
-            if (result.Errors.Count > 0)
-            {
-                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
-
-            await Shell.Current.DisplayAlert("Success", "AI is now generating your scope. Please refresh in a few seconds.", "OK");
-            // Optionally trigger a refresh command here if available
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
         }
     }
 

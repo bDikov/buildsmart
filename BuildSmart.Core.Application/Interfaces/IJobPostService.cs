@@ -20,7 +20,7 @@ public interface IJobPostService
     
     Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);
     
-    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback);
+    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId);
 
     Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
             

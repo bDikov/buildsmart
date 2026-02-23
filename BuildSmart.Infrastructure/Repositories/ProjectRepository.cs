@@ -17,6 +17,10 @@ public class ProjectRepository : IProjectRepository
     {
         return await _context.Projects
             .Include(p => p.JobPosts)
+                .ThenInclude(jp => jp.ServiceCategory)
+            .Include(p => p.JobPosts)
+                .ThenInclude(jp => jp.Feedbacks)
+                    .ThenInclude(f => f.Author)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -26,6 +30,9 @@ public class ProjectRepository : IProjectRepository
             .Where(p => p.HomeownerId == homeownerId)
             .Include(p => p.JobPosts)
                 .ThenInclude(jp => jp.ServiceCategory)
+            .Include(p => p.JobPosts)
+                .ThenInclude(jp => jp.Feedbacks)
+                    .ThenInclude(f => f.Author)
             .ToListAsync();
     }
 

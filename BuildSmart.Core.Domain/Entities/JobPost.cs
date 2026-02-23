@@ -105,7 +105,7 @@ public class JobPost : BaseEntity
 	
 	    public void SubmitForScopeGeneration()
 	    {
-	        if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected)
+	        if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview)
 	        {
 	            Status = JobPostStatus.GeneratingScope;
 	            UpdatedAt = DateTime.UtcNow;
@@ -154,19 +154,29 @@ public class JobPost : BaseEntity
 	        UpdatedAt = DateTime.UtcNow;
 	    }
 	
-	    public void AdminRejectScope(string feedback)
-	    {
-	        if (Status != JobPostStatus.WaitingForAdminReview)
-	        {
-	            throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
-	        }
-	        
-	        Status = JobPostStatus.Rejected;
-	        AdminFeedback = feedback;
-	        UpdatedAt = DateTime.UtcNow;
-	    }
-	
-	    public void UpdateScope(string newDetails, string newDescription)	{
+	    	    public void AdminRejectScope(string feedback)
+	    	    {
+	    	        if (Status != JobPostStatus.WaitingForAdminReview)
+	    	        {
+	    	            throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
+	    	        }
+	    	        
+	    	        Status = JobPostStatus.Rejected;
+	    	        AdminFeedback = feedback;
+	    	        UpdatedAt = DateTime.UtcNow;
+	    	    }
+	    
+	    	    public void ResubmitAfterClarification()
+	    	    {
+	    	        if (Status == JobPostStatus.Rejected)
+	    	        {
+	    	            Status = JobPostStatus.WaitingForAdminReview;
+	    	            UpdatedAt = DateTime.UtcNow;
+	    	        }
+	    	    }
+	    	
+	    	    public void UpdateScope(string newDetails, string newDescription)
+	    	{
 		JobDetails = newDetails;
 		Description = newDescription;
 		AmendmentCount++; // Increment version

@@ -1,6 +1,7 @@
 using BuildSmart.Maui.GraphQL;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace BuildSmart.Maui.ViewModels;
@@ -28,13 +29,23 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
         if (query.TryGetValue("Job", out var jobObj) && jobObj is IGetMyProjects_MyProjects_JobPosts job)
         {
             Job = job;
-            EditableScope = job.GeneratedScope ?? string.Empty;
-            Console.WriteLine($"[ScopeReview] SUCCESS: Job loaded with ID: {Job.Id}");
+            // Prefer UserEditedScope if they've already started editing, otherwise use GeneratedScope
+            EditableScope = !string.IsNullOrEmpty(job.UserEditedScope) 
+                ? job.UserEditedScope 
+                : (job.GeneratedScope ?? string.Empty);
+            
+            Console.WriteLine($"[ScopeReview] SUCCESS: Job loaded with ID: {Job.Id}. Scope Length: {EditableScope.Length}");
         }
         else
         {
             Console.WriteLine("[ScopeReview] ERROR: Received invalid Job object or ID.");
         }
+    }
+
+    [RelayCommand]
+    private async Task BackToEditAnswersAsync()
+    {
+        await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]

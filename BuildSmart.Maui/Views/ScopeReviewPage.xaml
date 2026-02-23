@@ -7,24 +7,41 @@
              Title="Review AI Scope">
 
     <ScrollView Padding="20">
-        <VerticalStackLayout Spacing="15">
-            <Label Text="AI Generated Scope of Work" FontSize="20" FontAttributes="Bold" />
-            <Label Text="Please review and edit the generated description below before submitting for Admin approval." FontSize="14" TextColor="Gray" />
+        <VerticalStackLayout Spacing="20">
+            <Label Text="AI Generated Scope of Work" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+            <Label Text="The following scope was generated based on your answers. Please review and edit it below." FontSize="14" TextColor="Gray" />
 
-            <Frame BorderColor="LightGray" Padding="5" HasShadow="False">
+            <BoxView HeightRequest="1" Color="#E0E0E0" />
+
+            <Label Text="Edit AI Generated Scope:" FontAttributes="Bold" FontSize="15" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+            <Frame BorderColor="{StaticResource Primary}" Padding="5" HasShadow="False" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}">
                 <Editor Text="{Binding EditableScope}" 
                         AutoSize="TextChanges" 
-                        MinimumHeightRequest="300" 
-                        Placeholder="Edit the scope here..." />
+                        MinimumHeightRequest="400" 
+                        Placeholder="Edit the scope here..." 
+                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                        PlaceholderColor="Gray"
+                        FontSize="14" />
             </Frame>
 
-            <Button Text="Approve &amp; Submit" 
-                    Command="{Binding ApproveCommand}" 
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                    BackgroundColor="{StaticResource Primary}" 
-                    TextColor="White" 
-                    HeightRequest="50" 
-                    CornerRadius="25" />
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                <Button Grid.Column="0" Text="Approve &amp; Submit" 
+                        Command="{Binding ApproveCommand}" 
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                        BackgroundColor="{StaticResource Primary}" 
+                        TextColor="White" 
+                        HeightRequest="50" 
+                        CornerRadius="10" 
+                        FontAttributes="Bold" />
+                
+                <!-- This button goes back to Project Detail where they can 'Edit Answers' -->
+                <Button Grid.Column="1" Text="Back to Edit Answers" 
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScopeReviewViewModel}}, Path=BackToEditAnswersCommand}"
+                        BackgroundColor="Gray" 
+                        TextColor="White" 
+                        HeightRequest="50" 
+                        CornerRadius="10" />
+            </Grid>
             
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
         </VerticalStackLayout>
