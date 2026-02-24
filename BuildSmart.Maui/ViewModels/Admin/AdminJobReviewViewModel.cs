@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Text.Json.Nodes;
+using BuildSmart.Maui.Services;
 
 namespace BuildSmart.Maui.ViewModels.Admin;
 
@@ -15,10 +16,29 @@ public partial class QAPair : ObservableObject
 public partial class AdminJobReviewViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly SignalRService _signalRService;
 
-    public AdminJobReviewViewModel(IBuildSmartApiClient apiClient)
+    public AdminJobReviewViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+
+        _signalRService.NotificationReceived += OnNotificationReceived;
+    }
+
+    private void OnNotificationReceived(string title, string message)
+    {
+        MainThread.BeginInvokeOnMainThread(async () => {
+            await LoadJobsAsync();
+            
+            // If a job is selected, try to refresh its details too
+            if (SelectedJob != null)
+            {
+                var updatedProject = Projects.FirstOrDefault(p => p.JobPosts.Any(j => j.Id == SelectedJob.Id));
+                var updatedJob = updatedProject?.JobPosts.FirstOrDefault(j => j.Id == SelectedJob.Id);
+                if (updatedJob != null) await ViewJobDetails(updatedJob);
+            }
+        });
     }
 
     [ObservableProperty]
@@ -26,6 +46,9 @@ public partial class AdminJobReviewViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<QAPair> _currentJobDetails = new();
+
+    [ObservableProperty]
+    private ObservableCollection<QAPair> _adminQuestions = new();
 
     [ObservableProperty]
     private bool _isBusy;
@@ -41,6 +64,96 @@ public partial class AdminJobReviewViewModel : ObservableObject
 
     [ObservableProperty]
     private string _newFeedbackText = string.Empty;
+
+    // --- New Question Builder State ---
+    [ObservableProperty]
+    private bool _isQuestionBuilderVisible;
+
+    [ObservableProperty]
+    private string _bqText = string.Empty;
+
+    [ObservableProperty]
+    private string _bqType = "text"; // Default
+
+    [ObservableProperty]
+    private bool _bqIsRequired = true;
+
+    [ObservableProperty]
+    private string _bqNewOptionText = string.Empty;
+
+    public ObservableCollection<string> BqOptions { get; } = new();
+
+    public List<string> QuestionTypes { get; } = new() { "text", "boolean", "int", "choice" };
+
+    [RelayCommand]
+    private void ShowQuestionBuilder()
+    {
+        BqText = string.Empty;
+        BqType = "text";
+        BqIsRequired = true;
+        BqOptions.Clear();
+        IsQuestionBuilderVisible = true;
+    }
+
+    [RelayCommand]
+    private void CloseQuestionBuilder()
+    {
+        IsQuestionBuilderVisible = false;
+    }
+
+    [RelayCommand]
+    private void AddBqOption()
+    {
+        if (!string.IsNullOrWhiteSpace(BqNewOptionText))
+        {
+            BqOptions.Add(BqNewOptionText);
+            BqNewOptionText = string.Empty;
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveBqOption(string option)
+    {
+        BqOptions.Remove(option);
+    }
+
+    [RelayCommand]
+    private async Task SubmitNewQuestionAsync()
+    {
+        if (SelectedJob == null || string.IsNullOrWhiteSpace(BqText)) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.AddAdminJobQuestion.ExecuteAsync(
+                SelectedJob.Id, 
+                BqText, 
+                BqType, 
+                BqIsRequired, 
+                BqOptions.ToList());
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            IsQuestionBuilderVisible = false;
+            await LoadJobsAsync();
+            // Re-select job
+            var updatedProject = Projects.FirstOrDefault(p => p.JobPosts.Any(j => j.Id == SelectedJob.Id));
+            var updatedJob = updatedProject?.JobPosts.FirstOrDefault(j => j.Id == SelectedJob.Id);
+            if (updatedJob != null) await ViewJobDetails(updatedJob);
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     [RelayCommand]
     public async Task LoadJobsAsync()
@@ -84,6 +197,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
             {
                 SelectedJob = job;
                 CurrentJobDetails.Clear();
+                AdminQuestions.Clear();
                 
                 if (job == null)
                 {
@@ -106,6 +220,25 @@ public partial class AdminJobReviewViewModel : ObservableObject
                     {
                         var answers = JsonNode.Parse(job.JobDetails);
                         
+                        // Parse Additional Admin Questions
+                        if (!string.IsNullOrEmpty(job.AdditionalQuestionsJson))
+                        {
+                            var extra = JsonNode.Parse(job.AdditionalQuestionsJson) as JsonArray;
+                            if (extra != null)
+                            {
+                                foreach (var qNode in extra)
+                                {
+                                    var qId = qNode?["id"]?.GetValue<string>();
+                                    var qText = qNode?["text"]?.GetValue<string>();
+                                    if (!string.IsNullOrEmpty(qId) && !string.IsNullOrEmpty(qText))
+                                    {
+                                        var ans = answers?[qId]?.GetValue<string>();
+                                        AdminQuestions.Add(new QAPair { Question = qText, Answer = ans ?? "" });
+                                    }
+                                }
+                            }
+                        }
+
                         // Fetch ALL active categories to find matching questions (including Global ones)
                         var categoriesResult = await _apiClient.GetServiceCategories.ExecuteAsync();
                         var allRelevantCategories = new List<string>();

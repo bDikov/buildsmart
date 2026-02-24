@@ -64,6 +64,7 @@ public partial class Program
 		builder.Services.AddScoped<IJobPostService, JobPostService>();
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
+		builder.Services.AddScoped<INotificationService, BuildSmart.Api.Services.NotificationService>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, ScopeGenerationQueue>();
@@ -146,6 +147,7 @@ public partial class Program
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
 			.AddType<TradesmanSkillType>() // Added
 			.AddType<UserType>()
+            .AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<ReviewType>()
 			.AddProjections()

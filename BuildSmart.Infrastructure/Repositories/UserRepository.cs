@@ -51,4 +51,9 @@ public class UserRepository : IUserRepository
 	        return await _context.Users
 	            .FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
 	    }
+
+	    public IQueryable<User> GetQueryable()
+	    {
+	        return _context.Users.AsQueryable();
+	    }
 	}

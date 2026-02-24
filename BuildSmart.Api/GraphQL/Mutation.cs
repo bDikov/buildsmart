@@ -148,35 +148,35 @@ public class Mutation
 		return await jobPostService.CreateProjectAsync(homeownerId, title, description);
 	}
 
-    [Authorize]
-    public async Task<bool> DeleteProject(
-        Guid projectId,
-        ClaimsPrincipal claimsPrincipal,
-        [Service] IUnitOfWork unitOfWork)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user credentials.");
-        }
+	[Authorize]
+	public async Task<bool> DeleteProject(
+		Guid projectId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
 
-        var project = await unitOfWork.Projects.GetByIdAsync(projectId);
-        if (project == null)
-        {
-            throw new GraphQLException("Project not found.");
-        }
+		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+		if (project == null)
+		{
+			throw new GraphQLException("Project not found.");
+		}
 
-        // Security Check: Ensure the user owns the project or is an Admin
-        var isAdmin = claimsPrincipal.IsInRole(UserRoleTypes.Admin.ToString());
-        if (!isAdmin && project.HomeownerId != userId)
-        {
-            throw new GraphQLException(new Error("You do not have permission to delete this project.", "AUTH_NOT_AUTHORIZED"));
-        }
-        
-        await unitOfWork.Projects.DeleteAsync(projectId);
-        await unitOfWork.SaveChangesAsync();
-        return true;
-    }
+		// Security Check: Ensure the user owns the project or is an Admin
+		var isAdmin = claimsPrincipal.IsInRole(UserRoleTypes.Admin.ToString());
+		if (!isAdmin && project.HomeownerId != userId)
+		{
+			throw new GraphQLException(new Error("You do not have permission to delete this project.", "AUTH_NOT_AUTHORIZED"));
+		}
+
+		await unitOfWork.Projects.DeleteAsync(projectId);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
 
 	public async Task<JobPost> AddJobToProject(
 		Guid projectId,
@@ -208,30 +208,30 @@ public class Mutation
 		);
 	}
 
-    public async Task<bool> SaveJobPostDraft(
-        Guid jobPostId,
-        string jobDetailsJson,
-        string? description,
-        string? location,
-        decimal? estimatedSubtotal,
-        string currency,
-        [Service] IJobPostService jobPostService)
-    {
-        Amount? budget = estimatedSubtotal.HasValue
-            ? Amount.Create(currency, estimatedSubtotal.Value)
-            : null;
+	public async Task<bool> SaveJobPostDraft(
+		Guid jobPostId,
+		string jobDetailsJson,
+		string? description,
+		string? location,
+		decimal? estimatedSubtotal,
+		string currency,
+		[Service] IJobPostService jobPostService)
+	{
+		Amount? budget = estimatedSubtotal.HasValue
+			? Amount.Create(currency, estimatedSubtotal.Value)
+			: null;
 
-        await jobPostService.SaveDraftAsync(jobPostId, jobDetailsJson, description, location, budget);
-        return true;
-    }
+		await jobPostService.SaveDraftAsync(jobPostId, jobDetailsJson, description, location, budget);
+		return true;
+	}
 
-    public async Task<bool> SubmitJobPost(
-        Guid jobPostId,
-        [Service] IJobPostService jobPostService)
-    {
-        await jobPostService.SubmitJobPostAsync(jobPostId);
-        return true;
-    }
+	public async Task<bool> SubmitJobPost(
+		Guid jobPostId,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.SubmitJobPostAsync(jobPostId);
+		return true;
+	}
 
 	public async Task<Bid> SubmitBid(
 		Guid tradesmanProfileId,
@@ -276,36 +276,52 @@ public class Mutation
 		Guid jobPostId,
 		bool approved,
 		string? feedback,
+		ClaimsPrincipal claimsPrincipal,
 		[Service] IJobPostService jobPostService)
 	{
-		await jobPostService.AdminReviewJobScopeAsync(jobPostId, approved, feedback);
+		var userIdClaim = claimsPrincipal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+		Guid? adminId = (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var id)) ? id : null;
+
+		await jobPostService.AdminReviewJobScopeAsync(jobPostId, approved, feedback, adminId);
 		return true;
 	}
 
-    [Authorize]
-    public async Task<JobPostFeedback> AddJobFeedback(
-        Guid jobPostId,
-        string text,
-        ClaimsPrincipal claimsPrincipal,
-        [Service] IJobPostService jobPostService)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user credentials.");
-        }
+	[Authorize]
+	public async Task<JobPostFeedback> AddJobFeedback(
+		Guid jobPostId,
+		string text,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
 
-        return await jobPostService.AddFeedbackAsync(jobPostId, userId, text);
-    }
+		return await jobPostService.AddFeedbackAsync(jobPostId, userId, text);
+	}
 
-    [Authorize(Roles = new[] { "Admin" })]
-    public async Task<bool> ResolveJobFeedback(
-        Guid feedbackId,
-        [Service] IJobPostService jobPostService)
-    {
-        await jobPostService.ResolveFeedbackAsync(feedbackId);
-        return true;
-    }
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> ResolveJobFeedback(
+		Guid feedbackId,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.ResolveFeedbackAsync(feedbackId);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> AddAdminJobQuestion(
+		Guid jobPostId,
+		string questionText,
+		string type,
+		bool isRequired,
+		List<string>? options,
+		[Service] IJobPostService jobPostService)
+	{
+		return await jobPostService.AddAdminQuestionAsync(jobPostId, questionText, type, isRequired, options);
+	}
 
 	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<ServiceCategory> UpdateCategoryStatus(

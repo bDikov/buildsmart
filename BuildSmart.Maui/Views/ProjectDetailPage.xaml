@@ -43,36 +43,60 @@
                                     <Label Text="{Binding AdminFeedback}" TextColor="#D32F2F" FontSize="13" />
                                 </VerticalStackLayout>
 
-                                <!-- Generated Scope View -->
-                                <VerticalStackLayout IsVisible="{Binding GeneratedScope, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Margin="0,10,0,0">
-                                    <Label Text="AI Generated Scope:" FontSize="12" FontAttributes="Bold" TextColor="#1565C0"/>
-                                    <Label Text="{Binding GeneratedScope}" FontSize="12" TextColor="Black" />
+                                <!-- Generated Scope View (Only for Finalized jobs or when not in Review) -->
+                                <VerticalStackLayout Margin="0,10,0,0">
+                                    <VerticalStackLayout.Style>
+                                        <Style TargetType="VerticalStackLayout">
+                                            <Setter Property="IsVisible" Value="False" />
+                                            <Style.Triggers>
+                                                <MultiTrigger TargetType="VerticalStackLayout">
+                                                    <MultiTrigger.Conditions>
+                                                        <BindingCondition Binding="{Binding GeneratedScope, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Value="True" />
+                                                        <BindingCondition Binding="{Binding Status}" Value="Open" />
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </MultiTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </VerticalStackLayout.Style>
+                                    <Label Text="Finalized Scope of Work:" FontSize="12" FontAttributes="Bold" TextColor="#1565C0"/>
+                                    <Label Text="{Binding GeneratedScope}" FontSize="12" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                 </VerticalStackLayout>
 
                                 <!-- Clarification Thread -->
-                                <VerticalStackLayout Margin="0,10" Spacing="5">
-                                    <Label Text="Admin Clarifications:" FontAttributes="Bold" FontSize="12" TextColor="{StaticResource Primary}"/>
+                                <VerticalStackLayout Margin="0,15,0,0" Spacing="8">
+                                    <Label Text="Admin Clarifications &amp; Discussion:" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Primary}"/>
+                                    
                                     <StackLayout BindableLayout.ItemsSource="{Binding Feedbacks}">
+                                        <BindableLayout.EmptyView>
+                                            <Label Text="No active clarifications." TextColor="Gray" FontSize="12" FontAttributes="Italic" Margin="10,0"/>
+                                        </BindableLayout.EmptyView>
                                         <BindableLayout.ItemTemplate>
-                                            <DataTemplate>
-                                                <Frame Padding="8" Margin="0,2" BorderColor="LightGray" HasShadow="False" BackgroundColor="White">
-                                                    <VerticalStackLayout Spacing="2">
-                                                        <HorizontalStackLayout Spacing="5">
-                                                            <Label Text="{Binding Author.FirstName, StringFormat='{0}:'}" FontSize="10" FontAttributes="Bold" />
-                                                            <Label Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="Green" FontSize="9" FontAttributes="Bold" />
-                                                        </HorizontalStackLayout>
-                                                        <Label Text="{Binding Text}" FontSize="12" />
+                                            <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts_Feedbacks">
+                                                <Border Stroke="#E0E0E0" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}" Padding="12" Margin="0,2">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="8" />
+                                                    </Border.StrokeShape>
+                                                    <VerticalStackLayout Spacing="4">
+                                                        <Grid ColumnDefinitions="*, Auto">
+                                                            <HorizontalStackLayout Grid.Column="0" Spacing="5">
+                                                                <Label Text="{Binding Author.FirstName}" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+                                                                <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+                                                            </HorizontalStackLayout>
+                                                            <Label Grid.Column="1" Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="#4CAF50" FontSize="10" FontAttributes="Bold" />
+                                                        </Grid>
+                                                        <Label Text="{Binding Text}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" LineBreakMode="WordWrap" />
                                                     </VerticalStackLayout>
-                                                </Frame>
+                                                </Border>
                                             </DataTemplate>
                                         </BindableLayout.ItemTemplate>
                                     </StackLayout>
                                     
-                                    <Button Text="Respond to Admin" 
+                                    <Button Text="Reply to Admin" 
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=RespondToAdminCommand}"
                                             CommandParameter="{Binding .}"
-                                            HeightRequest="30" FontSize="10" Padding="10,0"
-                                            BackgroundColor="Gray" TextColor="White" HorizontalOptions="Start"/>
+                                            HeightRequest="35" FontSize="11" Padding="15,0"
+                                            BackgroundColor="{StaticResource Primary}" TextColor="White" HorizontalOptions="End" CornerRadius="18"/>
                                 </VerticalStackLayout>
 
                                 <Button Text="Edit Answers" 
@@ -90,40 +114,7 @@
                                                 <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
                                                     <Setter Property="IsVisible" Value="True" />
                                                 </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-
-                                <Button Text="Generate Smart Scope" 
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=SubmitForGenerationCommand}"
-                                        CommandParameter="{Binding .}"
-                                        HeightRequest="40"
-                                        FontSize="12"
-                                        Margin="0,10,0,0">
-                                    <Button.Triggers>
-                                        <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Draft">
-                                            <Setter Property="IsVisible" Value="True" />
-                                        </DataTrigger>
-                                        <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
-                                            <Setter Property="IsVisible" Value="True" />
-                                        </DataTrigger>
-                                        <!-- Hide for others -->
-                                        <MultiTrigger TargetType="Button">
-                                            <MultiTrigger.Conditions>
-                                                <BindingCondition Binding="{Binding Status}" Value="Draft" />
-                                            </MultiTrigger.Conditions>
-                                            <!-- This is a bit complex in XAML, easier to just hide by default -->
-                                        </MultiTrigger>
-                                    </Button.Triggers>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="IsVisible" Value="False" />
-                                            <Style.Triggers>
-                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Draft">
-                                                    <Setter Property="IsVisible" Value="True" />
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="WaitingForUserReview">
                                                     <Setter Property="IsVisible" Value="True" />
                                                 </DataTrigger>
                                             </Style.Triggers>
@@ -142,6 +133,9 @@
                                         <Style TargetType="Button">
                                             <Setter Property="IsVisible" Value="False" />
                                             <Style.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
                                                 <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="WaitingForUserReview">
                                                     <Setter Property="IsVisible" Value="True" />
                                                 </DataTrigger>

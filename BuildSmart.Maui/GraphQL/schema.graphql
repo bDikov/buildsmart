@@ -92,6 +92,9 @@ type Mutation {
 
   "Resolves a specific feedback item (Admin only)."
   resolveJobFeedback(feedbackId: UUID!): Boolean!
+
+  "Adds a project-specific clarification question to a job post (Admin only)."
+  addAdminJobQuestion(jobPostId: UUID!, questionText: String!, type: String!, isRequired: Boolean!, options: [String!]): Boolean!
 }
 
 type JobPostFeedback {
@@ -158,6 +161,7 @@ type JobPost {
     userEditedScope: String
     adminFeedback: String
     jobDetails: String!
+    additionalQuestionsJson: String
     location: String
     imageUrls: [String!]!
     estimatedBudget: Amount

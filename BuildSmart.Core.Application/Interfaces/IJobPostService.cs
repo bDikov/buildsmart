@@ -20,7 +20,7 @@ public interface IJobPostService
     
     Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);
     
-    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback);
+    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId);
 
     Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
             
@@ -33,4 +33,6 @@ public interface IJobPostService
 
     Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
     Task ResolveFeedbackAsync(Guid feedbackId);
+
+    Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null);
 }

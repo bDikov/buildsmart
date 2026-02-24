@@ -46,5 +46,23 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.AcceptBid(default!, default!))
             .Description("Accepts a bid and creates a funded booking.")
             .Authorize(roles: new[] { "Homeowner" });
+
+        descriptor.Field(m => m.SubmitJobForScopeGeneration(default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.ApproveJobScope(default!, default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.AdminReviewJobScope(default!, default!, default!, default!, default!))
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.AddJobFeedback(default!, default!, default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.ResolveJobFeedback(default!, default!))
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.AddAdminJobQuestion(default!, default!, default!, default!, default!, default!))
+            .Authorize(roles: new[] { "Admin" });
     }
 }

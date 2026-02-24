@@ -94,43 +94,31 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 ## Domain Model Changes
 *   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
 *   **JobPost**: Fixed `HomeownerProfileId` mapping in `JobPostService` to prevent FK violations.
+*   **JobPostFeedback**: New entity added to support threaded clarifications between Admins and Homeowners.
 *   **GraphQL Schema**: Aligned `JobPostStatus` and other Enums to use `UPPER_CASE` in `schema.graphql` to match HotChocolate's default server serialization (`UNDER_REVIEW`).
-If using the Package Manager Console, use these commands (Set `BuildSmart.Infrastructure` as Default Project):
-```powershell
-Add-Migration <MigrationName> -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api
-Update-Database -Project BuildSmart.Infrastructure -StartupProject BuildSmart.Api
-```
-
-#### .NET CLI (Terminal)
-If using the terminal, use these commands:
-```powershell
-dotnet ef migrations add <MigrationName> --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
-dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
-```
-
-*   **Agent Responsibility**: The agent modifies Entity classes and provides these commands.
-*   **User Responsibility**: The user must execute these commands to update the database schema.
-
-## Domain Model Changes
-*   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
 
 ## New Features
+
+### Architecture & Review Workflow (Latest)
+*   **Project-Centric Admin Review**: The Admin dashboard now lists **entire Projects** instead of individual, isolated job tasks. This provides the "Full Picture" of a renovation.
+*   **Dashboard Context**: Admins can see the project metadata (description, location, budget), homeowner's full name, and a status summary of all other sections/jobs within the same project.
+*   **Scope Comparison**: Added a side-by-side comparison view between the **Original AI-Generated Scope** and the **User-Proposed Scope**.
+*   **Q&A Visibility**: Enhanced extraction logic to display human-readable Question & Answer pairs by matching job data against both category-specific and **Global** templates.
+*   **Threaded Clarification System**: Admins can post specific questions/comments on a job task and mark them as **Resolved** individually. Homeowners can respond directly.
+
+### Previously Added Features
 *   **Global Categories**: 
-    *   Admins can create "Global" categories. Questions defined in these categories are automatically added to *every* job post wizard, regardless of the specific category selected by the user.
-    *   Global categories are hidden from the standard category selection list in the Job Wizard but are processed in the background.
-    *   Admins can manage the status (Draft, Active, Archived) of global categories.
+    *   Admins can create "Global" categories. Questions defined in these categories are automatically added to *every* job post wizard.
+    *   Global categories are hidden from the standard category selection list but are processed in the background.
 *   **Required Questions**:
-    *   Admins can mark specific questions within a category (Global or Regular) as "Required".
-    *   In the Job Wizard, required questions are visually marked with a red asterisk (*).
+    *   Admins can mark specific questions within a category as "Required".
     *   The Job Wizard prevents project submission if any required questions are left unanswered.
 *   **Smart Scope Generation (AI Workflow)**:
-    *   **Workflow**: Jobs now follow a multi-stage approval flow: `Draft` -> `GeneratingScope` -> `WaitingForUserReview` -> `WaitingForAdminReview` -> `Open`.
-    *   **Background Worker**: A new `ScopeGenerationWorker` processes jobs asynchronously using a `MockAiService` (to be replaced by Gemini/OpenAI).
-    *   **Homeowner UI**: Added a **"Generate Smart Scope"** button in Project Details. Users can review and edit AI-generated text on the new **Scope Review Page**.
-    *   **Admin Approval**: Admins have a new **"Job Reviews"** dashboard to approve or reject (with feedback) the final scope before it goes live to tradesmen.
+    *   **Workflow**: Jobs follow a multi-stage approval flow: `Draft` -> `GeneratingScope` -> `WaitingForUserReview` -> `WaitingForAdminReview` -> `Open`.
+    *   **Background Worker**: `ScopeGenerationWorker` processes jobs asynchronously using AI.
+    *   **Homeowner UI**: Added a **"Generate Smart Scope"** button and a **Scope Review Page**.
 *   **Project Navigation**:
-    *   Removed auto-navigation to the latest project in "My Projects".
-    *   Users can now tap any project card to view specific details.
+    *   Removed auto-navigation to the latest project; users can now tap any project card to view specific details.
 
 ## AI Integration Reference
 ### System Prompt for Scope Generation
@@ -143,3 +131,12 @@ dotnet ef database update --project BuildSmart.Infrastructure --startup-project 
 5. Exclusions
 **Tone**: Technical, Professional, Objective.
 
+## Manual Migration Commands (Pending)
+
+To support the new feedback system and domain changes, please run:
+
+#### .NET CLI
+```powershell
+dotnet ef migrations add AddJobPostFeedback --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+```

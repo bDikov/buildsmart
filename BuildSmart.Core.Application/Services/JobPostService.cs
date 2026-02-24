@@ -10,11 +10,16 @@ public class JobPostService : IJobPostService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IScopeGenerationQueue _scopeGenerationQueue;
+    private readonly INotificationService _notificationService;
 
-    public JobPostService(IUnitOfWork unitOfWork, IScopeGenerationQueue scopeGenerationQueue)
+    public JobPostService(
+        IUnitOfWork unitOfWork, 
+        IScopeGenerationQueue scopeGenerationQueue,
+        INotificationService notificationService)
     {
         _unitOfWork = unitOfWork;
         _scopeGenerationQueue = scopeGenerationQueue;
+        _notificationService = notificationService;
     }
 
     public async Task SubmitJobForScopeGenerationAsync(Guid jobPostId)
@@ -22,9 +27,11 @@ public class JobPostService : IJobPostService
         var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
             ?? throw new ArgumentException("Job post not found");
 
-        if (jobPost.Status != JobPostStatus.Draft && jobPost.Status != JobPostStatus.Rejected)
+        if (jobPost.Status != JobPostStatus.Draft && 
+            jobPost.Status != JobPostStatus.Rejected &&
+            jobPost.Status != JobPostStatus.WaitingForUserReview)
         {
-            throw new InvalidOperationException("Only Draft or Rejected jobs can be submitted for scope generation.");
+            throw new InvalidOperationException("AI generation can only be triggered for jobs in Draft, Rejected, or WaitingForUserReview status.");
         }
 
         jobPost.SubmitForScopeGeneration();
@@ -33,6 +40,15 @@ public class JobPostService : IJobPostService
         jobPost.AdminFeedback = null;
 
         _unitOfWork.JobPosts.Update(jobPost);
+
+        // Sync Project Status
+        var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+        if (project != null && project.Status != ProjectStatus.UnderReview)
+        {
+            project.SubmitForReview();
+            _unitOfWork.Projects.Update(project);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         // Queue for background processing
@@ -60,7 +76,7 @@ public class JobPostService : IJobPostService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback)
+    public async Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId)
     {
         var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
             ?? throw new ArgumentException("Job post not found");
@@ -77,19 +93,44 @@ public class JobPostService : IJobPostService
                 jobPost.AdminApproveScope();
                 jobPost.Publish();
             }
+
+            // Notify Homeowner of Approval
+            await _notificationService.SendNotificationAsync(
+                jobPost.Project.HomeownerId,
+                "Scope Approved",
+                $"Admin has approved the scope for '{jobPost.Title}'. It is now live!",
+                jobPost.Id,
+                "JobPost"
+            );
         }
         else
         {
+            var rejectionReason = feedback ?? "Rejected without feedback.";
             if (jobPost.Status == JobPostStatus.Rejected)
             {
                 // Idempotent: Already rejected, just update feedback
-                jobPost.AdminFeedback = feedback ?? "Rejected without feedback.";
+                jobPost.AdminFeedback = rejectionReason;
                 jobPost.UpdatedAt = DateTime.UtcNow;
             }
             else
             {
-                jobPost.AdminRejectScope(feedback ?? "Rejected without feedback.");
+                jobPost.AdminRejectScope(rejectionReason);
             }
+
+            // Create a feedback record so it shows in the threaded discussion
+            if (reviewerId.HasValue)
+            {
+                await AddFeedbackAsync(jobPost.Id, reviewerId.Value, $"[REJECTION] {rejectionReason}");
+            }
+
+            // Notify Homeowner of Rejection
+            await _notificationService.SendNotificationAsync(
+                jobPost.Project.HomeownerId,
+                "Scope Rejected",
+                $"Admin has requested changes for '{jobPost.Title}'. Please check the feedback.",
+                jobPost.Id,
+                "JobPost"
+            );
         }
 
         _unitOfWork.JobPosts.Update(jobPost);
@@ -151,14 +192,8 @@ public class JobPostService : IJobPostService
             UpdatedAt = DateTime.UtcNow
         };
 
-        // Auto-trigger scope generation
-        jobPost.SubmitForScopeGeneration();
-
         await _unitOfWork.JobPosts.AddAsync(jobPost);
         await _unitOfWork.SaveChangesAsync();
-
-        // Fire and forget background task
-        await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
 
         return jobPost;
     }
@@ -219,11 +254,10 @@ public class JobPostService : IJobPostService
         // 2. Validate Answers
         ValidateMandatoryQuestions(allCategories, jobPost.JobDetails);
 
-        // 3. Transition Status
-        jobPost.SubmitForReview();
+        // 3. Trigger Scope Generation (AI)
+        jobPost.SubmitForScopeGeneration();
         
         // 4. Also update Project status if needed
-        // If the project is in Draft, submitting a job should move the project to UnderReview.
         if (jobPost.ProjectId != Guid.Empty)
         {
              var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
@@ -236,6 +270,9 @@ public class JobPostService : IJobPostService
 
         _unitOfWork.JobPosts.Update(jobPost);
         await _unitOfWork.SaveChangesAsync();
+
+        // Queue for background processing
+        await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
     }
 
     private void ValidateMandatoryQuestions(List<ServiceCategory> categories, string jobDetailsJson)
@@ -357,6 +394,7 @@ public class JobPostService : IJobPostService
         var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
             ?? throw new ArgumentException("Job post not found");
 
+        var user = await _unitOfWork.Users.GetByIdAsync(authorId);
         var feedback = new JobPostFeedback
         {
             JobPostId = jobPostId,
@@ -368,9 +406,62 @@ public class JobPostService : IJobPostService
 
         await _unitOfWork.JobPostFeedbacks.AddAsync(feedback);
         
-        // If it's the homeowner responding to a rejected job, 
-        // we might want to automatically signal that it's ready for review again
-        // but we'll leave that to the specific workflow actions for now.
+        // Ensure Author is loaded for the response
+        if (user != null) feedback.Author = user;
+
+        // Logic: If Homeowner responds to a Rejected job, move it back to Review
+        if (user != null && user.Role == UserRoleTypes.Homeowner && jobPost.Status == JobPostStatus.Rejected)
+        {
+            jobPost.ResubmitAfterClarification();
+            _unitOfWork.JobPosts.Update(jobPost);
+
+            // Sync Project Status
+            var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+            if (project != null && project.Status != ProjectStatus.UnderReview)
+            {
+                project.SubmitForReview();
+                _unitOfWork.Projects.Update(project);
+            }
+
+            // Notify Admins
+            var admins = await _unitOfWork.Users.GetQueryable().Where(u => u.Role == UserRoleTypes.Admin).ToListAsync();
+            foreach (var admin in admins)
+            {
+                await _notificationService.SendNotificationAsync(
+                    admin.Id,
+                    "New Clarification",
+                    $"{user.FirstName} responded to feedback on '{jobPost.Title}'.",
+                    jobPost.Id,
+                    "JobPost"
+                );
+            }
+        }
+        else if (user != null && user.Role == UserRoleTypes.Admin)
+        {
+            // Logic: If Admin responds, notify the Homeowner
+            var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+            
+            // AUTOMATIC STATUS TRANSITION: Move back to User Review so buttons show up
+            jobPost.RequestUserReview();
+            _unitOfWork.JobPosts.Update(jobPost);
+
+            if (project != null)
+            {
+                // Ensure project is not 'Rejected' if admin is asking questions
+                if (project.Status == ProjectStatus.UnderReview)
+                {
+                    // Already correct
+                }
+
+                await _notificationService.SendNotificationAsync(
+                    project.HomeownerId,
+                    "Admin Clarification",
+                    $"An admin has asked for clarification on '{jobPost.Title}'.",
+                    jobPost.Id,
+                    "JobPost"
+                );
+            }
+        }
 
         await _unitOfWork.SaveChangesAsync();
         return feedback;
@@ -386,5 +477,49 @@ public class JobPostService : IJobPostService
 
         _unitOfWork.JobPostFeedbacks.Update(feedback);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        // Parse existing or create new questions list
+        var questions = new List<object>();
+        if (!string.IsNullOrEmpty(jobPost.AdditionalQuestionsJson))
+        {
+            var existing = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.Nodes.JsonObject>>(jobPost.AdditionalQuestionsJson);
+            if (existing != null) questions.AddRange(existing);
+        }
+
+        // Add new question using standard template format
+        var newQuestion = new 
+        {
+            id = Guid.NewGuid().ToString(), // Unique ID for answering
+            text = questionText,
+            type = type,
+            required = isRequired,
+            options = options ?? new List<string>()
+        };
+        questions.Add(newQuestion);
+
+        jobPost.AdditionalQuestionsJson = System.Text.Json.JsonSerializer.Serialize(questions);
+        
+        // AUTOMATIC STATUS TRANSITION: Move back to User Review so homeowner can answer
+        jobPost.RequestUserReview();
+
+        _unitOfWork.JobPosts.Update(jobPost);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Notify Homeowner
+        await _notificationService.SendNotificationAsync(
+            jobPost.Project.HomeownerId,
+            "Action Required",
+            $"An admin has added a specific question for '{jobPost.Title}'. Please update your answers.",
+            jobPost.Id,
+            "JobPost"
+        );
+
+        return true;
     }
 }
