@@ -147,6 +147,7 @@ public partial class Program
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
 			.AddType<TradesmanSkillType>() // Added
 			.AddType<UserType>()
+            .AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<ReviewType>()
 			.AddProjections()

@@ -192,14 +192,8 @@ public class JobPostService : IJobPostService
             UpdatedAt = DateTime.UtcNow
         };
 
-        // Auto-trigger scope generation
-        jobPost.SubmitForScopeGeneration();
-
         await _unitOfWork.JobPosts.AddAsync(jobPost);
         await _unitOfWork.SaveChangesAsync();
-
-        // Fire and forget background task
-        await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
 
         return jobPost;
     }
@@ -260,11 +254,10 @@ public class JobPostService : IJobPostService
         // 2. Validate Answers
         ValidateMandatoryQuestions(allCategories, jobPost.JobDetails);
 
-        // 3. Transition Status
-        jobPost.SubmitForReview();
+        // 3. Trigger Scope Generation (AI)
+        jobPost.SubmitForScopeGeneration();
         
         // 4. Also update Project status if needed
-        // If the project is in Draft, submitting a job should move the project to UnderReview.
         if (jobPost.ProjectId != Guid.Empty)
         {
              var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
@@ -277,6 +270,9 @@ public class JobPostService : IJobPostService
 
         _unitOfWork.JobPosts.Update(jobPost);
         await _unitOfWork.SaveChangesAsync();
+
+        // Queue for background processing
+        await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
     }
 
     private void ValidateMandatoryQuestions(List<ServiceCategory> categories, string jobDetailsJson)
@@ -444,8 +440,19 @@ public class JobPostService : IJobPostService
         {
             // Logic: If Admin responds, notify the Homeowner
             var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+            
+            // AUTOMATIC STATUS TRANSITION: Move back to User Review so buttons show up
+            jobPost.RequestUserReview();
+            _unitOfWork.JobPosts.Update(jobPost);
+
             if (project != null)
             {
+                // Ensure project is not 'Rejected' if admin is asking questions
+                if (project.Status == ProjectStatus.UnderReview)
+                {
+                    // Already correct
+                }
+
                 await _notificationService.SendNotificationAsync(
                     project.HomeownerId,
                     "Admin Clarification",
@@ -470,5 +477,49 @@ public class JobPostService : IJobPostService
 
         _unitOfWork.JobPostFeedbacks.Update(feedback);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        // Parse existing or create new questions list
+        var questions = new List<object>();
+        if (!string.IsNullOrEmpty(jobPost.AdditionalQuestionsJson))
+        {
+            var existing = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.Nodes.JsonObject>>(jobPost.AdditionalQuestionsJson);
+            if (existing != null) questions.AddRange(existing);
+        }
+
+        // Add new question using standard template format
+        var newQuestion = new 
+        {
+            id = Guid.NewGuid().ToString(), // Unique ID for answering
+            text = questionText,
+            type = type,
+            required = isRequired,
+            options = options ?? new List<string>()
+        };
+        questions.Add(newQuestion);
+
+        jobPost.AdditionalQuestionsJson = System.Text.Json.JsonSerializer.Serialize(questions);
+        
+        // AUTOMATIC STATUS TRANSITION: Move back to User Review so homeowner can answer
+        jobPost.RequestUserReview();
+
+        _unitOfWork.JobPosts.Update(jobPost);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Notify Homeowner
+        await _notificationService.SendNotificationAsync(
+            jobPost.Project.HomeownerId,
+            "Action Required",
+            $"An admin has added a specific question for '{jobPost.Title}'. Please update your answers.",
+            jobPost.Id,
+            "JobPost"
+        );
+
+        return true;
     }
 }

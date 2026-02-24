@@ -50,6 +50,12 @@ public class JobPost : BaseEntity
 	/// </summary>
 	public string? AdminFeedback { get; set; }
 
+	/// <summary>
+	/// Stores project-specific clarification questions added by admins.
+	/// Uses the same JSON structure as ServiceCategory.TemplateStructure.
+	/// </summary>
+	public string? AdditionalQuestionsJson { get; set; }
+
 	public string Location { get; set; } = null!;
 
 	// Future: Use a separate entity for media if we need metadata,
@@ -130,6 +136,16 @@ public class JobPost : BaseEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void MarkGenerationFailed(string error)
+    {
+        if (Status == JobPostStatus.GeneratingScope)
+        {
+            Status = JobPostStatus.Rejected;
+            AdminFeedback = $"AI Generation Error: {error}";
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
     public void ApproveScope(string finalScope)
 	    {
 	        if (Status != JobPostStatus.WaitingForUserReview)
@@ -166,16 +182,26 @@ public class JobPost : BaseEntity
 	    	        UpdatedAt = DateTime.UtcNow;
 	    	    }
 	    
-	    	    public void ResubmitAfterClarification()
-	    	    {
-	    	        if (Status == JobPostStatus.Rejected)
-	    	        {
-	    	            Status = JobPostStatus.WaitingForAdminReview;
-	    	            UpdatedAt = DateTime.UtcNow;
-	    	        }
-	    	    }
-	    	
-	    	    public void UpdateScope(string newDetails, string newDescription)
+	    	    	    public void ResubmitAfterClarification()
+	    	    	    {
+	    	    	        if (Status == JobPostStatus.Rejected)
+	    	    	        {
+	    	    	            Status = JobPostStatus.WaitingForAdminReview;
+	    	    	            UpdatedAt = DateTime.UtcNow;
+	    	    	        }
+	    	    	    }
+	    	    
+	    	    	    public void RequestUserReview()
+	    	    	    {
+	    	    	        if (Status == JobPostStatus.WaitingForAdminReview || Status == JobPostStatus.Rejected)
+	    	    	        {
+	    	    	            Status = JobPostStatus.WaitingForUserReview;
+	    	    	            UpdatedAt = DateTime.UtcNow;
+	    	    	        }
+	    	    	    }
+	    	    	
+	    	    	    public void UpdateScope(string newDetails, string newDescription)
+	    	    
 	    	{
 		JobDetails = newDetails;
 		Description = newDescription;

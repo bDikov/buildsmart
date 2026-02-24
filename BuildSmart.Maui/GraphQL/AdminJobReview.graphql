@@ -18,6 +18,7 @@ query GetProjectsForReview {
       userEditedScope
       status
       jobDetails
+      additionalQuestionsJson
       location
       estimatedBudget {
         total
@@ -53,6 +54,7 @@ query GetJobsForReview {
     userEditedScope
     status
     jobDetails
+    additionalQuestionsJson
     adminFeedback
     serviceCategory {
       name
@@ -107,6 +109,10 @@ mutation AddJobFeedback($jobPostId: UUID!, $text: String!) {
       role
     }
   }
+}
+
+mutation AddAdminJobQuestion($jobPostId: UUID!, $questionText: String!, $type: String!, $isRequired: Boolean!, $options: [String!]) {
+  addAdminJobQuestion(jobPostId: $jobPostId, questionText: $questionText, type: $type, isRequired: $isRequired, options: $options)
 }
 
 mutation ResolveJobFeedback($feedbackId: UUID!) {

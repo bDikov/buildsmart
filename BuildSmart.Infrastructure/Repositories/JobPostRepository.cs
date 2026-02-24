@@ -17,7 +17,7 @@ public class JobPostRepository : IJobPostRepository
     {
         return await _context.JobPosts
             .Include(jp => jp.Project)
-            .Include(jp => jp.ServiceCategory) // Added Include
+            .Include(jp => jp.ServiceCategory) 
             .Include(jp => jp.Bids)
             .FirstOrDefaultAsync(jp => jp.Id == id);
     }

@@ -18,6 +18,7 @@ query GetMyProjects {
       generatedScope
       userEditedScope
       adminFeedback
+      additionalQuestionsJson
       estimatedBudget {
         total
         currency

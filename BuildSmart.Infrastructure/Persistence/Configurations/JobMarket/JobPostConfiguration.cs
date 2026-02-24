@@ -21,6 +21,10 @@ public class JobPostConfiguration : IEntityTypeConfiguration<JobPost>
             .HasColumnType("jsonb")
             .IsRequired();
 
+        // Use JSONB for AdditionalQuestionsJson
+        builder.Property(jp => jp.AdditionalQuestionsJson)
+            .HasColumnType("jsonb");
+
         builder.Property(jp => jp.Description)
             .HasMaxLength(2000);
 

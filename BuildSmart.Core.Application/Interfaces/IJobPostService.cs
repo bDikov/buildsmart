@@ -33,4 +33,6 @@ public interface IJobPostService
 
     Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
     Task ResolveFeedbackAsync(Guid feedbackId);
+
+    Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null);
 }

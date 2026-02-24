@@ -29,5 +29,11 @@ public class QueryType : ObjectType<Query>
         descriptor.Field(q => q.GetMyProjects(default!, default!))
             .Description("Gets the projects created by the authenticated homeowner.")
             .Authorize(roles: new[] { "Homeowner" });
+
+        descriptor.Field(q => q.GetJobPostsForReview(default!))
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(q => q.GetProjectsForReview(default!))
+            .Authorize(roles: new[] { "Admin" });
 	}
 }

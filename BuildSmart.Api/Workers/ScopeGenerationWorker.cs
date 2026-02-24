@@ -91,7 +91,17 @@ public class ScopeGenerationWorker : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate scope for Job {JobId}.", jobPostId);
-            // Consider setting status to 'Draft' or adding an error flag so user can retry
+            
+            try 
+            {
+                jobPost.MarkGenerationFailed(ex.Message);
+                unitOfWork.JobPosts.Update(jobPost);
+                await unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception dbEx)
+            {
+                _logger.LogError(dbEx, "Failed to update JobPost status after generation failure.");
+            }
         }
     }
 }

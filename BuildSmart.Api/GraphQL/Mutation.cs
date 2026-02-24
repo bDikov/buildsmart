@@ -312,6 +312,18 @@ public class Mutation
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> AddAdminJobQuestion(
+		Guid jobPostId,
+		string questionText,
+		string type,
+		bool isRequired,
+		List<string>? options,
+		[Service] IJobPostService jobPostService)
+	{
+		return await jobPostService.AddAdminQuestionAsync(jobPostId, questionText, type, isRequired, options);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<ServiceCategory> UpdateCategoryStatus(
 			Guid categoryId,
 			CategoryStatus newStatus,

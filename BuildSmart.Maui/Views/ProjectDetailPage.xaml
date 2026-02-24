@@ -133,6 +133,9 @@
                                         <Style TargetType="Button">
                                             <Setter Property="IsVisible" Value="False" />
                                             <Style.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
                                                 <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="WaitingForUserReview">
                                                     <Setter Property="IsVisible" Value="True" />
                                                 </DataTrigger>

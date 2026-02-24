@@ -165,7 +165,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					}
 
 					// Generate Dynamic Steps based on loaded categories
-					GenerateDynamicSteps();
+					await GenerateDynamicSteps();
 
 					// Pre-fill answers
 					if (firstJob != null && !string.IsNullOrEmpty(firstJob.JobDetails))
@@ -274,7 +274,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			if (!ValidateCategoryStep()) return;
 
-			GenerateDynamicSteps();
+			await GenerateDynamicSteps();
 			await SaveDraftAsync();
 		}
 		else if (currentStepType == WizardStepType.Questions)
@@ -371,7 +371,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
         }
 	}
 
-	private void GenerateDynamicSteps()
+	private async Task GenerateDynamicSteps()
 	{
 		_wizardSteps.Clear();
 
@@ -382,6 +382,52 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (targetCat != null)
 			{
 				var catQuestions = ExtractQuestions(new List<SelectableCategoryViewModel> { targetCat });
+				
+				// Fetch the specific JobPost to get AdminQuestions from the JSON field
+				var jobResult = await _apiClient.GetMyProjects.ExecuteAsync();
+				var job = jobResult.Data?.MyProjects?.SelectMany(p => p.JobPosts).FirstOrDefault(j => j.Id == _targetJobPostId);
+				
+				if (!string.IsNullOrEmpty(job?.AdditionalQuestionsJson))
+				{
+					try 
+					{
+						var extra = JsonNode.Parse(job.AdditionalQuestionsJson) as JsonArray;
+						if (extra != null)
+						{
+															foreach (var qNode in extra)
+															{
+																var qId = qNode?["id"]?.GetValue<string>();
+																var qText = qNode?["text"]?.GetValue<string>();
+																var qType = qNode?["type"]?.GetValue<string>() ?? "text";
+																var qReq = qNode?["required"]?.GetValue<bool>() ?? true;
+																
+																if (!string.IsNullOrEmpty(qId) && !string.IsNullOrEmpty(qText))
+																{
+																	var qOptions = new List<string>();
+																	if (qNode?["options"] is JsonArray opts)
+																	{
+																		qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
+																	}
+							
+																	_questionTextCache[qId] = qText;
+																	catQuestions.Add(new WizardQuestionViewModel
+																	{
+																		Id = qId,
+																		Text = qText,
+																		Type = qType,
+																		CategoryName = "ADMIN CLARIFICATION",
+																		IsRequired = qReq,
+																		Options = qOptions,
+																		Answer = qType == "boolean" ? "False" : ""
+																	});
+																}
+															}
+							
+						}
+					}
+					catch { /* Ignore malformed JSON */ }
+				}
+
 				if (catQuestions.Any())
 				{
 					_wizardSteps.Add(new WizardStep
@@ -698,6 +744,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						ProjectLocation,
 						null, "USD"
 					);
+
+					// If we are in single edit mode, the answers are already part of the JSON 
+                    // in SaveJobPostDraft call above. No separate mutation is needed.
 				}
 			}
 		}
