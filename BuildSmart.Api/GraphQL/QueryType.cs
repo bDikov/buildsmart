@@ -33,7 +33,27 @@ public class QueryType : ObjectType<Query>
         descriptor.Field(q => q.GetJobPostsForReview(default!))
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(q => q.GetProjectsForReview(default!))
-            .Authorize(roles: new[] { "Admin" });
-	}
-}
+                descriptor.Field(q => q.GetProjectsForReview(default!))
+                    .Authorize(roles: new[] { "Admin" });
+
+                descriptor.Field(q => q.GetUsers(default!))
+                    .Description("Gets a list of all users. (Admin only)")
+                    .Type<ListType<UserType>>()
+                    .Authorize(roles: new[] { "Admin" });
+        
+                descriptor.Field(q => q.GetMyNotifications(default!, default!))
+                    .Description("Gets all notifications for the current user.")
+                    .Authorize();
+
+                descriptor.Field(q => q.GetAvailableAuctions(default!, default!, default!))
+                    .Description("Gets all open auctions that match the authenticated tradesman's skills.")
+                    .Type<ListType<AuctionType>>()
+                    .Authorize(roles: new[] { "Tradesman" });
+
+                descriptor.Field(q => q.GetAuctionById(default!, default!))
+                    .Description("Gets a specific auction by Job ID.")
+                    .Type<AuctionType>()
+                    .Authorize();
+        	}
+        }
+        

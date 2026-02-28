@@ -92,6 +92,57 @@ public class AuthService : IAuthService
         return user;
     }
 
+    public async Task<User> UpdateUserRoleAndCategoriesAsync(Guid userId, UserRoleTypes newRole, List<Guid>? serviceCategoryIds)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new Exception("User not found.");
+        }
+
+        // 1. Update Role
+        user.Role = newRole;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        // 2. Handle Tradesman Profile logic
+        if (newRole == UserRoleTypes.Tradesman)
+        {
+            // Ensure TradesmanProfile exists
+            if (user.TradesmanProfile == null)
+            {
+                user.TradesmanProfile = new TradesmanProfile
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+            }
+
+            // Update Categories if provided
+            if (serviceCategoryIds != null)
+            {
+                // Clear existing skills (or sync them)
+                user.TradesmanProfile.Skills.Clear();
+                foreach (var catId in serviceCategoryIds)
+                {
+                    user.TradesmanProfile.Skills.Add(new BuildSmart.Core.Domain.Entities.JoinEntities.TradesmanSkill
+                    {
+                        ServiceCategoryId = catId,
+                        VerificationStatus = SkillVerificationStatus.PortfolioVerified, // Admin promotion
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+        }
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return user;
+    }
+
     public async Task<bool> VerifyEmailAsync(string token)
     {
         var user = await _unitOfWork.Users.GetByVerificationTokenAsync(token);

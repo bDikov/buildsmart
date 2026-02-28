@@ -6,6 +6,10 @@
     xmlns:views="clr-namespace:BuildSmart.Maui.Views"
     Shell.FlyoutBehavior="Flyout">
 
+    <Shell.ToolbarItems>
+        <ToolbarItem IconImageSource="dotnet_bot.png" Text="Notifications" Clicked="OnNotificationsClicked" />
+    </Shell.ToolbarItems>
+
     <FlyoutItem Title="Feed" Icon="dotnet_bot.png" Route="Feed">
         <ShellContent
             Title="Feed"

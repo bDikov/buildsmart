@@ -7,11 +7,19 @@
     xmlns:admin="clr-namespace:BuildSmart.Maui.Views.Admin"
     Shell.FlyoutBehavior="Flyout">
 
+    <Shell.ToolbarItems>
+        <ToolbarItem IconImageSource="dotnet_bot.png" Text="Notifications" Clicked="OnNotificationsClicked" />
+    </Shell.ToolbarItems>
+
     <FlyoutItem Title="Management">
         <ShellContent
             Title="Categories"
             ContentTemplate="{DataTemplate views:CategoryManagementPage}"
             Route="CategoryManagementPage" />
+        <ShellContent
+            Title="Users"
+            ContentTemplate="{DataTemplate admin:UserManagementPage}"
+            Route="UserManagementPage" />
         <ShellContent
             Title="Job Reviews"
             ContentTemplate="{DataTemplate admin:AdminJobReviewPage}"

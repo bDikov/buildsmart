@@ -18,7 +18,20 @@ public partial class AdminShell : Shell
 
         // Connect to SignalR
         MainThread.BeginInvokeOnMainThread(async () => await _signalRService.ConnectAsync());
+        _signalRService.NotificationReceived += OnNotificationReceived;
 	}
+
+    private void OnNotificationReceived(string title, string message, object? data)
+    {
+        MainThread.BeginInvokeOnMainThread(async () => {
+            await Shell.Current.DisplayAlert(title, message, "OK");
+        });
+    }
+
+    private async void OnNotificationsClicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("/NotificationsPage");
+    }
 
 	private async void OnProfileSettingsClicked(object sender, EventArgs e)
 	{

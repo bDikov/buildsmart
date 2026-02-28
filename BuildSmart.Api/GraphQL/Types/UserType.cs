@@ -21,6 +21,9 @@ public class UserType : ObjectType<User>
 
 		descriptor.Field(u => u.HashedPassword).Ignore(); // Do not expose password hash
 
+        descriptor.Field(u => u.HomeownerProfile).Type<HomeownerProfileType>();
+        descriptor.Field(u => u.TradesmanProfile).Type<TradesmanProfileType>();
+
 		// Relationships will be configured here later
 	}
 }

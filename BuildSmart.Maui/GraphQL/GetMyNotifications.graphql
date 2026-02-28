@@ -3,7 +3,16 @@ query GetMyNotifications {
     id
     title
     message
+    isRead
     relatedEntityId
     createdAt
   }
+}
+
+mutation DeleteAllNotifications {
+  deleteAllNotifications
+}
+
+mutation MarkNotificationAsRead($notificationId: UUID!) {
+  markNotificationAsRead(notificationId: $notificationId)
 }

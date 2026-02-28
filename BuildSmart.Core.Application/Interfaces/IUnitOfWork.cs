@@ -34,7 +34,9 @@ public interface IUnitOfWork
     IProjectRepository Projects { get; }
     IJobPostRepository JobPosts { get; }
     IJobPostFeedbackRepository JobPostFeedbacks { get; }
+    IJobPostQuestionRepository JobPostQuestions { get; }
     IBidRepository Bids { get; }
+    IAuctionActionRepository AuctionActions { get; }
     INotificationRepository Notifications { get; }
 
 	/// <summary>

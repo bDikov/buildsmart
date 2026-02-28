@@ -15,7 +15,9 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 	public IProjectRepository Projects { get; }
 	public IJobPostRepository JobPosts { get; }
 	public IJobPostFeedbackRepository JobPostFeedbacks { get; }
+	public IJobPostQuestionRepository JobPostQuestions { get; }
 	public IBidRepository Bids { get; }
+	public IAuctionActionRepository AuctionActions { get; }
 	public INotificationRepository Notifications { get; }
 
 	public UnitOfWork(AppDbContext context)
@@ -31,7 +33,9 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 		Projects = new ProjectRepository(_context);
 		JobPosts = new JobPostRepository(_context);
 		JobPostFeedbacks = new JobPostFeedbackRepository(_context);
+		JobPostQuestions = new JobPostQuestionRepository(_context);
 		Bids = new BidRepository(_context);
+		AuctionActions = new AuctionActionRepository(_context);
 		Notifications = new NotificationRepository(_context);
 	}
 

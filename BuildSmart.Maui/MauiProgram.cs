@@ -82,6 +82,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ScopeReviewPage>();
         builder.Services.AddTransient<ScopeReviewViewModel>();
 
+        builder.Services.AddTransient<NotificationsPage>();
+        builder.Services.AddTransient<NotificationsViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
 		builder.Services.AddTransient<AppShell>();
@@ -93,18 +96,23 @@ public static class MauiProgram
 		builder.Services.AddTransient<AdminJobReviewPage>();
 		builder.Services.AddTransient<AdminJobReviewViewModel>();
 
+        builder.Services.AddTransient<UserManagementPage>();
+        builder.Services.AddTransient<UserManagementViewModel>();
+        builder.Services.AddTransient<UserEditPage>();
+        builder.Services.AddTransient<UserEditViewModel>();
+
 		builder.Services.AddSingleton<MainShell>();
 
 		Routing.RegisterRoute(nameof(DetailedViewPage), typeof(DetailedViewPage));
 		Routing.RegisterRoute(nameof(CreateAccountPage), typeof(CreateAccountPage));
 		Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
 		Routing.RegisterRoute(nameof(BookingPage), typeof(BookingPage));
-		Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
-		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
+        Routing.RegisterRoute(nameof(UserEditPage), typeof(UserEditPage));
         Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
         Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
         Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
+        Routing.RegisterRoute(nameof(NotificationsPage), typeof(NotificationsPage));
 		builder.Logging.AddDebug();
 
 		return builder.Build();

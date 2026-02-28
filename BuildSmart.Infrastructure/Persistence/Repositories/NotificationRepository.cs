@@ -36,4 +36,18 @@ public class NotificationRepository : INotificationRepository
             _context.Notifications.Update(notification);
         }
     }
+
+    public async Task<IEnumerable<Notification>> GetAllByUserIdAsync(Guid userId)
+    {
+        return await _context.Notifications
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task DeleteAllByUserIdAsync(Guid userId)
+    {
+        var userNotes = await _context.Notifications.Where(n => n.UserId == userId).ToListAsync();
+        _context.Notifications.RemoveRange(userNotes);
+    }
 }

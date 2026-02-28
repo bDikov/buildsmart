@@ -43,6 +43,10 @@ public class MutationType : ObjectType<Mutation>
             .Description("Submits a bid for a specific job post.")
             .Authorize(roles: new[] { "Tradesman" });
 
+        descriptor.Field(m => m.PassAuction(default!, default!, default!))
+            .Description("Hides an auction from the tradesman's available feed.")
+            .Authorize(roles: new[] { "Tradesman" });
+
         descriptor.Field(m => m.AcceptBid(default!, default!))
             .Description("Accepts a bid and creates a funded booking.")
             .Authorize(roles: new[] { "Homeowner" });
@@ -64,5 +68,23 @@ public class MutationType : ObjectType<Mutation>
 
         descriptor.Field(m => m.AddAdminJobQuestion(default!, default!, default!, default!, default!, default!))
             .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.UpdateUserRoleAndCategories(default!, default!, default!, default!))
+            .Description("Updates a user's role and associated service categories. (Admin only)")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.AskJobQuestion(default!, default!, default!, default!))
+            .Description("Allows a tradesman to ask a public question on an auction.")
+            .Authorize(roles: new[] { "Tradesman" });
+
+        descriptor.Field(m => m.AnswerJobQuestion(default!, default!, default!))
+            .Description("Allows a homeowner to answer a tradesman's question.")
+            .Authorize(roles: new[] { "Homeowner" });
+
+        descriptor.Field(m => m.DeleteAllNotifications(default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.MarkNotificationAsRead(default!, default!))
+            .Authorize();
     }
 }

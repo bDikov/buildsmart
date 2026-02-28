@@ -543,6 +543,36 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("ServiceCategories", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanAuctionAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ActionType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("JobPostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TradesmanProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobPostId");
+
+                    b.HasIndex("TradesmanProfileId");
+
+                    b.ToTable("TradesmanAuctionActions");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1101,6 +1131,25 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("Booking");
 
                     b.Navigation("Homeowner");
+
+                    b.Navigation("TradesmanProfile");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanAuctionAction", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
+                        .WithMany()
+                        .HasForeignKey("JobPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
+                        .WithMany()
+                        .HasForeignKey("TradesmanProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobPost");
 
                     b.Navigation("TradesmanProfile");
                 });

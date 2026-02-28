@@ -300,13 +300,13 @@
         
                                 <StackLayout BindableLayout.ItemsSource="{Binding BqOptions}" Margin="0,5">
                                     <BindableLayout.ItemTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate x:DataType="x:String">
                                             <Grid ColumnDefinitions="*, Auto" Margin="0,2">
-                                                <Label Grid.Column="0" Text="{Binding .}" TextColor="White" VerticalOptions="Center" FontSize="13" />
+                                                <Label Grid.Column="0" Text="{Binding .}" TextColor="White" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" />
                                                 <Button Grid.Column="1" Text="Remove" 
                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AdminJobReviewViewModel}}, Path=RemoveBqOptionCommand}"
                                                         CommandParameter="{Binding .}"
-                                                        BackgroundColor="Transparent" TextColor="#F44336" FontSize="10" />
+                                                        BackgroundColor="Transparent" TextColor="#F44336" FontSize="11" />
                                             </Grid>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>

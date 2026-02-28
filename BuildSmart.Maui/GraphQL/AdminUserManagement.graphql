@@ -1,0 +1,22 @@
+query GetUsers {
+  users {
+    id
+    firstName
+    lastName
+    email
+    role
+    tradesmanProfile {
+      id
+      skills {
+        serviceCategoryId
+      }
+    }
+  }
+}
+
+mutation UpdateUserRoleAndCategories($userId: UUID!, $newRole: UserRoleTypes!, $serviceCategoryIds: [UUID!]) {
+  updateUserRoleAndCategories(userId: $userId, newRole: $newRole, serviceCategoryIds: $serviceCategoryIds) {
+    id
+    role
+  }
+}
