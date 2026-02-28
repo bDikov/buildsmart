@@ -56,13 +56,14 @@ public partial class Program
 		builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 		builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 		builder.Services.AddScoped<IProjectRepository, ProjectRepository>(); // Added ProjectRepository registration
-        builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+		builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 		// Add Application Services (Business Logic)
 		builder.Services.AddScoped<IBookingService, BookingService>();
 		builder.Services.AddScoped<ITradesmanProfileService, TradesmanProfileService>();
 		builder.Services.AddScoped<IReviewService, ReviewService>();
 		builder.Services.AddScoped<IJobPostService, JobPostService>();
+		builder.Services.AddScoped<IJobsNotificationService, BuildSmart.Api.Services.JobsNotificationService>();
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
 		builder.Services.AddScoped<INotificationService, BuildSmart.Api.Services.NotificationService>();
@@ -107,8 +108,8 @@ public partial class Program
 		});
 
 		builder.Services.AddControllers();
-        builder.Services.AddSignalR();
-        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // Added CustomUserIdProvider
+		builder.Services.AddSignalR();
+		builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // Added CustomUserIdProvider
 
 		// Add Swagger Services
 		builder.Services.AddSwaggerGen(c =>
@@ -149,7 +150,7 @@ public partial class Program
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
 			.AddType<TradesmanSkillType>() // Added
 			.AddType<UserType>()
-            .AddType<JobPostType>()
+			.AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<ReviewType>()
 			.AddProjections()
@@ -181,6 +182,7 @@ public partial class Program
 				context.Database.Migrate(); // Apply any pending migrations
 				await context.SeedAdminUser(); // Seed the admin user
 				await context.SeedHomeownerUser(); // Seed the homeowner user
+				await context.SeedTradesmanUser(); // Seed the painter tradesman
 			}
 			catch (Exception ex)
 			{
@@ -209,7 +211,7 @@ public partial class Program
 
 		// This is the endpoint that our MAUI and Blazor apps will call
 		app.MapGraphQL("/graphql");
-        app.MapHub<NotificationHub>("/hubs/notifications"); // Added Hub mapping
+		app.MapHub<NotificationHub>("/hubs/notifications"); // Added Hub mapping
 
 		app.MapControllers();
 

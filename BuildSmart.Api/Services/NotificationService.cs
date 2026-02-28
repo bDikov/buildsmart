@@ -16,7 +16,7 @@ public class NotificationService : INotificationService
         _serviceProvider = serviceProvider;
     }
 
-    public async Task SendNotificationAsync(Guid userId, string title, string message, Guid? relatedEntityId = null, string? relatedEntityType = null)
+    public async Task SendNotificationAsync(Guid userId, string title, string message, Guid? relatedEntityId = null, string? relatedEntityType = null, object? data = null)
     {
         using var scope = _serviceProvider.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -37,6 +37,6 @@ public class NotificationService : INotificationService
         await unitOfWork.SaveChangesAsync();
 
         // 2. Send via SignalR (Target specific user by ID)
-        await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, message);
+        await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, message, data);
     }
 }

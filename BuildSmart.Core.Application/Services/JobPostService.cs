@@ -11,15 +11,18 @@ public class JobPostService : IJobPostService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IScopeGenerationQueue _scopeGenerationQueue;
     private readonly INotificationService _notificationService;
+    private readonly IJobsNotificationService _jobsNotificationService;
 
     public JobPostService(
         IUnitOfWork unitOfWork, 
         IScopeGenerationQueue scopeGenerationQueue,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IJobsNotificationService jobsNotificationService)
     {
         _unitOfWork = unitOfWork;
         _scopeGenerationQueue = scopeGenerationQueue;
         _notificationService = notificationService;
+        _jobsNotificationService = jobsNotificationService;
     }
 
     public async Task SubmitJobForScopeGenerationAsync(Guid jobPostId)
@@ -371,6 +374,26 @@ public class JobPostService : IJobPostService
         return bid;
     }
 
+    public async Task PassAuctionAsync(Guid tradesmanProfileId, Guid jobPostId)
+    {
+        var existingAction = await _unitOfWork.AuctionActions.GetQueryable()
+            .FirstOrDefaultAsync(a => a.TradesmanProfileId == tradesmanProfileId && a.JobPostId == jobPostId && a.ActionType == AuctionActionType.Passed);
+
+        if (existingAction != null) return; // Already passed
+
+        var action = new TradesmanAuctionAction
+        {
+            TradesmanProfileId = tradesmanProfileId,
+            JobPostId = jobPostId,
+            ActionType = AuctionActionType.Passed,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.AuctionActions.AddAsync(action);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<Booking> AcceptBidAsync(Guid bidId)
     {
         var bid = await _unitOfWork.Bids.GetByIdAsync(bidId)
@@ -556,5 +579,64 @@ public class JobPostService : IJobPostService
         );
 
         return true;
+    }
+
+    public async Task<JobPostQuestion> AskJobQuestionAsync(Guid tradesmanProfileId, Guid jobPostId, string questionText)
+    {
+        var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+            ?? throw new ArgumentException("Job post not found");
+
+        var question = new JobPostQuestion
+        {
+            JobPostId = jobPostId,
+            TradesmanProfileId = tradesmanProfileId,
+            QuestionText = questionText,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.JobPostQuestions.AddAsync(question);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Notify Homeowner
+        var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+        if (project != null)
+        {
+            await _notificationService.SendNotificationAsync(
+                project.HomeownerId,
+                "New Auction Question",
+                $"A tradesman asked a question about '{jobPost.Title}'.",
+                jobPost.Id,
+                "AuctionQuestion"
+            );
+        }
+
+        return question;
+    }
+
+    public async Task<JobPostQuestion> AnswerJobQuestionAsync(Guid questionId, string answerText)
+    {
+        var question = await _unitOfWork.JobPostQuestions.GetByIdAsync(questionId)
+            ?? throw new ArgumentException("Question not found");
+
+        question.Answer(answerText);
+        
+        _unitOfWork.JobPostQuestions.Update(question);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Notify Tradesman
+        var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId);
+        if (tradesman != null)
+        {
+            await _notificationService.SendNotificationAsync(
+                tradesman.UserId,
+                "Question Answered",
+                $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
+                question.JobPostId,
+                "AuctionAnswer"
+            );
+        }
+
+        return question;
     }
 }

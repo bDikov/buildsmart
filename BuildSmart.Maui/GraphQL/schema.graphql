@@ -21,6 +21,31 @@ type Query {
   jobPostsForReview: [JobPost!]!
   "Gets projects waiting for admin review."
   projectsForReview: [Project!]!
+  "Gets a list of all users. (Admin only)"
+  users: [User!]!
+  "Gets all open auctions that match the authenticated tradesman's skills."
+  availableAuctions: [Auction!]!
+  "Gets a specific auction by Job ID."
+  auctionById(jobId: UUID!): Auction
+}
+
+type Auction {
+    job: JobPost!
+    bids: [Bid!]!
+    questions: [JobPostQuestion!]!
+}
+
+type JobPostQuestion {
+    id: UUID!
+    jobPostId: UUID!
+    tradesmanProfileId: UUID!
+    tradesmanProfile: TradesmanProfile!
+    questionText: String!
+    answerText: String
+    answeredAt: DateTime
+    isAnswered: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }
 
 type Notification {
@@ -96,6 +121,18 @@ type Mutation {
   "Adds a project-specific clarification question to a job post (Admin only)."
   addAdminJobQuestion(jobPostId: UUID!, questionText: String!, type: String!, isRequired: Boolean!, options: [String!]): Boolean!
 
+  "Updates a user's role and associated service categories. (Admin only)"
+  updateUserRoleAndCategories(userId: UUID!, newRole: UserRoleTypes!, serviceCategoryIds: [UUID!]): User!
+
+  "Allows a tradesman to ask a public question on an auction."
+  askJobQuestion(tradesmanProfileId: UUID!, jobPostId: UUID!, questionText: String!): JobPostQuestion!
+
+  "Allows a homeowner to answer a tradesman's question."
+  answerJobQuestion(questionId: UUID!, answerText: String!): JobPostQuestion!
+
+  "Hides an auction from the tradesman's available feed."
+  passAuction(tradesmanProfileId: UUID!, jobPostId: UUID!): Boolean!
+
   "Deletes all notifications for the current user."
   deleteAllNotifications: Boolean!
 
@@ -132,6 +169,7 @@ type TradesmanProfile {
 "Represents a specific skill or service category offered by a tradesman."
 type TradesmanSkill {
     id: UUID!
+    serviceCategoryId: UUID!
     verificationStatus: SkillVerificationStatus!
     serviceCategory: ServiceCategory!
 }

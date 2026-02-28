@@ -29,10 +29,14 @@ public interface IJobPostService
             Task SubmitJobPostAsync(Guid jobPostId);
         
             Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, Amount amount, string? comment);    
+            Task PassAuctionAsync(Guid tradesmanProfileId, Guid jobPostId);
     Task<Booking> AcceptBidAsync(Guid bidId);
 
     Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
     Task ResolveFeedbackAsync(Guid feedbackId);
 
     Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null);
+
+    Task<JobPostQuestion> AskJobQuestionAsync(Guid tradesmanProfileId, Guid jobPostId, string questionText);
+    Task<JobPostQuestion> AnswerJobQuestionAsync(Guid questionId, string answerText);
 }

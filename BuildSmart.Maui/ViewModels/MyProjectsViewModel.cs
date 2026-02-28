@@ -9,141 +9,141 @@ namespace BuildSmart.Maui.ViewModels;
 
 public partial class MyProjectsViewModel : ObservableObject
 {
-    private readonly IBuildSmartApiClient _apiClient;
-    private readonly SignalRService _signalRService;
-    private bool _isFirstLoad = true;
+	private readonly IBuildSmartApiClient _apiClient;
+	private readonly SignalRService _signalRService;
+	private bool _isFirstLoad = true;
 
-    [ObservableProperty]
-    private ObservableCollection<IGetMyProjects_MyProjects> _projects = new();
+	[ObservableProperty]
+	private ObservableCollection<IGetMyProjects_MyProjects> _projects = new();
 
-    [ObservableProperty]
-    private bool _isBusy;
+	[ObservableProperty]
+	private bool _isBusy;
 
-    [ObservableProperty]
-    private bool _isEmpty;
+	[ObservableProperty]
+	private bool _isEmpty;
 
-    public MyProjectsViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
-    {
-        _apiClient = apiClient;
-        _signalRService = signalRService;
-        
-        // Subscribe to notifications
-        _signalRService.NotificationReceived += OnNotificationReceived;
-    }
+	public MyProjectsViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
+	{
+		_apiClient = apiClient;
+		_signalRService = signalRService;
 
-    private void OnNotificationReceived(string title, string message)
-    {
-        // Reload projects when ANY notification is received (simple approach)
-        // In a real app, we might check if the notification is relevant to projects
-        MainThread.BeginInvokeOnMainThread(async () => await LoadProjectsAsync());
-    }
+		// Subscribe to notifications
+		_signalRService.NotificationReceived += OnNotificationReceived;
+	}
 
-    [RelayCommand]
-    private async Task CreateProjectAsync()
-    {
-        await Shell.Current.GoToAsync(nameof(JobWizardPage));
-    }
+	private void OnNotificationReceived(string title, string message, object? data)
+	{
+		// Reload projects when ANY notification is received (simple approach)
+		// In a real app, we might check if the notification is relevant to projects
+		MainThread.BeginInvokeOnMainThread(async () => await LoadProjectsAsync());
+	}
 
-    [RelayCommand]
-    public async Task LoadProjectsAsync()
-    {
-        if (IsBusy) return;
+	[RelayCommand]
+	private async Task CreateProjectAsync()
+	{
+		await Shell.Current.GoToAsync(nameof(JobWizardPage));
+	}
 
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.GetMyProjects.ExecuteAsync();
+	[RelayCommand]
+	public async Task LoadProjectsAsync()
+	{
+		if (IsBusy) return;
 
-            if (result.Errors.Count > 0)
-            {
-                var error = result.Errors.First();
-                await Shell.Current.DisplayAlert("GraphQL Error", $"{error.Message}\nCode: {error.Code}", "OK");
-                return;
-            }
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.GetMyProjects.ExecuteAsync();
 
-            Projects.Clear();
-            if (result.Data?.MyProjects != null)
-            {
-                var sortedProjects = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).ToList();
-                foreach (var project in sortedProjects)
-                {
-                    Projects.Add(project);
-                }
+			if (result.Errors.Count > 0)
+			{
+				var error = result.Errors.First();
+				await Shell.Current.DisplayAlert("GraphQL Error", $"{error.Message}\nCode: {error.Code}", "OK");
+				return;
+			}
 
-                IsEmpty = !Projects.Any();
+			Projects.Clear();
+			if (result.Data?.MyProjects != null)
+			{
+				var sortedProjects = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).ToList();
+				foreach (var project in sortedProjects)
+				{
+					Projects.Add(project);
+				}
 
-                // Auto-navigation removed as per user request to see list first
-            }
-            else 
-            {
-                 IsEmpty = true;
-            }
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", $"Unexpected error: {ex.Message}", "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+				IsEmpty = !Projects.Any();
 
-    [RelayCommand]
-    private async Task GoToDetails(IGetMyProjects_MyProjects project)
-    {
-        if (project.Status == ProjectStatus.Draft)
-        {
-            await Shell.Current.GoToAsync(nameof(JobWizardPage), new Dictionary<string, object>
-            {
-                { "ProjectId", project.Id }
-            });
-        }
-        else
-        {
-            await Shell.Current.GoToAsync(nameof(ProjectDetailPage), new Dictionary<string, object>
-            {
-                { "Project", project }
-            });
-        }
-    }
+				// Auto-navigation removed as per user request to see list first
+			}
+			else
+			{
+				IsEmpty = true;
+			}
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", $"Unexpected error: {ex.Message}", "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 
-    [RelayCommand]
-    private async Task DeleteProjectAsync(IGetMyProjects_MyProjects project)
-    {
-        if (project == null) return;
+	[RelayCommand]
+	private async Task GoToDetails(IGetMyProjects_MyProjects project)
+	{
+		if (project.Status == ProjectStatus.Draft)
+		{
+			await Shell.Current.GoToAsync(nameof(JobWizardPage), new Dictionary<string, object>
+			{
+				{ "ProjectId", project.Id }
+			});
+		}
+		else
+		{
+			await Shell.Current.GoToAsync(nameof(ProjectDetailPage), new Dictionary<string, object>
+			{
+				{ "Project", project }
+			});
+		}
+	}
 
-        bool confirm = await Shell.Current.DisplayAlert("Delete Project", $"Are you sure you want to delete '{project.Title}'?", "Yes", "No");
-        if (!confirm) return;
+	[RelayCommand]
+	private async Task DeleteProjectAsync(IGetMyProjects_MyProjects project)
+	{
+		if (project == null) return;
 
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.DeleteProject.ExecuteAsync(project.Id);
+		bool confirm = await Shell.Current.DisplayAlert("Delete Project", $"Are you sure you want to delete '{project.Title}'?", "Yes", "No");
+		if (!confirm) return;
 
-            if (result.Errors.Count > 0)
-            {
-                await Shell.Current.DisplayAlert("Error", result.Errors.First().Message, "OK");
-                return;
-            }
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.DeleteProject.ExecuteAsync(project.Id);
 
-            if (result.Data?.DeleteProject == true)
-            {
-                Projects.Remove(project);
-                IsEmpty = !Projects.Any();
-            }
-            else
-            {
-                await Shell.Current.DisplayAlert("Error", "Failed to delete project.", "OK");
-            }
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+			if (result.Errors.Count > 0)
+			{
+				await Shell.Current.DisplayAlert("Error", result.Errors.First().Message, "OK");
+				return;
+			}
+
+			if (result.Data?.DeleteProject == true)
+			{
+				Projects.Remove(project);
+				IsEmpty = !Projects.Any();
+			}
+			else
+			{
+				await Shell.Current.DisplayAlert("Error", "Failed to delete project.", "OK");
+			}
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 }

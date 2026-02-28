@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
 	    public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
         public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
 	    public DbSet<Bid> Bids { get; set; } = null!;
+	    public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;
 	
 		public DbSet<Booking> Bookings { get; set; } = null!;
 	    public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;
@@ -87,6 +88,65 @@ public class AppDbContext : DbContext
             };
 
             await Users.AddAsync(homeownerUser);
+            await SaveChangesAsync();
+        }
+    }
+
+    public async Task SeedTradesmanUser()
+    {
+        // 1. Ensure Painting Category exists
+        var paintingCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Painting");
+        if (paintingCategory == null)
+        {
+            paintingCategory = new ServiceCategory
+            {
+                Id = Guid.NewGuid(),
+                Name = "Painting",
+                Description = "Interior and exterior painting services",
+                Status = CategoryStatus.Active,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await ServiceCategories.AddAsync(paintingCategory);
+            await SaveChangesAsync();
+        }
+
+        // 2. Ensure Tradesman User exists
+        if (!Users.Any(u => u.Email == "painter@buildsmart.com"))
+        {
+            var painterId = Guid.NewGuid();
+            var painterUser = new User
+            {
+                Id = painterId,
+                FirstName = "Paul",
+                LastName = "Painter",
+                Email = "painter@buildsmart.com",
+                HashedPassword = BCrypt.Net.BCrypt.HashPassword("Painter123!"),
+                Role = UserRoleTypes.Tradesman,
+                Bio = "Specializing in high-end finishes.",
+                IsEmailVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var profile = new TradesmanProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = painterId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            profile.Skills.Add(new TradesmanSkill
+            {
+                ServiceCategoryId = paintingCategory.Id,
+                VerificationStatus = SkillVerificationStatus.PortfolioVerified,
+                YearsOfExperience = 5
+            });
+
+            painterUser.TradesmanProfile = profile;
+
+            await Users.AddAsync(painterUser);
             await SaveChangesAsync();
         }
     }

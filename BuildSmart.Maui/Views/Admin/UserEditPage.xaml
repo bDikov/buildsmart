@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels.Admin"
+             x:DataType="vm:UserEditViewModel"
+             x:Class="BuildSmart.Maui.Views.Admin.UserEditPage"
+             Title="Edit User">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+            
+            <!-- User Header -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="{Binding User.Email, StringFormat='{0}'}" FontSize="14" TextColor="Gray" />
+                <Label FontAttributes="Bold" FontSize="22">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding User.FirstName}" />
+                            <Span Text=" " />
+                            <Span Text="{Binding User.LastName}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Role Selection -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="System Role" FontAttributes="Bold" />
+                <Frame Padding="0" BorderColor="LightGray">
+                    <Picker ItemsSource="{Binding AllRoles}" 
+                            SelectedItem="{Binding SelectedRole}" 
+                            Title="Select Role" />
+                </Frame>
+                <Label Text="Note: Changing to TRADESMAN will create a tradesman profile if one doesn't exist." 
+                       FontSize="11" TextColor="OrangeRed" IsVisible="{Binding IsTradesmanFieldsVisible}" />
+            </VerticalStackLayout>
+
+            <!-- Tradesman Categories -->
+            <VerticalStackLayout Spacing="10" IsVisible="{Binding IsTradesmanFieldsVisible}">
+                <Label Text="Assigned Service Categories" FontAttributes="Bold" />
+                <Label Text="Select the categories this tradesman is qualified for:" FontSize="12" TextColor="Gray" />
+                
+                <CollectionView ItemsSource="{Binding Categories}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CategorySelectionViewModel">
+                            <Grid ColumnDefinitions="*, Auto" Padding="5">
+                                <Label Grid.Column="0" Text="{Binding Name}" VerticalOptions="Center" />
+                                <CheckBox Grid.Column="1" IsChecked="{Binding IsSelected}" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <Button Text="Save Changes" 
+                    Command="{Binding SaveCommand}" 
+                    BackgroundColor="{StaticResource Primary}" 
+                    TextColor="White" 
+                    FontAttributes="Bold" 
+                    Margin="0,20,0,0" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

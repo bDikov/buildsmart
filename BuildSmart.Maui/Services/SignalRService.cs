@@ -8,7 +8,7 @@ public class SignalRService : IAsyncDisposable
     private HubConnection? _hubConnection;
     private readonly IAuthService _authService;
 
-    public event Action<string, string>? NotificationReceived;
+    public event Action<string, string, object?>? NotificationReceived;
 
     public SignalRService(IAuthService authService)
     {
@@ -34,15 +34,19 @@ public class SignalRService : IAsyncDisposable
             .WithAutomaticReconnect()
             .Build();
 
-        _hubConnection.On<string, string>("ReceiveNotification", (title, message) =>
+        _hubConnection.On<string, string, object?>("ReceiveNotification", (title, message, data) =>
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                NotificationReceived?.Invoke(title, message);
+                NotificationReceived?.Invoke(title, message, data);
                 
                 // Show a global toast/snackbar if possible, or just alert for now
                 // Ideally use CommunityToolkit.Maui.Alerts
-                await Shell.Current.DisplayAlert(title, message, "OK");
+                var result = await Shell.Current.DisplayAlert(title, message, "View", "OK");
+                if (result && data != null)
+                {
+                    await HandleDeepLinkAsync(data);
+                }
             });
         });
 
@@ -54,6 +58,31 @@ public class SignalRService : IAsyncDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"SignalR Connection Error: {ex.Message}");
+        }
+    }
+
+    private async Task HandleDeepLinkAsync(object data)
+    {
+        try
+        {
+            // Use System.Text.Json to parse the data if it comes in as a JsonElement
+            if (data is System.Text.Json.JsonElement element)
+            {
+                if (element.TryGetProperty("route", out var routeProp))
+                {
+                    var route = routeProp.GetString();
+                    if (route == "AuctionHub" && element.TryGetProperty("jobId", out var jobIdProp))
+                    {
+                        var jobId = jobIdProp.GetString();
+                        // Navigate to Auction Hub with JobId
+                        await Shell.Current.GoToAsync($"AuctionHubPage?jobId={jobId}");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Deep Link Error: {ex.Message}");
         }
     }
 

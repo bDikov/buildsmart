@@ -245,6 +245,45 @@ public class Mutation
 		return await jobPostService.SubmitBidAsync(tradesmanProfileId, jobPostId, amount, comment);
 	}
 
+    [Authorize(Roles = new[] { "Tradesman" })]
+    public async Task<bool> PassAuction(
+        Guid tradesmanProfileId,
+        Guid jobPostId,
+        [Service] IJobPostService jobPostService)
+    {
+        await jobPostService.PassAuctionAsync(tradesmanProfileId, jobPostId);
+        return true;
+    }
+
+    [Authorize(Roles = new[] { "Admin" })]
+    public async Task<User> UpdateUserRoleAndCategories(
+        Guid userId,
+        UserRoleTypes newRole,
+        List<Guid>? serviceCategoryIds,
+        [Service] IAuthService authService)
+    {
+        return await authService.UpdateUserRoleAndCategoriesAsync(userId, newRole, serviceCategoryIds);
+    }
+
+    [Authorize(Roles = new[] { "Tradesman" })]
+    public async Task<JobPostQuestion> AskJobQuestion(
+        Guid tradesmanProfileId,
+        Guid jobPostId,
+        string questionText,
+        [Service] IJobPostService jobPostService)
+    {
+        return await jobPostService.AskJobQuestionAsync(tradesmanProfileId, jobPostId, questionText);
+    }
+
+    [Authorize(Roles = new[] { "Homeowner" })]
+    public async Task<JobPostQuestion> AnswerJobQuestion(
+        Guid questionId,
+        string answerText,
+        [Service] IJobPostService jobPostService)
+    {
+        return await jobPostService.AnswerJobQuestionAsync(questionId, answerText);
+    }
+
 	public async Task<Booking> AcceptBid(
 		Guid bidId,
 		[Service] IJobPostService jobPostService)

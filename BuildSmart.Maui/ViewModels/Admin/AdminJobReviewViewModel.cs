@@ -26,7 +26,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
         _signalRService.NotificationReceived += OnNotificationReceived;
     }
 
-    private void OnNotificationReceived(string title, string message)
+    private void OnNotificationReceived(string title, string message, object? data)
     {
         MainThread.BeginInvokeOnMainThread(async () => {
             await LoadJobsAsync();
