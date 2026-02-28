@@ -33,7 +33,12 @@ public class QueryType : ObjectType<Query>
         descriptor.Field(q => q.GetJobPostsForReview(default!))
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(q => q.GetProjectsForReview(default!))
-            .Authorize(roles: new[] { "Admin" });
-	}
-}
+                descriptor.Field(q => q.GetProjectsForReview(default!))
+                    .Authorize(roles: new[] { "Admin" });
+        
+                descriptor.Field(q => q.GetMyNotifications(default!, default!))
+                    .Description("Gets all notifications for the current user.")
+                    .Authorize();
+        	}
+        }
+        

@@ -82,6 +82,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ScopeReviewPage>();
         builder.Services.AddTransient<ScopeReviewViewModel>();
 
+        builder.Services.AddTransient<NotificationsPage>();
+        builder.Services.AddTransient<NotificationsViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
 		builder.Services.AddTransient<AppShell>();

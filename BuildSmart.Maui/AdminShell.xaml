@@ -7,6 +7,10 @@
     xmlns:admin="clr-namespace:BuildSmart.Maui.Views.Admin"
     Shell.FlyoutBehavior="Flyout">
 
+    <Shell.ToolbarItems>
+        <ToolbarItem IconImageSource="dotnet_bot.png" Text="Notifications" Clicked="OnNotificationsClicked" />
+    </Shell.ToolbarItems>
+
     <FlyoutItem Title="Management">
         <ShellContent
             Title="Categories"

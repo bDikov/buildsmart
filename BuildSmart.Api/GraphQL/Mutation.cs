@@ -376,7 +376,34 @@ public class Mutation
 			};
 			await unitOfWork.ServiceCategories.AddAsync(category);
 		}
-		await unitOfWork.SaveChangesAsync();
-		return category;
-	}
-}
+				await unitOfWork.SaveChangesAsync();
+				return category;
+			}
+		
+		    [Authorize]
+		    public async Task<bool> DeleteAllNotifications(
+		        ClaimsPrincipal claimsPrincipal,
+		        [Service] IUnitOfWork unitOfWork)
+		    {
+		        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		        {
+		            throw new GraphQLException("Invalid user credentials.");
+		        }
+		
+		        await unitOfWork.Notifications.DeleteAllByUserIdAsync(userId);
+		        await unitOfWork.SaveChangesAsync();
+		        return true;
+		    }
+		
+		    [Authorize]
+		    public async Task<bool> MarkNotificationAsRead(
+		        Guid notificationId,
+		        [Service] IUnitOfWork unitOfWork)
+		    {
+		        await unitOfWork.Notifications.MarkAsReadAsync(notificationId);
+		        await unitOfWork.SaveChangesAsync();
+		        return true;
+		    }
+		}
+		

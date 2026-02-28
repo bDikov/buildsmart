@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             x:Class="BuildSmart.Maui.Views.NotificationsPage"
+             x:DataType="vm:NotificationsViewModel"
+             Title="Notifications">
+
+    <Grid RowDefinitions="*, Auto">
+        <RefreshView Grid.Row="0" IsRefreshing="{Binding IsBusy}" Command="{Binding LoadNotificationsCommand}">
+            <ScrollView>
+                <VerticalStackLayout x:Name="NotificationsList" 
+                                     BindableLayout.ItemsSource="{Binding Notifications}" 
+                                     Padding="10" Spacing="10">
+                    <BindableLayout.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10" Padding="40">
+                            <Label Text="No notifications yet." FontSize="16" TextColor="Gray" HorizontalOptions="Center" />
+                            <Label Text="Important updates will appear here." FontSize="12" TextColor="#ACACAC" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </BindableLayout.EmptyView>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="graphql:IGetMyNotifications_MyNotifications">
+                            <Frame Padding="15" BorderColor="{AppThemeBinding Light=#E0E0E0, Dark=#404040}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}" HasShadow="False">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NotificationsViewModel}}, Path=MarkAsReadCommand}" CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                                <VerticalStackLayout Spacing="5">
+                                    <VerticalStackLayout.Style>
+                                        <Style TargetType="VerticalStackLayout">
+                                            <Setter Property="Opacity" Value="1.0" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding IsRead}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.5" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </VerticalStackLayout.Style>
+                                    
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Label Grid.Column="0" Text="{Binding Title}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}">
+                                            <Label.Style>
+                                                <Style TargetType="Label">
+                                                    <Setter Property="FontAttributes" Value="Bold" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsRead}" Value="True">
+                                                            <Setter Property="FontAttributes" Value="None" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Label.Style>
+                                        </Label>
+                                        <Label Grid.Column="1" Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+                                    </Grid>
+                                    <Label Text="{Binding Message}" FontSize="14" TextColor="{AppThemeBinding Light=#212121, Dark=#E0E0E0}" LineBreakMode="WordWrap" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <Button Grid.Row="1" Text="Clear All Notifications" 
+                Clicked="OnClearAllClicked"
+                Margin="20" 
+                BackgroundColor="Transparent" 
+                TextColor="#F44336" 
+                FontAttributes="Bold">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="IsVisible" Value="True" />
+                    <Style.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding Notifications.Count}" Value="0">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+    </Grid>
+</ContentPage>

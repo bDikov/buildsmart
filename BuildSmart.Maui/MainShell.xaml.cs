@@ -22,10 +22,24 @@ public partial class MainShell : Shell
         Routing.RegisterRoute("scope_review", typeof(ScopeReviewPage));
         Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
         Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
+        Routing.RegisterRoute(nameof(NotificationsPage), typeof(NotificationsPage));
 
         // Connect to SignalR
         MainThread.BeginInvokeOnMainThread(async () => await _signalRService.ConnectAsync());
+        _signalRService.NotificationReceived += OnNotificationReceived;
 	}
+
+    private void OnNotificationReceived(string title, string message)
+    {
+        MainThread.BeginInvokeOnMainThread(async () => {
+            await Shell.Current.DisplayAlert(title, message, "OK");
+        });
+    }
+
+    private async void OnNotificationsClicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(NotificationsPage));
+    }
 
 	private async void OnProfileSettingsClicked(object sender, EventArgs e)
 	{

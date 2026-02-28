@@ -90,7 +90,7 @@ public class Query
             throw new GraphQLException("Invalid user ID in token.");
         }
 
-        return await notificationRepository.GetUnreadByUserIdAsync(userId);
+        return await notificationRepository.GetAllByUserIdAsync(userId);
     }
 
 	[UseProjection]

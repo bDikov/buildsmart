@@ -2,7 +2,8 @@ using HotChocolate.AspNetCore;
 using BuildSmart.Api.GraphQL;
 using BuildSmart.Api.GraphQL.Types;
 using BuildSmart.Api.Workers;
-using BuildSmart.Api.Hubs; // Added
+using BuildSmart.Api.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Application.Services;
 using BuildSmart.Infrastructure.Persistence;
@@ -106,7 +107,8 @@ public partial class Program
 		});
 
 		builder.Services.AddControllers();
-        builder.Services.AddSignalR(); // Added SignalR
+        builder.Services.AddSignalR();
+        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // Added CustomUserIdProvider
 
 		// Add Swagger Services
 		builder.Services.AddSwaggerGen(c =>

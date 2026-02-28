@@ -74,8 +74,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
         AnswersList.Clear();
         foreach (var kvp in _masterAnswerKey)
         {
+            if (kvp.Key == null) continue;
             var text = _questionTextCache.TryGetValue(kvp.Key, out var qText) ? qText : kvp.Key;
-            AnswersList.Add(new KeyValuePair<string, string>(text, kvp.Value));
+            AnswersList.Add(new KeyValuePair<string, string>(text, kvp.Value ?? ""));
         }
     }
 
@@ -105,15 +106,17 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
-		if (query.TryGetValue("JobPostId", out var jpid) && Guid.TryParse(jpid.ToString(), out var jobId))
+        if (query == null) return;
+
+		if (query.TryGetValue("JobPostId", out var jpid) && jpid != null && Guid.TryParse(jpid.ToString(), out var jobId))
 			_targetJobPostId = jobId;
 
-		if (query.TryGetValue("TargetCategoryId", out var tcid) && Guid.TryParse(tcid.ToString(), out var catId))
+		if (query.TryGetValue("TargetCategoryId", out var tcid) && tcid != null && Guid.TryParse(tcid.ToString(), out var catId))
 			_targetCategoryId = catId;
 
-		if (query.ContainsKey("ProjectId"))
+		if (query.TryGetValue("ProjectId", out var pidObj) && pidObj != null)
 		{
-			if (Guid.TryParse(query["ProjectId"].ToString(), out var projectId))
+			if (Guid.TryParse(pidObj.ToString(), out var projectId))
 			{
 				_currentProjectId = projectId;
 				IsEditing = true;
@@ -161,7 +164,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					_currentJobPostIds.Clear();
 					foreach (var job in project.JobPosts)
 					{
-						_currentJobPostIds[job.ServiceCategory.Id] = job.Id;
+						if (job.ServiceCategory != null)
+						{
+							_currentJobPostIds[job.ServiceCategory.Id] = job.Id;
+						}
 					}
 
 					// Generate Dynamic Steps based on loaded categories
@@ -177,7 +183,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 							{
 								foreach (var kvp in flatAnswers)
 								{
-									_masterAnswerKey[kvp.Key] = kvp.Value;
+									if (kvp.Key != null)
+									{
+										_masterAnswerKey[kvp.Key] = kvp.Value ?? "";
+									}
 								}
 							}
 						}
@@ -284,7 +293,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			// Save current questions to master key
 			foreach (var q in Questions)
 			{
-				if (!string.IsNullOrEmpty(q.Answer))
+				if (q.Id != null && !string.IsNullOrEmpty(q.Answer))
 					_masterAnswerKey[q.Id] = q.Answer;
 			}
 
@@ -358,7 +367,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			Questions.Clear();
 			foreach (var q in step.Questions)
 			{
-				if (_masterAnswerKey.TryGetValue(q.Id, out var savedAns))
+				if (q.Id != null && _masterAnswerKey.TryGetValue(q.Id, out var savedAns))
 				{
 					q.Answer = savedAns;
 				}

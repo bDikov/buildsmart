@@ -232,7 +232,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
                                     var qText = qNode?["text"]?.GetValue<string>();
                                     if (!string.IsNullOrEmpty(qId) && !string.IsNullOrEmpty(qText))
                                     {
-                                        var ans = answers?[qId]?.GetValue<string>();
+                                        var ans = (answers != null && qId != null) ? answers[qId]?.GetValue<string>() : null;
                                         AdminQuestions.Add(new QAPair { Question = qText, Answer = ans ?? "" });
                                     }
                                 }
@@ -262,7 +262,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
         
                                                 if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(text))
                                                 {
-                                                    var answer = answers?[id]?.GetValue<string>();
+                                                    var answer = (answers != null && id != null) ? answers[id]?.GetValue<string>() : null;
                                                     if (!string.IsNullOrEmpty(answer))
                                                     {
                                                         CurrentJobDetails.Add(new QAPair { Question = text, Answer = answer });

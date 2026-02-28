@@ -95,6 +95,12 @@ type Mutation {
 
   "Adds a project-specific clarification question to a job post (Admin only)."
   addAdminJobQuestion(jobPostId: UUID!, questionText: String!, type: String!, isRequired: Boolean!, options: [String!]): Boolean!
+
+  "Deletes all notifications for the current user."
+  deleteAllNotifications: Boolean!
+
+  "Marks a specific notification as read."
+  markNotificationAsRead(notificationId: UUID!): Boolean!
 }
 
 type JobPostFeedback {

@@ -36,7 +36,7 @@ public class NotificationService : INotificationService
         await unitOfWork.Notifications.AddAsync(notification);
         await unitOfWork.SaveChangesAsync();
 
-        // 2. Send via SignalR
-        await _hubContext.Clients.Group(userId.ToString()).SendAsync("ReceiveNotification", title, message);
+        // 2. Send via SignalR (Target specific user by ID)
+        await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, message);
     }
 }

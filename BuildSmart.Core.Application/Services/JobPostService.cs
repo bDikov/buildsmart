@@ -271,6 +271,19 @@ public class JobPostService : IJobPostService
         _unitOfWork.JobPosts.Update(jobPost);
         await _unitOfWork.SaveChangesAsync();
 
+        // Notify Admins of New Submission
+        var admins = await _unitOfWork.Users.GetQueryable().Where(u => u.Role == UserRoleTypes.Admin).ToListAsync();
+        foreach (var admin in admins)
+        {
+            await _notificationService.SendNotificationAsync(
+                admin.Id,
+                "New Job Submission",
+                $"A new scope for '{jobPost.Title}' is ready for admin review.",
+                jobPost.Id,
+                "JobPost"
+            );
+        }
+
         // Queue for background processing
         await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
     }
@@ -342,6 +355,19 @@ public class JobPostService : IJobPostService
         await _unitOfWork.Bids.AddAsync(bid);
         await _unitOfWork.SaveChangesAsync();
 
+        // Notify Homeowner of New Bid
+        var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+        if (project != null)
+        {
+            await _notificationService.SendNotificationAsync(
+                project.HomeownerId,
+                "New Bid Received",
+                $"A tradesman has submitted a bid for '{jobPost.Title}'.",
+                bid.Id,
+                "Bid"
+            );
+        }
+
         return bid;
     }
 
@@ -385,6 +411,15 @@ public class JobPostService : IJobPostService
         bid.JobPost.CloseBidding();
         
         await _unitOfWork.SaveChangesAsync();
+
+        // Notify Tradesman
+        await _notificationService.SendNotificationAsync(
+            bid.TradesmanProfile.UserId,
+            "Bid Accepted!",
+            $"Your bid for '{bid.JobPost.Title}' has been accepted. Check your bookings.",
+            booking.Id,
+            "Booking"
+        );
 
         return booking;
     }

@@ -64,5 +64,11 @@ public class MutationType : ObjectType<Mutation>
 
         descriptor.Field(m => m.AddAdminJobQuestion(default!, default!, default!, default!, default!, default!))
             .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.DeleteAllNotifications(default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.MarkNotificationAsRead(default!, default!))
+            .Authorize();
     }
 }
