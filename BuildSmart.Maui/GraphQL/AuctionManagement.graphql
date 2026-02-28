@@ -1,0 +1,96 @@
+query GetAvailableAuctions {
+  availableAuctions {
+    job {
+      id
+      title
+      description
+      location
+      status
+      estimatedBudget {
+        total
+        currency
+      }
+      serviceCategory {
+        name
+      }
+      project {
+        id
+        title
+        homeowner {
+          firstName
+          lastName
+        }
+      }
+    }
+    bids {
+      id
+      amount {
+        total
+        currency
+      }
+      tradesmanProfile {
+        id
+      }
+    }
+    questions {
+      id
+      questionText
+      isAnswered
+    }
+  }
+}
+
+query GetAuctionById($jobId: UUID!) {
+  auctionById(jobId: $jobId) {
+    job {
+      id
+      title
+      description
+      location
+      status
+      estimatedBudget {
+        total
+        currency
+      }
+      serviceCategory {
+        name
+      }
+      project {
+        id
+        title
+        homeowner {
+          firstName
+          lastName
+        }
+      }
+    }
+    bids {
+      id
+      amount {
+        total
+        currency
+      }
+      tradesmanProfile {
+        id
+      }
+    }
+    questions {
+      id
+      questionText
+      isAnswered
+    }
+  }
+}
+
+mutation PassAuction($tradesmanProfileId: UUID!, $jobPostId: UUID!) {
+  passAuction(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId)
+}
+
+mutation SubmitBid($tradesmanProfileId: UUID!, $jobPostId: UUID!, $subtotal: Decimal!, $currency: String!, $comment: String) {
+  submitBid(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId, subtotal: $subtotal, currency: $currency, comment: $comment) {
+    id
+    amount {
+      total
+    }
+  }
+}

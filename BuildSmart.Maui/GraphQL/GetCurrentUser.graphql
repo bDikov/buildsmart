@@ -9,5 +9,8 @@ query GetCurrentUser {
     bio
     location
     profilePictureUrl
+    tradesmanProfile {
+      id
+    }
   }
 }

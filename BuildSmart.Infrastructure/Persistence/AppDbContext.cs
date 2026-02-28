@@ -108,10 +108,27 @@ public class AppDbContext : DbContext
                 UpdatedAt = DateTime.UtcNow
             };
             await ServiceCategories.AddAsync(paintingCategory);
-            await SaveChangesAsync();
         }
 
-        // 2. Ensure Tradesman User exists
+        // 1.5 Ensure Electrical Category exists
+        var electricalCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Electrical");
+        if (electricalCategory == null)
+        {
+            electricalCategory = new ServiceCategory
+            {
+                Id = Guid.NewGuid(),
+                Name = "Electrical",
+                Description = "Electrical wiring and repair services",
+                Status = CategoryStatus.Active,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await ServiceCategories.AddAsync(electricalCategory);
+        }
+
+        await SaveChangesAsync();
+
+        // 2. Ensure Painter User exists
         if (!Users.Any(u => u.Email == "painter@buildsmart.com"))
         {
             var painterId = Guid.NewGuid();
@@ -139,15 +156,52 @@ public class AppDbContext : DbContext
 
             profile.Skills.Add(new TradesmanSkill
             {
-                ServiceCategoryId = paintingCategory.Id,
+                ServiceCategoryId = paintingCategory!.Id,
                 VerificationStatus = SkillVerificationStatus.PortfolioVerified,
                 YearsOfExperience = 5
             });
 
             painterUser.TradesmanProfile = profile;
-
             await Users.AddAsync(painterUser);
-            await SaveChangesAsync();
         }
+
+        // 3. Ensure Electrician User exists
+        if (!Users.Any(u => u.Email == "electrician@buildsmart.com"))
+        {
+            var sparkyId = Guid.NewGuid();
+            var sparkyUser = new User
+            {
+                Id = sparkyId,
+                FirstName = "Sam",
+                LastName = "Sparky",
+                Email = "electrician@buildsmart.com",
+                HashedPassword = BCrypt.Net.BCrypt.HashPassword("Electrician123!"),
+                Role = UserRoleTypes.Tradesman,
+                Bio = "Certified master electrician.",
+                IsEmailVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var profile = new TradesmanProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = sparkyId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            profile.Skills.Add(new TradesmanSkill
+            {
+                ServiceCategoryId = electricalCategory!.Id,
+                VerificationStatus = SkillVerificationStatus.PortfolioVerified,
+                YearsOfExperience = 10
+            });
+
+            sparkyUser.TradesmanProfile = profile;
+            await Users.AddAsync(sparkyUser);
+        }
+
+        await SaveChangesAsync();
     }
 }

@@ -3,19 +3,28 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BuildSmart.Maui.Views.FeedPage"
              xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:gql="clr-namespace:BuildSmart.Maui.GraphQL"
              x:DataType="viewModels:FeedPageViewModel"
-             Title="Find a Pro"
+             Title="Marketplace"
              BackgroundColor="#f0f2f5">
 
     <Grid RowDefinitions="Auto, *">
-        <!-- Action Header -->
+        <!-- Homeowner Action Header -->
         <Button Grid.Row="0" 
                 Text="+ Start New Project" 
                 Command="{Binding NavigateToWizardCommand}"
+                IsVisible="{Binding IsHomeowner}"
                 Margin="15,10"
                 BackgroundColor="{StaticResource Primary}"
                 TextColor="White"
                 FontAttributes="Bold" />
+
+        <!-- Tradesman Feed Header -->
+        <Label Grid.Row="0" 
+               Text="Available Auctions" 
+               IsVisible="{Binding IsTradesman}"
+               FontSize="20" FontAttributes="Bold" 
+               Margin="20,15,20,5" />
 
         <!-- Loading Indicator -->
         <ActivityIndicator IsRunning="{Binding IsLoading}" 
@@ -25,54 +34,88 @@
                            Grid.RowSpan="2"
                            ZIndex="1"/>
 
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Tradesmen}" SelectionMode="None">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame Margin="15,5" Padding="0" CornerRadius="12" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
-                        <Grid RowDefinitions="Auto, Auto, Auto" Padding="15">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:FeedPageViewModel}}, Path=NavigateToDetailsCommand}" 
-                                                      CommandParameter="{Binding .}" />
-                            </Grid.GestureRecognizers>
-                            
-                            <!-- Header: Avatar + Name + Category -->
-                            <Grid ColumnDefinitions="50, *, Auto" ColumnSpacing="10" Margin="0,0,0,10">
-                                <Image Grid.Column="0" 
-                                       Source="{Binding User.ProfilePictureUrl, TargetNullValue='dotnet_bot.png'}" 
-                                       Aspect="AspectFill" 
-                                       HeightRequest="50" 
-                                       WidthRequest="50">
-                                    <Image.Clip>
-                                        <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25"/>
-                                    </Image.Clip>
-                                </Image>
-                                
-                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                                    <Label Text="{Binding User.FirstName}" FontAttributes="Bold" FontSize="16"/>
-                                    <!-- Display first skill or 'General' -->
-                                    <Label Text="{Binding Skills[0].ServiceCategory.Name, TargetNullValue='General'}" TextColor="Gray" FontSize="12"/>
+        <RefreshView Grid.Row="1" Command="{Binding LoadFeedCommand}" IsRefreshing="{Binding IsLoading}">
+            <Grid>
+                <!-- 1. Homeowner View: Pros Directory -->
+                <CollectionView ItemsSource="{Binding Tradesmen}" IsVisible="{Binding IsHomeowner}" SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="gql:IGetTradesmanProfiles_TradesmanProfiles">
+                            <Frame Margin="15,5" Padding="0" CornerRadius="12" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
+                                <Grid RowDefinitions="Auto, Auto, Auto" Padding="15">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:FeedPageViewModel}}, Path=NavigateToDetailsCommand}" 
+                                                              CommandParameter="{Binding .}" />
+                                    </Grid.GestureRecognizers>
+                                    <Grid ColumnDefinitions="50, *, Auto" ColumnSpacing="10" Margin="0,0,0,10">
+                                        <Image Grid.Column="0" Source="{Binding User.ProfilePictureUrl, TargetNullValue='dotnet_bot.png'}" Aspect="AspectFill" HeightRequest="50" WidthRequest="50">
+                                            <Image.Clip><EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25"/></Image.Clip>
+                                        </Image>
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding User.FirstName}" FontAttributes="Bold" FontSize="16"/>
+                                            <Label Text="Professional" TextColor="Gray" FontSize="12"/>
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="2" StrokeShape="RoundRectangle 4" BackgroundColor="#E3F2FD" Padding="8,2" StrokeThickness="0" VerticalOptions="Start">
+                                            <Label Text="{Binding AverageRating, StringFormat='⭐ {0:F1}'}" TextColor="#1565C0" FontSize="12" FontAttributes="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                    <Label Grid.Row="1" Text="{Binding User.Bio}" MaxLines="3" LineBreakMode="TailTruncation" TextColor="#333" Margin="0,0,0,10" />
+                                    <HorizontalStackLayout Grid.Row="2" Spacing="5">
+                                        <Label Text="📍" FontSize="12"/>
+                                        <Label Text="{Binding User.Location}" FontSize="12" TextColor="Gray"/>
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- 2. Tradesman View: Available Auctions Feed -->
+                <CollectionView ItemsSource="{Binding Auctions}" IsVisible="{Binding IsTradesman}" SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="gql:IGetAvailableAuctions_AvailableAuctions">
+                            <Frame Margin="15,5" Padding="15" CornerRadius="12" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
+                                <VerticalStackLayout Spacing="10">
+                                    <!-- Job Header -->
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label Text="{Binding Job.Project.Title, FallbackValue=''}" FontSize="11" TextColor="Gray" FontAttributes="Italic" />
+                                            <Label Text="{Binding Job.Title}" FontAttributes="Bold" FontSize="18"/>
+                                            <Label Text="{Binding Job.ServiceCategory.Name}" FontSize="12" TextColor="{StaticResource Primary}"/>
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding Job.EstimatedBudget.Total, StringFormat='{0:C0}', FallbackValue='N/A'}" FontAttributes="Bold" TextColor="#2E7D32"/>
+                                    </Grid>
+
+                                    <!-- Details -->
+                                    <Label Text="{Binding Job.Description}" MaxLines="2" LineBreakMode="TailTruncation" FontSize="14" />
+                                    
+                                    <HorizontalStackLayout Spacing="15">
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="📍" FontSize="12"/>
+                                            <Label Text="{Binding Job.Location}" FontSize="12" TextColor="Gray"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="💬" FontSize="12"/>
+                                            <Label Text="{Binding Questions.Count, StringFormat='{0} questions'}" FontSize="12" TextColor="Gray"/>
+                                        </HorizontalStackLayout>
+                                    </HorizontalStackLayout>
+
+                                    <!-- Actions -->
+                                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,5,0,0">
+                                        <Button Grid.Column="0" Text="Pass" Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:FeedPageViewModel}}, Path=PassAuctionCommand}" CommandParameter="{Binding .}" BackgroundColor="White" BorderColor="LightGray" BorderWidth="1" TextColor="Gray" />
+                                        <Button Grid.Column="1" Text="View &amp; Bid" Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:FeedPageViewModel}}, Path=NavigateToDetailsCommand}" CommandParameter="{Binding .}" BackgroundColor="{StaticResource Primary}" TextColor="White" />
+                                    </Grid>
                                 </VerticalStackLayout>
-
-                                <Border Grid.Column="2" StrokeShape="RoundRectangle 4" BackgroundColor="#E3F2FD" Padding="8,2" StrokeThickness="0" VerticalOptions="Start">
-                                    <Label Text="{Binding AverageRating, StringFormat='⭐ {0:F1}'}" TextColor="#1565C0" FontSize="12" FontAttributes="Bold"/>
-                                </Border>
-                            </Grid>
-
-                            <!-- Bio/Description -->
-                            <Label Grid.Row="1" Text="{Binding User.Bio}" MaxLines="3" LineBreakMode="TailTruncation" TextColor="#333" Margin="0,0,0,10" />
-
-                            <!-- Footer: Location -->
-                            <HorizontalStackLayout Grid.Row="2" Spacing="5">
-                                <Label Text="📍" FontSize="12"/>
-                                <Label Text="{Binding User.Location}" FontSize="12" TextColor="Gray"/>
-                            </HorizontalStackLayout>
-                        </Grid>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </RefreshView>
     </Grid>
 </ContentPage>
