@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:DataType="vm:AuctionHubViewModel"
+             x:Class="BuildSmart.Maui.Views.AuctionHubPage"
+             Title="Auction Hub">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
+
+            <Label Text="{Binding Auction.Job.Title}" FontSize="24" FontAttributes="Bold" />
+            <Label Text="{Binding Auction.Job.ServiceCategory.Name}" TextColor="{StaticResource Primary}" />
+            
+            <Frame BackgroundColor="White" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Project Overview" FontAttributes="Bold" />
+                    <Label Text="{Binding Auction.Job.Description}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Button Text="Submit Bid" BackgroundColor="{StaticResource Primary}" TextColor="White" />
+            <Button Text="Ask Question" BackgroundColor="White" TextColor="Gray" BorderColor="LightGray" BorderWidth="1" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

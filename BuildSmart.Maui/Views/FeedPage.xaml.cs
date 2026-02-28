@@ -16,6 +16,6 @@ public partial class FeedPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadTradesmenCommand.ExecuteAsync(null);
+        await _viewModel.LoadFeedCommand.ExecuteAsync(null);
     }
 }

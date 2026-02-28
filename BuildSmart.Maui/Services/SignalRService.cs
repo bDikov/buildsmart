@@ -40,12 +40,13 @@ public class SignalRService : IAsyncDisposable
             {
                 NotificationReceived?.Invoke(title, message, data);
                 
-                // Show a global toast/snackbar if possible, or just alert for now
-                // Ideally use CommunityToolkit.Maui.Alerts
-                var result = await Shell.Current.DisplayAlert(title, message, "View", "OK");
-                if (result && data != null)
+                if (Shell.Current != null)
                 {
-                    await HandleDeepLinkAsync(data);
+                    var result = await Shell.Current.DisplayAlert(title, message, "View", "OK");
+                    if (result && data != null)
+                    {
+                        await HandleDeepLinkAsync(data);
+                    }
                 }
             });
         });

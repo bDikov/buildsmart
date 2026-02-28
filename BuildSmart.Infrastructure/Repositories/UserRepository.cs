@@ -22,6 +22,8 @@ public class UserRepository : IUserRepository
 	{
 		return await _context.Users
             .Include(u => u.HomeownerProfile)
+            .Include(u => u.TradesmanProfile)
+                .ThenInclude(tp => tp.Skills)
             .FirstOrDefaultAsync(u => u.Id == id);
 	}
 

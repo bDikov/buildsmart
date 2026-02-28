@@ -45,24 +45,19 @@ namespace BuildSmart.Maui.ViewModels
 				}
 
 				if (!string.IsNullOrEmpty(result.Data?.Login))
-
 				{
 					var token = result.Data.Login;
-
 					await _authService.SaveTokenAsync(token);
 
 					var userRole = _authService.GetUserRoleFromToken(token);
 
 					await MainThread.InvokeOnMainThreadAsync(() =>
-
 					{
 						if (userRole == "Admin")
-
 						{
 							Application.Current.MainPage = _serviceProvider.GetRequiredService<AdminShell>();
 						}
 						else
-
 						{
 							Application.Current.MainPage = _serviceProvider.GetRequiredService<MainShell>();
 						}
