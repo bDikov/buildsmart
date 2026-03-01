@@ -57,7 +57,7 @@ namespace BuildSmart.Maui.ViewModels
 		    }
 		    else if (item is IGetAvailableAuctions_AvailableAuctions auction)
 		    {
-		        await Shell.Current.GoToAsync($"AuctionHubPage?jobId={auction.Job.Id}");
+		        await Shell.Current.GoToAsync($"{nameof(Views.AuctionHubPage)}?jobId={auction.Job.Id}");
 		    }
 		}
 

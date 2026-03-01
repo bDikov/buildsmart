@@ -85,7 +85,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	{
 		try
 		{
-			await Shell.Current.GoToAsync("scope_review", new Dictionary<string, object>
+			await Shell.Current.GoToAsync(nameof(ScopeReviewPage), new Dictionary<string, object>
 			{
 				{ "Job", job }
 			});
