@@ -118,6 +118,45 @@ public class Query
 		});
 		}
 
+    [Authorize(Roles = new[] { "Tradesman" })]
+    public async Task<IEnumerable<Auction>> GetPassedAuctions(
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IUnitOfWork unitOfWork,
+        [Service] AppDbContext context)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user ID.");
+        }
+
+        var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
+        if (profile == null) return Enumerable.Empty<Auction>();
+
+        // Find jobs that have been PASSED by this tradesman
+        var passedJobIds = await unitOfWork.AuctionActions.GetQueryable()
+            .Where(a => a.TradesmanProfileId == profile.Id && a.ActionType == AuctionActionType.Passed)
+            .Select(a => a.JobPostId)
+            .ToListAsync();
+
+        var jobs = await context.JobPosts
+            .Where(j => passedJobIds.Contains(j.Id))
+            .Include(j => j.ServiceCategory)
+            .Include(j => j.Project)
+                .ThenInclude(p => p.Homeowner)
+            .Include(j => j.Bids)
+            .Include(j => j.Questions)
+            .OrderByDescending(j => j.CreatedAt)
+            .ToListAsync();
+
+        return jobs.Select(j => new Auction
+        {
+            Job = j,
+            Bids = j.Bids,
+            Questions = j.Questions
+        });
+    }
+
 		[Authorize(Roles = new[] { "Tradesman", "Admin", "Homeowner" })]
 		public async Task<Auction?> GetAuctionById(
 		Guid jobId,
@@ -129,6 +168,8 @@ public class Query
 		        .ThenInclude(p => p.Homeowner)
 		    .Include(j => j.Bids)
 		    .Include(j => j.Questions)
+                .ThenInclude(q => q.TradesmanProfile)
+                    .ThenInclude(tp => tp.User)
 		    .FirstOrDefaultAsync(j => j.Id == jobId);
 		if (job == null) return null;
 

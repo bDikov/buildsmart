@@ -18,4 +18,12 @@ public partial class FeedPage : ContentPage
         base.OnAppearing();
         await _viewModel.LoadFeedCommand.ExecuteAsync(null);
     }
+
+    private async void OnViewAndBidClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter != null)
+        {
+            await _viewModel.NavigateToDetailsCommand.ExecuteAsync(button.CommandParameter);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 using BuildSmart.Maui.GraphQL;
 using BuildSmart.Maui.Services;
+using BuildSmart.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -53,18 +54,24 @@ namespace BuildSmart.Maui.ViewModels
 		{
 		    if (item is IGetTradesmanProfiles_TradesmanProfiles tradesman)
 		    {
-		        await Shell.Current.GoToAsync($"{nameof(Views.TradesmanDetailsPage)}?TradesmanId={tradesman.Id}");
+		        await Shell.Current.GoToAsync($"{nameof(TradesmanDetailsPage)}?TradesmanId={tradesman.Id}");
 		    }
 		    else if (item is IGetAvailableAuctions_AvailableAuctions auction)
 		    {
-		        await Shell.Current.GoToAsync($"AuctionHubPage?jobId={auction.Job.Id}");
+		        await Shell.Current.GoToAsync($"{nameof(AuctionHubPage)}?jobId={auction.Job.Id}");
 		    }
 		}
 
 		[RelayCommand]
 		public async Task NavigateToWizardAsync()
 		{
-		    await Shell.Current.GoToAsync($"/{nameof(Views.JobWizardPage)}");
+		    await Shell.Current.GoToAsync($"/{nameof(JobWizardPage)}");
+		}
+
+		[RelayCommand]
+		public async Task NavigateToPassedAuctionsAsync()
+		{
+			await Shell.Current.GoToAsync(nameof(PassedAuctionsPage));
 		}
 
 		[RelayCommand]

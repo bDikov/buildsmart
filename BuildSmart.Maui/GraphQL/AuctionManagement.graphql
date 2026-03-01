@@ -6,17 +6,22 @@ query GetAvailableAuctions {
       description
       location
       status
+      imageUrls
+      amendmentCount
       estimatedBudget {
         total
         currency
       }
       serviceCategory {
+        id
         name
       }
       project {
         id
         title
+        description
         homeowner {
+          id
           firstName
           lastName
         }
@@ -28,14 +33,33 @@ query GetAvailableAuctions {
         total
         currency
       }
+      comment
+      isAccepted
+      isRejected
+      isOutdated
       tradesmanProfile {
         id
+        user {
+          firstName
+        }
       }
     }
     questions {
       id
+      jobPostId
+      tradesmanProfileId
       questionText
+      answerText
+      answeredAt
       isAnswered
+      isEdited
+      isAnswerEdited
+      tradesmanProfile {
+        id
+        user {
+          firstName
+        }
+      }
     }
   }
 }
@@ -48,17 +72,22 @@ query GetAuctionById($jobId: UUID!) {
       description
       location
       status
+      imageUrls
+      amendmentCount
       estimatedBudget {
         total
         currency
       }
       serviceCategory {
+        id
         name
       }
       project {
         id
         title
+        description
         homeowner {
+          id
           firstName
           lastName
         }
@@ -70,15 +99,131 @@ query GetAuctionById($jobId: UUID!) {
         total
         currency
       }
+      comment
+      isAccepted
+      isRejected
+      isOutdated
       tradesmanProfile {
         id
+        user {
+          firstName
+        }
       }
     }
     questions {
       id
+      jobPostId
+      tradesmanProfileId
       questionText
+      answerText
+      answeredAt
       isAnswered
+      isEdited
+      isAnswerEdited
+      tradesmanProfile {
+        id
+        user {
+          firstName
+        }
+      }
     }
+  }
+}
+
+query GetPassedAuctions {
+  passedAuctions {
+    job {
+      id
+      title
+      description
+      location
+      status
+      imageUrls
+      amendmentCount
+      estimatedBudget {
+        total
+        currency
+      }
+      serviceCategory {
+        id
+        name
+      }
+      project {
+        id
+        title
+        description
+        homeowner {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+    bids {
+      id
+      amount {
+        total
+        currency
+      }
+      comment
+      isAccepted
+      isRejected
+      isOutdated
+      tradesmanProfile {
+        id
+        user {
+          firstName
+        }
+      }
+    }
+    questions {
+      id
+      jobPostId
+      tradesmanProfileId
+      questionText
+      answerText
+      answeredAt
+      isAnswered
+      isEdited
+      isAnswerEdited
+      tradesmanProfile {
+        id
+        user {
+          firstName
+        }
+      }
+    }
+  }
+}
+
+mutation AskJobQuestion($tradesmanProfileId: UUID!, $jobPostId: UUID!, $questionText: String!) {
+  askJobQuestion(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId, questionText: $questionText) {
+    id
+    questionText
+  }
+}
+
+mutation EditJobQuestion($questionId: UUID!, $newText: String!) {
+  editJobQuestion(questionId: $questionId, newText: $newText) {
+    id
+    questionText
+    isEdited
+  }
+}
+
+mutation EditJobAnswer($questionId: UUID!, $newAnswer: String!) {
+  editJobAnswer(questionId: $questionId, newAnswer: $newAnswer) {
+    id
+    answerText
+    isAnswerEdited
+  }
+}
+
+mutation AnswerJobQuestion($questionId: UUID!, $answerText: String!) {
+  answerJobQuestion(questionId: $questionId, answerText: $answerText) {
+    id
+    answerText
+    isAnswered
   }
 }
 
@@ -86,11 +231,16 @@ mutation PassAuction($tradesmanProfileId: UUID!, $jobPostId: UUID!) {
   passAuction(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId)
 }
 
+mutation RestoreAuction($jobId: UUID!) {
+  restoreAuction(jobId: $jobId)
+}
+
 mutation SubmitBid($tradesmanProfileId: UUID!, $jobPostId: UUID!, $subtotal: Decimal!, $currency: String!, $comment: String) {
   submitBid(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId, subtotal: $subtotal, currency: $currency, comment: $comment) {
     id
     amount {
       total
+      currency
     }
   }
 }

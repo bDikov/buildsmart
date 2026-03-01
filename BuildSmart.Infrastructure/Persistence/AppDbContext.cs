@@ -27,7 +27,8 @@ public class AppDbContext : DbContext
 		public DbSet<Booking> Bookings { get; set; } = null!;
 	    public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;
 		public DbSet<Review> Reviews { get; set; } = null!;
-        public DbSet<Notification> Notifications { get; set; } = null!; // Added
+        public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<Certification> Certifications { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)

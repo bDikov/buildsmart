@@ -121,8 +121,13 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
 
         var query = @"
             query {
-                jobPostDebug {
-                    status
+                myProjects {
+                    id
+                    title
+                    jobPosts {
+                        id
+                        status
+                    }
                 }
             }";
 
@@ -147,7 +152,7 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
             Assert.Fail($"GraphQL Errors: {json["errors"]}");
         }
         
-        var status = json["data"]?["jobPostDebug"]?["status"]?.ToString();
+        var status = json["data"]?["myProjects"]?[0]?["jobPosts"]?[0]?["status"]?.ToString();
         Assert.Equal("UNDER_REVIEW", status); // Confirmed API behavior
     }
 }

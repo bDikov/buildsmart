@@ -77,8 +77,16 @@ public class MutationType : ObjectType<Mutation>
             .Description("Allows a tradesman to ask a public question on an auction.")
             .Authorize(roles: new[] { "Tradesman" });
 
+        descriptor.Field(m => m.EditJobQuestion(default!, default!, default!, default!, default!))
+            .Description("Allows a tradesman to edit their public question.")
+            .Authorize(roles: new[] { "Tradesman" });
+
         descriptor.Field(m => m.AnswerJobQuestion(default!, default!, default!))
             .Description("Allows a homeowner to answer a tradesman's question.")
+            .Authorize(roles: new[] { "Homeowner" });
+
+        descriptor.Field(m => m.EditJobAnswer(default!, default!, default!, default!, default!))
+            .Description("Allows a homeowner to edit their public answer.")
             .Authorize(roles: new[] { "Homeowner" });
 
         descriptor.Field(m => m.DeleteAllNotifications(default!, default!))
@@ -86,5 +94,21 @@ public class MutationType : ObjectType<Mutation>
 
         descriptor.Field(m => m.MarkNotificationAsRead(default!, default!))
             .Authorize();
+
+        descriptor.Field(m => m.AddPortfolioEntry(default!, default!, default!, default!, default!, default!))
+            .Description("Uploads a portfolio entry for a tradesman.")
+            .Authorize(roles: new[] { "Tradesman" });
+
+        descriptor.Field(m => m.AddCertification(default!, default!, default!, default!, default!, default!, default!, default!))
+            .Description("Uploads a certification for a tradesman.")
+            .Authorize(roles: new[] { "Tradesman" });
+
+        descriptor.Field(m => m.UpdateVideoIntroduction(default!, default!, default!, default!))
+            .Description("Updates the video introduction for a tradesman.")
+            .Authorize(roles: new[] { "Tradesman" });
+
+        descriptor.Field(m => m.RestoreAuction(default!, default!, default!))
+            .Description("Restores a previously passed auction for a tradesman.")
+            .Authorize(roles: new[] { "Tradesman" });
     }
 }

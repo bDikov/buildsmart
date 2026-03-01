@@ -39,5 +39,10 @@ public class TradesmanProfileConfiguration : IEntityTypeConfiguration<TradesmanP
 			.WithOne(r => r.TradesmanProfile)
 			.HasForeignKey(r => r.TradesmanProfileId)
 			.OnDelete(DeleteBehavior.Cascade);
+
+		builder.HasMany(tp => tp.Certifications)
+			.WithOne(c => c.TradesmanProfile)
+			.HasForeignKey(c => c.TradesmanProfileId)
+			.OnDelete(DeleteBehavior.Cascade);
 	}
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             x:Class="BuildSmart.Maui.Views.PassedAuctionsPage"
+             x:DataType="vm:PassedAuctionsViewModel"
+             x:Name="thisPage"
+             Title="Passed Jobs">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Padding="10">
+            <Button Grid.Column="0" Text="←" Command="{Binding BackCommand}" BackgroundColor="Transparent" TextColor="Black" FontSize="20" />
+            <Label Grid.Column="1" Text="Dismissed Jobs" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" Margin="10,0" />
+            <Button Grid.Column="2" Text="Refresh" Command="{Binding LoadPassedAuctionsCommand}" FontSize="12" HeightRequest="35" />
+        </Grid>
+
+        <RefreshView Grid.Row="1" Command="{Binding LoadPassedAuctionsCommand}" IsRefreshing="{Binding IsLoading}">
+            <CollectionView ItemsSource="{Binding PassedAuctions}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" Padding="20">
+                        <Label Text="No dismissed jobs." TextColor="Gray" HorizontalOptions="Center" />
+                        <Label Text="Jobs you click 'Pass' on will appear here." FontSize="12" TextColor="Silver" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="graphql:IGetPassedAuctions_PassedAuctions">
+                        <Frame Margin="10,5" Padding="15" CornerRadius="10" BorderColor="LightGray">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={x:Reference thisPage}, Path=BindingContext.NavigateToDetailsCommand}" CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                    <Label Text="{Binding Job.Title}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding Job.ServiceCategory.Name}" TextColor="{StaticResource Primary}" FontSize="12" />
+                                    <Label Text="{Binding Job.Location}" TextColor="Gray" FontSize="12" />
+                                </VerticalStackLayout>
+                                
+                                <Button Grid.Column="1" 
+                                        Text="Restore" 
+                                        Clicked="OnRestoreClicked"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#4CAF50" 
+                                        TextColor="White" 
+                                        HeightRequest="35" 
+                                        Padding="10,0" 
+                                        VerticalOptions="Center" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

@@ -1,11 +1,18 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BuildSmart.Maui.Views.TradesmanDetailsPage"
              xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
              x:DataType="viewModels:TradesmanDetailsViewModel"
              Title="Details"
              BackgroundColor="#f0f2f5">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringIsNotNullOrEmptyConverter x:Key="StringIsNotNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="*, Auto">
         <ScrollView Grid.Row="0">
@@ -41,15 +48,29 @@
                     </VerticalStackLayout>
                 </Frame>
 
+                <!-- Video Intro -->
+                <VerticalStackLayout Spacing="10" Margin="15,0" IsVisible="{Binding Tradesman.VideoIntroductionUrl, Converter={StaticResource StringIsNotNullOrEmptyConverter}}">
+                    <Label Text="Video Introduction" FontAttributes="Bold" FontSize="16"/>
+                    <Frame Padding="15" CornerRadius="10" BackgroundColor="#E3F2FD">
+                        <HorizontalStackLayout Spacing="10">
+                            <Image Source="dotnet_bot.png" WidthRequest="40" HeightRequest="40" />
+                            <Label Text="Watch Introduction Video" VerticalOptions="Center" TextColor="#1565C0" FontAttributes="Bold" />
+                        </HorizontalStackLayout>
+                    </Frame>
+                </VerticalStackLayout>
+
                 <!-- Portfolio -->
                 <VerticalStackLayout Spacing="10" Margin="15,0">
                     <Label Text="Portfolio" FontAttributes="Bold" FontSize="16"/>
                     <ScrollView Orientation="Horizontal">
                         <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Tradesman.PortfolioEntries}" Spacing="10">
                             <BindableLayout.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="graphql:IGetTradesmanDetailsById_TradesmanProfiles_PortfolioEntries">
                                     <Frame Padding="0" CornerRadius="8" WidthRequest="150" HeightRequest="150" HasShadow="False" BorderColor="LightGray">
-                                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill"/>
+                                        <Grid>
+                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill"/>
+                                            <Label Text="{Binding Title}" VerticalOptions="End" BackgroundColor="#CC000000" TextColor="White" FontSize="10" Padding="5" HorizontalTextAlignment="Center" />
+                                        </Grid>
                                     </Frame>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
@@ -57,16 +78,39 @@
                     </ScrollView>
                 </VerticalStackLayout>
 
+                <!-- Certifications -->
+                <VerticalStackLayout Spacing="10" Margin="15,0">
+                    <Label Text="Certifications &amp; Credentials" FontAttributes="Bold" FontSize="16"/>
+                    <StackLayout BindableLayout.ItemsSource="{Binding Tradesman.Certifications}" Spacing="5">
+                        <BindableLayout.EmptyView>
+                            <Label Text="No certificates listed." TextColor="Gray" FontSize="12" FontAttributes="Italic" />
+                        </BindableLayout.EmptyView>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="graphql:IGetTradesmanDetailsById_TradesmanProfiles_Certifications">
+                                <Border Stroke="#E0E0E0" Padding="10">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="5" />
+                                    </Border.StrokeShape>
+                                    <HorizontalStackLayout Spacing="10">
+                                        <Image Source="dotnet_bot.png" WidthRequest="24" HeightRequest="24" />
+                                        <Label Text="{Binding Title}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
+                </VerticalStackLayout>
+
                 <!-- Reviews -->
                 <VerticalStackLayout Spacing="10" Margin="15,0">
                     <Label Text="Reviews" FontAttributes="Bold" FontSize="16"/>
                     <StackLayout BindableLayout.ItemsSource="{Binding Tradesman.Reviews}" Spacing="10">
                         <BindableLayout.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="graphql:IGetTradesmanDetailsById_TradesmanProfiles_Reviews">
                                 <Frame Padding="10" CornerRadius="8" BackgroundColor="White" HasShadow="True">
                                     <VerticalStackLayout Spacing="5">
                                         <HorizontalStackLayout Spacing="10">
-                                            <Label Text="{Binding Homeowner.FirstName}" FontAttributes="Bold"/>
+                                            <Label Text="Client" FontAttributes="Bold"/>
                                             <Label Text="{Binding Rating, StringFormat='⭐ {0}'}" TextColor="#FBC02D"/>
                                         </HorizontalStackLayout>
                                         <Label Text="{Binding Comment}" TextColor="#555"/>

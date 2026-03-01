@@ -12,6 +12,9 @@ public class JobPostQuestion : BaseEntity
 
     public string QuestionText { get; set; } = null!;
     
+    public bool IsEdited { get; set; }
+    public bool IsAnswerEdited { get; set; }
+
     public string? AnswerText { get; set; }
     public DateTime? AnsweredAt { get; set; }
 
@@ -22,5 +25,26 @@ public class JobPostQuestion : BaseEntity
         AnswerText = answer;
         AnsweredAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateQuestionText(string newText)
+    {
+        if (QuestionText != newText)
+        {
+            QuestionText = newText;
+            IsEdited = true;
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void UpdateAnswerText(string newAnswer)
+    {
+        if (AnswerText != newAnswer)
+        {
+            AnswerText = newAnswer;
+            IsAnswerEdited = true;
+            AnsweredAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

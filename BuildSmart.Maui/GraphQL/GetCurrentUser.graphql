@@ -11,6 +11,21 @@ query GetCurrentUser {
     profilePictureUrl
     tradesmanProfile {
       id
+      videoIntroductionUrl
+      portfolioEntries {
+        id
+        title
+        description
+        imageUrl
+      }
+      certifications {
+        id
+        title
+        description
+        documentUrl
+        issuedAt
+        expiresAt
+      }
     }
   }
 }

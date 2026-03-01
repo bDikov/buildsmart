@@ -4,6 +4,8 @@ using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
 using BuildSmart.Core.Domain.ValueObjects;
 using HotChocolate.Authorization;
+using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,6 +15,164 @@ namespace BuildSmart.Api.GraphQL;
 
 public class Mutation
 {
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<PortfolioEntry> AddPortfolioEntry(
+		string title,
+		string? description,
+		IFile file,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IMultimediaStorageService storageService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user?.TradesmanProfile == null)
+		{
+			throw new GraphQLException("Tradesman profile not found.");
+		}
+
+		// Save the file
+		string imageUrl;
+		using (var stream = file.OpenReadStream())
+		{
+			imageUrl = await storageService.SaveFileAsync(stream, file.Name, file.ContentType);
+		}
+
+		var entry = new PortfolioEntry
+		{
+			Title = title,
+			Description = description,
+			ImageUrl = imageUrl,
+			TradesmanProfileId = user.TradesmanProfile.Id
+		};
+
+		user.TradesmanProfile.PortfolioEntries.Add(entry);
+		await unitOfWork.SaveChangesAsync();
+
+		return entry;
+	}
+
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<Certification> AddCertification(
+		string title,
+		string? description,
+		IFile file,
+		DateTime issuedAt,
+		DateTime? expiresAt,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IMultimediaStorageService storageService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user?.TradesmanProfile == null)
+		{
+			throw new GraphQLException("Tradesman profile not found.");
+		}
+
+		// Save the file
+		string documentUrl;
+		using (var stream = file.OpenReadStream())
+		{
+			documentUrl = await storageService.SaveFileAsync(stream, file.Name, file.ContentType);
+		}
+
+		var cert = new Certification
+		{
+			Title = title,
+			Description = description,
+			DocumentUrl = documentUrl,
+			IssuedAt = issuedAt,
+			ExpiresAt = expiresAt,
+			TradesmanProfileId = user.TradesmanProfile.Id
+		};
+
+		user.TradesmanProfile.Certifications.Add(cert);
+		await unitOfWork.SaveChangesAsync();
+
+		return cert;
+	}
+
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<bool> UpdateVideoIntroduction(
+		IFile file,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IMultimediaStorageService storageService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user?.TradesmanProfile == null)
+		{
+			throw new GraphQLException("Tradesman profile not found.");
+		}
+
+		// Delete old video if it exists
+		if (!string.IsNullOrEmpty(user.TradesmanProfile.VideoIntroductionUrl))
+		{
+			await storageService.DeleteFileAsync(user.TradesmanProfile.VideoIntroductionUrl);
+		}
+
+		// Save the new file
+		string videoUrl;
+		using (var stream = file.OpenReadStream())
+		{
+			videoUrl = await storageService.SaveFileAsync(stream, file.Name, file.ContentType);
+		}
+
+		user.TradesmanProfile.VideoIntroductionUrl = videoUrl;
+		await unitOfWork.SaveChangesAsync();
+
+		return true;
+	}
+
+    [Authorize(Roles = new[] { "Tradesman" })]
+    public async Task<bool> RestoreAuction(
+        Guid jobId,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IUnitOfWork unitOfWork)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user ID.");
+        }
+
+        var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
+        if (profile == null) throw new GraphQLException("Tradesman profile not found.");
+
+        // Find and remove the "Passed" action
+        var action = await unitOfWork.AuctionActions.GetQueryable()
+            .FirstOrDefaultAsync(a => a.TradesmanProfileId == profile.Id 
+                && a.JobPostId == jobId 
+                && a.ActionType == AuctionActionType.Passed);
+
+        if (action != null)
+        {
+            // Note: I might need to add a Delete method to IAuctionActionRepository if it doesn't exist
+            // For now, I'll use the DbContext directly or ensure the repository has it.
+            unitOfWork.AuctionActions.Delete(action);
+            await unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
+    }
 	public async Task<int> MigratePasswords([Service] DataMigrationService dataMigrationService)
 	{
 		return await dataMigrationService.HashExistingPasswordsAsync();
@@ -282,6 +442,52 @@ public class Mutation
         [Service] IJobPostService jobPostService)
     {
         return await jobPostService.AnswerJobQuestionAsync(questionId, answerText);
+    }
+
+    [Authorize(Roles = new[] { "Tradesman" })]
+    public async Task<JobPostQuestion> EditJobQuestion(
+        Guid questionId,
+        string newText,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IUnitOfWork unitOfWork,
+        [Service] IJobPostService jobPostService)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
+        if (profile == null)
+        {
+            throw new GraphQLException("Tradesman profile not found.");
+        }
+
+        return await jobPostService.EditJobQuestionAsync(questionId, profile.Id, newText);
+    }
+
+    [Authorize(Roles = new[] { "Homeowner" })]
+    public async Task<JobPostQuestion> EditJobAnswer(
+        Guid questionId,
+        string newAnswer,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IUnitOfWork unitOfWork,
+        [Service] IJobPostService jobPostService)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        var user = await unitOfWork.Users.GetByIdAsync(userId);
+        if (user?.HomeownerProfile == null)
+        {
+            throw new GraphQLException("Homeowner profile not found.");
+        }
+
+        return await jobPostService.EditJobAnswerAsync(questionId, user.HomeownerProfile.Id, newAnswer);
     }
 
 	public async Task<Booking> AcceptBid(

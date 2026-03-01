@@ -30,4 +30,9 @@ public class AuctionActionRepository : IAuctionActionRepository
     {
         return _context.TradesmanAuctionActions.AsQueryable();
     }
+
+    public void Delete(TradesmanAuctionAction action)
+    {
+        _context.TradesmanAuctionActions.Remove(action);
+    }
 }

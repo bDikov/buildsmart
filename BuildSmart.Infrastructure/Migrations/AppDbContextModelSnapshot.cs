@@ -110,6 +110,46 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("Bookings", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Certification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DocumentUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("TradesmanProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TradesmanProfileId");
+
+                    b.ToTable("Certifications", (string)null);
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ChangeOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -289,6 +329,12 @@ namespace BuildSmart.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsAnswerEdited")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("JobPostId")
                         .HasColumnType("uuid");
@@ -595,6 +641,9 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("VideoIntroductionUrl")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
@@ -865,6 +914,17 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("TotalEscrowAmount")
+                        .IsRequired();
+
+                    b.Navigation("TradesmanProfile");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Certification", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
+                        .WithMany("Certifications")
+                        .HasForeignKey("TradesmanProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TradesmanProfile");
@@ -1189,6 +1249,8 @@ namespace BuildSmart.Infrastructure.Migrations
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanProfile", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("Certifications");
 
                     b.Navigation("PortfolioEntries");
 

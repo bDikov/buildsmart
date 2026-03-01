@@ -40,6 +40,21 @@ query GetMyProjects {
           lastName
         }
       }
+      questions {
+        id
+        questionText
+        answerText
+        answeredAt
+        isAnswered
+        isEdited
+        isAnswerEdited
+        tradesmanProfile {
+          id
+          user {
+            firstName
+          }
+        }
+      }
     }
   }
 }

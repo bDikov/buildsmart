@@ -27,6 +27,8 @@ type Query {
   availableAuctions: [Auction!]!
   "Gets a specific auction by Job ID."
   auctionById(jobId: UUID!): Auction
+  "Gets the auctions that the current tradesman has passed/dismissed."
+  passedAuctions: [Auction!]!
 }
 
 type Auction {
@@ -44,6 +46,8 @@ type JobPostQuestion {
     answerText: String
     answeredAt: DateTime
     isAnswered: Boolean!
+    isEdited: Boolean!
+    isAnswerEdited: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
 }
@@ -127,11 +131,29 @@ type Mutation {
   "Allows a tradesman to ask a public question on an auction."
   askJobQuestion(tradesmanProfileId: UUID!, jobPostId: UUID!, questionText: String!): JobPostQuestion!
 
+  "Allows a tradesman to edit their public question."
+  editJobQuestion(questionId: UUID!, newText: String!): JobPostQuestion!
+
   "Allows a homeowner to answer a tradesman's question."
   answerJobQuestion(questionId: UUID!, answerText: String!): JobPostQuestion!
 
+  "Allows a homeowner to edit their public answer."
+  editJobAnswer(questionId: UUID!, newAnswer: String!): JobPostQuestion!
+
   "Hides an auction from the tradesman's available feed."
   passAuction(tradesmanProfileId: UUID!, jobPostId: UUID!): Boolean!
+
+  "Restores a previously passed auction for a tradesman."
+  restoreAuction(jobId: UUID!): Boolean!
+
+  "Uploads a portfolio entry for a tradesman."
+  addPortfolioEntry(title: String!, description: String, file: Upload!): PortfolioEntry!
+
+  "Uploads a certification for a tradesman."
+  addCertification(title: String!, description: String, file: Upload!, issuedAt: DateTime!, expiresAt: DateTime): Certification!
+
+  "Updates the video introduction for a tradesman."
+  updateVideoIntroduction(file: Upload!): Boolean!
 
   "Deletes all notifications for the current user."
   deleteAllNotifications: Boolean!
@@ -157,13 +179,27 @@ type TradesmanProfile {
   userId: UUID!
   averageRating: Float!
   isVerified: Boolean!
+  videoIntroductionUrl: String
   user: User!
   skills: [TradesmanSkill!]!
   portfolioEntries: [PortfolioEntry!]!
+  certifications: [Certification!]!
   bookings: [Booking!]!
   reviews: [Review!]!
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+type Certification {
+    id: UUID!
+    title: String!
+    description: String
+    documentUrl: String!
+    issuedAt: DateTime!
+    expiresAt: DateTime
+    tradesmanProfileId: UUID!
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }
 
 "Represents a specific skill or service category offered by a tradesman."
@@ -215,6 +251,7 @@ type JobPost {
     serviceCategory: ServiceCategory!
     bids: [Bid!]!
     feedbacks: [JobPostFeedback!]!
+    questions: [JobPostQuestion!]!
     createdAt: DateTime!
     updatedAt: DateTime!
 }
@@ -349,3 +386,4 @@ enum JobPostStatus {
 scalar DateTime
 scalar UUID
 scalar Decimal
+scalar Upload
