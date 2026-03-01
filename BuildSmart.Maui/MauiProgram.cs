@@ -31,6 +31,8 @@ public static class MauiProgram
 		        // Services
 		        builder.Services.AddSingleton<IAuthService, AuthService>();
                 builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
+                builder.Services.AddSingleton<IFileService, FileService>();
+                builder.Services.AddHttpClient();
                 builder.Services.AddTransient<AuthHeaderHandler>();
 		builder.Services.AddTransient<LoggingHandler>();
 
@@ -88,6 +90,9 @@ public static class MauiProgram
         builder.Services.AddTransient<AuctionHubPage>();
         builder.Services.AddTransient<AuctionHubViewModel>();
 
+        builder.Services.AddTransient<PassedAuctionsPage>();
+        builder.Services.AddTransient<PassedAuctionsViewModel>();
+
 		// Admin Pages
 		builder.Services.AddSingleton<AdminShell>();
 		builder.Services.AddTransient<AppShell>();
@@ -118,6 +123,7 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(NotificationsPage), typeof(NotificationsPage));
         Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));
         Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
+        Routing.RegisterRoute(nameof(PassedAuctionsPage), typeof(PassedAuctionsPage));
 		builder.Logging.AddDebug();
 
 		return builder.Build();

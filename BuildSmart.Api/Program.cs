@@ -67,6 +67,7 @@ public partial class Program
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
 		builder.Services.AddScoped<INotificationService, BuildSmart.Api.Services.NotificationService>();
+		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, ScopeGenerationQueue>();
@@ -145,14 +146,18 @@ public partial class Program
 		// Add GraphQL Services (Hot Chocolate)
 		builder.Services
 			.AddGraphQLServer()
+			.AddUploadType()
 	.AddQueryType<QueryType>()
 	.AddMutationType<MutationType>()
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
-			.AddType<TradesmanSkillType>() // Added
+			.AddType<TradesmanSkillType>() 
 			.AddType<UserType>()
 			.AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<ReviewType>()
+			.AddType<CertificationType>()
+			.AddType<PortfolioEntryType>()
+			.AddType<JobPostQuestionType>()
 			.AddProjections()
 			.AddFiltering()
 			.AddSorting()

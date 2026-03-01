@@ -41,6 +41,18 @@ query GetProjectsForReview {
           role
         }
       }
+      questions {
+        id
+        questionText
+        answerText
+        isAnswered
+        tradesmanProfile {
+          user {
+            firstName
+            lastName
+          }
+        }
+      }
     }
   }
 }
@@ -88,6 +100,20 @@ query GetJobsForReview {
         firstName
         lastName
         role
+      }
+    }
+    questions {
+      id
+      questionText
+      answerText
+      isAnswered
+      isEdited
+      isAnswerEdited
+      tradesmanProfile {
+        user {
+          firstName
+          lastName
+        }
       }
     }
   }

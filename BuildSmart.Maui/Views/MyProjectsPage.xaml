@@ -5,6 +5,7 @@
              xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
              x:Class="BuildSmart.Maui.Views.MyProjectsPage"
              x:DataType="vm:MyProjectsViewModel"
+             x:Name="myProjectsPage"
              Title="My Projects">
 
     <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadProjectsCommand}">
@@ -27,13 +28,13 @@
                                 <SwipeItems>
                                     <SwipeItem Text="Delete"
                                                BackgroundColor="Red"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyProjectsViewModel}}, Path=DeleteProjectCommand}"
+                                               Clicked="OnDeleteProjectClicked"
                                                CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.RightItems>
                             <Frame Padding="15" Margin="10,5" CornerRadius="10" BorderColor="LightGray">
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyProjectsViewModel}}, Path=GoToDetailsCommand}"
+                                    <TapGestureRecognizer Tapped="OnProjectTapped"
                                                           CommandParameter="{Binding .}" />
                                 </Frame.GestureRecognizers>
                                 <VerticalStackLayout Spacing="5">

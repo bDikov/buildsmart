@@ -6,52 +6,60 @@ namespace BuildSmart.Infrastructure.Persistence.Repositories;
 
 public class ProjectRepository : IProjectRepository
 {
-    private readonly AppDbContext _context;
+	private readonly AppDbContext _context;
 
-    public ProjectRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+	public ProjectRepository(AppDbContext context)
+	{
+		_context = context;
+	}
 
-    public async Task<Project?> GetByIdAsync(Guid id)
-    {
-        return await _context.Projects
-            .Include(p => p.JobPosts)
-                .ThenInclude(jp => jp.ServiceCategory)
-            .Include(p => p.JobPosts)
-                .ThenInclude(jp => jp.Feedbacks)
-                    .ThenInclude(f => f.Author)
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
+	public async Task<Project?> GetByIdAsync(Guid id)
+	{
+		return await _context.Projects
+			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.ServiceCategory)
+			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.Feedbacks)
+					.ThenInclude(f => f.Author)
+			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.Questions)
+					.ThenInclude(q => q.TradesmanProfile)
+						.ThenInclude(tp => tp.User)
+			.FirstOrDefaultAsync(p => p.Id == id);
+	}
 
-    public async Task<IEnumerable<Project>> GetProjectsByHomeownerAsync(Guid homeownerId)
-    {
-        return await _context.Projects
-            .Where(p => p.HomeownerId == homeownerId)
-            .Include(p => p.JobPosts)
-                .ThenInclude(jp => jp.ServiceCategory)
-            .Include(p => p.JobPosts)
-                .ThenInclude(jp => jp.Feedbacks)
-                    .ThenInclude(f => f.Author)
-            .ToListAsync();
-    }
+	public async Task<IEnumerable<Project>> GetProjectsByHomeownerAsync(Guid homeownerId)
+	{
+		return await _context.Projects
+			.Where(p => p.HomeownerId == homeownerId)
+			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.ServiceCategory)
+			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.Feedbacks)
+					.ThenInclude(f => f.Author)
+			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.Questions)
+					.ThenInclude(q => q.TradesmanProfile)
+						.ThenInclude(tp => tp.User)
+			.ToListAsync();
+	}
 
-    public async Task AddAsync(Project project)
-    {
-        await _context.Projects.AddAsync(project);
-    }
+	public async Task AddAsync(Project project)
+	{
+		await _context.Projects.AddAsync(project);
+	}
 
-    public void Update(Project project)
-    {
-        _context.Projects.Update(project);
-    }
+	public void Update(Project project)
+	{
+		_context.Projects.Update(project);
+	}
 
-    public async Task DeleteAsync(Guid id)
-    {
-        var project = await _context.Projects.FindAsync(id);
-        if (project != null)
-        {
-            _context.Projects.Remove(project);
-        }
-    }
+	public async Task DeleteAsync(Guid id)
+	{
+		var project = await _context.Projects.FindAsync(id);
+		if (project != null)
+		{
+			_context.Projects.Remove(project);
+		}
+	}
 }

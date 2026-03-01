@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSmart.Api.Tests", "Bui
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSmart.Maui", "BuildSmart.Maui\BuildSmart.Maui.csproj", "{35836C55-E065-0C28-48FC-8A2CB8092C70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSmart.Core.Domain.Tests", "BuildSmart.Core.Domain.Tests\BuildSmart.Core.Domain.Tests.csproj", "{67AC77E1-716A-40B5-9E92-8D6382F5196C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{35836C55-E065-0C28-48FC-8A2CB8092C70}.Release|x64.Build.0 = Release|Any CPU
 		{35836C55-E065-0C28-48FC-8A2CB8092C70}.Release|x86.ActiveCfg = Release|Any CPU
 		{35836C55-E065-0C28-48FC-8A2CB8092C70}.Release|x86.Build.0 = Release|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Debug|x64.Build.0 = Debug|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Debug|x86.Build.0 = Debug|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Release|x64.ActiveCfg = Release|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Release|x64.Build.0 = Release|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Release|x86.ActiveCfg = Release|Any CPU
+		{67AC77E1-716A-40B5-9E92-8D6382F5196C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

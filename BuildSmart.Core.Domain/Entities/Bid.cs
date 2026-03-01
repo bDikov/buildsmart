@@ -26,8 +26,11 @@ public class Bid : BaseEntity
 
 	public bool IsRejected { get; private set; } = false;
 
-	// Computed property to check validity against current job state
-	public bool IsOutdated(int currentJobVersion) => LinkedAmendmentVersion < currentJobVersion;
+	// Computed property for GraphQL/Logic when JobPost is loaded
+	public bool IsOutdated => JobPost != null && LinkedAmendmentVersion < JobPost.AmendmentCount;
+
+	// Computed method to check validity against current job state manually
+	public bool IsOutdatedVersion(int currentJobVersion) => LinkedAmendmentVersion < currentJobVersion;
 
 	public void Accept()
 	{

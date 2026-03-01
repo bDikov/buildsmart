@@ -399,7 +399,7 @@ public class JobPostService : IJobPostService
         var bid = await _unitOfWork.Bids.GetByIdAsync(bidId)
             ?? throw new ArgumentException("Bid not found");
 
-        if (bid.IsOutdated(bid.JobPost.AmendmentCount))
+        if (bid.IsOutdatedVersion(bid.JobPost.AmendmentCount))
         {
             throw new InvalidOperationException("Cannot accept an outdated bid.");
         }
@@ -636,6 +636,42 @@ public class JobPostService : IJobPostService
                 "AuctionAnswer"
             );
         }
+
+        return question;
+    }
+
+    public async Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid tradesmanProfileId, string newText)
+    {
+        var question = await _unitOfWork.JobPostQuestions.GetByIdAsync(questionId)
+            ?? throw new ArgumentException("Question not found");
+
+        if (question.TradesmanProfileId != tradesmanProfileId)
+        {
+            throw new UnauthorizedAccessException("You can only edit your own questions.");
+        }
+
+        question.UpdateQuestionText(newText);
+        
+        _unitOfWork.JobPostQuestions.Update(question);
+        await _unitOfWork.SaveChangesAsync();
+
+        return question;
+    }
+
+    public async Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer)
+    {
+        var question = await _unitOfWork.JobPostQuestions.GetByIdAsync(questionId)
+            ?? throw new ArgumentException("Question not found");
+
+        if (question.JobPost?.HomeownerProfileId != homeownerProfileId)
+        {
+            throw new UnauthorizedAccessException("You can only edit answers for your own projects.");
+        }
+
+        question.UpdateAnswerText(newAnswer);
+        
+        _unitOfWork.JobPostQuestions.Update(question);
+        await _unitOfWork.SaveChangesAsync();
 
         return question;
     }

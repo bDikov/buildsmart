@@ -38,6 +38,7 @@ public interface IUnitOfWork
     IBidRepository Bids { get; }
     IAuctionActionRepository AuctionActions { get; }
     INotificationRepository Notifications { get; }
+    ICertificationRepository Certifications { get; }
 
 	/// <summary>
 	/// Saves all changes made in this unit of work to the underlying database

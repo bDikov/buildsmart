@@ -10,14 +10,28 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 {
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
+    private readonly IAuthService _authService;
 
-	public ProjectDetailViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
+	public ProjectDetailViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService, IAuthService authService)
 	{
 		_apiClient = apiClient;
 		_signalRService = signalRService;
+        _authService = authService;
 
 		_signalRService.NotificationReceived += OnNotificationReceived;
+        DetectRole();
 	}
+
+    private void DetectRole()
+    {
+        var token = _authService.GetTokenAsync().Result; // Simple sync check for UI state
+        if (!string.IsNullOrEmpty(token))
+        {
+            var role = _authService.GetUserRoleFromToken(token);
+            IsHomeowner = string.Equals(role, "HOMEOWNER", StringComparison.OrdinalIgnoreCase) || 
+                          string.Equals(role, "Homeowner", StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
 	private void OnNotificationReceived(string title, string message, object? data)
 	{
@@ -52,6 +66,9 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 
 	[ObservableProperty]
 	private bool _isBusy;
+
+    [ObservableProperty]
+    private bool _isHomeowner;
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
@@ -126,4 +143,66 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 			IsBusy = false;
 		}
 	}
+
+	[RelayCommand]
+	private async Task AnswerQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)
+	{
+		string answer = await Shell.Current.DisplayPromptAsync("Answer Tradesman", question.QuestionText, "Submit", "Cancel", "Write your answer here...");
+		if (string.IsNullOrWhiteSpace(answer)) return;
+
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.AnswerJobQuestion.ExecuteAsync(question.Id, answer);
+
+			if (result.Errors.Count > 0)
+			{
+				await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
+
+			await Shell.Current.DisplayAlert("Success", "Answer posted.", "OK");
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+    [RelayCommand]
+    private async Task EditAnswerAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)
+    {
+        if (question == null) return;
+
+        string newAnswer = await Shell.Current.DisplayPromptAsync("Edit Answer", "Update your answer:", "Save", "Cancel", initialValue: question.AnswerText);
+        if (string.IsNullOrWhiteSpace(newAnswer) || newAnswer == question.AnswerText) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.EditJobAnswer.ExecuteAsync(question.Id, newAnswer);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("Success", "Answer updated.", "OK");
+            await ReloadProjectAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }

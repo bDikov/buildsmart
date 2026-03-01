@@ -8,5 +8,6 @@ public class JobPostType : ObjectType<JobPost>
     {
         descriptor.Field(jp => jp.Feedbacks).UseFiltering().UseSorting();
         descriptor.Field(jp => jp.Bids).UseFiltering().UseSorting();
+        descriptor.Field(jp => jp.Questions).UseFiltering().UseSorting();
     }
 }

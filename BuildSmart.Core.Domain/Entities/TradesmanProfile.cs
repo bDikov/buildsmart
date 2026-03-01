@@ -34,6 +34,11 @@ public class TradesmanProfile : BaseEntity
 	/// </summary>
 	public bool IsVerified { get; private set; } = false;
 
+	/// <summary>
+	/// Optional URL for a video introduction.
+	/// </summary>
+	public string? VideoIntroductionUrl { get; set; }
+
 	// --- Navigation Properties ---
 
     /// <summary>
@@ -45,6 +50,11 @@ public class TradesmanProfile : BaseEntity
 	/// A collection of portfolio entries showcasing the tradesman's work.
 	/// </summary>
 	public ICollection<PortfolioEntry> PortfolioEntries { get; set; } = [];
+
+	/// <summary>
+	/// A collection of certifications and credentials.
+	/// </summary>
+	public ICollection<Certification> Certifications { get; set; } = [];
 
 	/// <summary>
 	/// A collection of bookings associated with this tradesman.

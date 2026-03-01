@@ -19,6 +19,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 	public IBidRepository Bids { get; }
 	public IAuctionActionRepository AuctionActions { get; }
 	public INotificationRepository Notifications { get; }
+	public ICertificationRepository Certifications { get; }
 
 	public UnitOfWork(AppDbContext context)
 	{
@@ -37,6 +38,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 		Bids = new BidRepository(_context);
 		AuctionActions = new AuctionActionRepository(_context);
 		Notifications = new NotificationRepository(_context);
+		Certifications = new CertificationRepository(_context);
 	}
 
 	/// <summary>

@@ -24,6 +24,11 @@ query GetTradesmanDetailsById {
       description
       imageUrl
     }
+    videoIntroductionUrl
+    certifications {
+      title
+      issuedAt
+    }
     reviews {
       rating
       comment
