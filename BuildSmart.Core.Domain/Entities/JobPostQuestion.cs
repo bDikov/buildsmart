@@ -18,6 +18,10 @@ public class JobPostQuestion : BaseEntity
     public string? AnswerText { get; set; }
     public DateTime? AnsweredAt { get; set; }
 
+    public Guid? ParentQuestionId { get; set; }
+    public JobPostQuestion? ParentQuestion { get; set; }
+    public ICollection<JobPostQuestion> Replies { get; set; } = new List<JobPostQuestion>();
+
     public bool IsAnswered => !string.IsNullOrEmpty(AnswerText);
 
     public void Answer(string answer)
