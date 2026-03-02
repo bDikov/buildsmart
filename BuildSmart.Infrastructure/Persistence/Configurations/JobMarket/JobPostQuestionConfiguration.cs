@@ -25,6 +25,11 @@ public class JobPostQuestionConfiguration : IEntityTypeConfiguration<JobPostQues
         builder.HasOne(q => q.TradesmanProfile)
             .WithMany()
             .HasForeignKey(q => q.TradesmanProfileId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(q => q.Author)
+            .WithMany()
+            .HasForeignKey(q => q.AuthorId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Self-referencing relationship for threaded replies

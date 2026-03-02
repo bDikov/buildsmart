@@ -625,19 +625,97 @@ public class JobPostService : IJobPostService
         await _unitOfWork.SaveChangesAsync();
 
         // Notify Tradesman
-        var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId);
-        if (tradesman != null)
+        if (question.TradesmanProfileId.HasValue)
         {
-            await _notificationService.SendNotificationAsync(
-                tradesman.UserId,
-                "Question Answered",
-                $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
-                question.JobPostId,
-                "AuctionAnswer"
-            );
+            var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId.Value);
+            if (tradesman != null)
+            {
+                await _notificationService.SendNotificationAsync(
+                    tradesman.UserId,
+                    "Question Answered",
+                    $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
+                    question.JobPostId,
+                    "AuctionAnswer"
+                );
+            }
+        }
+        else if (question.AuthorId.HasValue)
+        {
+            var author = await _unitOfWork.Users.GetByIdAsync(question.AuthorId.Value);
+            if (author != null)
+            {
+                await _notificationService.SendNotificationAsync(
+                    author.Id,
+                    "Question Answered",
+                    $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
+                    question.JobPostId,
+                    "AuctionAnswer"
+                );
+            }
         }
 
         return question;
+    }
+
+    public async Task<JobPostQuestion> ReplyToQuestionAsync(Guid parentQuestionId, Guid userId, string replyText)
+    {
+        var parentQuestion = await _unitOfWork.JobPostQuestions.GetByIdAsync(parentQuestionId)
+            ?? throw new ArgumentException("Parent question not found");
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId)
+            ?? throw new ArgumentException("User not found");
+
+        var reply = new JobPostQuestion
+        {
+            JobPostId = parentQuestion.JobPostId,
+            ParentQuestionId = parentQuestionId,
+            AuthorId = userId,
+            QuestionText = replyText,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        if (user.TradesmanProfile != null)
+        {
+            reply.TradesmanProfileId = user.TradesmanProfile.Id;
+        }
+
+        await _unitOfWork.JobPostQuestions.AddAsync(reply);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Notification Logic
+        var parentAuthorId = parentQuestion.AuthorId;
+        if (!parentAuthorId.HasValue && parentQuestion.TradesmanProfileId.HasValue)
+        {
+            var pTradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(parentQuestion.TradesmanProfileId.Value);
+            if (pTradesman != null) parentAuthorId = pTradesman.UserId;
+        }
+
+        if (parentAuthorId.HasValue && parentAuthorId.Value != userId)
+        {
+            await _notificationService.SendNotificationAsync(
+                parentAuthorId.Value,
+                "New Reply",
+                $"Someone replied to your comment on job '{parentQuestion.JobPost?.Title ?? "Auction"}'.",
+                parentQuestion.JobPostId,
+                "AuctionAnswer"
+            );
+        }
+        else if (parentQuestion.JobPost?.Project?.HomeownerId != userId)
+        {
+            if (parentQuestion.JobPost != null)
+            {
+                await _notificationService.SendNotificationAsync(
+                    parentQuestion.JobPost.Project.HomeownerId,
+                    "New Reply",
+                    $"New activity on your job '{parentQuestion.JobPost.Title}'.",
+                    parentQuestion.JobPostId,
+                    "AuctionQuestion"
+                );
+            }
+        }
+
+        return reply;
     }
 
     public async Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid tradesmanProfileId, string newText)

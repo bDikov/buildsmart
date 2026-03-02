@@ -7,8 +7,11 @@ public class JobPostQuestion : BaseEntity
     public Guid JobPostId { get; set; }
     public JobPost JobPost { get; set; } = null!;
 
-    public Guid TradesmanProfileId { get; set; }
-    public TradesmanProfile TradesmanProfile { get; set; } = null!;
+    public Guid? TradesmanProfileId { get; set; }
+    public TradesmanProfile? TradesmanProfile { get; set; }
+
+    public Guid? AuthorId { get; set; }
+    public User? Author { get; set; }
 
     public string QuestionText { get; set; } = null!;
     
