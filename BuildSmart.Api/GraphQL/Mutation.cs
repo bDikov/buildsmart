@@ -490,6 +490,22 @@ public class Mutation
         return await jobPostService.EditJobAnswerAsync(questionId, user.HomeownerProfile.Id, newAnswer);
     }
 
+    [Authorize]
+    public async Task<JobPostQuestion> ReplyToJobQuestion(
+        Guid parentQuestionId,
+        string replyText,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] IJobPostService jobPostService)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user credentials.");
+        }
+
+        return await jobPostService.ReplyToQuestionAsync(parentQuestionId, userId, replyText);
+    }
+
 	public async Task<Booking> AcceptBid(
 		Guid bidId,
 		[Service] IJobPostService jobPostService)

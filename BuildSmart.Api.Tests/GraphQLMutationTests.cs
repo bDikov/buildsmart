@@ -316,4 +316,67 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
         // Snapshot testing for GraphQL responses, ignoring dynamic fields like dates and IDs
         Snapshot.Match(content, matchOptions => matchOptions.IgnoreField("data.createBooking.id").IgnoreField("data.createBooking.requestedDate"));
     }
+
+    [Fact]
+    public async Task ReplyToJobQuestion_ValidData_ReturnsReply()
+    {
+        // Arrange
+        var parentQuestionId = Guid.NewGuid();
+        var authorId = Guid.NewGuid();
+        var replyId = Guid.NewGuid();
+        var replyText = "This is a reply text.";
+
+        var mockJobPostService = new Mock<IJobPostService>();
+        mockJobPostService.Setup(service => service.ReplyToQuestionAsync(
+            parentQuestionId,
+            authorId,
+            replyText))
+            .ReturnsAsync(new JobPostQuestion
+            {
+                Id = replyId,
+                ParentQuestionId = parentQuestionId,
+                AuthorId = authorId,
+                QuestionText = replyText
+            });
+
+        var userToken = TestTokenHelper.GenerateJwtToken(authorId, "user@example.com", "Tradesman", _configuration);
+
+        var client = CreateClient(services =>
+        {
+            services.RemoveAll(typeof(IJobPostService));
+            services.AddSingleton(mockJobPostService.Object);
+        }, userToken);
+
+        var graphQLRequest = new
+        {
+            query = "mutation ReplyToJobQuestion($parentQuestionId: UUID!, $replyText: String!) { replyToJobQuestion(parentQuestionId: $parentQuestionId, replyText: $replyText) { id parentQuestionId authorId questionText } }",
+            variables = new
+            {
+                parentQuestionId = parentQuestionId.ToString(),
+                replyText = replyText
+            },
+            operationName = "ReplyToJobQuestion"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+        {
+            Content = new StringContent(
+                JsonConvert.SerializeObject(graphQLRequest),
+                System.Text.Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        
+        // Snapshot testing
+        Snapshot.Match(content, matchOptions => matchOptions
+            .IgnoreField("data.replyToJobQuestion.id")
+            .IgnoreField("data.replyToJobQuestion.parentQuestionId")
+            .IgnoreField("data.replyToJobQuestion.authorId"));
+    }
 }
