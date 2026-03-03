@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
              xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
              xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
+             xmlns:services="clr-namespace:BuildSmart.Maui.Services"
              x:Class="BuildSmart.Maui.Views.ProjectDetailPage"
              x:DataType="vm:ProjectDetailViewModel"
              x:Name="thisPage"
@@ -14,26 +15,40 @@
             <converters:StringIsNotNullOrEmptyConverter x:Key="StringIsNotNullOrEmptyConverter" />
             <converters:EqualConverter x:Key="EqualConverter" />
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:IsNullConverter x:Key="IsNullConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15">
-            <Label Text="{Binding Project.Title}" FontSize="24" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-            <Label Text="{Binding Project.Status}" FontSize="14" TextColor="{StaticResource Primary}" />
-            <Label Text="{Binding Project.Description}" TextColor="Gray" />
+    <Grid>
+        <!-- Loading State -->
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" 
+                             IsVisible="{Binding HasLoaded, Converter={StaticResource InverseBoolConverter}}">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
+            <Label Text="Loading project details..." TextColor="Gray" Margin="0,10,0,0" />
+        </VerticalStackLayout>
 
-            <BoxView HeightRequest="1" Color="LightGray" />
+        <!-- Main Content (Virtualized for Performance) -->
+        <CollectionView ItemsSource="{Binding Project.JobPosts}" 
+                        IsVisible="{Binding HasLoaded}"
+                        SelectionMode="None">
+            
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="20" Spacing="15">
+                    <Label Text="{Binding Project.Title}" FontSize="24" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                    <Label Text="{Binding Project.Status}" FontSize="14" TextColor="{StaticResource Primary}" />
+                    <Label Text="{Binding Project.Description}" TextColor="Gray" />
 
-            <Label Text="Job Posts" FontSize="18" FontAttributes="Bold" />
+                    <BoxView HeightRequest="1" Color="LightGray" />
 
-            <StackLayout BindableLayout.ItemsSource="{Binding Project.JobPosts}">
-                <BindableLayout.EmptyView>
-                    <Label Text="No jobs found in this project." TextColor="Red" />
-                </BindableLayout.EmptyView>
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts">
-                        <Frame Padding="15" Margin="0,5" BorderColor="LightGray" BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#333333}">
+                    <Label Text="Job Posts" FontSize="18" FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="graphql:IJobPostDetails">
+                    <ContentView Padding="20,5">
+                        <Frame Padding="15" BorderColor="LightGray" BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#333333}">
                             <VerticalStackLayout Spacing="5">
                                 <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
                                 <Label Text="{Binding ServiceCategory.Name}" TextColor="Gray" FontSize="12"/>
@@ -70,12 +85,12 @@
                                 <VerticalStackLayout Margin="0,15,0,0" Spacing="8">
                                     <Label Text="Admin Clarifications &amp; Discussion:" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Primary}"/>
                                     
-                                    <StackLayout BindableLayout.ItemsSource="{Binding Feedbacks}">
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Feedbacks}">
                                         <BindableLayout.EmptyView>
                                             <Label Text="No active clarifications." TextColor="Gray" FontSize="12" FontAttributes="Italic" Margin="10,0"/>
                                         </BindableLayout.EmptyView>
                                         <BindableLayout.ItemTemplate>
-                                            <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts_Feedbacks">
+                                            <DataTemplate x:DataType="graphql:IFeedbackDetails">
                                                 <Border Stroke="#E0E0E0" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}" Padding="12" Margin="0,2">
                                                     <Border.StrokeShape>
                                                         <RoundRectangle CornerRadius="8" />
@@ -84,18 +99,87 @@
                                                         <Grid ColumnDefinitions="*, Auto">
                                                             <HorizontalStackLayout Grid.Column="0" Spacing="5">
                                                                 <Label Text="{Binding Author.FirstName}" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+                                                                <Button Text="✎" Clicked="OnEditFeedbackClicked" CommandParameter="{Binding .}"
+                                                                        IsVisible="{Binding IsEditable}"
+                                                                        FontSize="12" BackgroundColor="Transparent" TextColor="Gray" Padding="0" HeightRequest="25" WidthRequest="25" VerticalOptions="Center" />
+                                                                <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsEdited}" VerticalOptions="Center" />
                                                                 <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
                                                             </HorizontalStackLayout>
                                                             <Label Grid.Column="1" Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="#4CAF50" FontSize="10" FontAttributes="Bold" />
                                                         </Grid>
                                                         <Label Text="{Binding Text}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" LineBreakMode="WordWrap" />
+
+                                                        <Label Text="Reply" 
+                                                               TextColor="Gray" 
+                                                               FontAttributes="Bold" 
+                                                               FontSize="11"
+                                                               Margin="0,5,0,0">
+                                                            <Label.GestureRecognizers>
+                                                                <TapGestureRecognizer 
+                                                                    Tapped="OnReplyFeedbackClicked" 
+                                                                    CommandParameter="{Binding .}" />
+                                                            </Label.GestureRecognizers>
+                                                        </Label>
+
+                                                        <!-- Nested Replies for Feedback -->
+                                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Replies}" Margin="5,10,0,0">
+                                                            <BindableLayout.ItemTemplate>
+                                                                <DataTemplate x:DataType="graphql:IFeedbackReplyDetails">
+                                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="0,5">
+                                                                        <BoxView Grid.Column="0" 
+                                                                                 WidthRequest="2" 
+                                                                                 Color="{AppThemeBinding Light=#E0E0E0, Dark=#444444}" 
+                                                                                 Margin="10,0,15,0" 
+                                                                                 VerticalOptions="FillAndExpand" />
+
+                                                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                            <Border Stroke="Transparent" BackgroundColor="{AppThemeBinding Light=#F0F2F5, Dark=#3A3B3C}" Padding="12,8" HorizontalOptions="Start">
+                                                                                <Border.StrokeShape>
+                                                                                    <RoundRectangle CornerRadius="18" />
+                                                                                </Border.StrokeShape>
+                                                                                <VerticalStackLayout Spacing="2">
+                                                                                    <HorizontalStackLayout Spacing="5">
+                                                                                        <Image Source="{Binding Author.ProfilePictureUrl}" 
+                                                                                               WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                                                                               BackgroundColor="LightGray">
+                                                                                            <Image.Clip>
+                                                                                                <EllipseGeometry RadiusX="10" RadiusY="10" Center="10,10" />
+                                                                                            </Image.Clip>
+                                                                                        </Image>
+                                                                                        <Label Text="{Binding Author.FirstName}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                                                                        <Button Text="✎" Clicked="OnEditFeedbackReplyClicked" CommandParameter="{Binding .}"
+                                                                                                IsVisible="{Binding IsEditable}"
+                                                                                                FontSize="14" BackgroundColor="Transparent" TextColor="Gray" Padding="0" HeightRequest="30" WidthRequest="30" VerticalOptions="Center" />
+                                                                                        <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsEdited}" VerticalOptions="Center" />
+                                                                                        <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+                                                                                    </HorizontalStackLayout>
+                                                                                    <Label Text="{Binding Text}" FontSize="13" TextColor="{AppThemeBinding Light=#1C1E21, Dark=#E4E6EB}" />
+                                                                                </VerticalStackLayout>
+                                                                            </Border>
+                                                                            
+                                                                            <Label Text="Reply" 
+                                                                                   TextColor="Gray" 
+                                                                                   FontSize="11" 
+                                                                                   FontAttributes="Bold" 
+                                                                                   Margin="12,2,0,0">
+                                                                                <Label.GestureRecognizers>
+                                                                                    <TapGestureRecognizer 
+                                                                                        Tapped="OnReplyFeedbackClicked" 
+                                                                                        CommandParameter="{Binding .}" />
+                                                                                </Label.GestureRecognizers>
+                                                                            </Label>
+                                                                        </VerticalStackLayout>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </BindableLayout.ItemTemplate>
+                                                        </VerticalStackLayout>
                                                     </VerticalStackLayout>
                                                 </Border>
                                             </DataTemplate>
                                         </BindableLayout.ItemTemplate>
-                                    </StackLayout>
+                                    </VerticalStackLayout>
                                     
-                                    <Button Text="Reply to Admin" 
+                                    <Button Text="Ask Admin a Question" 
                                             Clicked="OnReplyToAdminClicked"
                                             CommandParameter="{Binding .}"
                                             HeightRequest="35" FontSize="11" Padding="15,0"
@@ -106,18 +190,22 @@
                                 <VerticalStackLayout IsVisible="{Binding Status, Converter={StaticResource EqualConverter}, ConverterParameter='Open'}" Margin="0,15,0,0" Spacing="8">
                                     <Label Text="Tradesman Questions (Public):" FontAttributes="Bold" FontSize="13" TextColor="#2E7D32"/>
                                     
-                                    <StackLayout BindableLayout.ItemsSource="{Binding Questions}">
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Questions}">
                                         <BindableLayout.EmptyView>
                                             <Label Text="No questions from tradesmen yet." TextColor="Gray" FontSize="12" FontAttributes="Italic" Margin="10,0"/>
                                         </BindableLayout.EmptyView>
                                         <BindableLayout.ItemTemplate>
-                                            <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts_Questions">
+                                            <DataTemplate x:DataType="graphql:IQuestionDetails">
                                                 <Border Stroke="#C8E6C9" BackgroundColor="{AppThemeBinding Light=#F1F8E9, Dark=#1B5E20}" Padding="12" Margin="0,2">
                                                     <Border.StrokeShape>
                                                         <RoundRectangle CornerRadius="8" />
                                                     </Border.StrokeShape>
                                                     <VerticalStackLayout Spacing="4">
-                                                        <Label Text="{Binding TradesmanProfile.User.FirstName, StringFormat='Q from {0}:'}" FontSize="11" FontAttributes="Bold" TextColor="#388E3C" />
+                                                        <HorizontalStackLayout Spacing="5">
+                                                            <Label Text="{Binding TradesmanProfile.User.FirstName, StringFormat='Q from {0}:'}" FontSize="11" FontAttributes="Bold" TextColor="#388E3C" />
+                                                            <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsEdited}" VerticalOptions="Center" />
+                                                            <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+                                                        </HorizontalStackLayout>
                                                         <Label Text="{Binding QuestionText}" FontSize="13" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                                         
                                                         <BoxView HeightRequest="1" Color="#C8E6C9" Margin="0,5" IsVisible="{Binding IsAnswered}" />
@@ -126,24 +214,112 @@
                                                             <HorizontalStackLayout Spacing="5">
                                                                 <Label Text="Your Answer:" FontSize="11" FontAttributes="Bold" TextColor="#1B5E20" />
                                                                 <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsAnswerEdited}" VerticalOptions="Center" />
+                                                                <Label Text="{Binding AnsweredAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
                                                                 
                                                                 <Button Text="✎" Clicked="OnEditAnswerClicked" CommandParameter="{Binding .}"
+                                                                        IsVisible="{Binding IsAnswerEditable}"
                                                                         FontSize="16" BackgroundColor="Transparent" TextColor="#1B5E20" Padding="0" HeightRequest="30" WidthRequest="30" VerticalOptions="Center" />
                                                             </HorizontalStackLayout>
                                                             <Label Text="{Binding AnswerText}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                                         </VerticalStackLayout>
 
-                                                        <Button Text="Answer Question" 
+                                                        <Button Text="Answer Question"
                                                                 IsVisible="{Binding IsAnswered, Converter={StaticResource InverseBoolConverter}}"
                                                                 Clicked="OnAnswerQuestionClicked"
                                                                 CommandParameter="{Binding .}"
                                                                 HeightRequest="30" FontSize="10" Padding="10,0" Margin="0,5,0,0"
                                                                 BackgroundColor="#4CAF50" TextColor="White" HorizontalOptions="Start" CornerRadius="15"/>
+
+                                                        <HorizontalStackLayout Spacing="15" Margin="0,5,0,0">
+                                                            <Label Text="Reply" 
+                                                                   TextColor="Gray" 
+                                                                   FontAttributes="Bold" 
+                                                                   FontSize="12">
+                                                                <Label.GestureRecognizers>
+                                                                    <TapGestureRecognizer 
+                                                                        Tapped="OnReplyQuestionClicked" 
+                                                                        CommandParameter="{Binding .}" />
+                                                                </Label.GestureRecognizers>
+                                                            </Label>
+                                                        </HorizontalStackLayout>
+
+                                                        <!-- Nested Replies -->
+                                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Replies}" Margin="5,10,0,0">
+                                                            <BindableLayout.ItemTemplate>
+                                                                <DataTemplate x:DataType="graphql:IQuestionReplyDetails">
+                                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="0,5">
+                                                                        <!-- Thread Line Indicator -->
+                                                                        <BoxView Grid.Column="0" 
+                                                                                 WidthRequest="2" 
+                                                                                 Color="{AppThemeBinding Light=#E0E0E0, Dark=#444444}" 
+                                                                                 Margin="10,0,15,0" 
+                                                                                 VerticalOptions="FillAndExpand" />
+
+                                                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                            <!-- Comment Bubble -->
+                                                                            <Border Stroke="Transparent" BackgroundColor="{AppThemeBinding Light=#F0F2F5, Dark=#3A3B3C}" Padding="12,8" HorizontalOptions="Start">
+                                                                                <Border.StrokeShape>
+                                                                                    <RoundRectangle CornerRadius="18" />
+                                                                                </Border.StrokeShape>
+                                                                                <VerticalStackLayout Spacing="2">
+                                                                                    <HorizontalStackLayout Spacing="5">
+                                                                                        <!-- Homeowner Avatar & Name -->
+                                                                                        <Image Source="{Binding Author.ProfilePictureUrl}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNullConverter}}"
+                                                                                               WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                                                                               BackgroundColor="LightGray">
+                                                                                            <Image.Clip>
+                                                                                                <EllipseGeometry RadiusX="10" RadiusY="10" Center="10,10" />
+                                                                                            </Image.Clip>
+                                                                                        </Image>
+                                                                                        <Label Text="{Binding Author.FirstName, StringFormat='{0} (You)'}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNullConverter}}" 
+                                                                                               FontSize="12" FontAttributes="Bold" TextColor="Green" VerticalOptions="Center" />
+                                                                                        <Button Text="✎" Clicked="OnEditNestedQuestionClicked" CommandParameter="{Binding .}"
+                                                                                                IsVisible="{Binding IsEditable}"
+                                                                                                FontSize="14" BackgroundColor="Transparent" TextColor="Gray" Padding="0" HeightRequest="30" WidthRequest="30" VerticalOptions="Center" />
+                                                                                        <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsEdited}" VerticalOptions="Center" />
+                                                                                        <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+
+                                                                                        <!-- Tradesman Avatar & Name -->
+                                                                                        <Image Source="{Binding TradesmanProfile.User.ProfilePictureUrl}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNotNullConverter}}"
+                                                                                               WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                                                                               BackgroundColor="LightGray">
+                                                                                            <Image.Clip>
+                                                                                                <EllipseGeometry RadiusX="10" RadiusY="10" Center="10,10" />
+                                                                                            </Image.Clip>
+                                                                                        </Image>
+                                                                                        <Label Text="{Binding TradesmanProfile.User.FirstName, StringFormat='{0}'}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNotNullConverter}}" 
+                                                                                               FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                                                                    </HorizontalStackLayout>
+                                                                                    <Label Text="{Binding QuestionText}" FontSize="13" TextColor="{AppThemeBinding Light=#1C1E21, Dark=#E4E6EB}" />
+                                                                                </VerticalStackLayout>
+                                                                            </Border>
+
+                                                                            <!-- Reply action for the nested comment -->
+                                                                            <Label Text="Reply" 
+                                                                                   TextColor="Gray" 
+                                                                                   FontSize="11" 
+                                                                                   FontAttributes="Bold" 
+                                                                                   Margin="12,2,0,0">
+                                                                                <Label.GestureRecognizers>
+                                                                                    <TapGestureRecognizer 
+                                                                                        Tapped="OnReplyQuestionClicked" 
+                                                                                        CommandParameter="{Binding .}" />
+                                                                                </Label.GestureRecognizers>
+                                                                            </Label>
+                                                                        </VerticalStackLayout>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </BindableLayout.ItemTemplate>
+                                                        </VerticalStackLayout>
                                                     </VerticalStackLayout>
                                                 </Border>
                                             </DataTemplate>
                                         </BindableLayout.ItemTemplate>
-                                    </StackLayout>
+                                    </VerticalStackLayout>
                                 </VerticalStackLayout>
 
                                 <Button Text="Edit Answers" 
@@ -177,9 +353,9 @@
                                 </Button>
                             </VerticalStackLayout>
                         </Frame>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </StackLayout>
-        </VerticalStackLayout>
-    </ScrollView>
+                    </ContentView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

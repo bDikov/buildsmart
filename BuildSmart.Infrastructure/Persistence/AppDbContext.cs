@@ -1,9 +1,9 @@
-﻿using BuildSmart.Core.Domain.Entities;
-using BuildSmart.Core.Domain.Entities.JoinEntities; // Added
-using BuildSmart.Core.Domain.Enums; // Added for UserRoleTypes
+using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Domain.Entities.JoinEntities;
+using BuildSmart.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using BCrypt.Net; // Added for password hashing
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BuildSmart.Infrastructure.Persistence;
 
@@ -11,24 +11,21 @@ public class AppDbContext : DbContext
 {
 	// Define DbSets only for your Aggregate Roots
 	public DbSet<User> Users { get; set; } = null!;
-
     public DbSet<HomeownerProfile> HomeownerProfiles { get; set; } = null!;
     public DbSet<TradesmanSkill> TradesmanSkills { get; set; } = null!;
 	public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
-	    public DbSet<TradesmanProfile> TradesmanProfiles { get; set; } = null!;
-	    
-	    public DbSet<Project> Projects { get; set; } = null!;
-	    public DbSet<JobPost> JobPosts { get; set; } = null!;
-	    public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
-        public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
-	    public DbSet<Bid> Bids { get; set; } = null!;
-	    public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;
-	
-		public DbSet<Booking> Bookings { get; set; } = null!;
-	    public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;
-		public DbSet<Review> Reviews { get; set; } = null!;
-        public DbSet<Notification> Notifications { get; set; } = null!;
-        public DbSet<Certification> Certifications { get; set; } = null!;
+	public DbSet<TradesmanProfile> TradesmanProfiles { get; set; } = null!;
+	public DbSet<Project> Projects { get; set; } = null!;
+	public DbSet<JobPost> JobPosts { get; set; } = null!;
+	public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
+    public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
+	public DbSet<Bid> Bids { get; set; } = null!;
+	public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;
+	public DbSet<Booking> Bookings { get; set; } = null!;
+	public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;
+	public DbSet<Review> Reviews { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<Certification> Certifications { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
@@ -38,9 +35,15 @@ public class AppDbContext : DbContext
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
-
 		modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 	}
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(w => w.Ignore(
+            RelationalEventId.PendingModelChangesWarning,
+            CoreEventId.NavigationBaseIncludeIgnored));
+    }
 
     public async Task SeedAdminUser()
     {
@@ -52,7 +55,7 @@ public class AppDbContext : DbContext
                 FirstName = "Admin",
                 LastName = "User",
                 Email = "admin@buildsmart.com",
-                HashedPassword = BCrypt.Net.BCrypt.HashPassword("Admin123!"), // Default admin password
+                HashedPassword = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
                 Role = UserRoleTypes.Admin,
                 IsEmailVerified = true,
                 CreatedAt = DateTime.UtcNow,
@@ -95,7 +98,6 @@ public class AppDbContext : DbContext
 
     public async Task SeedTradesmanUser()
     {
-        // 1. Ensure Painting Category exists
         var paintingCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Painting");
         if (paintingCategory == null)
         {
@@ -111,7 +113,6 @@ public class AppDbContext : DbContext
             await ServiceCategories.AddAsync(paintingCategory);
         }
 
-        // 1.5 Ensure Electrical Category exists
         var electricalCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Electrical");
         if (electricalCategory == null)
         {
@@ -129,7 +130,6 @@ public class AppDbContext : DbContext
 
         await SaveChangesAsync();
 
-        // 2. Ensure Painter User exists
         if (!Users.Any(u => u.Email == "painter@buildsmart.com"))
         {
             var painterId = Guid.NewGuid();
@@ -166,7 +166,6 @@ public class AppDbContext : DbContext
             await Users.AddAsync(painterUser);
         }
 
-        // 3. Ensure Electrician User exists
         if (!Users.Any(u => u.Email == "electrician@buildsmart.com"))
         {
             var sparkyId = Guid.NewGuid();

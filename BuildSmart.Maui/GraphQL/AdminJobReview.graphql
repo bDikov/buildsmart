@@ -1,139 +1,6 @@
 query GetProjectsForReview {
   projectsForReview {
-    id
-    title
-    description
-    status
-    createdAt
-    homeowner {
-      id
-      firstName
-      lastName
-    }
-    jobPosts {
-      id
-      title
-      description
-      generatedScope
-      userEditedScope
-      status
-      jobDetails
-      additionalQuestionsJson
-      location
-      estimatedBudget {
-        total
-        currency
-      }
-      adminFeedback
-      serviceCategory {
-        name
-        templateStructure
-      }
-      feedbacks {
-        id
-        text
-        isResolved
-        createdAt
-        author {
-          id
-          firstName
-          lastName
-          role
-        }
-      }
-      questions {
-        id
-        questionText
-        answerText
-        isAnswered
-        tradesmanProfile {
-          user {
-            firstName
-            lastName
-          }
-        }
-      }
-    }
-  }
-}
-
-query GetJobsForReview {
-  jobPostsForReview {
-    id
-    title
-    description
-    generatedScope
-    userEditedScope
-    status
-    jobDetails
-    additionalQuestionsJson
-    adminFeedback
-    serviceCategory {
-      name
-      templateStructure
-    }
-    project {
-      id
-      title
-      description
-      status
-      homeowner {
-        firstName
-        lastName
-      }
-      jobPosts {
-        id
-        title
-        status
-        serviceCategory {
-          name
-        }
-      }
-    }
-    feedbacks {
-      id
-      text
-      isResolved
-      createdAt
-      author {
-        id
-        firstName
-        lastName
-        role
-      }
-    }
-    questions {
-      id
-      questionText
-      answerText
-      isAnswered
-      isEdited
-      isAnswerEdited
-      tradesmanProfile {
-        user {
-          firstName
-          lastName
-        }
-      }
-    }
-  }
-}
-
-mutation AdminReviewJobScope($jobPostId: UUID!, $approved: Boolean!, $feedback: String) {
-  adminReviewJobScope(jobPostId: $jobPostId, approved: $approved, feedback: $feedback)
-}
-
-mutation AddJobFeedback($jobPostId: UUID!, $text: String!) {
-  addJobFeedback(jobPostId: $jobPostId, text: $text) {
-    id
-    text
-    createdAt
-    author {
-      id
-      firstName
-      lastName
-      role
-    }
+    ... ProjectDetails
   }
 }
 
@@ -141,6 +8,18 @@ mutation AddAdminJobQuestion($jobPostId: UUID!, $questionText: String!, $type: S
   addAdminJobQuestion(jobPostId: $jobPostId, questionText: $questionText, type: $type, isRequired: $isRequired, options: $options)
 }
 
+mutation AddJobFeedback($jobPostId: UUID!, $text: String!) {
+  addJobFeedback(jobPostId: $jobPostId, text: $text) {
+    ... FeedbackDetails
+  }
+}
+
 mutation ResolveJobFeedback($feedbackId: UUID!) {
-  resolveJobFeedback(feedbackId: $feedbackId)
+  resolveJobFeedback(feedbackId: $feedbackId) {
+    ... FeedbackDetails
+  }
+}
+
+mutation AdminReviewJobScope($jobPostId: UUID!, $approved: Boolean!, $feedback: String) {
+  adminReviewJobScope(jobPostId: $jobPostId, approved: $approved, feedback: $feedback)
 }

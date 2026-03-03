@@ -21,6 +21,8 @@ type Query {
   jobPostsForReview: [JobPost!]!
   "Gets projects waiting for admin review."
   projectsForReview: [Project!]!
+  "Gets a specific project by ID."
+  projectById(projectId: UUID!): Project
   "Gets a list of all users. (Admin only)"
   users: [User!]!
   "Gets all open auctions that match the authenticated tradesman's skills."
@@ -40,8 +42,12 @@ type Auction {
 type JobPostQuestion {
     id: UUID!
     jobPostId: UUID!
-    tradesmanProfileId: UUID!
-    tradesmanProfile: TradesmanProfile!
+    parentQuestionId: UUID
+    tradesmanProfileId: UUID
+    tradesmanProfile: TradesmanProfile
+    authorId: UUID
+    author: User
+    replies: [JobPostQuestion!]!
     questionText: String!
     answerText: String
     answeredAt: DateTime
@@ -50,6 +56,8 @@ type JobPostQuestion {
     isAnswerEdited: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
+    isEditable: Boolean!
+    isAnswerEditable: Boolean!
 }
 
 type Notification {
@@ -119,8 +127,11 @@ type Mutation {
   "Adds a feedback/clarification message to a job post."
   addJobFeedback(jobPostId: UUID!, text: String!): JobPostFeedback!
 
+  "Allows any user to reply to a specific feedback/clarification."
+  replyToJobFeedback(parentFeedbackId: UUID!, text: String!): JobPostFeedback!
+
   "Resolves a specific feedback item (Admin only)."
-  resolveJobFeedback(feedbackId: UUID!): Boolean!
+  resolveJobFeedback(feedbackId: UUID!): JobPostFeedback!
 
   "Adds a project-specific clarification question to a job post (Admin only)."
   addAdminJobQuestion(jobPostId: UUID!, questionText: String!, type: String!, isRequired: Boolean!, options: [String!]): Boolean!
@@ -131,14 +142,20 @@ type Mutation {
   "Allows a tradesman to ask a public question on an auction."
   askJobQuestion(tradesmanProfileId: UUID!, jobPostId: UUID!, questionText: String!): JobPostQuestion!
 
-  "Allows a tradesman to edit their public question."
+  "Allows an author to edit their public question or reply."
   editJobQuestion(questionId: UUID!, newText: String!): JobPostQuestion!
+
+  "Allows an author to edit their feedback or reply."
+  editJobFeedback(feedbackId: UUID!, newText: String!): JobPostFeedback!
 
   "Allows a homeowner to answer a tradesman's question."
   answerJobQuestion(questionId: UUID!, answerText: String!): JobPostQuestion!
 
   "Allows a homeowner to edit their public answer."
   editJobAnswer(questionId: UUID!, newAnswer: String!): JobPostQuestion!
+
+  "Allows any user to reply to a specific question."
+  replyToJobQuestion(parentQuestionId: UUID!, replyText: String!): JobPostQuestion!
 
   "Hides an auction from the tradesman's available feed."
   passAuction(tradesmanProfileId: UUID!, jobPostId: UUID!): Boolean!
@@ -169,8 +186,12 @@ type JobPostFeedback {
     author: User!
     text: String!
     isResolved: Boolean!
+    isEdited: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
+    parentFeedbackId: UUID
+    replies: [JobPostFeedback!]!
+    isEditable: Boolean!
 }
 
 "Represents the specific profile for a tradesman."

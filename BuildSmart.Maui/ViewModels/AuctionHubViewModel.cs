@@ -68,7 +68,7 @@ public partial class AuctionHubViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task EditQuestionAsync(IGetAuctionById_AuctionById_Questions question)
+    private async Task EditQuestionAsync(IQuestionDetails question)
     {
         if (question == null) return;
 
@@ -104,12 +104,84 @@ public partial class AuctionHubViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task EditNestedQuestionAsync(IQuestionReplyDetails reply)
+    {
+        if (reply == null) return;
+
+        string newText = await Shell.Current.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.QuestionText);
+        if (string.IsNullOrWhiteSpace(newText) || newText == reply.QuestionText) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.EditJobQuestion.ExecuteAsync(reply.Id, newText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("Success", "Reply updated.", "OK");
+            
+            if (Guid.TryParse(JobId, out var id))
+            {
+                await LoadAuctionAsync(id);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task EditAnswerAsync(IQuestionDetails question)
+    {
+        if (question == null) return;
+
+        string newAnswer = await Shell.Current.DisplayPromptAsync("Edit Answer", "Update your answer:", "Save", "Cancel", initialValue: question.AnswerText);
+        if (string.IsNullOrWhiteSpace(newAnswer) || newAnswer == question.AnswerText) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.EditJobAnswer.ExecuteAsync(question.Id, newAnswer);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("Success", "Answer updated.", "OK");
+            
+            if (Guid.TryParse(JobId, out var id))
+            {
+                await LoadAuctionAsync(id);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
     private async Task AskQuestionAsync()
     {
         if (Auction == null) return;
 
-        string question = await Shell.Current.DisplayPromptAsync("Ask Homeowner", "Your question will be public:", "Ask", "Cancel", "Type your question...");
-        if (string.IsNullOrWhiteSpace(question)) return;
+        string questionText = await Shell.Current.DisplayPromptAsync("Ask Homeowner", "Your question will be public:", "Ask", "Cancel", "Type your question...");
+        if (string.IsNullOrWhiteSpace(questionText)) return;
 
         try
         {
@@ -125,7 +197,7 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            var result = await _apiClient.AskJobQuestion.ExecuteAsync(profileId.Value, Auction.Job.Id, question);
+            var result = await _apiClient.AskJobQuestion.ExecuteAsync(profileId.Value, Auction.Job.Id, questionText);
 
             if (result.Errors.Count > 0)
             {
@@ -134,6 +206,52 @@ public partial class AuctionHubViewModel : ObservableObject
             }
 
             await Shell.Current.DisplayAlert("Success", "Question posted and is now public.", "OK");
+            
+            if (Guid.TryParse(JobId, out var id))
+            {
+                await LoadAuctionAsync(id);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ReplyToQuestionAsync(IQuestionDetails question)
+    {
+        if (question == null) return;
+        await ExecuteReplyAsync(question.Id);
+    }
+
+    [RelayCommand]
+    private async Task ReplyToNestedQuestionAsync(IQuestionReplyDetails reply)
+    {
+        if (reply == null) return;
+        await ExecuteReplyAsync(reply.ParentQuestionId ?? reply.Id);
+    }
+
+    private async Task ExecuteReplyAsync(Guid parentQuestionId)
+    {
+        string replyText = await Shell.Current.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
+        if (string.IsNullOrWhiteSpace(replyText)) return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(parentQuestionId, replyText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
             
             if (Guid.TryParse(JobId, out var id))
             {

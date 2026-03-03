@@ -525,7 +525,46 @@ public class JobPostService : IJobPostService
         return feedback;
     }
 
-    public async Task ResolveFeedbackAsync(Guid feedbackId)
+    public async Task<JobPostFeedback> ReplyToFeedbackAsync(Guid parentFeedbackId, Guid userId, string replyText)
+    {
+        var parentFeedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(parentFeedbackId)
+            ?? throw new ArgumentException("Parent feedback not found");
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId)
+            ?? throw new ArgumentException("User not found");
+
+        var reply = new JobPostFeedback
+        {
+            JobPostId = parentFeedback.JobPostId,
+            ParentFeedbackId = parentFeedbackId,
+            AuthorId = userId,
+            Text = replyText,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.JobPostFeedbacks.AddAsync(reply);
+        
+        // Notification Logic
+        var parentAuthorId = parentFeedback.AuthorId;
+        if (parentAuthorId != userId)
+        {
+            var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(parentFeedback.JobPostId);
+            await _notificationService.SendNotificationAsync(
+                parentAuthorId,
+                "New Reply",
+                $"Someone replied to your feedback on job '{jobPost?.Title ?? "Feedback"}'.",
+                parentFeedback.JobPostId,
+                "JobPost"
+            );
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        reply.Author = user; // Ensure author is populated for result
+        return reply;
+    }
+
+    public async Task<JobPostFeedback> ResolveFeedbackAsync(Guid feedbackId)
     {
         var feedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(feedbackId)
             ?? throw new ArgumentException("Feedback not found");
@@ -535,6 +574,7 @@ public class JobPostService : IJobPostService
 
         _unitOfWork.JobPostFeedbacks.Update(feedback);
         await _unitOfWork.SaveChangesAsync();
+        return feedback;
     }
 
     public async Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null)
@@ -625,27 +665,126 @@ public class JobPostService : IJobPostService
         await _unitOfWork.SaveChangesAsync();
 
         // Notify Tradesman
-        var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId);
-        if (tradesman != null)
+        if (question.TradesmanProfileId.HasValue)
         {
-            await _notificationService.SendNotificationAsync(
-                tradesman.UserId,
-                "Question Answered",
-                $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
-                question.JobPostId,
-                "AuctionAnswer"
-            );
+            var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId.Value);
+            if (tradesman != null)
+            {
+                await _notificationService.SendNotificationAsync(
+                    tradesman.UserId,
+                    "Question Answered",
+                    $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
+                    question.JobPostId,
+                    "AuctionAnswer"
+                );
+            }
+        }
+        else if (question.AuthorId.HasValue)
+        {
+            var author = await _unitOfWork.Users.GetByIdAsync(question.AuthorId.Value);
+            if (author != null)
+            {
+                await _notificationService.SendNotificationAsync(
+                    author.Id,
+                    "Question Answered",
+                    $"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
+                    question.JobPostId,
+                    "AuctionAnswer"
+                );
+            }
         }
 
         return question;
     }
 
-    public async Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid tradesmanProfileId, string newText)
+    public async Task<JobPostQuestion> ReplyToQuestionAsync(Guid parentQuestionId, Guid userId, string replyText)
+    {
+        var parentQuestion = await _unitOfWork.JobPostQuestions.GetByIdAsync(parentQuestionId)
+            ?? throw new ArgumentException("Parent question not found");
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId)
+            ?? throw new ArgumentException("User not found");
+
+        var reply = new JobPostQuestion
+        {
+            JobPostId = parentQuestion.JobPostId,
+            ParentQuestionId = parentQuestionId,
+            AuthorId = userId,
+            QuestionText = replyText,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        if (user.TradesmanProfile != null)
+        {
+            reply.TradesmanProfileId = user.TradesmanProfile.Id;
+        }
+
+        await _unitOfWork.JobPostQuestions.AddAsync(reply);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Notification Logic
+        var parentAuthorId = parentQuestion.AuthorId;
+        if (!parentAuthorId.HasValue && parentQuestion.TradesmanProfileId.HasValue)
+        {
+            var pTradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(parentQuestion.TradesmanProfileId.Value);
+            if (pTradesman != null) parentAuthorId = pTradesman.UserId;
+        }
+
+        if (parentAuthorId.HasValue && parentAuthorId.Value != userId)
+        {
+            await _notificationService.SendNotificationAsync(
+                parentAuthorId.Value,
+                "New Reply",
+                $"Someone replied to your comment on job '{parentQuestion.JobPost?.Title ?? "Auction"}'.",
+                parentQuestion.JobPostId,
+                "AuctionAnswer"
+            );
+        }
+        else if (parentQuestion.JobPost != null)
+        {
+            // Ensure Project is loaded or we fetch it to get HomeownerId
+            var homeownerId = parentQuestion.JobPost.Project?.HomeownerId;
+            
+            if (!homeownerId.HasValue)
+            {
+                var jobPostFull = await _unitOfWork.JobPosts.GetByIdAsync(parentQuestion.JobPostId);
+                homeownerId = jobPostFull?.Project?.HomeownerId;
+            }
+
+            if (homeownerId.HasValue && homeownerId.Value != userId)
+            {
+                await _notificationService.SendNotificationAsync(
+                    homeownerId.Value,
+                    "New Reply",
+                    $"New activity on your job '{parentQuestion.JobPost.Title}'.",
+                    parentQuestion.JobPostId,
+                    "AuctionQuestion"
+                );
+            }
+        }
+
+        return reply;
+    }
+
+    public async Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid userId, string newText)
     {
         var question = await _unitOfWork.JobPostQuestions.GetByIdAsync(questionId)
             ?? throw new ArgumentException("Question not found");
 
-        if (question.TradesmanProfileId != tradesmanProfileId)
+        // Check if the user is the author (directly or via TradesmanProfile)
+        bool isAuthor = question.AuthorId == userId;
+        
+        if (!isAuthor && question.TradesmanProfileId.HasValue)
+        {
+            var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId.Value);
+            if (tradesman != null && tradesman.UserId == userId)
+            {
+                isAuthor = true;
+            }
+        }
+
+        if (!isAuthor)
         {
             throw new UnauthorizedAccessException("You can only edit your own questions.");
         }
@@ -656,6 +795,26 @@ public class JobPostService : IJobPostService
         await _unitOfWork.SaveChangesAsync();
 
         return question;
+    }
+
+    public async Task<JobPostFeedback> EditJobFeedbackAsync(Guid feedbackId, Guid userId, string newText)
+    {
+        var feedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(feedbackId)
+            ?? throw new ArgumentException("Feedback not found");
+
+        if (feedback.AuthorId != userId)
+        {
+            throw new UnauthorizedAccessException("You can only edit your own feedback.");
+        }
+
+        feedback.Text = newText;
+        feedback.IsEdited = true;
+        feedback.UpdatedAt = DateTime.UtcNow;
+        
+        _unitOfWork.JobPostFeedbacks.Update(feedback);
+        await _unitOfWork.SaveChangesAsync();
+
+        return feedback;
     }
 
     public async Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer)

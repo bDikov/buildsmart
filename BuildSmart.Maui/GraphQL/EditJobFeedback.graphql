@@ -1,0 +1,7 @@
+mutation EditJobFeedback($feedbackId: UUID!, $newText: String!) {
+  editJobFeedback(feedbackId: $feedbackId, newText: $newText) {
+    id
+    text
+    updatedAt
+  }
+}

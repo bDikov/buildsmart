@@ -7,8 +7,11 @@ public class JobPostQuestion : BaseEntity
     public Guid JobPostId { get; set; }
     public JobPost JobPost { get; set; } = null!;
 
-    public Guid TradesmanProfileId { get; set; }
-    public TradesmanProfile TradesmanProfile { get; set; } = null!;
+    public Guid? TradesmanProfileId { get; set; }
+    public TradesmanProfile? TradesmanProfile { get; set; }
+
+    public Guid? AuthorId { get; set; }
+    public User? Author { get; set; }
 
     public string QuestionText { get; set; } = null!;
     
@@ -17,6 +20,10 @@ public class JobPostQuestion : BaseEntity
 
     public string? AnswerText { get; set; }
     public DateTime? AnsweredAt { get; set; }
+
+    public Guid? ParentQuestionId { get; set; }
+    public JobPostQuestion? ParentQuestion { get; set; }
+    public ICollection<JobPostQuestion> Replies { get; set; } = new List<JobPostQuestion>();
 
     public bool IsAnswered => !string.IsNullOrEmpty(AnswerText);
 

@@ -1,0 +1,13 @@
+mutation ReplyToJobFeedback($parentFeedbackId: UUID!, $text: String!) {
+  replyToJobFeedback(parentFeedbackId: $parentFeedbackId, text: $text) {
+    id
+    text
+    createdAt
+    author {
+      id
+      firstName
+      lastName
+      profilePictureUrl
+    }
+  }
+}

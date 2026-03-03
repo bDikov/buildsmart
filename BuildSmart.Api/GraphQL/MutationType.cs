@@ -77,9 +77,13 @@ public class MutationType : ObjectType<Mutation>
             .Description("Allows a tradesman to ask a public question on an auction.")
             .Authorize(roles: new[] { "Tradesman" });
 
-        descriptor.Field(m => m.EditJobQuestion(default!, default!, default!, default!, default!))
-            .Description("Allows a tradesman to edit their public question.")
-            .Authorize(roles: new[] { "Tradesman" });
+        descriptor.Field(m => m.EditJobQuestion(default!, default!, default!, default!))
+            .Description("Allows an author to edit their public question or reply.")
+            .Authorize();
+
+        descriptor.Field(m => m.EditJobFeedback(default!, default!, default!, default!))
+            .Description("Allows an author to edit their feedback or reply.")
+            .Authorize();
 
         descriptor.Field(m => m.AnswerJobQuestion(default!, default!, default!))
             .Description("Allows a homeowner to answer a tradesman's question.")

@@ -1,0 +1,5 @@
+query GetProjectById($projectId: UUID!) {
+  projectById(projectId: $projectId) {
+    ... ProjectDetails
+  }
+}

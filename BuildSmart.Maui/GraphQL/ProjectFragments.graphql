@@ -1,0 +1,136 @@
+fragment UserDetails on User {
+  id
+  firstName
+  lastName
+  profilePictureUrl
+}
+
+fragment CategoryDetails on ServiceCategory {
+  id
+  name
+  isGlobal
+  templateStructure
+}
+
+fragment FeedbackReplyDetails on JobPostFeedback {
+  id
+  jobPostId
+  parentFeedbackId
+  text
+  createdAt
+  isEdited
+  isEditable
+  author {
+    ... UserDetails
+  }
+}
+
+fragment FeedbackDetails on JobPostFeedback {
+  id
+  jobPostId
+  text
+  isResolved
+  createdAt
+  isEdited
+  isEditable
+  author {
+    ... UserDetails
+  }
+  replies {
+    ... FeedbackReplyDetails
+  }
+}
+
+fragment QuestionReplyDetails on JobPostQuestion {
+  id
+  parentQuestionId
+  tradesmanProfileId
+  authorId
+  questionText
+  createdAt
+  isEdited
+  isEditable
+  tradesmanProfile {
+    id
+    user {
+      ... UserDetails
+    }
+  }
+  author {
+    ... UserDetails
+  }
+}
+
+fragment QuestionDetails on JobPostQuestion {
+  id
+  jobPostId
+  questionText
+  answerText
+  answeredAt
+  isAnswered
+  isEdited
+  isAnswerEdited
+  isEditable
+  isAnswerEditable
+  authorId
+  tradesmanProfileId
+  createdAt
+  tradesmanProfile {
+    id
+    user {
+      ... UserDetails
+    }
+  }
+  author {
+    ... UserDetails
+  }
+  replies {
+    ... QuestionReplyDetails
+  }
+}
+
+fragment JobPostDetails on JobPost {
+  id
+  title
+  description
+  jobDetails
+  location
+  project {
+    id
+  }
+  status
+  generatedScope
+  userEditedScope
+  adminFeedback
+  additionalQuestionsJson
+  estimatedBudget {
+    total
+    currency
+  }
+  serviceCategory {
+    ... CategoryDetails
+  }
+  feedbacks {
+    ... FeedbackDetails
+  }
+  questions {
+    ... QuestionDetails
+  }
+}
+
+fragment ProjectDetails on Project {
+  id
+  title
+  description
+  status
+  createdAt
+  generalSummary
+  homeowner {
+    id
+    firstName
+    lastName
+  }
+  jobPosts {
+    ... JobPostDetails
+  }
+}

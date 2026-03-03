@@ -293,10 +293,16 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsResolved")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("JobPostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ParentFeedbackId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Text")
@@ -312,6 +318,8 @@ namespace BuildSmart.Infrastructure.Migrations
 
                     b.HasIndex("JobPostId");
 
+                    b.HasIndex("ParentFeedbackId");
+
                     b.ToTable("JobPostFeedbacks");
                 });
 
@@ -322,10 +330,14 @@ namespace BuildSmart.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("AnswerText")
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<DateTime?>("AnsweredAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("AuthorId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -339,11 +351,15 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<Guid>("JobPostId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ParentQuestionId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("QuestionText")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
-                    b.Property<Guid>("TradesmanProfileId")
+                    b.Property<Guid?>("TradesmanProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -351,7 +367,11 @@ namespace BuildSmart.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuthorId");
+
                     b.HasIndex("JobPostId");
+
+                    b.HasIndex("ParentQuestionId");
 
                     b.HasIndex("TradesmanProfileId");
 
@@ -1083,7 +1103,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.User", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
@@ -1092,26 +1112,46 @@ namespace BuildSmart.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BuildSmart.Core.Domain.Entities.JobPostFeedback", "ParentFeedback")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentFeedbackId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("Author");
 
                     b.Navigation("JobPost");
+
+                    b.Navigation("ParentFeedback");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostQuestion", b =>
                 {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
                         .WithMany("Questions")
                         .HasForeignKey("JobPostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BuildSmart.Core.Domain.Entities.JobPostQuestion", "ParentQuestion")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
                         .WithMany()
                         .HasForeignKey("TradesmanProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Author");
 
                     b.Navigation("JobPost");
+
+                    b.Navigation("ParentQuestion");
 
                     b.Navigation("TradesmanProfile");
                 });
@@ -1239,6 +1279,16 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("Feedbacks");
 
                     b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostFeedback", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.JobPostQuestion", b =>
+                {
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Project", b =>

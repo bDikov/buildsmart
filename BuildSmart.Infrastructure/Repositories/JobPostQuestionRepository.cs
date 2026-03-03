@@ -24,6 +24,10 @@ public class JobPostQuestionRepository : IJobPostQuestionRepository
     public async Task<IEnumerable<JobPostQuestion>> GetQuestionsByJobPostAsync(Guid jobPostId)
     {
         return await _context.JobPostQuestions
+            .Include(q => q.TradesmanProfile)
+                .ThenInclude(tp => tp.User)
+            .Include(q => q.Author)
+            .Include(q => q.Replies)
             .Where(q => q.JobPostId == jobPostId)
             .ToListAsync();
     }

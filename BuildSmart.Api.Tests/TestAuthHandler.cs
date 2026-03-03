@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Linq;
 
 namespace BuildSmart.Api.Tests;
 
@@ -25,12 +26,6 @@ public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (Options.DefaultUser != null)
-        {
-            var ticket = new AuthenticationTicket(Options.DefaultUser, SchemeName);
-            return AuthenticateResult.Success(ticket);
-        }
-
         if (!Request.Headers.ContainsKey("Authorization"))
         {
             return AuthenticateResult.NoResult();
@@ -48,16 +43,33 @@ public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+            var jsonToken = handler.ReadJwtToken(token);
 
             if (jsonToken == null)
             {
                 return AuthenticateResult.Fail("Invalid JWT Token");
             }
 
-            // For testing purposes, we'll just create a ClaimsPrincipal from the token's claims
-            // In a real scenario, you would also validate the token's signature, issuer, audience, etc.
-            var identity = new ClaimsIdentity(jsonToken.Claims, SchemeName, ClaimTypes.Name, ClaimTypes.Role);
+            // In JWT tokens, URIs are often mapped to short names.
+            // Role URI -> "role" or "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            // NameId URI -> "nameid" or "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+            
+            var claims = jsonToken.Claims.ToList();
+            
+            // Ensure we have both long and short forms for role check robustness
+            var roleClaims = claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role" || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
+            foreach(var rc in roleClaims)
+            {
+                if (rc.Type != ClaimTypes.Role) claims.Add(new Claim(ClaimTypes.Role, rc.Value));
+            }
+
+            var nameIdClaims = claims.Where(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "nameid" || c.Type == "sub").ToList();
+            foreach(var nc in nameIdClaims)
+            {
+                if (nc.Type != ClaimTypes.NameIdentifier) claims.Add(new Claim(ClaimTypes.NameIdentifier, nc.Value));
+            }
+
+            var identity = new ClaimsIdentity(claims, SchemeName, ClaimTypes.Name, ClaimTypes.Role);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, SchemeName);
             return AuthenticateResult.Success(ticket);

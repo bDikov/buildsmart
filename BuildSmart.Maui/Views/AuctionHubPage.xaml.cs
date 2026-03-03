@@ -15,22 +15,46 @@ public partial class AuctionHubPage : ContentPage
 
     private async void OnEditQuestionClicked(object sender, EventArgs e)
     {
-        if (sender is Button button && button.CommandParameter is IGetAuctionById_AuctionById_Questions question)
+        if (sender is Button button && button.CommandParameter is IQuestionDetails question)
         {
-            var currentId = _viewModel.CurrentTradesmanProfileId?.ToString();
-            var ownerId = question.TradesmanProfileId.ToString();
+            await _viewModel.EditQuestionCommand.ExecuteAsync(question);
+        }
+    }
 
-            // Debug alert to see what's happening
-            await Shell.Current.DisplayAlert("Debug ID Check", $"Current: {currentId}\nOwner: {ownerId}", "OK");
+    private async void OnEditNestedQuestionClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is IQuestionReplyDetails reply)
+        {
+            await _viewModel.EditNestedQuestionCommand.ExecuteAsync(reply);
+        }
+    }
 
-            if (string.Equals(currentId, ownerId, StringComparison.OrdinalIgnoreCase))
+    private async void OnEditAnswerClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is IQuestionDetails question)
+        {
+            await _viewModel.EditAnswerCommand.ExecuteAsync(question);
+        }
+    }
+
+    private async void OnReplyQuestionClicked(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            var parameter = e.Parameter ?? (sender as BindableObject)?.BindingContext;
+            
+            if (parameter is IQuestionDetails question)
             {
-                await _viewModel.EditQuestionCommand.ExecuteAsync(question);
+                await _viewModel.ReplyToQuestionCommand.ExecuteAsync(question);
             }
-            else
+            else if (parameter is IQuestionReplyDetails reply)
             {
-                await Shell.Current.DisplayAlert("Access Denied", "You can only edit your own questions.", "OK");
+                await _viewModel.ReplyToNestedQuestionCommand.ExecuteAsync(reply);
             }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
         }
     }
 }

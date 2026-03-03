@@ -3,8 +3,10 @@ using Moq;
 using BuildSmart.Maui.ViewModels.Admin;
 using BuildSmart.Maui.GraphQL;
 using FluentAssertions;
+using StrawberryShake;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace BuildSmart.Maui.Tests;
 
@@ -35,7 +37,7 @@ public class UserManagementViewModelTests
         var queryMock = new Mock<IGetUsersQuery>();
         queryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(responseMock.Object);
 
-        _apiClientMock.Setup(c => q.GetUsers).Returns(queryMock.Object);
+        _apiClientMock.Setup(c => c.GetUsers).Returns(queryMock.Object);
 
         // Act
         await _viewModel.LoadUsersAsync();

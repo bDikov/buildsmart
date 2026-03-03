@@ -24,7 +24,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IMultimediaStorageService storageService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -68,7 +68,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IMultimediaStorageService storageService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -110,7 +110,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IMultimediaStorageService storageService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -141,38 +141,39 @@ public class Mutation
 		return true;
 	}
 
-    [Authorize(Roles = new[] { "Tradesman" })]
-    public async Task<bool> RestoreAuction(
-        Guid jobId,
-        ClaimsPrincipal claimsPrincipal,
-        [Service] IUnitOfWork unitOfWork)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user ID.");
-        }
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<bool> RestoreAuction(
+		Guid jobId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user ID.");
+		}
 
-        var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
-        if (profile == null) throw new GraphQLException("Tradesman profile not found.");
+		var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
+		if (profile == null) throw new GraphQLException("Tradesman profile not found.");
 
-        // Find and remove the "Passed" action
-        var action = await unitOfWork.AuctionActions.GetQueryable()
-            .FirstOrDefaultAsync(a => a.TradesmanProfileId == profile.Id 
-                && a.JobPostId == jobId 
-                && a.ActionType == AuctionActionType.Passed);
+		// Find and remove the "Passed" action
+		var action = await unitOfWork.AuctionActions.GetQueryable()
+			.FirstOrDefaultAsync(a => a.TradesmanProfileId == profile.Id
+				&& a.JobPostId == jobId
+				&& a.ActionType == AuctionActionType.Passed);
 
-        if (action != null)
-        {
-            // Note: I might need to add a Delete method to IAuctionActionRepository if it doesn't exist
-            // For now, I'll use the DbContext directly or ensure the repository has it.
-            unitOfWork.AuctionActions.Delete(action);
-            await unitOfWork.SaveChangesAsync();
-            return true;
-        }
+		if (action != null)
+		{
+			// Note: I might need to add a Delete method to IAuctionActionRepository if it doesn't exist
+			// For now, I'll use the DbContext directly or ensure the repository has it.
+			unitOfWork.AuctionActions.Delete(action);
+			await unitOfWork.SaveChangesAsync();
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
+
 	public async Task<int> MigratePasswords([Service] DataMigrationService dataMigrationService)
 	{
 		return await dataMigrationService.HashExistingPasswordsAsync();
@@ -314,7 +315,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUnitOfWork unitOfWork)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -405,90 +406,115 @@ public class Mutation
 		return await jobPostService.SubmitBidAsync(tradesmanProfileId, jobPostId, amount, comment);
 	}
 
-    [Authorize(Roles = new[] { "Tradesman" })]
-    public async Task<bool> PassAuction(
-        Guid tradesmanProfileId,
-        Guid jobPostId,
-        [Service] IJobPostService jobPostService)
-    {
-        await jobPostService.PassAuctionAsync(tradesmanProfileId, jobPostId);
-        return true;
-    }
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<bool> PassAuction(
+		Guid tradesmanProfileId,
+		Guid jobPostId,
+		[Service] IJobPostService jobPostService)
+	{
+		await jobPostService.PassAuctionAsync(tradesmanProfileId, jobPostId);
+		return true;
+	}
 
-    [Authorize(Roles = new[] { "Admin" })]
-    public async Task<User> UpdateUserRoleAndCategories(
-        Guid userId,
-        UserRoleTypes newRole,
-        List<Guid>? serviceCategoryIds,
-        [Service] IAuthService authService)
-    {
-        return await authService.UpdateUserRoleAndCategoriesAsync(userId, newRole, serviceCategoryIds);
-    }
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<User> UpdateUserRoleAndCategories(
+		Guid userId,
+		UserRoleTypes newRole,
+		List<Guid>? serviceCategoryIds,
+		[Service] IAuthService authService)
+	{
+		return await authService.UpdateUserRoleAndCategoriesAsync(userId, newRole, serviceCategoryIds);
+	}
 
-    [Authorize(Roles = new[] { "Tradesman" })]
-    public async Task<JobPostQuestion> AskJobQuestion(
-        Guid tradesmanProfileId,
-        Guid jobPostId,
-        string questionText,
-        [Service] IJobPostService jobPostService)
-    {
-        return await jobPostService.AskJobQuestionAsync(tradesmanProfileId, jobPostId, questionText);
-    }
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<JobPostQuestion> AskJobQuestion(
+		Guid tradesmanProfileId,
+		Guid jobPostId,
+		string questionText,
+		[Service] IJobPostService jobPostService)
+	{
+		return await jobPostService.AskJobQuestionAsync(tradesmanProfileId, jobPostId, questionText);
+	}
 
-    [Authorize(Roles = new[] { "Homeowner" })]
-    public async Task<JobPostQuestion> AnswerJobQuestion(
-        Guid questionId,
-        string answerText,
-        [Service] IJobPostService jobPostService)
-    {
-        return await jobPostService.AnswerJobQuestionAsync(questionId, answerText);
-    }
+	[Authorize(Roles = new[] { "Homeowner" })]
+	public async Task<JobPostQuestion> AnswerJobQuestion(
+		Guid questionId,
+		string answerText,
+		[Service] IJobPostService jobPostService)
+	{
+		return await jobPostService.AnswerJobQuestionAsync(questionId, answerText);
+	}
 
-    [Authorize(Roles = new[] { "Tradesman" })]
-    public async Task<JobPostQuestion> EditJobQuestion(
-        Guid questionId,
-        string newText,
-        ClaimsPrincipal claimsPrincipal,
-        [Service] IUnitOfWork unitOfWork,
-        [Service] IJobPostService jobPostService)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user credentials.");
-        }
+	[Authorize]
+	public async Task<JobPostQuestion> EditJobQuestion(
+		Guid questionId,
+		string newText,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
 
-        var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
-        if (profile == null)
-        {
-            throw new GraphQLException("Tradesman profile not found.");
-        }
+		return await jobPostService.EditJobQuestionAsync(questionId, userId, newText);
+	}
 
-        return await jobPostService.EditJobQuestionAsync(questionId, profile.Id, newText);
-    }
+	[Authorize]
+	public async Task<JobPostFeedback> EditJobFeedback(
+		Guid feedbackId,
+		string newText,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
 
-    [Authorize(Roles = new[] { "Homeowner" })]
-    public async Task<JobPostQuestion> EditJobAnswer(
-        Guid questionId,
-        string newAnswer,
-        ClaimsPrincipal claimsPrincipal,
-        [Service] IUnitOfWork unitOfWork,
-        [Service] IJobPostService jobPostService)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user credentials.");
-        }
+		return await jobPostService.EditJobFeedbackAsync(feedbackId, userId, newText);
+	}
 
-        var user = await unitOfWork.Users.GetByIdAsync(userId);
-        if (user?.HomeownerProfile == null)
-        {
-            throw new GraphQLException("Homeowner profile not found.");
-        }
+	[Authorize(Roles = new[] { "Homeowner" })]
+	public async Task<JobPostQuestion> EditJobAnswer(
+		Guid questionId,
+		string newAnswer,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
 
-        return await jobPostService.EditJobAnswerAsync(questionId, user.HomeownerProfile.Id, newAnswer);
-    }
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user?.HomeownerProfile == null)
+		{
+			throw new GraphQLException("Homeowner profile not found.");
+		}
+
+		return await jobPostService.EditJobAnswerAsync(questionId, user.HomeownerProfile.Id, newAnswer);
+	}
+
+	[Authorize]
+	public async Task<JobPostQuestion> ReplyToJobQuestion(
+		Guid parentQuestionId,
+		string replyText,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		return await jobPostService.ReplyToQuestionAsync(parentQuestionId, userId, replyText);
+	}
 
 	public async Task<Booking> AcceptBid(
 		Guid bidId,
@@ -538,7 +564,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IJobPostService jobPostService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -547,13 +573,28 @@ public class Mutation
 		return await jobPostService.AddFeedbackAsync(jobPostId, userId, text);
 	}
 
+	[Authorize]
+	public async Task<JobPostFeedback> ReplyToJobFeedback(
+		Guid parentFeedbackId,
+		string text,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		return await jobPostService.ReplyToFeedbackAsync(parentFeedbackId, userId, text);
+	}
+
 	[Authorize(Roles = new[] { "Admin" })]
-	public async Task<bool> ResolveJobFeedback(
+	public async Task<JobPostFeedback> ResolveJobFeedback(
 		Guid feedbackId,
 		[Service] IJobPostService jobPostService)
 	{
-		await jobPostService.ResolveFeedbackAsync(feedbackId);
-		return true;
+		return await jobPostService.ResolveFeedbackAsync(feedbackId);
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
@@ -621,34 +662,33 @@ public class Mutation
 			};
 			await unitOfWork.ServiceCategories.AddAsync(category);
 		}
-				await unitOfWork.SaveChangesAsync();
-				return category;
-			}
-		
-		    [Authorize]
-		    public async Task<bool> DeleteAllNotifications(
-		        ClaimsPrincipal claimsPrincipal,
-		        [Service] IUnitOfWork unitOfWork)
-		    {
-		        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-		        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-		        {
-		            throw new GraphQLException("Invalid user credentials.");
-		        }
-		
-		        await unitOfWork.Notifications.DeleteAllByUserIdAsync(userId);
-		        await unitOfWork.SaveChangesAsync();
-		        return true;
-		    }
-		
-		    [Authorize]
-		    public async Task<bool> MarkNotificationAsRead(
-		        Guid notificationId,
-		        [Service] IUnitOfWork unitOfWork)
-		    {
-		        await unitOfWork.Notifications.MarkAsReadAsync(notificationId);
-		        await unitOfWork.SaveChangesAsync();
-		        return true;
-		    }
+		await unitOfWork.SaveChangesAsync();
+		return category;
+	}
+
+	[Authorize]
+	public async Task<bool> DeleteAllNotifications(
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
 		}
-		
+
+		await unitOfWork.Notifications.DeleteAllByUserIdAsync(userId);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+
+	[Authorize]
+	public async Task<bool> MarkNotificationAsRead(
+		Guid notificationId,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		await unitOfWork.Notifications.MarkAsReadAsync(notificationId);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+}
