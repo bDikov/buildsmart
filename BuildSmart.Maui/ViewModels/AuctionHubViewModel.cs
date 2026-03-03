@@ -1,6 +1,7 @@
 using BuildSmart.Maui.GraphQL;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 
 namespace BuildSmart.Maui.ViewModels;
 
@@ -19,6 +20,8 @@ public partial class AuctionHubViewModel : ObservableObject
 
     [ObservableProperty]
     private IGetAuctionById_AuctionById? _auction;
+
+    public ObservableCollection<QuestionViewModel> Questions { get; } = new();
 
     [ObservableProperty]
     private Guid? _currentTradesmanProfileId;
@@ -46,9 +49,70 @@ public partial class AuctionHubViewModel : ObservableObject
 
             var result = await _apiClient.GetAuctionById.ExecuteAsync(jobId);
             
-            if (result.Errors.Count == 0)
+            if (result.Errors.Count == 0 && result.Data?.AuctionById != null)
             {
-                Auction = result.Data?.AuctionById;
+                Auction = result.Data.AuctionById;
+                
+                Questions.Clear();
+                if (Auction.Questions != null)
+                {
+                    foreach (var q in Auction.Questions)
+                    {
+                        Questions.Add(new QuestionViewModel(q));
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleConversationAsync(QuestionViewModel questionVm)
+    {
+        if (questionVm == null) return;
+
+        if (questionVm.IsExpanded && !questionVm.HasMoreReplies)
+        {
+            questionVm.IsExpanded = false;
+            return;
+        }
+
+        if (!questionVm.IsExpanded || questionVm.HasMoreReplies)
+        {
+            await LoadMoreRepliesAsync(questionVm);
+            questionVm.IsExpanded = true;
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
+    {
+        if (questionVm == null || IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.GetQuestionReplies.ExecuteAsync(
+                questionVm.Question.Id, 
+                questionVm.Replies.Count, 
+                5);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            if (result.Data?.QuestionReplies?.Replies != null)
+            {
+                questionVm.AddReplies(result.Data.QuestionReplies.Replies);
             }
         }
         catch (Exception ex)
@@ -86,8 +150,6 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", "Question updated.", "OK");
-            
             if (Guid.TryParse(JobId, out var id))
             {
                 await LoadAuctionAsync(id);
@@ -122,8 +184,6 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", "Reply updated.", "OK");
-            
             if (Guid.TryParse(JobId, out var id))
             {
                 await LoadAuctionAsync(id);
@@ -158,8 +218,6 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", "Answer updated.", "OK");
-            
             if (Guid.TryParse(JobId, out var id))
             {
                 await LoadAuctionAsync(id);
@@ -205,8 +263,6 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            await Shell.Current.DisplayAlert("Success", "Question posted and is now public.", "OK");
-            
             if (Guid.TryParse(JobId, out var id))
             {
                 await LoadAuctionAsync(id);

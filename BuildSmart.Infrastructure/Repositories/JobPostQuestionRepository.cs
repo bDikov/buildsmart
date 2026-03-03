@@ -41,4 +41,6 @@ public class JobPostQuestionRepository : IJobPostQuestionRepository
     {
         _context.JobPostQuestions.Update(question);
     }
+
+    public IQueryable<JobPostQuestion> GetQueryable() => _context.JobPostQuestions;
 }

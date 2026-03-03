@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using BuildSmart.Maui.Views;
 using BuildSmart.Maui.Services;
 using System.Security.Claims;
+using System.Collections.ObjectModel;
 
 namespace BuildSmart.Maui.ViewModels;
 
@@ -21,6 +22,8 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 
     private readonly SemaphoreSlim _reloadSemaphore = new(1, 1);
     private DateTime _lastReloadTime = DateTime.MinValue;
+
+    public ObservableCollection<JobPostViewModel> JobPosts { get; } = new();
 
 	public ProjectDetailViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService, IAuthService authService)
 	{
@@ -43,7 +46,6 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
                 if (userId != null)
                 {
                     CurrentUserId = userId;
-                    CurrentUserManager.Instance.CurrentUserId = userId;
                 }
 
                 var role = _authService.GetUserRoleFromToken(token);
@@ -82,6 +84,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 			if (result.Data?.ProjectById != null)
 			{
 				Project = result.Data.ProjectById;
+                SyncJobPosts();
                 HasLoaded = true;
 			}
 		}
@@ -121,12 +124,77 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
                     
                     MainThread.BeginInvokeOnMainThread(() => {
                         Project = project;
+                        SyncJobPosts();
                         HasLoaded = true;
                     });
                 });
             }
 		}
 	}
+
+    private void SyncJobPosts()
+    {
+        JobPosts.Clear();
+        if (Project?.JobPosts != null)
+        {
+            foreach (var job in Project.JobPosts)
+            {
+                JobPosts.Add(new JobPostViewModel(job));
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleConversationAsync(QuestionViewModel questionVm)
+    {
+        if (questionVm == null) return;
+
+        if (questionVm.IsExpanded && !questionVm.HasMoreReplies)
+        {
+            questionVm.IsExpanded = false;
+            return;
+        }
+
+        if (!questionVm.IsExpanded || questionVm.HasMoreReplies)
+        {
+            await LoadMoreRepliesAsync(questionVm);
+            questionVm.IsExpanded = true;
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
+    {
+        if (questionVm == null || IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.GetQuestionReplies.ExecuteAsync(
+                questionVm.Question.Id, 
+                questionVm.Replies.Count, 
+                5);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            if (result.Data?.QuestionReplies?.Replies != null)
+            {
+                questionVm.AddReplies(result.Data.QuestionReplies.Replies);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
 	[RelayCommand]
 	private async Task EditAnswersAsync(IJobPostDetails job)

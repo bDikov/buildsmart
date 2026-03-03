@@ -14,5 +14,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Lazy-loading and Pagination for Nested Replies (Tradesman Q&A)**
+- [x] **Track: Lazy-loading and Pagination for Nested Replies (Tradesman Q&A)**
   *Link: [./tracks/lazy_load_nested_replies_20260303/](./tracks/lazy_load_nested_replies_20260303/)*

@@ -32,7 +32,10 @@ public class JobPostFeedbackType : ObjectType<JobPostFeedback>
                 
                 if (claimsPrincipal != null)
                 {
-                    var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+                    var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? 
+                                     claimsPrincipal.FindFirst("sub") ?? 
+                                     claimsPrincipal.FindFirst("nameid");
+                                     
                     if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
                     {
                         return feedback.AuthorId == userId;

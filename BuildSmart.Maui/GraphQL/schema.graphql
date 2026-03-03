@@ -31,6 +31,8 @@ type Query {
   auctionById(jobId: UUID!): Auction
   "Gets the auctions that the current tradesman has passed/dismissed."
   passedAuctions: [Auction!]!
+  "Gets a specific job post question by ID."
+  jobPostQuestionById(id: UUID!): JobPostQuestion
 }
 
 type Auction {
@@ -47,7 +49,8 @@ type JobPostQuestion {
     tradesmanProfile: TradesmanProfile
     authorId: UUID
     author: User
-    replies: [JobPostQuestion!]!
+    replies(offset: Int!, limit: Int!): [JobPostQuestion!]!
+    replyCount: Int!
     questionText: String!
     answerText: String
     answeredAt: DateTime

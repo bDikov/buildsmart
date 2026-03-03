@@ -8,4 +8,5 @@ public interface IJobPostQuestionRepository
     Task<IEnumerable<JobPostQuestion>> GetQuestionsByJobPostAsync(Guid jobPostId);
     Task AddAsync(JobPostQuestion question);
     void Update(JobPostQuestion question);
+    IQueryable<JobPostQuestion> GetQueryable();
 }

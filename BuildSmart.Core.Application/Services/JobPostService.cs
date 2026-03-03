@@ -834,4 +834,23 @@ public class JobPostService : IJobPostService
 
         return question;
     }
+
+    public async Task<IEnumerable<JobPostQuestion>> GetQuestionRepliesAsync(Guid parentQuestionId, int offset, int limit)
+    {
+        return await _unitOfWork.JobPostQuestions.GetQueryable()
+            .Where(q => q.ParentQuestionId == parentQuestionId)
+            .OrderBy(q => q.CreatedAt)
+            .Skip(offset)
+            .Take(limit)
+            .Include(q => q.Author)
+            .Include(q => q.TradesmanProfile)
+                .ThenInclude(tp => tp!.User)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetQuestionReplyCountAsync(Guid parentQuestionId)
+    {
+        return await _unitOfWork.JobPostQuestions.GetQueryable()
+            .CountAsync(q => q.ParentQuestionId == parentQuestionId);
+    }
 }

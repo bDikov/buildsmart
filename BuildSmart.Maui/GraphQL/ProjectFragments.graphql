@@ -75,6 +75,7 @@ fragment QuestionDetails on JobPostQuestion {
   authorId
   tradesmanProfileId
   createdAt
+  replyCount
   tradesmanProfile {
     id
     user {
@@ -83,9 +84,6 @@ fragment QuestionDetails on JobPostQuestion {
   }
   author {
     ... UserDetails
-  }
-  replies {
-    ... QuestionReplyDetails
   }
 }
 
