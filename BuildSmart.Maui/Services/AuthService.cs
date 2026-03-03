@@ -17,10 +17,12 @@ namespace BuildSmart.Maui.Services
 		bool IsAuthenticated { get; }
 
 		string? GetUserRoleFromToken(string? token);
-	}
 
-	public class AuthService : IAuthService
-	{
+		Guid? GetUserIdFromToken(string? token);
+		}
+
+		public class AuthService : IAuthService
+		{
 		private const string TokenKey = "auth_token";
 		private string? _cachedToken;
 
@@ -62,5 +64,28 @@ namespace BuildSmart.Maui.Services
 				c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" ||
 				c.Type == "role")?.Value;
 		}
-	}
-}
+
+		public Guid? GetUserIdFromToken(string? token)
+		{
+			if (string.IsNullOrEmpty(token))
+			{
+				return null;
+			}
+
+			var handler = new JwtSecurityTokenHandler();
+			var jwtToken = handler.ReadJwtToken(token);
+
+			var userIdStr = jwtToken.Claims.FirstOrDefault(c =>
+				c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/nameidentifier" ||
+				c.Type == "nameid" ||
+				c.Type == "sub")?.Value;
+
+			if (Guid.TryParse(userIdStr, out var userId))
+			{
+				return userId;
+			}
+
+			return null;
+		}
+		}
+		}

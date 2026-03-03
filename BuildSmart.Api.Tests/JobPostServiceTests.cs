@@ -7,6 +7,7 @@ using Moq;
 using Xunit;
 using FluentAssertions;
 using BuildSmart.Core.Domain.Enums;
+using System.Collections.Generic;
 
 namespace BuildSmart.Api.Tests;
 
@@ -90,5 +91,84 @@ public class JobPostServiceTests
             It.IsAny<string>(),
             It.IsAny<object>()
         ), Times.Once);
+    }
+
+    [Fact]
+    public async Task EditJobFeedbackAsync_ShouldUpdateText_WhenUserIsAuthor()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var feedbackId = Guid.NewGuid();
+        var newText = "Updated feedback text";
+        
+        var feedback = new JobPostFeedback
+        {
+            Id = feedbackId,
+            AuthorId = userId,
+            Text = "Original text"
+        };
+
+        _mockUow.Setup(u => u.JobPostFeedbacks.GetByIdAsync(feedbackId))
+            .ReturnsAsync(feedback);
+
+        // Act
+        var result = await _service.EditJobFeedbackAsync(feedbackId, userId, newText);
+
+        // Assert
+        result.Text.Should().Be(newText);
+        _mockUow.Verify(u => u.JobPostFeedbacks.Update(feedback), Times.Once);
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+    }
+
+    [Fact]
+    public async Task EditJobFeedbackAsync_ShouldThrow_WhenUserIsNotAuthor()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var otherUserId = Guid.NewGuid();
+        var feedbackId = Guid.NewGuid();
+        
+        var feedback = new JobPostFeedback
+        {
+            Id = feedbackId,
+            AuthorId = otherUserId,
+            Text = "Original text"
+        };
+
+        _mockUow.Setup(u => u.JobPostFeedbacks.GetByIdAsync(feedbackId))
+            .ReturnsAsync(feedback);
+
+        // Act
+        Func<Task> act = async () => await _service.EditJobFeedbackAsync(feedbackId, userId, "Hacker text");
+
+        // Assert
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public async Task EditJobQuestionAsync_ShouldUpdateText_WhenUserIsAuthor()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var questionId = Guid.NewGuid();
+        var newText = "Updated question text";
+        
+        var question = new JobPostQuestion
+        {
+            Id = questionId,
+            AuthorId = userId,
+            QuestionText = "Original question"
+        };
+
+        _mockUow.Setup(u => u.JobPostQuestions.GetByIdAsync(questionId))
+            .ReturnsAsync(question);
+
+        // Act
+        var result = await _service.EditJobQuestionAsync(questionId, userId, newText);
+
+        // Assert
+        result.QuestionText.Should().Be(newText);
+        _mockUow.Verify(u => u.JobPostQuestions.Update(question), Times.Once);
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
     }
 }

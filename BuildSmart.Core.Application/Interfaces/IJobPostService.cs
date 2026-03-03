@@ -41,6 +41,7 @@ public interface IJobPostService
     Task<JobPostQuestion> AskJobQuestionAsync(Guid tradesmanProfileId, Guid jobPostId, string questionText);
     Task<JobPostQuestion> ReplyToQuestionAsync(Guid parentQuestionId, Guid userId, string replyText);
     Task<JobPostQuestion> AnswerJobQuestionAsync(Guid questionId, string answerText);
-    Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid tradesmanProfileId, string newText);
+    Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid userId, string newText);
     Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer);
+    Task<JobPostFeedback> EditJobFeedbackAsync(Guid feedbackId, Guid userId, string newText);
 }

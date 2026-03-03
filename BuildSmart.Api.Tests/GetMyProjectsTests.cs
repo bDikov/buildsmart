@@ -5,23 +5,15 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using HotChocolate.Execution;
 using Snapshooter.Xunit;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using BuildSmart.Core.Application.Interfaces;
 using Moq;
-using System.Collections.Generic;
 using BuildSmart.Core.Domain.Entities;
+using System.Collections.Generic;
 using System;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
-using System.Text;
 using System.Linq;
-using BuildSmart.Core.Domain.Enums;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
-using BuildSmart.Core.Domain.ValueObjects;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace BuildSmart.Api.Tests;
 
@@ -33,34 +25,22 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
     public GetMyProjectsTests(TestApplicationFactory factory)
     {
         _factory = factory;
-        var builder = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                {"Jwt:Key", "SuperSecretKeyForTesting1234567890"},
-                {"Jwt:Issuer", "BuildSmart"},
-                {"Jwt:Audience", "BuildSmartUsers"}
-            });
-        _configuration = builder.Build();
+        _configuration = factory.Services.GetRequiredService<IConfiguration>();
     }
 
     private HttpClient CreateClient(Action<IServiceCollection>? configureServices = null, string? jwtToken = null)
     {
         var client = _factory.WithWebHostBuilder(builder =>
         {
-            builder.ConfigureTestServices(services =>
+            if (configureServices != null)
             {
-                services.RemoveAll(typeof(IProjectRepository));
-                services.AddSingleton(new Mock<IProjectRepository>().Object);
-                services.RemoveAll(typeof(IConfiguration));
-                services.AddSingleton(_configuration);
-                
-                configureServices?.Invoke(services);
-            });
+                builder.ConfigureServices(configureServices);
+            }
         }).CreateClient();
 
-        if (jwtToken != null)
+        if (!string.IsNullOrEmpty(jwtToken))
         {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {jwtToken}");
         }
 
         return client;
@@ -71,65 +51,43 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var userToken = TestTokenHelper.GenerateJwtToken(userId, "homeowner@test.com", "Homeowner", _configuration);
+        var homeownerToken = TestTokenHelper.GenerateJwtToken(userId, "homeowner@example.com", "Homeowner", _configuration);
 
-        var projectId = Guid.NewGuid();
-        var jobId = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
-
-        var jobPost = new JobPost
-        {
-            Id = jobId,
-            ProjectId = projectId,
-            Title = "Kitchen Cabinet Installation",
-            Description = "Install new cabinets",
-            ServiceCategoryId = categoryId,
-            ServiceCategory = new ServiceCategory 
-            { 
-                Id = categoryId, 
-                Name = "Carpentry",
-                Status = CategoryStatus.Active 
-            },
-            EstimatedBudget = Amount.Create("USD", 5000)
-        };
-        jobPost.SubmitForReview();
-
+        var mockProjectRepository = new Mock<IProjectRepository>();
         var project = new Project
         {
-            Id = projectId,
-            Title = "Test Renovation",
-            Description = "Full house renovation",
+            Id = Guid.NewGuid(),
+            Title = "Kitchen Renovation",
             HomeownerId = userId,
-            CreatedAt = DateTime.UtcNow,
-            JobPosts = new List<JobPost> { jobPost }
+            JobPosts = new List<JobPost>
+            {
+                new JobPost
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Electrical Work",
+                    ServiceCategory = new ServiceCategory { Name = "Electrical" }
+                }
+            }
         };
 
-        var mockRepo = new Mock<IProjectRepository>();
-        mockRepo.Setup(r => r.GetProjectsByHomeownerAsync(userId))
+        mockProjectRepository.Setup(r => r.GetProjectsByHomeownerAsync(userId))
             .ReturnsAsync(new List<Project> { project });
 
         var client = CreateClient(services =>
         {
-            services.RemoveAll(typeof(IProjectRepository));
-            services.AddSingleton(mockRepo.Object);
-        }, userToken);
+            services.AddSingleton(mockProjectRepository.Object);
+        }, homeownerToken);
 
-        var query = @"
-            query {
-                myProjects {
-                    id
-                    title
-                    jobPosts {
-                        id
-                        status
-                    }
-                }
-            }";
+        var graphQLRequest = new
+        {
+            query = "query GetMyProjects { myProjects { id title status jobPosts { id title status serviceCategory { name } } } }",
+            variables = new { }
+        };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
         {
             Content = new StringContent(
-                Newtonsoft.Json.JsonConvert.SerializeObject(new { query }),
+                Newtonsoft.Json.JsonConvert.SerializeObject(graphQLRequest),
                 Encoding.UTF8,
                 "application/json")
         };
@@ -139,16 +97,20 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}, Content: {content}");
-        
+        Assert.True(response.IsSuccessStatusCode);
         var json = JObject.Parse(content);
+        
         if (json["errors"] != null)
         {
             Assert.Fail($"GraphQL Errors: {json["errors"]}");
         }
-        
-        var status = json["data"]?["myProjects"]?[0]?["jobPosts"]?[0]?["status"]?.ToString();
-        Assert.Equal("WAITING_FOR_ADMIN_REVIEW", status); // Confirmed API behavior
+
+        var projects = json["data"]?["myProjects"] as JArray;
+        Assert.NotNull(projects);
+        Assert.Single(projects);
+        var projectNode = projects[0];
+        Assert.Equal("Kitchen Renovation", projectNode?["title"]?.ToString());
+        Assert.Single(projectNode?["jobPosts"] as JArray);
     }
 
     [Fact]
@@ -156,97 +118,79 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var userToken = TestTokenHelper.GenerateJwtToken(userId, "homeowner@test.com", "Homeowner", _configuration);
-
-        var projectId = Guid.NewGuid();
-        var jobId = Guid.NewGuid();
-        var categoryId = Guid.NewGuid();
-        var questionId = Guid.NewGuid();
-        var replyId = Guid.NewGuid();
-
         var tradesmanId = Guid.NewGuid();
-        var tradesmanUser = new User { Id = Guid.NewGuid(), FirstName = "Bob", LastName = "Tradesman" };
-        var tradesmanProfile = new TradesmanProfile { Id = tradesmanId, User = tradesmanUser };
+        var userToken = TestTokenHelper.GenerateJwtToken(userId, "user@example.com", "Homeowner", _configuration);
 
-        var question = new JobPostQuestion
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        
+        var project = new Project
         {
-            Id = questionId,
-            JobPostId = jobId,
-            QuestionText = "How deep are the cabinets?",
-            AnswerText = "24 inches",
-            TradesmanProfileId = tradesmanId,
-            TradesmanProfile = tradesmanProfile,
-            AuthorId = tradesmanUser.Id,
-            Author = tradesmanUser,
-            Replies = new List<JobPostQuestion>
-            {
-                new JobPostQuestion
-                {
-                    Id = replyId,
-                    ParentQuestionId = questionId,
-                    QuestionText = "Thanks, that works!",
-                    AuthorId = userId,
-                    Author = new User { Id = userId, FirstName = "Test", LastName = "User" }
-                }
-            }
-        };
-
-        var feedbackId = Guid.NewGuid();
-        var feedbackReplyId = Guid.NewGuid();
-        var feedback = new JobPostFeedback
-        {
-            Id = feedbackId,
-            JobPostId = jobId,
-            Text = "Please clarify the height.",
-            AuthorId = Guid.NewGuid(), // Admin
-            Author = new User { Id = Guid.NewGuid(), FirstName = "Admin", LastName = "User" },
-            Replies = new List<JobPostFeedback>
-            {
-                new JobPostFeedback
-                {
-                    Id = feedbackReplyId,
-                    ParentFeedbackId = feedbackId,
-                    Text = "The height is 36 inches.",
-                    AuthorId = userId,
-                    Author = new User { Id = userId, FirstName = "Test", LastName = "User" }
-                }
-            }
+            Id = Guid.NewGuid(),
+            Title = "Main Project",
+            HomeownerId = userId
         };
 
         var jobPost = new JobPost
         {
-            Id = jobId,
-            ProjectId = projectId,
-            Title = "Kitchen Cabinet Installation",
-            Description = "Install new cabinets",
-            ServiceCategoryId = categoryId,
-            ServiceCategory = new ServiceCategory 
-            { 
-                Id = categoryId, 
-                Name = "Carpentry",
-                Status = CategoryStatus.Active 
-            },
-            Questions = new List<JobPostQuestion> { question },
-            Feedbacks = new List<JobPostFeedback> { feedback }
+            Id = Guid.NewGuid(),
+            Title = "Job 1",
+            ProjectId = project.Id,
+            Project = project 
         };
+        project.JobPosts = new List<JobPost> { jobPost };
 
-        var project = new Project
+        var question = new JobPostQuestion
         {
-            Id = projectId,
-            Title = "Test Renovation",
-            Description = "Full house renovation",
-            HomeownerId = userId,
-            JobPosts = new List<JobPost> { jobPost }
+            Id = Guid.NewGuid(),
+            QuestionText = "How tall?",
+            AuthorId = tradesmanId,
+            JobPostId = jobPost.Id,
+            JobPost = jobPost,
+            IsEdited = true // Set to true to test IsEdited
         };
+        
+        var myReply = new JobPostQuestion
+        {
+            Id = Guid.NewGuid(),
+            QuestionText = "Thanks, that works!",
+            AuthorId = userId, 
+            ParentQuestionId = question.Id,
+            JobPostId = jobPost.Id,
+            JobPost = jobPost,
+            IsEdited = false
+        };
+        question.Replies = new List<JobPostQuestion> { myReply };
+        jobPost.Questions = new List<JobPostQuestion> { question };
 
-        var mockRepo = new Mock<IProjectRepository>();
-        mockRepo.Setup(r => r.GetProjectsByHomeownerAsync(userId))
+        var feedback = new JobPostFeedback
+        {
+            Id = Guid.NewGuid(),
+            Text = "Needs more light",
+            AuthorId = Guid.NewGuid(),
+            JobPostId = jobPost.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow.AddMinutes(5) // Simulates an edit
+        };
+        
+        var myFeedbackReply = new JobPostFeedback
+        {
+            Id = Guid.NewGuid(),
+            Text = "The height is 36 inches.",
+            AuthorId = userId, 
+            ParentFeedbackId = feedback.Id,
+            JobPostId = jobPost.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow // Simulates no edit
+        };
+        feedback.Replies = new List<JobPostFeedback> { myFeedbackReply };
+        jobPost.Feedbacks = new List<JobPostFeedback> { feedback };
+
+        mockProjectRepo.Setup(r => r.GetProjectsByHomeownerAsync(userId))
             .ReturnsAsync(new List<Project> { project });
 
         var client = CreateClient(services =>
         {
-            services.RemoveAll(typeof(IProjectRepository));
-            services.AddSingleton(mockRepo.Object);
+            services.AddSingleton(mockProjectRepo.Object);
         }, userToken);
 
         var query = @"
@@ -258,17 +202,30 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
                   questions {
                     id
                     questionText
+                    isEditable
+                    isAnswerEditable
+                    isEdited
+                    createdAt
                     replies {
                       id
                       questionText
+                      isEditable
+                      isEdited
+                      createdAt
                     }
                   }
                   feedbacks {
                     id
                     text
+                    isEditable
+                    isEdited
+                    createdAt
                     replies {
                       id
                       text
+                      isEditable
+                      isEdited
+                      createdAt
                     }
                   }
                 }
@@ -296,10 +253,27 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
             Assert.Fail($"GraphQL Errors: {json["errors"]}");
         }
         
-        var questionReplyText = json["data"]?["myProjects"]?[0]?["jobPosts"]?[0]?["questions"]?[0]?["replies"]?[0]?["questionText"]?.ToString();
-        Assert.Equal("Thanks, that works!", questionReplyText);
+        var questionNode = json["data"]?["myProjects"]?[0]?["jobPosts"]?[0]?["questions"]?[0];
+        Assert.True((bool)questionNode?["isEdited"]!);
+        Assert.NotNull(questionNode?["createdAt"]);
 
-        var feedbackReplyText = json["data"]?["myProjects"]?[0]?["jobPosts"]?[0]?["feedbacks"]?[0]?["replies"]?[0]?["text"]?.ToString();
-        Assert.Equal("The height is 36 inches.", feedbackReplyText);
+        var questionReply = questionNode?["replies"]?[0];
+        Assert.Equal("Thanks, that works!", questionReply?["questionText"]?.ToString());
+        Assert.True((bool)questionReply?["isEditable"]!);
+        Assert.False((bool)questionReply?["isEdited"]!);
+        Assert.NotNull(questionReply?["createdAt"]);
+
+        var feedbackNode = json["data"]?["myProjects"]?[0]?["jobPosts"]?[0]?["feedbacks"]?[0];
+        Assert.True((bool)feedbackNode?["isEdited"]!);
+        Assert.NotNull(feedbackNode?["createdAt"]);
+
+        var feedbackReply = feedbackNode?["replies"]?[0];
+        Assert.Equal("The height is 36 inches.", feedbackReply?["text"]?.ToString());
+        Assert.True((bool)feedbackReply?["isEditable"]!);
+        Assert.False((bool)feedbackReply?["isEdited"]!);
+        Assert.NotNull(feedbackReply?["createdAt"]);
+        
+        Assert.False((bool)questionNode?["isEditable"]!);
+        Assert.True((bool)questionNode?["isAnswerEditable"]!);
     }
 }

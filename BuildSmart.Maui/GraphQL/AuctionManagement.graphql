@@ -1,31 +1,7 @@
 query GetAvailableAuctions {
   availableAuctions {
     job {
-      id
-      title
-      description
-      location
-      status
-      imageUrls
-      amendmentCount
-      estimatedBudget {
-        total
-        currency
-      }
-      serviceCategory {
-        id
-        name
-      }
-      project {
-        id
-        title
-        description
-        homeowner {
-          id
-          firstName
-          lastName
-        }
-      }
+      ... JobPostDetails
     }
     bids {
       id
@@ -40,57 +16,12 @@ query GetAvailableAuctions {
       tradesmanProfile {
         id
         user {
-          firstName
+          ... UserDetails
         }
       }
     }
     questions {
-      id
-      jobPostId
-      tradesmanProfileId
-      authorId
-      questionText
-      answerText
-      answeredAt
-      isAnswered
-      isEdited
-      isAnswerEdited
-      tradesmanProfile {
-        id
-        user {
-          firstName
-          lastName
-          profilePictureUrl
-        }
-      }
-      author {
-        id
-        firstName
-        lastName
-        profilePictureUrl
-      }
-      replies {
-        id
-        parentQuestionId
-        tradesmanProfileId
-        authorId
-        questionText
-        createdAt
-        tradesmanProfile {
-          id
-          user {
-            firstName
-            lastName
-            profilePictureUrl
-          }
-        }
-        author {
-          id
-          firstName
-          lastName
-          profilePictureUrl
-        }
-      }
+      ... QuestionDetails
     }
   }
 }
@@ -98,31 +29,7 @@ query GetAvailableAuctions {
 query GetAuctionById($jobId: UUID!) {
   auctionById(jobId: $jobId) {
     job {
-      id
-      title
-      description
-      location
-      status
-      imageUrls
-      amendmentCount
-      estimatedBudget {
-        total
-        currency
-      }
-      serviceCategory {
-        id
-        name
-      }
-      project {
-        id
-        title
-        description
-        homeowner {
-          id
-          firstName
-          lastName
-        }
-      }
+      ... JobPostDetails
     }
     bids {
       id
@@ -137,57 +44,12 @@ query GetAuctionById($jobId: UUID!) {
       tradesmanProfile {
         id
         user {
-          firstName
+          ... UserDetails
         }
       }
     }
     questions {
-      id
-      jobPostId
-      tradesmanProfileId
-      authorId
-      questionText
-      answerText
-      answeredAt
-      isAnswered
-      isEdited
-      isAnswerEdited
-      tradesmanProfile {
-        id
-        user {
-          firstName
-          lastName
-          profilePictureUrl
-        }
-      }
-      author {
-        id
-        firstName
-        lastName
-        profilePictureUrl
-      }
-      replies {
-        id
-        parentQuestionId
-        tradesmanProfileId
-        authorId
-        questionText
-        createdAt
-        tradesmanProfile {
-          id
-          user {
-            firstName
-            lastName
-            profilePictureUrl
-          }
-        }
-        author {
-          id
-          firstName
-          lastName
-          profilePictureUrl
-        }
-      }
+      ... QuestionDetails
     }
   }
 }
@@ -195,31 +57,7 @@ query GetAuctionById($jobId: UUID!) {
 query GetPassedAuctions {
   passedAuctions {
     job {
-      id
-      title
-      description
-      location
-      status
-      imageUrls
-      amendmentCount
-      estimatedBudget {
-        total
-        currency
-      }
-      serviceCategory {
-        id
-        name
-      }
-      project {
-        id
-        title
-        description
-        homeowner {
-          id
-          firstName
-          lastName
-        }
-      }
+      ... JobPostDetails
     }
     bids {
       id
@@ -234,57 +72,12 @@ query GetPassedAuctions {
       tradesmanProfile {
         id
         user {
-          firstName
+          ... UserDetails
         }
       }
     }
     questions {
-      id
-      jobPostId
-      tradesmanProfileId
-      authorId
-      questionText
-      answerText
-      answeredAt
-      isAnswered
-      isEdited
-      isAnswerEdited
-      tradesmanProfile {
-        id
-        user {
-          firstName
-          lastName
-          profilePictureUrl
-        }
-      }
-      author {
-        id
-        firstName
-        lastName
-        profilePictureUrl
-      }
-      replies {
-        id
-        parentQuestionId
-        tradesmanProfileId
-        authorId
-        questionText
-        createdAt
-        tradesmanProfile {
-          id
-          user {
-            firstName
-            lastName
-            profilePictureUrl
-          }
-        }
-        author {
-          id
-          firstName
-          lastName
-          profilePictureUrl
-        }
-      }
+      ... QuestionDetails
     }
   }
 }
@@ -341,7 +134,6 @@ mutation SubmitBid($tradesmanProfileId: UUID!, $jobPostId: UUID!, $subtotal: Dec
 mutation ReplyToJobQuestion($parentQuestionId: UUID!, $replyText: String!) {
   replyToJobQuestion(parentQuestionId: $parentQuestionId, replyText: $replyText) {
     id
-    questionText
-    createdAt
+    ... QuestionDetails
   }
 }

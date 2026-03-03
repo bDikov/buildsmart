@@ -76,10 +76,10 @@ public class Query
 		[Service] IUnitOfWork unitOfWork,
 		[Service] AppDbContext context)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
-			throw new GraphQLException("Invalid user ID.");
+			throw new GraphQLException("Invalid user credentials.");
 		}
 
 		// 1. Get Tradesman Profile to know their skills
@@ -107,6 +107,14 @@ public class Query
 		        .ThenInclude(p => p.Homeowner)
 		    .Include(j => j.Bids)
 		    .Include(j => j.Questions)
+                .ThenInclude(q => q.Author)
+            .Include(j => j.Questions)
+                .ThenInclude(q => q.Replies)
+                    .ThenInclude(r => r.Author)
+            .Include(j => j.Questions)
+                .ThenInclude(q => q.Replies)
+                    .ThenInclude(r => r.TradesmanProfile)
+                        .ThenInclude(tp => tp.User)
 		    .OrderByDescending(j => j.CreatedAt)
 		    .ToListAsync();
 
@@ -146,6 +154,14 @@ public class Query
                 .ThenInclude(p => p.Homeowner)
             .Include(j => j.Bids)
             .Include(j => j.Questions)
+                .ThenInclude(q => q.Author)
+            .Include(j => j.Questions)
+                .ThenInclude(q => q.Replies)
+                    .ThenInclude(r => r.Author)
+            .Include(j => j.Questions)
+                .ThenInclude(q => q.Replies)
+                    .ThenInclude(r => r.TradesmanProfile)
+                        .ThenInclude(tp => tp.User)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
 
@@ -167,7 +183,17 @@ public class Query
 		    .Include(j => j.Project)
 		        .ThenInclude(p => p.Homeowner)
 		    .Include(j => j.Bids)
+		    .Include(j => j.Feedbacks)
+                .ThenInclude(f => f.Author)
+            .Include(j => j.Feedbacks)
+                .ThenInclude(f => f.Replies)
+                    .ThenInclude(r => r.Author)
 		    .Include(j => j.Questions)
+                .ThenInclude(q => q.Author)
+            .Include(j => j.Questions)
+                .ThenInclude(q => q.Replies)
+                    .ThenInclude(r => r.Author)
+            .Include(j => j.Questions)
                 .ThenInclude(q => q.TradesmanProfile)
                     .ThenInclude(tp => tp.User)
 		    .FirstOrDefaultAsync(j => j.Id == jobId);
@@ -194,6 +220,58 @@ public class Query
 
 		return await projectRepository.GetProjectsByHomeownerAsync(userId);
 		}
+
+    [Authorize]
+    public async Task<Project?> GetProjectById(
+        Guid projectId,
+        ClaimsPrincipal claimsPrincipal,
+        [Service] AppDbContext context)
+    {
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new GraphQLException("Invalid user ID.");
+        }
+
+        var project = await context.Projects
+            .Include(p => p.Homeowner)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.ServiceCategory)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.Feedbacks)
+                    .ThenInclude(f => f.Author)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.Feedbacks)
+                    .ThenInclude(f => f.Replies)
+                        .ThenInclude(r => r.Author)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.Questions)
+                    .ThenInclude(q => q.Author)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.Questions)
+                    .ThenInclude(q => q.TradesmanProfile)
+                        .ThenInclude(tp => tp.User)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.Questions)
+                    .ThenInclude(q => q.Replies)
+                        .ThenInclude(r => r.Author)
+            .Include(p => p.JobPosts)
+                .ThenInclude(j => j.Questions)
+                    .ThenInclude(q => q.Replies)
+                        .ThenInclude(r => r.TradesmanProfile)
+                            .ThenInclude(tp => tp.User)
+            .FirstOrDefaultAsync(p => p.Id == projectId);
+
+        if (project == null) return null;
+
+        var isAdmin = claimsPrincipal.IsInRole("Admin");
+        if (!isAdmin && project.HomeownerId != userId)
+        {
+            throw new GraphQLException("You are not authorized to view this project.");
+        }
+
+        return project;
+    }
 
 	[Authorize]
 	public async Task<IEnumerable<Notification>> GetMyNotifications(

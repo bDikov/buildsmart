@@ -24,7 +24,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IMultimediaStorageService storageService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -68,7 +68,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IMultimediaStorageService storageService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -110,7 +110,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IMultimediaStorageService storageService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -315,7 +315,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUnitOfWork unitOfWork)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -445,27 +445,36 @@ public class Mutation
 		return await jobPostService.AnswerJobQuestionAsync(questionId, answerText);
 	}
 
-	[Authorize(Roles = new[] { "Tradesman" })]
+	[Authorize]
 	public async Task<JobPostQuestion> EditJobQuestion(
 		Guid questionId,
 		string newText,
 		ClaimsPrincipal claimsPrincipal,
-		[Service] IUnitOfWork unitOfWork,
 		[Service] IJobPostService jobPostService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
 		}
 
-		var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
-		if (profile == null)
+		return await jobPostService.EditJobQuestionAsync(questionId, userId, newText);
+	}
+
+	[Authorize]
+	public async Task<JobPostFeedback> EditJobFeedback(
+		Guid feedbackId,
+		string newText,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
-			throw new GraphQLException("Tradesman profile not found.");
+			throw new GraphQLException("Invalid user credentials.");
 		}
 
-		return await jobPostService.EditJobQuestionAsync(questionId, profile.Id, newText);
+		return await jobPostService.EditJobFeedbackAsync(feedbackId, userId, newText);
 	}
 
 	[Authorize(Roles = new[] { "Homeowner" })]
@@ -476,7 +485,7 @@ public class Mutation
 		[Service] IUnitOfWork unitOfWork,
 		[Service] IJobPostService jobPostService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -498,7 +507,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IJobPostService jobPostService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -555,7 +564,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IJobPostService jobPostService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -571,7 +580,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IJobPostService jobPostService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");
@@ -662,7 +671,7 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUnitOfWork unitOfWork)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user credentials.");

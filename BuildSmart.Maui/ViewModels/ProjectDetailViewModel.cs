@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BuildSmart.Maui.Views;
 using BuildSmart.Maui.Services;
+using System.Security.Claims;
 
 namespace BuildSmart.Maui.ViewModels;
 
@@ -11,6 +12,15 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
     private readonly IAuthService _authService;
+
+    [ObservableProperty]
+    private bool _hasLoaded;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
+    private readonly SemaphoreSlim _reloadSemaphore = new(1, 1);
+    private DateTime _lastReloadTime = DateTime.MinValue;
 
 	public ProjectDetailViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService, IAuthService authService)
 	{
@@ -29,6 +39,13 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
             var token = await _authService.GetTokenAsync();
             if (!string.IsNullOrEmpty(token))
             {
+                var userId = _authService.GetUserIdFromToken(token);
+                if (userId != null)
+                {
+                    CurrentUserId = userId;
+                    CurrentUserManager.Instance.CurrentUserId = userId;
+                }
+
                 var role = _authService.GetUserRoleFromToken(token);
                 IsHomeowner = string.Equals(role, "HOMEOWNER", StringComparison.OrdinalIgnoreCase) || 
                               string.Equals(role, "Homeowner", StringComparison.OrdinalIgnoreCase);
@@ -39,34 +56,45 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 
 	private void OnNotificationReceived(string title, string message, object? data)
 	{
-		// Reload project if we are currently viewing one
 		if (Project != null)
 		{
-			MainThread.BeginInvokeOnMainThread(async () => await ReloadProjectAsync());
+			MainThread.BeginInvokeOnMainThread(async () => await ReloadProjectDebouncedAsync());
 		}
 	}
+
+    private async Task ReloadProjectDebouncedAsync()
+    {
+        if ((DateTime.UtcNow - _lastReloadTime).TotalSeconds < 2) return;
+        await ReloadProjectAsync();
+    }
 
 	private async Task ReloadProjectAsync()
 	{
-		if (Project == null) return;
+		if (Project == null || IsLoading) return;
 
 		try
 		{
-			var result = await _apiClient.GetMyProjects.ExecuteAsync();
-			if (result.Data?.MyProjects != null)
+            await _reloadSemaphore.WaitAsync();
+            IsLoading = true;
+            _lastReloadTime = DateTime.UtcNow;
+
+			var result = await _apiClient.GetProjectById.ExecuteAsync(Project.Id);
+			if (result.Data?.ProjectById != null)
 			{
-				var updated = result.Data.MyProjects.FirstOrDefault(p => p.Id == Project.Id);
-				if (updated != null)
-				{
-					Project = updated;
-				}
+				Project = result.Data.ProjectById;
+                HasLoaded = true;
 			}
 		}
 		catch { /* Silently fail reload */ }
+        finally
+        {
+            IsLoading = false;
+            _reloadSemaphore.Release();
+        }
 	}
 
 	[ObservableProperty]
-	private IGetMyProjects_MyProjects? _project;
+	private IProjectDetails? _project;
 
 	[ObservableProperty]
 	private bool _isBusy;
@@ -74,33 +102,37 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
     [ObservableProperty]
     private bool _isHomeowner;
 
+    [ObservableProperty]
+    private Guid? _currentUserId;
+
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
 		if (query.TryGetValue("Project", out var projectObj))
 		{
-            if (projectObj is IGetMyProjects_MyProjects project)
+            if (projectObj is IProjectDetails project)
             {
-			    Project = project;
-            }
-            else
-            {
-                MainThread.BeginInvokeOnMainThread(async () => 
-                    await Shell.Current.DisplayAlert("Debug", $"Found Project key, but type is {projectObj?.GetType().Name} instead of IGetMyProjects_MyProjects", "OK"));
+                // CRITICAL: Clear current state first to prevent layout collisions
+                HasLoaded = false;
+                Project = null; 
+
+                // Use a background task to allow navigation to complete smoothly
+                Task.Run(async () => {
+                    await Task.Delay(300); // Give the UI thread time to breathe
+                    
+                    MainThread.BeginInvokeOnMainThread(() => {
+                        Project = project;
+                        HasLoaded = true;
+                    });
+                });
             }
 		}
-        else
-        {
-            MainThread.BeginInvokeOnMainThread(async () => 
-                    await Shell.Current.DisplayAlert("Debug", "No 'Project' key found in query attributes.", "OK"));
-        }
 	}
 
 	[RelayCommand]
-	private async Task EditAnswersAsync(IGetMyProjects_MyProjects_JobPosts job)
+	private async Task EditAnswersAsync(IJobPostDetails job)
 	{
 		try
 		{
-			// Navigate to Wizard in Edit mode for a SPECIFIC job/category
 			await Shell.Current.GoToAsync(nameof(JobWizardPage), new Dictionary<string, object>
 			{
 				{ "ProjectId", job.Project.Id },
@@ -115,7 +147,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	}
 
 	[RelayCommand]
-	private async Task ReviewScopeAsync(IGetMyProjects_MyProjects_JobPosts job)
+	private async Task ReviewScopeAsync(IJobPostDetails job)
 	{
 		try
 		{
@@ -131,7 +163,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	}
 
 	[RelayCommand]
-	private async Task RespondToAdminAsync(IGetMyProjects_MyProjects_JobPosts job)
+	private async Task RespondToAdminAsync(IJobPostDetails job)
 	{
 	        string response = await Shell.Current.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
 	        if (string.IsNullOrWhiteSpace(response)) return;
@@ -139,7 +171,6 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	        try
 	        {
 	                IsBusy = true;
-	                // Note: AddJobFeedback mutation might need to be imported or available in this context     
 	                var result = await _apiClient.AddJobFeedback.ExecuteAsync(job.Id, response);
 
 	                if (result.Errors.Count > 0)
@@ -161,7 +192,38 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	                }
 
     [RelayCommand]
-    private async Task ReplyToFeedbackAsync(IGetMyProjects_MyProjects_JobPosts_Feedbacks feedback)
+    private async Task EditFeedbackAsync(IFeedbackDetails feedback)
+    {
+        if (feedback == null) return;
+
+        string newText = await Shell.Current.DisplayPromptAsync("Edit Comment", "Update your comment:", "Save", "Cancel", initialValue: feedback.Text);
+        if (string.IsNullOrWhiteSpace(newText) || newText == feedback.Text) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.EditJobFeedback.ExecuteAsync(feedback.Id, newText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await ReloadProjectAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ReplyToFeedbackAsync(IFeedbackDetails feedback)
     {
         if (feedback == null) return;
 
@@ -192,7 +254,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
     }
 
 	                [RelayCommand]
-	                private async Task ReplyToQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)
+	                private async Task ReplyToQuestionAsync(IQuestionDetails question)
 	                {
 	                if (question == null) return;
 
@@ -226,10 +288,9 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	}
 
     [RelayCommand]
-    private async Task ReplyToNestedQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions_Replies reply)
+    private async Task ReplyToNestedQuestionAsync(IQuestionReplyDetails reply)
     {
         if (reply == null) return;
-        // Map to top-level question for simple 1-level threading
         var parentId = reply.ParentQuestionId;
         if (!parentId.HasValue) return;
 
@@ -260,7 +321,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
     }
 
     [RelayCommand]
-    private async Task ReplyToNestedFeedbackAsync(IGetMyProjects_MyProjects_JobPosts_Feedbacks_Replies reply)
+    private async Task ReplyToNestedFeedbackAsync(IFeedbackReplyDetails reply)
     {
         if (reply == null) return;
         
@@ -293,7 +354,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         }
     }
 	[RelayCommand]
-	private async Task AnswerQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)	{
+	private async Task AnswerQuestionAsync(IQuestionDetails question)	{
 		string answer = await Shell.Current.DisplayPromptAsync("Answer Tradesman", question.QuestionText, "Submit", "Cancel", "Write your answer here...");
 		if (string.IsNullOrWhiteSpace(answer)) return;
 
@@ -322,7 +383,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	}
 
     [RelayCommand]
-    private async Task EditAnswerAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)
+    private async Task EditAnswerAsync(IQuestionDetails question)
     {
         if (question == null) return;
 
@@ -341,6 +402,70 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
             }
 
             await Shell.Current.DisplayAlert("Success", "Answer updated.", "OK");
+            await ReloadProjectAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task EditFeedbackReplyAsync(IFeedbackReplyDetails reply)
+    {
+        if (reply == null) return;
+
+        string newText = await Shell.Current.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.Text);
+        if (string.IsNullOrWhiteSpace(newText) || newText == reply.Text) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.EditJobFeedback.ExecuteAsync(reply.Id, newText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("Success", "Feedback updated.", "OK");
+            await ReloadProjectAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task EditNestedQuestionAsync(IQuestionReplyDetails reply)
+    {
+        if (reply == null) return;
+
+        string newText = await Shell.Current.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.QuestionText);
+        if (string.IsNullOrWhiteSpace(newText) || newText == reply.QuestionText) return;
+
+        try
+        {
+            IsBusy = true;
+            var result = await _apiClient.EditJobQuestion.ExecuteAsync(reply.Id, newText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("Success", "Reply updated.", "OK");
             await ReloadProjectAsync();
         }
         catch (Exception ex)

@@ -767,12 +767,24 @@ public class JobPostService : IJobPostService
         return reply;
     }
 
-    public async Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid tradesmanProfileId, string newText)
+    public async Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid userId, string newText)
     {
         var question = await _unitOfWork.JobPostQuestions.GetByIdAsync(questionId)
             ?? throw new ArgumentException("Question not found");
 
-        if (question.TradesmanProfileId != tradesmanProfileId)
+        // Check if the user is the author (directly or via TradesmanProfile)
+        bool isAuthor = question.AuthorId == userId;
+        
+        if (!isAuthor && question.TradesmanProfileId.HasValue)
+        {
+            var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId.Value);
+            if (tradesman != null && tradesman.UserId == userId)
+            {
+                isAuthor = true;
+            }
+        }
+
+        if (!isAuthor)
         {
             throw new UnauthorizedAccessException("You can only edit your own questions.");
         }
@@ -783,6 +795,26 @@ public class JobPostService : IJobPostService
         await _unitOfWork.SaveChangesAsync();
 
         return question;
+    }
+
+    public async Task<JobPostFeedback> EditJobFeedbackAsync(Guid feedbackId, Guid userId, string newText)
+    {
+        var feedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(feedbackId)
+            ?? throw new ArgumentException("Feedback not found");
+
+        if (feedback.AuthorId != userId)
+        {
+            throw new UnauthorizedAccessException("You can only edit your own feedback.");
+        }
+
+        feedback.Text = newText;
+        feedback.IsEdited = true;
+        feedback.UpdatedAt = DateTime.UtcNow;
+        
+        _unitOfWork.JobPostFeedbacks.Update(feedback);
+        await _unitOfWork.SaveChangesAsync();
+
+        return feedback;
     }
 
     public async Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer)

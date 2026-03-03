@@ -1,1 +1,1 @@
-﻿{"errors":[{"message":"The current user is not authorized to access this resource.","locations":[{"line":1,"column":3}],"path":["tradesmanProfiles"],"extensions":{"code":"AUTH_NOT_AUTHENTICATED"}}],"data":null}
+﻿{"data":{"tradesmanProfiles":[{"user":{"firstName":"John","lastName":"Doe"},"skills":[{"serviceCategory":{"name":"Plumber"}}]},{"user":{"firstName":"Jane","lastName":"Smith"},"skills":[{"serviceCategory":{"name":"Electrician"}}]}]}}

@@ -21,6 +21,8 @@ type Query {
   jobPostsForReview: [JobPost!]!
   "Gets projects waiting for admin review."
   projectsForReview: [Project!]!
+  "Gets a specific project by ID."
+  projectById(projectId: UUID!): Project
   "Gets a list of all users. (Admin only)"
   users: [User!]!
   "Gets all open auctions that match the authenticated tradesman's skills."
@@ -54,6 +56,8 @@ type JobPostQuestion {
     isAnswerEdited: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
+    isEditable: Boolean!
+    isAnswerEditable: Boolean!
 }
 
 type Notification {
@@ -138,8 +142,11 @@ type Mutation {
   "Allows a tradesman to ask a public question on an auction."
   askJobQuestion(tradesmanProfileId: UUID!, jobPostId: UUID!, questionText: String!): JobPostQuestion!
 
-  "Allows a tradesman to edit their public question."
+  "Allows an author to edit their public question or reply."
   editJobQuestion(questionId: UUID!, newText: String!): JobPostQuestion!
+
+  "Allows an author to edit their feedback or reply."
+  editJobFeedback(feedbackId: UUID!, newText: String!): JobPostFeedback!
 
   "Allows a homeowner to answer a tradesman's question."
   answerJobQuestion(questionId: UUID!, answerText: String!): JobPostQuestion!
@@ -179,10 +186,12 @@ type JobPostFeedback {
     author: User!
     text: String!
     isResolved: Boolean!
+    isEdited: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
     parentFeedbackId: UUID
     replies: [JobPostFeedback!]!
+    isEditable: Boolean!
 }
 
 "Represents the specific profile for a tradesman."

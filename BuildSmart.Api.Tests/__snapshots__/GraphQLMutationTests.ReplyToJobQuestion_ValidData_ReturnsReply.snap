@@ -1,1 +1,1 @@
-﻿{"errors":[{"message":"The current user is not authorized to access this resource.","locations":[{"line":1,"column":78}],"path":["replyToJobQuestion"],"extensions":{"code":"AUTH_NOT_AUTHENTICATED"}}],"data":null}
+﻿{"data":{"replyToJobQuestion":{"id":"5819dcd98254418f8be83410cb8ba011","parentQuestionId":"31ad98d8c7e343c5b73b38b5c6bf2e40","authorId":"ed3cf2bb5e154d94a1a6173e84b10b1c","questionText":"This is a reply text."}}}

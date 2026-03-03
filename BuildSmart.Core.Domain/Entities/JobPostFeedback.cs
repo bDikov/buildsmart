@@ -16,6 +16,7 @@ public class JobPostFeedback : BaseEntity
     /// Admins can mark a specific feedback item as resolved once the user clarifies or fixes it.
     /// </summary>
     public bool IsResolved { get; set; } = false;
+    public bool IsEdited { get; set; } = false;
 
     public Guid? ParentFeedbackId { get; set; }
     public JobPostFeedback? ParentFeedback { get; set; }
