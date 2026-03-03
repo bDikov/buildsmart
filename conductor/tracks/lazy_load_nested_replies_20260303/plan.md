@@ -26,3 +26,6 @@
 - [x] Task: Conductor - Perform final manual verification on target platforms (Windows/iOS).
 - [x] Task: Conductor - Ensure code coverage for new logic exceeds 80%.
 - [x] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions 5caa91e
