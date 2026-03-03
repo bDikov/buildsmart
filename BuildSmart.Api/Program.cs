@@ -161,6 +161,7 @@ public partial class Program
 			.AddType<CertificationType>()
 			.AddType<PortfolioEntryType>()
 			.AddType<JobPostQuestionType>()
+            .AddType<JobPostFeedbackType>()
 			.AddProjections()
 			.AddFiltering()
 			.AddSorting()

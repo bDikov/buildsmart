@@ -157,7 +157,7 @@
                                                         <Label.GestureRecognizers>
                                                             <TapGestureRecognizer 
                                                                 Tapped="OnReplyQuestionClicked" 
-                                                                CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type graphql:IGetAuctionById_AuctionById_Questions}}}" />
+                                                                CommandParameter="{Binding .}" />
                                                         </Label.GestureRecognizers>
                                                     </Label>
                                                 </VerticalStackLayout>

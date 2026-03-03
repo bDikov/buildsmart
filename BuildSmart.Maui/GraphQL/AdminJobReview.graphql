@@ -38,7 +38,18 @@ query GetProjectsForReview {
           id
           firstName
           lastName
-          role
+          profilePictureUrl
+        }
+        replies {
+          id
+          text
+          createdAt
+          author {
+            id
+            firstName
+            lastName
+            profilePictureUrl
+          }
         }
       }
       questions {
@@ -129,7 +140,18 @@ query GetJobsForReview {
         id
         firstName
         lastName
-        role
+        profilePictureUrl
+      }
+      replies {
+        id
+        text
+        createdAt
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
+        }
       }
     }
     questions {
@@ -192,7 +214,7 @@ mutation AddJobFeedback($jobPostId: UUID!, $text: String!) {
       id
       firstName
       lastName
-      role
+      profilePictureUrl
     }
   }
 }
@@ -202,5 +224,8 @@ mutation AddAdminJobQuestion($jobPostId: UUID!, $questionText: String!, $type: S
 }
 
 mutation ResolveJobFeedback($feedbackId: UUID!) {
-  resolveJobFeedback(feedbackId: $feedbackId)
+  resolveJobFeedback(feedbackId: $feedbackId) {
+    id
+    isResolved
+  }
 }

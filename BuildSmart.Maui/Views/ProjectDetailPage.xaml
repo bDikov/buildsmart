@@ -91,13 +91,73 @@
                                                             <Label Grid.Column="1" Text="RESOLVED" IsVisible="{Binding IsResolved}" TextColor="#4CAF50" FontSize="10" FontAttributes="Bold" />
                                                         </Grid>
                                                         <Label Text="{Binding Text}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" LineBreakMode="WordWrap" />
+
+                                                        <Label Text="Reply" 
+                                                               TextColor="Gray" 
+                                                               FontAttributes="Bold" 
+                                                               FontSize="11"
+                                                               Margin="0,5,0,0">
+                                                            <Label.GestureRecognizers>
+                                                                <TapGestureRecognizer 
+                                                                    Tapped="OnReplyFeedbackClicked" 
+                                                                    CommandParameter="{Binding .}" />
+                                                            </Label.GestureRecognizers>
+                                                        </Label>
+
+                                                        <!-- Nested Replies for Feedback -->
+                                                        <StackLayout BindableLayout.ItemsSource="{Binding Replies}" Margin="5,10,0,0">
+                                                            <BindableLayout.ItemTemplate>
+                                                                <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts_Feedbacks_Replies">
+                                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="0,5">
+                                                                        <BoxView Grid.Column="0" 
+                                                                                 WidthRequest="2" 
+                                                                                 Color="{AppThemeBinding Light=#E0E0E0, Dark=#444444}" 
+                                                                                 Margin="10,0,15,0" 
+                                                                                 VerticalOptions="FillAndExpand" />
+
+                                                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                            <Border Stroke="Transparent" BackgroundColor="{AppThemeBinding Light=#F0F2F5, Dark=#3A3B3C}" Padding="12,8" HorizontalOptions="Start">
+                                                                                <Border.StrokeShape>
+                                                                                    <RoundRectangle CornerRadius="18" />
+                                                                                </Border.StrokeShape>
+                                                                                <VerticalStackLayout Spacing="2">
+                                                                                    <HorizontalStackLayout Spacing="5">
+                                                                                        <Image Source="{Binding Author.ProfilePictureUrl}" 
+                                                                                               WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                                                                               BackgroundColor="LightGray">
+                                                                                            <Image.Clip>
+                                                                                                <EllipseGeometry RadiusX="10" RadiusY="10" Center="10,10" />
+                                                                                            </Image.Clip>
+                                                                                        </Image>
+                                                                                        <Label Text="{Binding Author.FirstName}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                                                                    </HorizontalStackLayout>
+                                                                                    <Label Text="{Binding Text}" FontSize="13" TextColor="{AppThemeBinding Light=#1C1E21, Dark=#E4E6EB}" />
+                                                                                </VerticalStackLayout>
+                                                                            </Border>
+                                                                            
+                                                                            <Label Text="Reply" 
+                                                                                   TextColor="Gray" 
+                                                                                   FontSize="11" 
+                                                                                   FontAttributes="Bold" 
+                                                                                   Margin="12,2,0,0">
+                                                                                <Label.GestureRecognizers>
+                                                                                    <TapGestureRecognizer 
+                                                                                        Tapped="OnReplyFeedbackClicked" 
+                                                                                        CommandParameter="{Binding .}" />
+                                                                                </Label.GestureRecognizers>
+                                                                            </Label>
+                                                                        </VerticalStackLayout>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </BindableLayout.ItemTemplate>
+                                                        </StackLayout>
                                                     </VerticalStackLayout>
                                                 </Border>
                                             </DataTemplate>
                                         </BindableLayout.ItemTemplate>
                                     </StackLayout>
                                     
-                                    <Button Text="Reply to Admin" 
+                                    <Button Text="Ask Admin a Question" 
                                             Clicked="OnReplyToAdminClicked"
                                             CommandParameter="{Binding .}"
                                             HeightRequest="35" FontSize="11" Padding="15,0"
@@ -214,7 +274,7 @@
                                                                                 <Label.GestureRecognizers>
                                                                                     <TapGestureRecognizer 
                                                                                         Tapped="OnReplyQuestionClicked" 
-                                                                                        CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type graphql:IGetMyProjects_MyProjects_JobPosts_Questions}}}" />
+                                                                                        CommandParameter="{Binding .}" />
                                                                                 </Label.GestureRecognizers>
                                                                             </Label>
                                                                         </VerticalStackLayout>

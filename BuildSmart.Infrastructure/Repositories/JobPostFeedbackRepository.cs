@@ -18,14 +18,18 @@ public class JobPostFeedbackRepository : IJobPostFeedbackRepository
     {
         return await _context.JobPostFeedbacks
             .Include(f => f.Author)
+            .Include(f => f.Replies)
+                .ThenInclude(r => r.Author)
             .FirstOrDefaultAsync(f => f.Id == id);
     }
 
     public async Task<IEnumerable<JobPostFeedback>> GetByJobPostIdAsync(Guid jobPostId)
     {
         return await _context.JobPostFeedbacks
-            .Where(f => f.JobPostId == jobPostId)
+            .Where(f => f.JobPostId == jobPostId && f.ParentFeedbackId == null)
             .Include(f => f.Author)
+            .Include(f => f.Replies)
+                .ThenInclude(r => r.Author)
             .OrderBy(f => f.CreatedAt)
             .ToListAsync();
     }

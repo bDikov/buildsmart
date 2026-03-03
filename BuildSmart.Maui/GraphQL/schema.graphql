@@ -123,8 +123,11 @@ type Mutation {
   "Adds a feedback/clarification message to a job post."
   addJobFeedback(jobPostId: UUID!, text: String!): JobPostFeedback!
 
+  "Allows any user to reply to a specific feedback/clarification."
+  replyToJobFeedback(parentFeedbackId: UUID!, text: String!): JobPostFeedback!
+
   "Resolves a specific feedback item (Admin only)."
-  resolveJobFeedback(feedbackId: UUID!): Boolean!
+  resolveJobFeedback(feedbackId: UUID!): JobPostFeedback!
 
   "Adds a project-specific clarification question to a job post (Admin only)."
   addAdminJobQuestion(jobPostId: UUID!, questionText: String!, type: String!, isRequired: Boolean!, options: [String!]): Boolean!
@@ -178,6 +181,8 @@ type JobPostFeedback {
     isResolved: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
+    parentFeedbackId: UUID
+    replies: [JobPostFeedback!]!
 }
 
 "Represents the specific profile for a tradesman."

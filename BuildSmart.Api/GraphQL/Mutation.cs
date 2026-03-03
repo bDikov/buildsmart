@@ -564,13 +564,28 @@ public class Mutation
 		return await jobPostService.AddFeedbackAsync(jobPostId, userId, text);
 	}
 
+	[Authorize]
+	public async Task<JobPostFeedback> ReplyToJobFeedback(
+		Guid parentFeedbackId,
+		string text,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IJobPostService jobPostService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		return await jobPostService.ReplyToFeedbackAsync(parentFeedbackId, userId, text);
+	}
+
 	[Authorize(Roles = new[] { "Admin" })]
-	public async Task<bool> ResolveJobFeedback(
+	public async Task<JobPostFeedback> ResolveJobFeedback(
 		Guid feedbackId,
 		[Service] IJobPostService jobPostService)
 	{
-		await jobPostService.ResolveFeedbackAsync(feedbackId);
-		return true;
+		return await jobPostService.ResolveFeedbackAsync(feedbackId);
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]

@@ -33,7 +33,8 @@ public interface IJobPostService
     Task<Booking> AcceptBidAsync(Guid bidId);
 
     Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
-    Task ResolveFeedbackAsync(Guid feedbackId);
+    Task<JobPostFeedback> ReplyToFeedbackAsync(Guid parentFeedbackId, Guid userId, string replyText);
+    Task<JobPostFeedback> ResolveFeedbackAsync(Guid feedbackId);
 
     Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null);
 

@@ -25,12 +25,6 @@ public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (Options.DefaultUser != null)
-        {
-            var ticket = new AuthenticationTicket(Options.DefaultUser, SchemeName);
-            return AuthenticateResult.Success(ticket);
-        }
-
         if (!Request.Headers.ContainsKey("Authorization"))
         {
             return AuthenticateResult.NoResult();
@@ -55,8 +49,6 @@ public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
                 return AuthenticateResult.Fail("Invalid JWT Token");
             }
 
-            // For testing purposes, we'll just create a ClaimsPrincipal from the token's claims
-            // In a real scenario, you would also validate the token's signature, issuer, audience, etc.
             var identity = new ClaimsIdentity(jsonToken.Claims, SchemeName, ClaimTypes.Name, ClaimTypes.Role);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, SchemeName);

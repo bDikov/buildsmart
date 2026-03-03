@@ -525,7 +525,46 @@ public class JobPostService : IJobPostService
         return feedback;
     }
 
-    public async Task ResolveFeedbackAsync(Guid feedbackId)
+    public async Task<JobPostFeedback> ReplyToFeedbackAsync(Guid parentFeedbackId, Guid userId, string replyText)
+    {
+        var parentFeedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(parentFeedbackId)
+            ?? throw new ArgumentException("Parent feedback not found");
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId)
+            ?? throw new ArgumentException("User not found");
+
+        var reply = new JobPostFeedback
+        {
+            JobPostId = parentFeedback.JobPostId,
+            ParentFeedbackId = parentFeedbackId,
+            AuthorId = userId,
+            Text = replyText,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.JobPostFeedbacks.AddAsync(reply);
+        
+        // Notification Logic
+        var parentAuthorId = parentFeedback.AuthorId;
+        if (parentAuthorId != userId)
+        {
+            var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(parentFeedback.JobPostId);
+            await _notificationService.SendNotificationAsync(
+                parentAuthorId,
+                "New Reply",
+                $"Someone replied to your feedback on job '{jobPost?.Title ?? "Feedback"}'.",
+                parentFeedback.JobPostId,
+                "JobPost"
+            );
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        reply.Author = user; // Ensure author is populated for result
+        return reply;
+    }
+
+    public async Task<JobPostFeedback> ResolveFeedbackAsync(Guid feedbackId)
     {
         var feedback = await _unitOfWork.JobPostFeedbacks.GetByIdAsync(feedbackId)
             ?? throw new ArgumentException("Feedback not found");
@@ -535,6 +574,7 @@ public class JobPostService : IJobPostService
 
         _unitOfWork.JobPostFeedbacks.Update(feedback);
         await _unitOfWork.SaveChangesAsync();
+        return feedback;
     }
 
     public async Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null)

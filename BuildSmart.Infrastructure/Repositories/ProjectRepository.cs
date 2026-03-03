@@ -21,29 +21,53 @@ public class ProjectRepository : IProjectRepository
 			.Include(p => p.JobPosts)
 				.ThenInclude(jp => jp.Feedbacks)
 					.ThenInclude(f => f.Author)
+            .Include(p => p.JobPosts)
+                .ThenInclude(jp => jp.Feedbacks)
+                    .ThenInclude(f => f.Replies)
+                        .ThenInclude(r => r.Author)
 			.Include(p => p.JobPosts)
 				.ThenInclude(jp => jp.Questions)
 					.ThenInclude(q => q.TradesmanProfile)
 						.ThenInclude(tp => tp.User)
+            .Include(p => p.JobPosts)
+                .ThenInclude(jp => jp.Questions)
+                    .ThenInclude(q => q.Replies)
+                        .ThenInclude(r => r.Author)
 			.FirstOrDefaultAsync(p => p.Id == id);
 	}
 
 	public async Task<IEnumerable<Project>> GetProjectsByHomeownerAsync(Guid homeownerId)
 	{
-		return await _context.Projects
-			.Where(p => p.HomeownerId == homeownerId)
-			.Include(p => p.JobPosts)
-				.ThenInclude(jp => jp.ServiceCategory)
-			.Include(p => p.JobPosts)
-				.ThenInclude(jp => jp.Feedbacks)
-					.ThenInclude(f => f.Author)
-			.Include(p => p.JobPosts)
-				.ThenInclude(jp => jp.Questions)
-					.ThenInclude(q => q.TradesmanProfile)
-						.ThenInclude(tp => tp.User)
-			.ToListAsync();
+	        return await _context.Projects
+	                .AsSplitQuery()
+	                .Where(p => p.HomeownerId == homeownerId)
+	                .Include(p => p.JobPosts)
+	                        .ThenInclude(jp => jp.ServiceCategory)
+	                .Include(p => p.JobPosts)
+	                        .ThenInclude(jp => jp.Feedbacks)
+	                                .ThenInclude(f => f.Author)
+                    .Include(p => p.JobPosts)
+                            .ThenInclude(jp => jp.Feedbacks)
+                                    .ThenInclude(f => f.Replies)
+                                            .ThenInclude(r => r.Author)
+	                .Include(p => p.JobPosts)
+	                        .ThenInclude(jp => jp.Questions)
+	                                .ThenInclude(q => q.TradesmanProfile)
+	                                        .ThenInclude(tp => tp.User)
+	                .Include(p => p.JobPosts)
+	                        .ThenInclude(jp => jp.Questions)
+	                                .ThenInclude(q => q.Author)
+	                .Include(p => p.JobPosts)
+	                        .ThenInclude(jp => jp.Questions)
+	                                .ThenInclude(q => q.Replies)
+	                                        .ThenInclude(r => r.TradesmanProfile)
+	                                                .ThenInclude(tp => tp.User)
+	                .Include(p => p.JobPosts)
+	                        .ThenInclude(jp => jp.Questions)
+	                                .ThenInclude(q => q.Replies)
+	                                        .ThenInclude(r => r.Author)
+	                .ToListAsync();
 	}
-
 	public async Task AddAsync(Project project)
 	{
 		await _context.Projects.AddAsync(project);

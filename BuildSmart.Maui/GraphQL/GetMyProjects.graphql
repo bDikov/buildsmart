@@ -38,6 +38,19 @@ query GetMyProjects {
           id
           firstName
           lastName
+          profilePictureUrl
+        }
+        replies {
+          id
+          parentFeedbackId
+          text
+          createdAt
+          author {
+            id
+            firstName
+            lastName
+            profilePictureUrl
+          }
         }
       }
       questions {

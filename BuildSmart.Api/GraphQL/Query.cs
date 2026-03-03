@@ -19,7 +19,7 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUserRepository userRepository)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
 
 		if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
 		{
@@ -76,7 +76,7 @@ public class Query
 		[Service] IUnitOfWork unitOfWork,
 		[Service] AppDbContext context)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user ID.");
@@ -124,7 +124,7 @@ public class Query
         [Service] IUnitOfWork unitOfWork,
         [Service] AppDbContext context)
     {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
             throw new GraphQLException("Invalid user ID.");
@@ -186,7 +186,7 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IProjectRepository projectRepository)
 		{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 		throw new GraphQLException("Invalid user ID in token.");
@@ -200,7 +200,7 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] INotificationRepository notificationRepository)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user ID in token.");
