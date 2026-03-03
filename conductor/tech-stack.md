@@ -5,6 +5,10 @@
 - **Backend Framework**: **ASP.NET Core Web API** with **HotChocolate (GraphQL)** - Enabling a flexible and efficient data querying layer for the client.
 - **Frontend Framework**: **.NET MAUI** with **StrawberryShake (GraphQL Client)** - Building a cross-platform (iOS, Windows, MacCatalyst) client with a modern, reactive data handling system.
 
+## Performance & Scalability
+- **Lazy Loading**: **GraphQL Pagination (Offset-based)** - Implementing on-demand fetching for deeply nested or large datasets to minimize initial payload size.
+- **UI Virtualization**: **CollectionView (MAUI)** - Utilizing virtualized scrolling and incremental rendering to maintain UI responsiveness in data-heavy views.
+
 ## Data & Communication
 - **Persistence**: **Entity Framework Core** with **PostgreSQL** - Using a powerful, object-relational mapper and a reliable relational database for construction data.
 - **Real-time Communication**: **SignalR** - Implementing a notification hub for real-time updates and status changes between homeowners and admins.
