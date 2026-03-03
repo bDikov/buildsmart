@@ -701,12 +701,21 @@ public class JobPostService : IJobPostService
                 "AuctionAnswer"
             );
         }
-        else if (parentQuestion.JobPost?.Project?.HomeownerId != userId)
+        else if (parentQuestion.JobPost != null)
         {
-            if (parentQuestion.JobPost != null)
+            // Ensure Project is loaded or we fetch it to get HomeownerId
+            var homeownerId = parentQuestion.JobPost.Project?.HomeownerId;
+            
+            if (!homeownerId.HasValue)
+            {
+                var jobPostFull = await _unitOfWork.JobPosts.GetByIdAsync(parentQuestion.JobPostId);
+                homeownerId = jobPostFull?.Project?.HomeownerId;
+            }
+
+            if (homeownerId.HasValue && homeownerId.Value != userId)
             {
                 await _notificationService.SendNotificationAsync(
-                    parentQuestion.JobPost.Project.HomeownerId,
+                    homeownerId.Value,
                     "New Reply",
                     $"New activity on your job '{parentQuestion.JobPost.Title}'.",
                     parentQuestion.JobPostId,

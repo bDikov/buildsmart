@@ -40,8 +40,12 @@ type Auction {
 type JobPostQuestion {
     id: UUID!
     jobPostId: UUID!
-    tradesmanProfileId: UUID!
-    tradesmanProfile: TradesmanProfile!
+    parentQuestionId: UUID
+    tradesmanProfileId: UUID
+    tradesmanProfile: TradesmanProfile
+    authorId: UUID
+    author: User
+    replies: [JobPostQuestion!]!
     questionText: String!
     answerText: String
     answeredAt: DateTime
@@ -139,6 +143,9 @@ type Mutation {
 
   "Allows a homeowner to edit their public answer."
   editJobAnswer(questionId: UUID!, newAnswer: String!): JobPostQuestion!
+
+  "Allows any user to reply to a specific question."
+  replyToJobQuestion(parentQuestionId: UUID!, replyText: String!): JobPostQuestion!
 
   "Hides an auction from the tradesman's available feed."
   passAuction(tradesmanProfileId: UUID!, jobPostId: UUID!): Boolean!

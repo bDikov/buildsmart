@@ -20,7 +20,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[NotifyPropertyChangedFor(nameof(IsQuestionStepVisible))]
 	[NotifyPropertyChangedFor(nameof(IsReviewStepVisible))]
 	[NotifyPropertyChangedFor(nameof(CurrentStepTitle))]
-    [NotifyPropertyChangedFor(nameof(NextButtonText))]
+	[NotifyPropertyChangedFor(nameof(NextButtonText))]
 	private int _currentStep = 0;
 
 	public bool IsInfoStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Info;
@@ -30,7 +30,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	public string CurrentStepTitle => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count ? _wizardSteps[CurrentStep].Title : "";
 
-    public string NextButtonText => (IsEditing && CurrentStep == _wizardSteps.Count - 1) ? "Save & Re-generate" : "Next";
+	public string NextButtonText => (IsEditing && CurrentStep == _wizardSteps.Count - 1) ? "Save & Re-generate" : "Next";
 
 	// --- Data ---
 	[ObservableProperty]
@@ -56,7 +56,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	// Key: QuestionId, Value: Answer
 	private Dictionary<string, string> _masterAnswerKey = new();
-    private Dictionary<string, string> _questionTextCache = new();
+
+	private Dictionary<string, string> _questionTextCache = new();
 
 	[ObservableProperty]
 	private ObservableCollection<WizardQuestionViewModel> _questions = new();
@@ -67,18 +68,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private bool _isEditing;
 
-    public ObservableCollection<KeyValuePair<string, string>> AnswersList { get; } = new();
+	public ObservableCollection<KeyValuePair<string, string>> AnswersList { get; } = new();
 
-    private void RefreshAnswersList()
-    {
-        AnswersList.Clear();
-        foreach (var kvp in _masterAnswerKey)
-        {
-            if (kvp.Key == null) continue;
-            var text = _questionTextCache.TryGetValue(kvp.Key, out var qText) ? qText : kvp.Key;
-            AnswersList.Add(new KeyValuePair<string, string>(text, kvp.Value ?? ""));
-        }
-    }
+	private void RefreshAnswersList()
+	{
+		AnswersList.Clear();
+		foreach (var kvp in _masterAnswerKey)
+		{
+			if (kvp.Key == null) continue;
+			var text = _questionTextCache.TryGetValue(kvp.Key, out var qText) ? qText : kvp.Key;
+			AnswersList.Add(new KeyValuePair<string, string>(text, kvp.Value ?? ""));
+		}
+	}
 
 	private Guid? _currentProjectId;
 	private Guid? _targetJobPostId;
@@ -106,7 +107,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
-        if (query == null) return;
+		if (query == null) return;
 
 		if (query.TryGetValue("JobPostId", out var jpid) && jpid != null && Guid.TryParse(jpid.ToString(), out var jobId))
 			_targetJobPostId = jobId;
@@ -139,7 +140,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					ProjectTitle = project.Title;
 					ProjectDescription = project.Description;
 
-					var firstJob = project.JobPosts.FirstOrDefault(j => j.Id == _targetJobPostId) 
+					var firstJob = project.JobPosts.FirstOrDefault(j => j.Id == _targetJobPostId)
 						?? project.JobPosts.FirstOrDefault();
 					if (firstJob != null)
 					{
@@ -315,12 +316,12 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private async Task SaveAndRegenerateAsync()
 	{
 		if (IsBusy) return;
-		try 
+		try
 		{
 			IsBusy = true;
 			await SaveDraftAsync();
-			
-			var jobsToRegenerate = _targetJobPostId != null 
+
+			var jobsToRegenerate = _targetJobPostId != null
 				? new List<Guid> { _targetJobPostId.Value }
 				: _currentJobPostIds.Values.ToList();
 
@@ -333,7 +334,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					return;
 				}
 			}
-			
+
 			await Shell.Current.DisplayAlert("Success", "Answers updated. AI is re-generating your scope.", "OK");
 			await Shell.Current.GoToAsync(".."); // Go back to Project Details
 		}
@@ -374,10 +375,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				Questions.Add(q);
 			}
 		}
-        else if (step.Type == WizardStepType.Review)
-        {
-            RefreshAnswersList();
-        }
+		else if (step.Type == WizardStepType.Review)
+		{
+			RefreshAnswersList();
+		}
 	}
 
 	private async Task GenerateDynamicSteps()
@@ -391,47 +392,46 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (targetCat != null)
 			{
 				var catQuestions = ExtractQuestions(new List<SelectableCategoryViewModel> { targetCat });
-				
+
 				// Fetch the specific JobPost to get AdminQuestions from the JSON field
 				var jobResult = await _apiClient.GetMyProjects.ExecuteAsync();
 				var job = jobResult.Data?.MyProjects?.SelectMany(p => p.JobPosts).FirstOrDefault(j => j.Id == _targetJobPostId);
-				
+
 				if (!string.IsNullOrEmpty(job?.AdditionalQuestionsJson))
 				{
-					try 
+					try
 					{
 						var extra = JsonNode.Parse(job.AdditionalQuestionsJson) as JsonArray;
 						if (extra != null)
 						{
-															foreach (var qNode in extra)
-															{
-																var qId = qNode?["id"]?.GetValue<string>();
-																var qText = qNode?["text"]?.GetValue<string>();
-																var qType = qNode?["type"]?.GetValue<string>() ?? "text";
-																var qReq = qNode?["required"]?.GetValue<bool>() ?? true;
-																
-																if (!string.IsNullOrEmpty(qId) && !string.IsNullOrEmpty(qText))
-																{
-																	var qOptions = new List<string>();
-																	if (qNode?["options"] is JsonArray opts)
-																	{
-																		qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
-																	}
-							
-																	_questionTextCache[qId] = qText;
-																	catQuestions.Add(new WizardQuestionViewModel
-																	{
-																		Id = qId,
-																		Text = qText,
-																		Type = qType,
-																		CategoryName = "ADMIN CLARIFICATION",
-																		IsRequired = qReq,
-																		Options = qOptions,
-																		Answer = qType == "boolean" ? "False" : ""
-																	});
-																}
-															}
-							
+							foreach (var qNode in extra)
+							{
+								var qId = qNode?["id"]?.GetValue<string>();
+								var qText = qNode?["text"]?.GetValue<string>();
+								var qType = qNode?["type"]?.GetValue<string>() ?? "text";
+								var qReq = qNode?["required"]?.GetValue<bool>() ?? true;
+
+								if (!string.IsNullOrEmpty(qId) && !string.IsNullOrEmpty(qText))
+								{
+									var qOptions = new List<string>();
+									if (qNode?["options"] is JsonArray opts)
+									{
+										qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
+									}
+
+									_questionTextCache[qId] = qText;
+									catQuestions.Add(new WizardQuestionViewModel
+									{
+										Id = qId,
+										Text = qText,
+										Type = qType,
+										CategoryName = "ADMIN CLARIFICATION",
+										IsRequired = qReq,
+										Options = qOptions,
+										Answer = qType == "boolean" ? "False" : ""
+									});
+								}
+							}
 						}
 					}
 					catch { /* Ignore malformed JSON */ }
@@ -491,175 +491,104 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 	}
 
-		private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
+	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
+
+	{
+		var list = new List<WizardQuestionViewModel>();
+
+		foreach (var cat in categories)
 
 		{
+			System.Diagnostics.Debug.WriteLine($"Processing Category: {cat.Category.Name}");
 
-			var list = new List<WizardQuestionViewModel>();
+			System.Diagnostics.Debug.WriteLine($"TemplateStructure: {cat.Category.TemplateStructure}");
 
-			foreach (var cat in categories)
+			if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
 
 			{
-
-	            System.Diagnostics.Debug.WriteLine($"Processing Category: {cat.Category.Name}");
-
-	            System.Diagnostics.Debug.WriteLine($"TemplateStructure: {cat.Category.TemplateStructure}");
-
-	
-
-				if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
+				try
 
 				{
+					var template = JsonNode.Parse(cat.Category.TemplateStructure);
 
-					try
+					if (template == null)
 
 					{
+						System.Diagnostics.Debug.WriteLine("Template parsed to NULL");
 
-						var template = JsonNode.Parse(cat.Category.TemplateStructure);
-
-	                    if (template == null)
-
-	                    {
-
-	                        System.Diagnostics.Debug.WriteLine("Template parsed to NULL");
-
-	                        continue;
-
-	                    }
-
-	
-
-						if (template["questions"] is JsonArray qArray)
-
-						{
-
-	                        System.Diagnostics.Debug.WriteLine($"Found {qArray.Count} questions in JSON array.");
-
-							foreach (var qNode in qArray)
-
-							{
-
-																if (qNode is JsonObject qObj)
-
-								
-
-																{
-
-								
-
-									                                var qType = qObj["type"]?.GetValue<string>() ?? "text";
-
-								                                    var qText = qObj["text"]?.GetValue<string>() ?? "";
-
-								                                    var qId = qObj["id"]?.GetValue<string>() ?? "";
-
-								
-
-									                                var qOptions = new List<string>();
-
-								
-
-									                                if (qObj["options"] is JsonArray opts)
-
-								
-
-									                                {
-
-								
-
-									                                    qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
-
-								
-
-									                                }
-
-								
-
-									                                if (!string.IsNullOrEmpty(qId)) _questionTextCache[qId] = qText;
-
-								
-
-																	list.Add(new WizardQuestionViewModel
-
-								
-
-																	{
-
-								
-
-																		Id = qId,
-
-								
-
-																		Text = qText,
-
-								
-
-																		Type = qType,
-
-								
-
-																		CategoryName = cat.Category.Name,
-
-								
-
-																		IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
-
-								
-
-									                                    Options = qOptions,
-
-								
-
-								                                        Answer = qType == "boolean" ? "False" : ""
-
-								
-
-																	});
-
-								
-
-																}
-
-							}
-
-						}
-
-	                    else
-
-	                    {
-
-	                        System.Diagnostics.Debug.WriteLine("'questions' array NOT found in template.");
-
-	                    }
-
+						continue;
 					}
 
-					catch (Exception ex)
+					if (template["questions"] is JsonArray qArray)
 
-	                {
+					{
+						System.Diagnostics.Debug.WriteLine($"Found {qArray.Count} questions in JSON array.");
 
-	                    System.Diagnostics.Debug.WriteLine($"Error parsing template: {ex}");
+						foreach (var qNode in qArray)
 
-	                }
+						{
+							if (qNode is JsonObject qObj)
 
+							{
+								var qType = qObj["type"]?.GetValue<string>() ?? "text";
+
+								var qText = qObj["text"]?.GetValue<string>() ?? "";
+
+								var qId = qObj["id"]?.GetValue<string>() ?? "";
+
+								var qOptions = new List<string>();
+
+								if (qObj["options"] is JsonArray opts)
+
+								{
+									qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
+								}
+
+								if (!string.IsNullOrEmpty(qId)) _questionTextCache[qId] = qText;
+
+								list.Add(new WizardQuestionViewModel
+
+								{
+									Id = qId,
+
+									Text = qText,
+
+									Type = qType,
+
+									CategoryName = cat.Category.Name,
+
+									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
+
+									Options = qOptions,
+
+									Answer = qType == "boolean" ? "False" : ""
+								});
+							}
+						}
+					}
+					else
+
+					{
+						System.Diagnostics.Debug.WriteLine("'questions' array NOT found in template.");
+					}
 				}
+				catch (Exception ex)
 
-	            else
-
-	            {
-
-	                 System.Diagnostics.Debug.WriteLine("TemplateStructure is EMPTY or NULL.");
-
-	            }
-
+				{
+					System.Diagnostics.Debug.WriteLine($"Error parsing template: {ex}");
+				}
 			}
+			else
 
-	        System.Diagnostics.Debug.WriteLine($"Total extracted questions: {list.Count}");
-
-			return list;
-
+			{
+				System.Diagnostics.Debug.WriteLine("TemplateStructure is EMPTY or NULL.");
+			}
 		}
+
+		System.Diagnostics.Debug.WriteLine($"Total extracted questions: {list.Count}");
+
+		return list;
+	}
 
 	private bool ValidateInfoStep()
 	{
@@ -754,8 +683,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						null, "USD"
 					);
 
-					// If we are in single edit mode, the answers are already part of the JSON 
-                    // in SaveJobPostDraft call above. No separate mutation is needed.
+					// If we are in single edit mode, the answers are already part of the JSON
+					// in SaveJobPostDraft call above. No separate mutation is needed.
 				}
 			}
 		}

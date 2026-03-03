@@ -14,6 +14,8 @@
             <converters:StringIsNotNullOrEmptyConverter x:Key="StringIsNotNullOrEmptyConverter" />
             <converters:EqualConverter x:Key="EqualConverter" />
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:IsNullConverter x:Key="IsNullConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -133,12 +135,93 @@
                                                             <Label Text="{Binding AnswerText}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                                         </VerticalStackLayout>
 
-                                                        <Button Text="Answer Question" 
+                                                        <Button Text="Answer Question"
                                                                 IsVisible="{Binding IsAnswered, Converter={StaticResource InverseBoolConverter}}"
                                                                 Clicked="OnAnswerQuestionClicked"
                                                                 CommandParameter="{Binding .}"
                                                                 HeightRequest="30" FontSize="10" Padding="10,0" Margin="0,5,0,0"
                                                                 BackgroundColor="#4CAF50" TextColor="White" HorizontalOptions="Start" CornerRadius="15"/>
+
+                                                        <HorizontalStackLayout Spacing="15" Margin="0,5,0,0">
+                                                            <Label Text="Reply" 
+                                                                   TextColor="Gray" 
+                                                                   FontAttributes="Bold" 
+                                                                   FontSize="12">
+                                                                <Label.GestureRecognizers>
+                                                                    <TapGestureRecognizer 
+                                                                        Tapped="OnReplyQuestionClicked" 
+                                                                        CommandParameter="{Binding .}" />
+                                                                </Label.GestureRecognizers>
+                                                            </Label>
+                                                        </HorizontalStackLayout>
+
+                                                        <!-- Nested Replies -->
+                                                        <StackLayout BindableLayout.ItemsSource="{Binding Replies}" Margin="5,10,0,0">
+                                                            <BindableLayout.ItemTemplate>
+                                                                <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts_Questions_Replies">
+                                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="0,5">
+                                                                        <!-- Thread Line Indicator -->
+                                                                        <BoxView Grid.Column="0" 
+                                                                                 WidthRequest="2" 
+                                                                                 Color="{AppThemeBinding Light=#E0E0E0, Dark=#444444}" 
+                                                                                 Margin="10,0,15,0" 
+                                                                                 VerticalOptions="FillAndExpand" />
+
+                                                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                            <!-- Comment Bubble -->
+                                                                            <Border Stroke="Transparent" BackgroundColor="{AppThemeBinding Light=#F0F2F5, Dark=#3A3B3C}" Padding="12,8" HorizontalOptions="Start">
+                                                                                <Border.StrokeShape>
+                                                                                    <RoundRectangle CornerRadius="18" />
+                                                                                </Border.StrokeShape>
+                                                                                <VerticalStackLayout Spacing="2">
+                                                                                    <HorizontalStackLayout Spacing="5">
+                                                                                        <!-- Homeowner Avatar & Name -->
+                                                                                        <Image Source="{Binding Author.ProfilePictureUrl}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNullConverter}}"
+                                                                                               WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                                                                               BackgroundColor="LightGray">
+                                                                                            <Image.Clip>
+                                                                                                <EllipseGeometry RadiusX="10" RadiusY="10" Center="10,10" />
+                                                                                            </Image.Clip>
+                                                                                        </Image>
+                                                                                        <Label Text="{Binding Author.FirstName, StringFormat='{0} (You)'}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNullConverter}}" 
+                                                                                               FontSize="12" FontAttributes="Bold" TextColor="Green" VerticalOptions="Center" />
+
+                                                                                        <!-- Tradesman Avatar & Name -->
+                                                                                        <Image Source="{Binding TradesmanProfile.User.ProfilePictureUrl}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNotNullConverter}}"
+                                                                                               WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                                                                               BackgroundColor="LightGray">
+                                                                                            <Image.Clip>
+                                                                                                <EllipseGeometry RadiusX="10" RadiusY="10" Center="10,10" />
+                                                                                            </Image.Clip>
+                                                                                        </Image>
+                                                                                        <Label Text="{Binding TradesmanProfile.User.FirstName, StringFormat='{0}'}" 
+                                                                                               IsVisible="{Binding TradesmanProfile, Converter={StaticResource IsNotNullConverter}}" 
+                                                                                               FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                                                                    </HorizontalStackLayout>
+                                                                                    <Label Text="{Binding QuestionText}" FontSize="13" TextColor="{AppThemeBinding Light=#1C1E21, Dark=#E4E6EB}" />
+                                                                                </VerticalStackLayout>
+                                                                            </Border>
+
+                                                                            <!-- Reply action for the nested comment -->
+                                                                            <Label Text="Reply" 
+                                                                                   TextColor="Gray" 
+                                                                                   FontSize="11" 
+                                                                                   FontAttributes="Bold" 
+                                                                                   Margin="12,2,0,0">
+                                                                                <Label.GestureRecognizers>
+                                                                                    <TapGestureRecognizer 
+                                                                                        Tapped="OnReplyQuestionClicked" 
+                                                                                        CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type graphql:IGetMyProjects_MyProjects_JobPosts_Questions}}}" />
+                                                                                </Label.GestureRecognizers>
+                                                                            </Label>
+                                                                        </VerticalStackLayout>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </BindableLayout.ItemTemplate>
+                                                        </StackLayout>
                                                     </VerticalStackLayout>
                                                 </Border>
                                             </DataTemplate>

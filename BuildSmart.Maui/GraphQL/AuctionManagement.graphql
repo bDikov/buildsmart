@@ -48,6 +48,7 @@ query GetAvailableAuctions {
       id
       jobPostId
       tradesmanProfileId
+      authorId
       questionText
       answerText
       answeredAt
@@ -58,6 +59,36 @@ query GetAvailableAuctions {
         id
         user {
           firstName
+          lastName
+          profilePictureUrl
+        }
+      }
+      author {
+        id
+        firstName
+        lastName
+        profilePictureUrl
+      }
+      replies {
+        id
+        parentQuestionId
+        tradesmanProfileId
+        authorId
+        questionText
+        createdAt
+        tradesmanProfile {
+          id
+          user {
+            firstName
+            lastName
+            profilePictureUrl
+          }
+        }
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
         }
       }
     }
@@ -114,6 +145,7 @@ query GetAuctionById($jobId: UUID!) {
       id
       jobPostId
       tradesmanProfileId
+      authorId
       questionText
       answerText
       answeredAt
@@ -124,6 +156,36 @@ query GetAuctionById($jobId: UUID!) {
         id
         user {
           firstName
+          lastName
+          profilePictureUrl
+        }
+      }
+      author {
+        id
+        firstName
+        lastName
+        profilePictureUrl
+      }
+      replies {
+        id
+        parentQuestionId
+        tradesmanProfileId
+        authorId
+        questionText
+        createdAt
+        tradesmanProfile {
+          id
+          user {
+            firstName
+            lastName
+            profilePictureUrl
+          }
+        }
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
         }
       }
     }
@@ -180,6 +242,7 @@ query GetPassedAuctions {
       id
       jobPostId
       tradesmanProfileId
+      authorId
       questionText
       answerText
       answeredAt
@@ -190,6 +253,36 @@ query GetPassedAuctions {
         id
         user {
           firstName
+          lastName
+          profilePictureUrl
+        }
+      }
+      author {
+        id
+        firstName
+        lastName
+        profilePictureUrl
+      }
+      replies {
+        id
+        parentQuestionId
+        tradesmanProfileId
+        authorId
+        questionText
+        createdAt
+        tradesmanProfile {
+          id
+          user {
+            firstName
+            lastName
+            profilePictureUrl
+          }
+        }
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
         }
       }
     }
@@ -242,5 +335,13 @@ mutation SubmitBid($tradesmanProfileId: UUID!, $jobPostId: UUID!, $subtotal: Dec
       total
       currency
     }
+  }
+}
+
+mutation ReplyToJobQuestion($parentQuestionId: UUID!, $replyText: String!) {
+  replyToJobQuestion(parentQuestionId: $parentQuestionId, replyText: $replyText) {
+    id
+    questionText
+    createdAt
   }
 }

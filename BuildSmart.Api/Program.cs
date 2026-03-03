@@ -45,9 +45,12 @@ public partial class Program
 
 		// Add DbContext and PostgreSQL Connection
 		builder.Services.AddDbContext<AppDbContext>(options =>
-			options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-				b => b.MigrationsAssembly("BuildSmart.Infrastructure")));
-
+		        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+		                b => 
+		                {
+		                    b.MigrationsAssembly("BuildSmart.Infrastructure");
+		                    b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+		                }));
 		// Add Repositories and UnitOfWork
 		builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 		builder.Services.AddScoped<IUserRepository, UserRepository>();

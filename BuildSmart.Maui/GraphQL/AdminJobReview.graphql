@@ -46,10 +46,40 @@ query GetProjectsForReview {
         questionText
         answerText
         isAnswered
+        authorId
+        tradesmanProfileId
         tradesmanProfile {
           user {
             firstName
             lastName
+          }
+        }
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
+        }
+        replies {
+          id
+          parentQuestionId
+          tradesmanProfileId
+          authorId
+          questionText
+          createdAt
+          tradesmanProfile {
+            id
+            user {
+              firstName
+              lastName
+              profilePictureUrl
+            }
+          }
+          author {
+            id
+            firstName
+            lastName
+            profilePictureUrl
           }
         }
       }
@@ -109,10 +139,40 @@ query GetJobsForReview {
       isAnswered
       isEdited
       isAnswerEdited
+      authorId
+      tradesmanProfileId
       tradesmanProfile {
         user {
           firstName
           lastName
+        }
+      }
+      author {
+        id
+        firstName
+        lastName
+        profilePictureUrl
+      }
+      replies {
+        id
+        parentQuestionId
+        tradesmanProfileId
+        authorId
+        questionText
+        createdAt
+        tradesmanProfile {
+          id
+          user {
+            firstName
+            lastName
+            profilePictureUrl
+          }
+        }
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
         }
       }
     }

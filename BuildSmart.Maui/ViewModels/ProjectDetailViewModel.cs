@@ -116,37 +116,68 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	[RelayCommand]
 	private async Task RespondToAdminAsync(IGetMyProjects_MyProjects_JobPosts job)
 	{
-		string response = await Shell.Current.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
-		if (string.IsNullOrWhiteSpace(response)) return;
+	        string response = await Shell.Current.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
+	        if (string.IsNullOrWhiteSpace(response)) return;
 
-		try
-		{
-			IsBusy = true;
-			// Note: AddJobFeedback mutation might need to be imported or available in this context
-			var result = await _apiClient.AddJobFeedback.ExecuteAsync(job.Id, response);
+	        try
+	        {
+	                IsBusy = true;
+	                // Note: AddJobFeedback mutation might need to be imported or available in this context     
+	                var result = await _apiClient.AddJobFeedback.ExecuteAsync(job.Id, response);
 
-			if (result.Errors.Count > 0)
-			{
-				await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
-				return;
-			}
+	                if (result.Errors.Count > 0)
+	                {
+	                        await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+	                        return;
+	                }
 
-			await Shell.Current.DisplayAlert("Success", "Response sent to Admin.", "OK");
-			await ReloadProjectAsync();
-		}
-		catch (Exception ex)
-		{
-			await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-		}
-		finally
-		{
-			IsBusy = false;
-		}
+	                await ReloadProjectAsync();
+	                }
+	                catch (Exception ex)
+	                {
+	                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+	                }
+	                finally
+	                {
+	                IsBusy = false;
+	                }
+	                }
+
+	                [RelayCommand]
+	                private async Task ReplyToQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)
+	                {
+	                if (question == null) return;
+
+	                string replyText = await Shell.Current.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
+	                if (string.IsNullOrWhiteSpace(replyText)) return;
+
+	                try
+	                {
+	                IsBusy = true;
+
+	                var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(question.Id, replyText);
+
+	                if (result.Errors.Count > 0)
+	                {
+	                        await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+	                        return;
+	                }
+
+	                if (Project != null)
+	                {
+	                        await ReloadProjectAsync();
+	                }	        }
+	        catch (Exception ex)
+	        {
+	                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+	        }
+	        finally
+	        {
+	                IsBusy = false;
+	        }
 	}
-
 	[RelayCommand]
-	private async Task AnswerQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)
-	{
+	private async Task AnswerQuestionAsync(IGetMyProjects_MyProjects_JobPosts_Questions question)	{
 		string answer = await Shell.Current.DisplayPromptAsync("Answer Tradesman", question.QuestionText, "Submit", "Cancel", "Write your answer here...");
 		if (string.IsNullOrWhiteSpace(answer)) return;
 

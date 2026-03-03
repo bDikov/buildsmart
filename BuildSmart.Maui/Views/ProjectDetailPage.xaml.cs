@@ -67,4 +67,36 @@ public partial class ProjectDetailPage : ContentPage
             await _viewModel.ReviewScopeCommand.ExecuteAsync(job);
         }
     }
+
+    private async void OnReplyQuestionClicked(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            var parameter = e.Parameter ?? (sender as BindableObject)?.BindingContext;
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] OnReplyQuestionClicked fired.");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Sender type: {sender?.GetType().Name ?? "null"}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Parameter type: {parameter?.GetType().Name ?? "null"}");
+
+            if (parameter is IGetMyProjects_MyProjects_JobPosts_Questions question)
+            {
+                await _viewModel.ReplyToQuestionCommand.ExecuteAsync(question);
+            }
+            else if (parameter is IGetMyProjects_MyProjects_JobPosts_Questions_Replies reply)
+            {
+                // We need to implement ReplyToNestedQuestionCommand on ProjectDetailViewModel
+                // But for now, to stop the crash:
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Nested reply clicked. Implement ViewModel logic!");
+                await Shell.Current.DisplayAlert("Feature Pending", "Replying to a nested reply is not yet implemented on this page.", "OK");
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Debug", $"Unrecognized parameter type: {parameter?.GetType().Name}", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+    }
 }

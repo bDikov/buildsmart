@@ -48,10 +48,42 @@ query GetMyProjects {
         isAnswered
         isEdited
         isAnswerEdited
+        authorId
+        tradesmanProfileId
         tradesmanProfile {
           id
           user {
             firstName
+            lastName
+            profilePictureUrl
+          }
+        }
+        author {
+          id
+          firstName
+          lastName
+          profilePictureUrl
+        }
+        replies {
+          id
+          parentQuestionId
+          tradesmanProfileId
+          authorId
+          questionText
+          createdAt
+          tradesmanProfile {
+            id
+            user {
+              firstName
+              lastName
+              profilePictureUrl
+            }
+          }
+          author {
+            id
+            firstName
+            lastName
+            profilePictureUrl
           }
         }
       }

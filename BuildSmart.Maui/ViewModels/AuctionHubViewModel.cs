@@ -149,4 +149,53 @@ public partial class AuctionHubViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+    [RelayCommand]
+    private async Task ReplyToQuestionAsync(IGetAuctionById_AuctionById_Questions question)
+    {
+        if (question == null) return;
+        await ExecuteReplyAsync(question.Id);
+    }
+
+    [RelayCommand]
+    private async Task ReplyToNestedQuestionAsync(IGetAuctionById_AuctionById_Questions_Replies reply)
+    {
+        if (reply == null) return;
+        // When replying to a reply, we attach it to the root parent question to keep a flat thread, 
+        // OR we can attach it to the reply itself if the backend supports deep nesting.
+        // Assuming we keep the thread 1 level deep per UI design:
+        await ExecuteReplyAsync(reply.ParentQuestionId ?? reply.Id);
+    }
+
+    private async Task ExecuteReplyAsync(Guid parentQuestionId)
+    {
+        string replyText = await Shell.Current.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
+        if (string.IsNullOrWhiteSpace(replyText)) return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(parentQuestionId, replyText);
+
+            if (result.Errors.Count > 0)
+            {
+                await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+                return;
+            }
+            
+            if (Guid.TryParse(JobId, out var id))
+            {
+                await LoadAuctionAsync(id);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }

@@ -13,6 +13,7 @@ public class JobPostQuestionType : ObjectType<JobPostQuestion>
         descriptor.Field(q => q.IsAnswered).Type<NonNullType<BooleanType>>();
         descriptor.Field(q => q.IsEdited).Type<NonNullType<BooleanType>>();
         descriptor.Field(q => q.IsAnswerEdited).Type<NonNullType<BooleanType>>();
+        descriptor.Field(q => q.ParentQuestionId).Type<IdType>();
         descriptor.Field(q => q.TradesmanProfileId).Type<IdType>();
         descriptor.Field(q => q.TradesmanProfile).Type<TradesmanProfileType>();
         descriptor.Field(q => q.AuthorId).Type<IdType>();
