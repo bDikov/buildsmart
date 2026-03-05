@@ -109,12 +109,8 @@ public class Query
 		    .Include(j => j.Questions)
                 .ThenInclude(q => q.Author)
             .Include(j => j.Questions)
-                .ThenInclude(q => q.Replies)
-                    .ThenInclude(r => r.Author)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.Replies)
-                    .ThenInclude(r => r.TradesmanProfile)
-                        .ThenInclude(tp => tp.User)
+                .ThenInclude(q => q.TradesmanProfile)
+                    .ThenInclude(tp => tp.User)
 		    .OrderByDescending(j => j.CreatedAt)
 		    .ToListAsync();
 
@@ -156,12 +152,8 @@ public class Query
             .Include(j => j.Questions)
                 .ThenInclude(q => q.Author)
             .Include(j => j.Questions)
-                .ThenInclude(q => q.Replies)
-                    .ThenInclude(r => r.Author)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.Replies)
-                    .ThenInclude(r => r.TradesmanProfile)
-                        .ThenInclude(tp => tp.User)
+                .ThenInclude(q => q.TradesmanProfile)
+                    .ThenInclude(tp => tp.User)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
 
@@ -190,9 +182,6 @@ public class Query
                     .ThenInclude(r => r.Author)
 		    .Include(j => j.Questions)
                 .ThenInclude(q => q.Author)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.Replies)
-                    .ThenInclude(r => r.Author)
             .Include(j => j.Questions)
                 .ThenInclude(q => q.TradesmanProfile)
                     .ThenInclude(tp => tp.User)
@@ -251,15 +240,6 @@ public class Query
                 .ThenInclude(j => j.Questions)
                     .ThenInclude(q => q.TradesmanProfile)
                         .ThenInclude(tp => tp.User)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.Questions)
-                    .ThenInclude(q => q.Replies)
-                        .ThenInclude(r => r.Author)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.Questions)
-                    .ThenInclude(q => q.Replies)
-                        .ThenInclude(r => r.TradesmanProfile)
-                            .ThenInclude(tp => tp.User)
             .FirstOrDefaultAsync(p => p.Id == projectId);
 
         if (project == null) return null;
@@ -286,6 +266,14 @@ public class Query
 
 		return await notificationRepository.GetAllByUserIdAsync(userId);
 	}
+
+    [Authorize]
+    public async Task<JobPostQuestion?> GetJobPostQuestionById(
+        Guid id,
+        [Service] IJobPostQuestionRepository repository)
+    {
+        return await repository.GetByIdAsync(id);
+    }
 
 	[UseProjection]
 	[UseFiltering]

@@ -54,6 +54,11 @@ public class QueryType : ObjectType<Query>
                     .Description("Gets a specific auction by Job ID.")
                     .Type<AuctionType>()
                     .Authorize();
+
+                descriptor.Field(q => q.GetJobPostQuestionById(default!, default!))
+                    .Description("Gets a specific job post question by ID.")
+                    .Type<JobPostQuestionType>()
+                    .Authorize();
         	}
         }
         

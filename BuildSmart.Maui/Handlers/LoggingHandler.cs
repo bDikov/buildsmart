@@ -21,10 +21,14 @@ public class LoggingHandler : DelegatingHandler
             var response = await base.SendAsync(request, cancellationToken);
             Console.WriteLine($"[HTTP Response {requestId}] Status: {response.StatusCode}");
 
+            var responseContent = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[HTTP Response {requestId} Error] {errorContent}");
+                Console.WriteLine($"[HTTP Response {requestId} Error] {responseContent}");
+            }
+            else if (responseContent.Contains("\"errors\":"))
+            {
+                Console.WriteLine($"[HTTP Response {requestId} GraphQL Error] {responseContent}");
             }
 
             return response;

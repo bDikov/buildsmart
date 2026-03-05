@@ -7,6 +7,7 @@ using StrawberryShake;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 
 namespace BuildSmart.Maui.Tests;
 
@@ -25,13 +26,18 @@ public class UserManagementViewModelTests
     public async Task LoadUsersAsync_WhenSuccessful_PopulatesUsers()
     {
         // Arrange
-        var users = new List<IGetUsers_Users>
-        {
-            new GetUsers_Users_User(Guid.NewGuid(), "John", "Doe", "john@doe.com", UserRoleTypes.Homeowner, null)
-        };
+        var mockUser = new Mock<IGetUsers_Users>();
+        mockUser.Setup(u => u.Id).Returns(Guid.NewGuid());
+        mockUser.Setup(u => u.FirstName).Returns("John");
+        mockUser.Setup(u => u.LastName).Returns("Doe");
+        mockUser.Setup(u => u.Email).Returns("john@doe.com");
+        mockUser.Setup(u => u.Role).Returns(UserRoleTypes.Homeowner);
 
-        var responseMock = new Mock<IExecuteResult<IGetUsers>>();
-        responseMock.Setup(r => r.Data).Returns(new GetUsers_Users(users));
+        var resultDataMock = new Mock<IGetUsersResult>();
+        resultDataMock.Setup(d => d.Users).Returns(new List<IGetUsers_Users> { mockUser.Object });
+
+        var responseMock = new Mock<IOperationResult<IGetUsersResult>>();
+        responseMock.Setup(r => r.Data).Returns(resultDataMock.Object);
         responseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
 
         var queryMock = new Mock<IGetUsersQuery>();
@@ -46,35 +52,5 @@ public class UserManagementViewModelTests
         _viewModel.Users.Should().HaveCount(1);
         _viewModel.Users[0].FirstName.Should().Be("John");
         _viewModel.IsEmpty.Should().BeFalse();
-    }
-
-    // Concrete implementation for Mocking StrawberryShake interfaces
-    private class GetUsers_Users : IGetUsers
-    {
-        public GetUsers_Users(IReadOnlyList<IGetUsers_Users> users)
-        {
-            Users = users;
-        }
-        public IReadOnlyList<IGetUsers_Users> Users { get; }
-    }
-
-    private class GetUsers_Users_User : IGetUsers_Users
-    {
-        public GetUsers_Users_User(Guid id, string firstName, string lastName, string email, UserRoleTypes role, IGetUsers_Users_TradesmanProfile? tradesmanProfile)
-        {
-            Id = id;
-            FirstName = firstName;
-            LastName = lastName;
-            Email = email;
-            Role = role;
-            TradesmanProfile = tradesmanProfile;
-        }
-
-        public Guid Id { get; }
-        public string FirstName { get; }
-        public string LastName { get; }
-        public string Email { get; }
-        public UserRoleTypes Role { get; }
-        public IGetUsers_Users_TradesmanProfile? TradesmanProfile { get; }
     }
 }

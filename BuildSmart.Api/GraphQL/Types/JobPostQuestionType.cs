@@ -1,4 +1,5 @@
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Application.Interfaces;
 using System.Security.Claims;
 
 namespace BuildSmart.Api.GraphQL.Types;
@@ -19,23 +20,65 @@ public class JobPostQuestionType : ObjectType<JobPostQuestion>
 		descriptor.Field(q => q.TradesmanProfile).Type<TradesmanProfileType>();
 		descriptor.Field(q => q.AuthorId).Type<IdType>();
 		descriptor.Field(q => q.Author).Type<UserType>();
-		descriptor.Field(q => q.Replies).Type<NonNullType<ListType<NonNullType<JobPostQuestionType>>>>();
+		
+        descriptor.Field("replies")
+            .Argument("offset", a => a.Type<IntType>().DefaultValue(0))
+            .Argument("limit", a => a.Type<IntType>().DefaultValue(5))
+            .Type<NonNullType<ListType<NonNullType<JobPostQuestionType>>>>()
+            .Resolve(async context =>
+            {
+                var question = context.Parent<JobPostQuestion>();
+                var offset = context.ArgumentValue<int>("offset");
+                var limit = context.ArgumentValue<int>("limit");
+                var service = context.Service<IJobPostService>();
+                
+                return await service.GetQuestionRepliesAsync(question.Id, offset, limit);
+            });
+
+        descriptor.Field("replyCount")
+            .Type<NonNullType<IntType>>()
+            .Resolve(async context =>
+            {
+                var question = context.Parent<JobPostQuestion>();
+                var service = context.Service<IJobPostService>();
+                
+                var dataLoader = context.BatchDataLoader<Guid, int>(
+                    async (keys, ct) => 
+                    {
+                        var counts = await service.GetQuestionReplyCountsBatchAsync(keys);
+                        // Ensure all requested keys have a value, defaulting to 0
+                        return keys.ToDictionary(k => k, k => counts.TryGetValue(k, out var count) ? count : 0);
+                    });
+
+                return await dataLoader.LoadAsync(question.Id, context.RequestAborted);
+            });
 
 		// Computed field to check if the current user is the author of the question/reply
 		descriptor.Field("isEditable")
 			.Type<NonNullType<BooleanType>>()
 			.Resolve(context =>
 			{
-				var question = context.Parent<JobPostQuestion>();
+                var question = context.Parent<JobPostQuestion>();
+                if (question.AuthorId == null) return false;
+
+                // Get ClaimsPrincipal from either HttpContext or ContextData
 				var httpContext = context.Service<IHttpContextAccessor>().HttpContext;
-				var claimsPrincipal = httpContext?.User;
+				var claimsPrincipal = httpContext?.User ?? 
+                                     (context.ContextData.TryGetValue("ClaimsPrincipal", out var p) ? p as ClaimsPrincipal : null);
 
 				if (claimsPrincipal != null)
 				{
-					var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
-					if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
+					var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? 
+                                     claimsPrincipal.FindFirst("sub") ?? 
+                                     claimsPrincipal.FindFirst("nameid") ??
+                                     claimsPrincipal.Claims.FirstOrDefault(c => c.Type.EndsWith("nameidentifier")) ??
+                                     claimsPrincipal.Claims.FirstOrDefault(c => c.Type.EndsWith("sub"));
+                                     
+					if (userIdClaim != null)
 					{
-						return question.AuthorId == userId;
+                        var currentUserIdStr = userIdClaim.Value.Replace("-", "").ToLower();
+                        var authorIdStr = question.AuthorId.ToString()?.Replace("-", "").ToLower();
+						return authorIdStr == currentUserIdStr;
 					}
 				}
 				return false;
@@ -48,21 +91,28 @@ public class JobPostQuestionType : ObjectType<JobPostQuestion>
 			{
 				var question = context.Parent<JobPostQuestion>();
 				var httpContext = context.Service<IHttpContextAccessor>().HttpContext;
-				var claimsPrincipal = httpContext?.User;
+				var claimsPrincipal = httpContext?.User ??
+		(context.ContextData.TryGetValue("ClaimsPrincipal", out var p) ? p as ClaimsPrincipal : null);
 
 				if (claimsPrincipal != null)
 				{
-					var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
-					if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
+					var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ??
+		claimsPrincipal.FindFirst("sub") ??
+		claimsPrincipal.FindFirst("nameid") ??
+		claimsPrincipal.Claims.FirstOrDefault(c => c.Type.EndsWith("nameidentifier")) ??
+		claimsPrincipal.Claims.FirstOrDefault(c => c.Type.EndsWith("sub"));
+
+					if (userIdClaim != null)
 					{
 						// Check if question has a job post and project, and user is the project owner
-						if (question.JobPost?.Project != null)
+						if (question.JobPost?.Project?.HomeownerId != null)
 						{
-							return question.JobPost.Project.HomeownerId == userId;
+		var currentUserIdStr = userIdClaim.Value.Replace("-", "").ToLower();
+		var ownerIdStr = question.JobPost.Project.HomeownerId.ToString()?.Replace("-", "").ToLower();
+							return ownerIdStr == currentUserIdStr;
 						}
 					}
 				}
 				return false;
-			});
-	}
+			});	}
 }

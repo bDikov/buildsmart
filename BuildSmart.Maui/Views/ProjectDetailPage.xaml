@@ -29,7 +29,7 @@
         </VerticalStackLayout>
 
         <!-- Main Content (Virtualized for Performance) -->
-        <CollectionView ItemsSource="{Binding Project.JobPosts}" 
+        <CollectionView ItemsSource="{Binding JobPosts}" 
                         IsVisible="{Binding HasLoaded}"
                         SelectionMode="None">
             
@@ -46,19 +46,19 @@
             </CollectionView.Header>
 
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="graphql:IJobPostDetails">
+                <DataTemplate x:DataType="vm:JobPostViewModel">
                     <ContentView Padding="20,5">
                         <Frame Padding="15" BorderColor="LightGray" BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#333333}">
                             <VerticalStackLayout Spacing="5">
-                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Label Text="{Binding ServiceCategory.Name}" TextColor="Gray" FontSize="12"/>
-                                <Label Text="{Binding Status}" TextColor="Orange" FontSize="12" FontAttributes="Bold"/>
-                                <Label Text="{Binding Description}" TextColor="Gray" Margin="0,5,0,0"/>
+                                <Label Text="{Binding JobPost.Title}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Label Text="{Binding JobPost.ServiceCategory.Name}" TextColor="Gray" FontSize="12"/>
+                                <Label Text="{Binding JobPost.Status}" TextColor="Orange" FontSize="12" FontAttributes="Bold"/>
+                                <Label Text="{Binding JobPost.Description}" TextColor="Gray" Margin="0,5,0,0"/>
 
                                 <!-- Admin Feedback -->
-                                <VerticalStackLayout IsVisible="{Binding AdminFeedback, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Margin="0,10">
+                                <VerticalStackLayout IsVisible="{Binding JobPost.AdminFeedback, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Margin="0,10">
                                     <Label Text="Admin Feedback:" FontAttributes="Bold" TextColor="#D32F2F" FontSize="12"/>
-                                    <Label Text="{Binding AdminFeedback}" TextColor="#D32F2F" FontSize="13" />
+                                    <Label Text="{Binding JobPost.AdminFeedback}" TextColor="#D32F2F" FontSize="13" />
                                 </VerticalStackLayout>
 
                                 <!-- Generated Scope View -->
@@ -69,8 +69,8 @@
                                             <Style.Triggers>
                                                 <MultiTrigger TargetType="VerticalStackLayout">
                                                     <MultiTrigger.Conditions>
-                                                        <BindingCondition Binding="{Binding GeneratedScope, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Value="True" />
-                                                        <BindingCondition Binding="{Binding Status}" Value="Open" />
+                                                        <BindingCondition Binding="{Binding JobPost.GeneratedScope, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Value="True" />
+                                                        <BindingCondition Binding="{Binding JobPost.Status}" Value="Open" />
                                                     </MultiTrigger.Conditions>
                                                     <Setter Property="IsVisible" Value="True" />
                                                 </MultiTrigger>
@@ -78,14 +78,14 @@
                                         </Style>
                                     </VerticalStackLayout.Style>
                                     <Label Text="Finalized Scope of Work:" FontSize="12" FontAttributes="Bold" TextColor="#1565C0"/>
-                                    <Label Text="{Binding GeneratedScope}" FontSize="12" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                    <Label Text="{Binding JobPost.GeneratedScope}" FontSize="12" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                 </VerticalStackLayout>
 
                                 <!-- Clarification Thread -->
                                 <VerticalStackLayout Margin="0,15,0,0" Spacing="8">
                                     <Label Text="Admin Clarifications &amp; Discussion:" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Primary}"/>
                                     
-                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Feedbacks}">
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding JobPost.Feedbacks}">
                                         <BindableLayout.EmptyView>
                                             <Label Text="No active clarifications." TextColor="Gray" FontSize="12" FontAttributes="Italic" Margin="10,0"/>
                                         </BindableLayout.EmptyView>
@@ -181,13 +181,13 @@
                                     
                                     <Button Text="Ask Admin a Question" 
                                             Clicked="OnReplyToAdminClicked"
-                                            CommandParameter="{Binding .}"
+                                            CommandParameter="{Binding JobPost}"
                                             HeightRequest="35" FontSize="11" Padding="15,0"
                                             BackgroundColor="{StaticResource Primary}" TextColor="White" HorizontalOptions="End" CornerRadius="18"/>
                                 </VerticalStackLayout>
 
                                 <!-- Tradesman Q&A Section -->
-                                <VerticalStackLayout IsVisible="{Binding Status, Converter={StaticResource EqualConverter}, ConverterParameter='Open'}" Margin="0,15,0,0" Spacing="8">
+                                <VerticalStackLayout IsVisible="{Binding JobPost.Status, Converter={StaticResource EqualConverter}, ConverterParameter='Open'}" Margin="0,15,0,0" Spacing="8">
                                     <Label Text="Tradesman Questions (Public):" FontAttributes="Bold" FontSize="13" TextColor="#2E7D32"/>
                                     
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Questions}">
@@ -195,38 +195,39 @@
                                             <Label Text="No questions from tradesmen yet." TextColor="Gray" FontSize="12" FontAttributes="Italic" Margin="10,0"/>
                                         </BindableLayout.EmptyView>
                                         <BindableLayout.ItemTemplate>
-                                            <DataTemplate x:DataType="graphql:IQuestionDetails">
+                                            <DataTemplate x:DataType="vm:QuestionViewModel">
                                                 <Border Stroke="#C8E6C9" BackgroundColor="{AppThemeBinding Light=#F1F8E9, Dark=#1B5E20}" Padding="12" Margin="0,2">
                                                     <Border.StrokeShape>
                                                         <RoundRectangle CornerRadius="8" />
                                                     </Border.StrokeShape>
                                                     <VerticalStackLayout Spacing="4">
                                                         <HorizontalStackLayout Spacing="5">
-                                                            <Label Text="{Binding TradesmanProfile.User.FirstName, StringFormat='Q from {0}:'}" FontSize="11" FontAttributes="Bold" TextColor="#388E3C" />
-                                                            <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsEdited}" VerticalOptions="Center" />
-                                                            <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+                                                            <Label Text="{Binding Question.TradesmanProfile.User.FirstName, StringFormat='Q from {0}:'}" FontSize="11" FontAttributes="Bold" TextColor="#388E3C" />
+                                                            <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding Question.IsEdited}" VerticalOptions="Center" />
+                                                            <Label Text="{Binding Question.CreatedAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
                                                         </HorizontalStackLayout>
-                                                        <Label Text="{Binding QuestionText}" FontSize="13" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                                        <Label Text="{Binding Question.QuestionText}" FontSize="13" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                                         
-                                                        <BoxView HeightRequest="1" Color="#C8E6C9" Margin="0,5" IsVisible="{Binding IsAnswered}" />
+                                                        <BoxView HeightRequest="1" Color="#C8E6C9" Margin="0,5" IsVisible="{Binding Question.IsAnswered}" />
                                                         
-                                                        <VerticalStackLayout IsVisible="{Binding IsAnswered}">
+                                                        <VerticalStackLayout IsVisible="{Binding Question.IsAnswered}">
                                                             <HorizontalStackLayout Spacing="5">
                                                                 <Label Text="Your Answer:" FontSize="11" FontAttributes="Bold" TextColor="#1B5E20" />
-                                                                <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding IsAnswerEdited}" VerticalOptions="Center" />
-                                                                <Label Text="{Binding AnsweredAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
+                                                                <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding Question.IsAnswerEdited}" VerticalOptions="Center" />
+                                                                <Label Text="{Binding Question.AnsweredAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
                                                                 
-                                                                <Button Text="✎" Clicked="OnEditAnswerClicked" CommandParameter="{Binding .}"
-                                                                        IsVisible="{Binding IsAnswerEditable}"
+                                                                <Button Text="✎" Clicked="OnEditAnswerClicked" CommandParameter="{Binding Question}"
+
+                                                                        IsVisible="{Binding Question.IsAnswerEditable}"
                                                                         FontSize="16" BackgroundColor="Transparent" TextColor="#1B5E20" Padding="0" HeightRequest="30" WidthRequest="30" VerticalOptions="Center" />
                                                             </HorizontalStackLayout>
-                                                            <Label Text="{Binding AnswerText}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                                            <Label Text="{Binding Question.AnswerText}" FontSize="13" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                                         </VerticalStackLayout>
 
                                                         <Button Text="Answer Question"
-                                                                IsVisible="{Binding IsAnswered, Converter={StaticResource InverseBoolConverter}}"
+                                                                IsVisible="{Binding Question.IsAnswered, Converter={StaticResource InverseBoolConverter}}"
                                                                 Clicked="OnAnswerQuestionClicked"
-                                                                CommandParameter="{Binding .}"
+                                                                CommandParameter="{Binding Question}"
                                                                 HeightRequest="30" FontSize="10" Padding="10,0" Margin="0,5,0,0"
                                                                 BackgroundColor="#4CAF50" TextColor="White" HorizontalOptions="Start" CornerRadius="15"/>
 
@@ -238,13 +239,27 @@
                                                                 <Label.GestureRecognizers>
                                                                     <TapGestureRecognizer 
                                                                         Tapped="OnReplyQuestionClicked" 
+                                                                        CommandParameter="{Binding Question}" />
+                                                                </Label.GestureRecognizers>
+                                                            </Label>
+
+                                                            <!-- Lazy Loading Trigger -->
+                                                            <Label Text="{Binding ButtonText}" 
+                                                                   IsVisible="{Binding HasAnyReplies}"
+                                                                   TextColor="{StaticResource Primary}"                                                                     FontAttributes="Bold" 
+                                                                   FontSize="12">
+                                                                <Label.GestureRecognizers>
+                                                                    <TapGestureRecognizer 
+                                                                        Command="{Binding ToggleConversationCommand}"
                                                                         CommandParameter="{Binding .}" />
                                                                 </Label.GestureRecognizers>
                                                             </Label>
                                                         </HorizontalStackLayout>
 
                                                         <!-- Nested Replies -->
-                                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Replies}" Margin="5,10,0,0">
+                                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Replies}" 
+                                                                             IsVisible="{Binding IsExpanded}"
+                                                                             Margin="5,10,0,0">
                                                             <BindableLayout.ItemTemplate>
                                                                 <DataTemplate x:DataType="graphql:IQuestionReplyDetails">
                                                                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="0,5">
@@ -324,14 +339,14 @@
 
                                 <Button Text="Edit Answers" 
                                         Clicked="OnEditAnswersClicked"
-                                        CommandParameter="{Binding .}"
+                                        CommandParameter="{Binding JobPost}"
                                         HeightRequest="40" FontSize="12" BackgroundColor="#FFA000" TextColor="White" Margin="0,10,0,0">
                                     <Button.Style>
                                         <Style TargetType="Button">
                                             <Setter Property="IsVisible" Value="False" />
                                             <Style.Triggers>
-                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected"><Setter Property="IsVisible" Value="True" /></DataTrigger>
-                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="WaitingForUserReview"><Setter Property="IsVisible" Value="True" /></DataTrigger>
+                                                <DataTrigger TargetType="Button" Binding="{Binding JobPost.Status}" Value="Rejected"><Setter Property="IsVisible" Value="True" /></DataTrigger>
+                                                <DataTrigger TargetType="Button" Binding="{Binding JobPost.Status}" Value="WaitingForUserReview"><Setter Property="IsVisible" Value="True" /></DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
@@ -339,14 +354,14 @@
 
                                 <Button Text="Review AI Scope" 
                                         Clicked="OnReviewScopeClicked"
-                                        CommandParameter="{Binding .}"
+                                        CommandParameter="{Binding JobPost}"
                                         BackgroundColor="Green" TextColor="White" HeightRequest="40" FontSize="12">
                                     <Button.Style>
                                         <Style TargetType="Button">
                                             <Setter Property="IsVisible" Value="False" />
                                             <Style.Triggers>
-                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="Rejected"><Setter Property="IsVisible" Value="True" /></DataTrigger>
-                                                <DataTrigger TargetType="Button" Binding="{Binding Status}" Value="WaitingForUserReview"><Setter Property="IsVisible" Value="True" /></DataTrigger>
+                                                <DataTrigger TargetType="Button" Binding="{Binding JobPost.Status}" Value="Rejected"><Setter Property="IsVisible" Value="True" /></DataTrigger>
+                                                <DataTrigger TargetType="Button" Binding="{Binding JobPost.Status}" Value="WaitingForUserReview"><Setter Property="IsVisible" Value="True" /></DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>

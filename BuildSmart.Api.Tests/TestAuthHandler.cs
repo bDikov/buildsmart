@@ -50,27 +50,29 @@ public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
                 return AuthenticateResult.Fail("Invalid JWT Token");
             }
 
-            // In JWT tokens, URIs are often mapped to short names.
-            // Role URI -> "role" or "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-            // NameId URI -> "nameid" or "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-            
             var claims = jsonToken.Claims.ToList();
             
             // Ensure we have both long and short forms for role check robustness
             var roleClaims = claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role" || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
             foreach(var rc in roleClaims)
             {
-                if (rc.Type != ClaimTypes.Role) claims.Add(new Claim(ClaimTypes.Role, rc.Value));
+                if (!claims.Any(c => c.Type == ClaimTypes.Role && c.Value == rc.Value))
+                    claims.Add(new Claim(ClaimTypes.Role, rc.Value));
             }
 
             var nameIdClaims = claims.Where(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "nameid" || c.Type == "sub").ToList();
             foreach(var nc in nameIdClaims)
             {
-                if (nc.Type != ClaimTypes.NameIdentifier) claims.Add(new Claim(ClaimTypes.NameIdentifier, nc.Value));
+                if (!claims.Any(c => c.Type == ClaimTypes.NameIdentifier && c.Value == nc.Value))
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, nc.Value));
             }
 
             var identity = new ClaimsIdentity(claims, SchemeName, ClaimTypes.Name, ClaimTypes.Role);
             var principal = new ClaimsPrincipal(identity);
+            
+            // CRITICAL: Explicitly set the HttpContext User
+            Context.User = principal;
+            
             var ticket = new AuthenticationTicket(principal, SchemeName);
             return AuthenticateResult.Success(ticket);
         }

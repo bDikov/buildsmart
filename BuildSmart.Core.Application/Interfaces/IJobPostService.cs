@@ -44,4 +44,8 @@ public interface IJobPostService
     Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid userId, string newText);
     Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer);
     Task<JobPostFeedback> EditJobFeedbackAsync(Guid feedbackId, Guid userId, string newText);
+    
+    Task<IEnumerable<JobPostQuestion>> GetQuestionRepliesAsync(Guid parentQuestionId, int offset, int limit);
+    Task<int> GetQuestionReplyCountAsync(Guid parentQuestionId);
+    Task<IDictionary<Guid, int>> GetQuestionReplyCountsBatchAsync(IEnumerable<Guid> parentQuestionIds);
 }

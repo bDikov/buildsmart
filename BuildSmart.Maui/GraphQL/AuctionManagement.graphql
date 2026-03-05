@@ -82,6 +82,15 @@ query GetPassedAuctions {
   }
 }
 
+query GetQuestionReplies($questionId: UUID!, $offset: Int!, $limit: Int!) {
+  questionReplies: jobPostQuestionById(id: $questionId) {
+    id
+    replies(offset: $offset, limit: $limit) {
+      ... QuestionReplyDetails
+    }
+  }
+}
+
 mutation AskJobQuestion($tradesmanProfileId: UUID!, $jobPostId: UUID!, $questionText: String!) {
   askJobQuestion(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId, questionText: $questionText) {
     id
