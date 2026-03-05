@@ -67,6 +67,11 @@ public partial class Program
 		builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 		builder.Services.AddScoped<IProjectRepository, ProjectRepository>(); // Added ProjectRepository registration
 		builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+		builder.Services.AddScoped<IJobPostQuestionRepository, JobPostQuestionRepository>();
+		builder.Services.AddScoped<IJobPostRepository, JobPostRepository>();
+		builder.Services.AddScoped<IJobPostFeedbackRepository, JobPostFeedbackRepository>();
+		builder.Services.AddScoped<IAuctionActionRepository, AuctionActionRepository>();
+		builder.Services.AddScoped<IBidRepository, BidRepository>();
 
 		// Add Application Services (Business Logic)
 		builder.Services.AddScoped<IBookingService, BookingService>();

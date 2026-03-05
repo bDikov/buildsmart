@@ -216,7 +216,7 @@
                                                                 <Label Text="(EDITED)" FontSize="9" TextColor="Gray" IsVisible="{Binding Question.IsAnswerEdited}" VerticalOptions="Center" />
                                                                 <Label Text="{Binding Question.AnsweredAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
                                                                 
-                                                                <Button Text="тЬО" Clicked="OnEditAnswerClicked" CommandParameter="{Binding Question}"
+                                                                <Button Text="✎" Clicked="OnEditAnswerClicked" CommandParameter="{Binding Question}"
 
                                                                         IsVisible="{Binding Question.IsAnswerEditable}"
                                                                         FontSize="16" BackgroundColor="Transparent" TextColor="#1B5E20" Padding="0" HeightRequest="30" WidthRequest="30" VerticalOptions="Center" />
@@ -245,13 +245,12 @@
 
                                                             <!-- Lazy Loading Trigger -->
                                                             <Label Text="{Binding ButtonText}" 
-                                                                   IsVisible="{Binding Question.ReplyCount, Converter={StaticResource InverseBoolConverter}, ConverterParameter=0}"
-                                                                   TextColor="{StaticResource Primary}" 
-                                                                   FontAttributes="Bold" 
+                                                                   IsVisible="{Binding HasAnyReplies}"
+                                                                   TextColor="{StaticResource Primary}"                                                                     FontAttributes="Bold" 
                                                                    FontSize="12">
                                                                 <Label.GestureRecognizers>
                                                                     <TapGestureRecognizer 
-                                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=ToggleConversationCommand}"
+                                                                        Command="{Binding ToggleConversationCommand}"
                                                                         CommandParameter="{Binding .}" />
                                                                 </Label.GestureRecognizers>
                                                             </Label>
@@ -331,21 +330,6 @@
                                                                 </DataTemplate>
                                                             </BindableLayout.ItemTemplate>
                                                         </VerticalStackLayout>
-                                                        
-                                                        <!-- Load More within expanded thread -->
-                                                        <Label Text="Show More Replies..." 
-                                                               IsVisible="{Binding HasMoreReplies}"
-                                                               TextColor="{StaticResource Primary}"
-                                                               FontAttributes="Bold"
-                                                               FontSize="11"
-                                                               Margin="40,5,0,0"
-                                                               HorizontalOptions="Start">
-                                                            <Label.GestureRecognizers>
-                                                                <TapGestureRecognizer 
-                                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectDetailViewModel}}, Path=LoadMoreRepliesCommand}"
-                                                                    CommandParameter="{Binding .}" />
-                                                            </Label.GestureRecognizers>
-                                                        </Label>
                                                     </VerticalStackLayout>
                                                 </Border>
                                             </DataTemplate>

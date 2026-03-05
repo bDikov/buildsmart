@@ -52,52 +52,33 @@ public partial class AuctionHubViewModel : ObservableObject
             if (result.Errors.Count == 0 && result.Data?.AuctionById != null)
             {
                 Auction = result.Data.AuctionById;
-                
+
                 Questions.Clear();
                 if (Auction.Questions != null)
                 {
                     foreach (var q in Auction.Questions)
                     {
-                        Questions.Add(new QuestionViewModel(q));
+                        Questions.Add(new QuestionViewModel(q, LoadMoreRepliesAsync));
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
+            }
+            catch (Exception ex)
+            {
             await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
+            }
+            finally
+            {
             IsBusy = false;
-        }
-    }
+            }
+            }
 
-    [RelayCommand]
-    private async Task ToggleConversationAsync(QuestionViewModel questionVm)
-    {
-        if (questionVm == null) return;
+            private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
+            {
+            if (questionVm == null || IsBusy) return;
 
-        if (questionVm.IsExpanded && !questionVm.HasMoreReplies)
-        {
-            questionVm.IsExpanded = false;
-            return;
-        }
-
-        if (!questionVm.IsExpanded || questionVm.HasMoreReplies)
-        {
-            await LoadMoreRepliesAsync(questionVm);
-            questionVm.IsExpanded = true;
-        }
-    }
-
-    [RelayCommand]
-    private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
-    {
-        if (questionVm == null || IsBusy) return;
-
-        try
-        {
+            try
+            {
             IsBusy = true;
             var result = await _apiClient.GetQuestionReplies.ExecuteAsync(
                 questionVm.Question.Id, 
@@ -114,20 +95,19 @@ public partial class AuctionHubViewModel : ObservableObject
             {
                 questionVm.AddReplies(result.Data.QuestionReplies.Replies);
             }
-        }
-        catch (Exception ex)
-        {
+            }
+            catch (Exception ex)
+            {
             await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
+            }
+            finally
+            {
             IsBusy = false;
-        }
-    }
+            }
+            }
 
-    [RelayCommand]
-    private async Task BackAsync()
-    {
+            [RelayCommand]
+            private async Task BackAsync()    {
         await Shell.Current.GoToAsync("..");
     }
 

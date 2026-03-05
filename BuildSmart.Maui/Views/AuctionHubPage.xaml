@@ -6,6 +6,7 @@
              xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
              x:Class="BuildSmart.Maui.Views.AuctionHubPage"
              x:DataType="vm:AuctionHubViewModel"
+             x:Name="thisPage"
              Title="Auction Hub">
 
     <ContentPage.Resources>
@@ -61,7 +62,7 @@
                                 <HorizontalStackLayout Spacing="5">
                                     <Label Text="{Binding Question.QuestionText}" FontSize="13" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" LineBreakMode="WordWrap" />
                                     <Button Text="Edit" 
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=EditQuestionCommand}"
+                                            Command="{Binding BindingContext.EditQuestionCommand, Source={x:Reference thisPage}}"
                                             CommandParameter="{Binding Question}"
                                             IsVisible="{Binding Question.IsEditable}"
                                             FontSize="10" BackgroundColor="Transparent" TextColor="Gray" Padding="0" HeightRequest="20" />
@@ -77,7 +78,7 @@
                                         <Label Text="{Binding Question.AnsweredAt, StringFormat='{0:g}'}" FontSize="10" TextColor="Gray" VerticalOptions="Center" />
                                         
                                         <Button Text="Edit" 
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=EditAnswerCommand}"
+                                                Command="{Binding BindingContext.EditAnswerCommand, Source={x:Reference thisPage}}"
                                                 CommandParameter="{Binding Question}"
                                                 IsVisible="{Binding Question.IsAnswerEditable}"
                                                 FontSize="10" BackgroundColor="Transparent" TextColor="#1B5E20" Padding="0" HeightRequest="20" />
@@ -92,20 +93,20 @@
                                            FontSize="12">
                                         <Label.GestureRecognizers>
                                             <TapGestureRecognizer 
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=ReplyToQuestionCommand}"
+                                                Command="{Binding BindingContext.ReplyToQuestionCommand, Source={x:Reference thisPage}}"
                                                 CommandParameter="{Binding Question}" />
                                         </Label.GestureRecognizers>
                                     </Label>
 
                                     <!-- Lazy Loading Trigger -->
                                     <Label Text="{Binding ButtonText}" 
-                                           IsVisible="{Binding Question.ReplyCount, Converter={StaticResource InverseBoolConverter}, ConverterParameter=0}"
+                                           IsVisible="{Binding HasAnyReplies}"
                                            TextColor="{StaticResource Primary}" 
                                            FontAttributes="Bold" 
                                            FontSize="12">
                                         <Label.GestureRecognizers>
                                             <TapGestureRecognizer 
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=ToggleConversationCommand}"
+                                                Command="{Binding ToggleConversationCommand}"
                                                 CommandParameter="{Binding .}" />
                                         </Label.GestureRecognizers>
                                     </Label>
@@ -134,7 +135,7 @@
                                                                 <Label Text="{Binding Author.FirstName}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
                                                                 
                                                                 <Button Text="Edit" 
-                                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=EditNestedQuestionCommand}"
+                                                                        Command="{Binding BindingContext.EditNestedQuestionCommand, Source={x:Reference thisPage}}"
                                                                         CommandParameter="{Binding .}"
                                                                         IsVisible="{Binding IsEditable}"
                                                                         FontSize="10" BackgroundColor="Transparent" TextColor="Gray" Padding="0" HeightRequest="20" />
@@ -153,7 +154,7 @@
                                                            Margin="12,2,0,0">
                                                         <Label.GestureRecognizers>
                                                             <TapGestureRecognizer 
-                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=ReplyToNestedQuestionCommand}"
+                                                                Command="{Binding BindingContext.ReplyToNestedQuestionCommand, Source={x:Reference thisPage}}"
                                                                 CommandParameter="{Binding .}" />
                                                         </Label.GestureRecognizers>
                                                     </Label>
@@ -162,21 +163,6 @@
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
                                 </VerticalStackLayout>
-                                
-                                <!-- Load More within expanded thread -->
-                                <Label Text="Show More Replies..." 
-                                       IsVisible="{Binding HasMoreReplies}"
-                                       TextColor="{StaticResource Primary}"
-                                       FontAttributes="Bold"
-                                       FontSize="11"
-                                       Margin="40,5,0,0"
-                                       HorizontalOptions="Start">
-                                    <Label.GestureRecognizers>
-                                        <TapGestureRecognizer 
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AuctionHubViewModel}}, Path=LoadMoreRepliesCommand}"
-                                            CommandParameter="{Binding .}" />
-                                    </Label.GestureRecognizers>
-                                </Label>
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>

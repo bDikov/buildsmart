@@ -139,30 +139,11 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         {
             foreach (var job in Project.JobPosts)
             {
-                JobPosts.Add(new JobPostViewModel(job));
+                JobPosts.Add(new JobPostViewModel(job, LoadMoreRepliesAsync));
             }
         }
     }
 
-    [RelayCommand]
-    private async Task ToggleConversationAsync(QuestionViewModel questionVm)
-    {
-        if (questionVm == null) return;
-
-        if (questionVm.IsExpanded && !questionVm.HasMoreReplies)
-        {
-            questionVm.IsExpanded = false;
-            return;
-        }
-
-        if (!questionVm.IsExpanded || questionVm.HasMoreReplies)
-        {
-            await LoadMoreRepliesAsync(questionVm);
-            questionVm.IsExpanded = true;
-        }
-    }
-
-    [RelayCommand]
     private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
     {
         if (questionVm == null || IsBusy) return;
@@ -196,9 +177,8 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         }
     }
 
-	[RelayCommand]
-	private async Task EditAnswersAsync(IJobPostDetails job)
-	{
+       [RelayCommand]
+       private async Task EditAnswersAsync(IJobPostDetails job)	{
 		try
 		{
 			await Shell.Current.GoToAsync(nameof(JobWizardPage), new Dictionary<string, object>

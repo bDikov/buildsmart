@@ -853,4 +853,13 @@ public class JobPostService : IJobPostService
         return await _unitOfWork.JobPostQuestions.GetQueryable()
             .CountAsync(q => q.ParentQuestionId == parentQuestionId);
     }
+
+    public async Task<IDictionary<Guid, int>> GetQuestionReplyCountsBatchAsync(IEnumerable<Guid> parentQuestionIds)
+    {
+        return await _unitOfWork.JobPostQuestions.GetQueryable()
+            .Where(q => q.ParentQuestionId != null && parentQuestionIds.Contains(q.ParentQuestionId.Value))
+            .GroupBy(q => q.ParentQuestionId!.Value)
+            .Select(g => new { ParentId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ParentId, x => x.Count);
+    }
 }
