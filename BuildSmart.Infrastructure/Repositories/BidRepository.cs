@@ -48,4 +48,6 @@ public class BidRepository : IBidRepository
     {
         _context.Bids.Update(bid);
     }
+
+    public IQueryable<Bid> GetQueryable() => _context.Bids;
 }

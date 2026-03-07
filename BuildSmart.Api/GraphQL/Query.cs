@@ -86,172 +86,159 @@ public class Query
 		var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
 		if (profile == null)
 		{
-		    return Enumerable.Empty<Auction>();
+			return Enumerable.Empty<Auction>();
 		}
 
 		var skillCategoryIds = profile.Skills.Select(s => s.ServiceCategoryId).ToList();
 
 		// 1.5 Get Job IDs that the tradesman has passed
 		var passedJobIds = await unitOfWork.AuctionActions.GetQueryable()
-		    .Where(a => a.TradesmanProfileId == profile.Id && a.ActionType == AuctionActionType.Passed)
-		    .Select(a => a.JobPostId)
-		    .ToListAsync();
+			.Where(a => a.TradesmanProfileId == profile.Id && a.ActionType == AuctionActionType.Passed)
+			.Select(a => a.JobPostId)
+			.ToListAsync();
 
 		// 2. Find Open jobs matching skills AND NOT passed
 		var jobs = await context.JobPosts
-		    .Where(j => j.Status == Core.Domain.Enums.JobPostStatus.Open 
-		        && skillCategoryIds.Contains(j.ServiceCategoryId)
-		        && !passedJobIds.Contains(j.Id))
-		    .Include(j => j.ServiceCategory)
-		    .Include(j => j.Project)
-		        .ThenInclude(p => p.Homeowner)
-		    .Include(j => j.Bids)
-		    .Include(j => j.Questions)
-                .ThenInclude(q => q.Author)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.TradesmanProfile)
-                    .ThenInclude(tp => tp.User)
-		    .OrderByDescending(j => j.CreatedAt)
-		    .ToListAsync();
+			.Where(j => j.Status == Core.Domain.Enums.JobPostStatus.Open
+				&& skillCategoryIds.Contains(j.ServiceCategoryId)
+				&& !passedJobIds.Contains(j.Id))
+			.Include(j => j.ServiceCategory)
+			.Include(j => j.Project)
+				.ThenInclude(p => p.Homeowner)
+			.OrderByDescending(j => j.CreatedAt)
+			.ToListAsync();
+		return jobs.Select(j => new Auction
+		{
+			Job = j,
+			Bids = j.Bids,
+			Questions = j.Questions
+		});
+	}
+
+	[Authorize(Roles = new[] { "Tradesman" })]
+	public async Task<IEnumerable<Auction>> GetPassedAuctions(
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] AppDbContext context)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user ID.");
+		}
+
+		var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
+		if (profile == null) return Enumerable.Empty<Auction>();
+
+		// Find jobs that have been PASSED by this tradesman
+		var passedJobIds = await unitOfWork.AuctionActions.GetQueryable()
+			.Where(a => a.TradesmanProfileId == profile.Id && a.ActionType == AuctionActionType.Passed)
+			.Select(a => a.JobPostId)
+			.ToListAsync();
+
+		var jobs = await context.JobPosts
+			.Where(j => passedJobIds.Contains(j.Id))
+			.Include(j => j.ServiceCategory)
+			.Include(j => j.Project)
+				.ThenInclude(p => p.Homeowner)
+			.OrderByDescending(j => j.CreatedAt)
+			.ToListAsync();
 
 		return jobs.Select(j => new Auction
 		{
-		    Job = j,
-		    Bids = j.Bids,
-		    Questions = j.Questions
+			Job = j,
+			Bids = j.Bids,
+			Questions = j.Questions
 		});
-		}
+	}
 
-    [Authorize(Roles = new[] { "Tradesman" })]
-    public async Task<IEnumerable<Auction>> GetPassedAuctions(
-        ClaimsPrincipal claimsPrincipal,
-        [Service] IUnitOfWork unitOfWork,
-        [Service] AppDbContext context)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user ID.");
-        }
-
-        var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(userId);
-        if (profile == null) return Enumerable.Empty<Auction>();
-
-        // Find jobs that have been PASSED by this tradesman
-        var passedJobIds = await unitOfWork.AuctionActions.GetQueryable()
-            .Where(a => a.TradesmanProfileId == profile.Id && a.ActionType == AuctionActionType.Passed)
-            .Select(a => a.JobPostId)
-            .ToListAsync();
-
-        var jobs = await context.JobPosts
-            .Where(j => passedJobIds.Contains(j.Id))
-            .Include(j => j.ServiceCategory)
-            .Include(j => j.Project)
-                .ThenInclude(p => p.Homeowner)
-            .Include(j => j.Bids)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.Author)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.TradesmanProfile)
-                    .ThenInclude(tp => tp.User)
-            .OrderByDescending(j => j.CreatedAt)
-            .ToListAsync();
-
-        return jobs.Select(j => new Auction
-        {
-            Job = j,
-            Bids = j.Bids,
-            Questions = j.Questions
-        });
-    }
-
-		[Authorize(Roles = new[] { "Tradesman", "Admin", "Homeowner" })]
-		public async Task<Auction?> GetAuctionById(
-		Guid jobId,
-		[Service] AppDbContext context)
-		{
+	[Authorize(Roles = new[] { "Tradesman", "Admin", "Homeowner" })]
+	public async Task<Auction?> GetAuctionById(
+	Guid jobId,
+	[Service] AppDbContext context)
+	{
 		var job = await context.JobPosts
-		    .Include(j => j.ServiceCategory)
-		    .Include(j => j.Project)
-		        .ThenInclude(p => p.Homeowner)
-		    .Include(j => j.Bids)
-		    .Include(j => j.Feedbacks)
-                .ThenInclude(f => f.Author)
-            .Include(j => j.Feedbacks)
-                .ThenInclude(f => f.Replies)
-                    .ThenInclude(r => r.Author)
-		    .Include(j => j.Questions)
-                .ThenInclude(q => q.Author)
-            .Include(j => j.Questions)
-                .ThenInclude(q => q.TradesmanProfile)
-                    .ThenInclude(tp => tp.User)
-		    .FirstOrDefaultAsync(j => j.Id == jobId);
+			.Include(j => j.ServiceCategory)
+			.Include(j => j.Project)
+				.ThenInclude(p => p.Homeowner)
+			.Include(j => j.Bids)
+			.Include(j => j.Feedbacks)
+				.ThenInclude(f => f.Author)
+			.Include(j => j.Feedbacks)
+				.ThenInclude(f => f.Replies)
+					.ThenInclude(r => r.Author)
+			.Include(j => j.Questions)
+				.ThenInclude(q => q.Author)
+			.Include(j => j.Questions)
+				.ThenInclude(q => q.TradesmanProfile)
+					.ThenInclude(tp => tp.User)
+			.FirstOrDefaultAsync(j => j.Id == jobId);
 		if (job == null) return null;
 
 		return new Auction
 		{
-		    Job = job,
-		    Bids = job.Bids,
-		    Questions = job.Questions
+			Job = job,
+			Bids = job.Bids,
+			Questions = job.Questions
 		};
-		}
+	}
 
-		[Authorize(Roles = new[] { "Homeowner" })]
-		public async Task<IEnumerable<Project>> GetMyProjects(
-		ClaimsPrincipal claimsPrincipal,
-		[Service] IProjectRepository projectRepository)
-		{
+	[Authorize(Roles = new[] { "Homeowner" })]
+	public async Task<IEnumerable<Project>> GetMyProjects(
+	ClaimsPrincipal claimsPrincipal,
+	[Service] IProjectRepository projectRepository)
+	{
 		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
-		throw new GraphQLException("Invalid user ID in token.");
+			throw new GraphQLException("Invalid user ID in token.");
 		}
 
 		return await projectRepository.GetProjectsByHomeownerAsync(userId);
+	}
+
+	[Authorize]
+	public async Task<Project?> GetProjectById(
+		Guid projectId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] AppDbContext context)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user ID.");
 		}
 
-    [Authorize]
-    public async Task<Project?> GetProjectById(
-        Guid projectId,
-        ClaimsPrincipal claimsPrincipal,
-        [Service] AppDbContext context)
-    {
-        var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new GraphQLException("Invalid user ID.");
-        }
+		var project = await context.Projects
+			.Include(p => p.Homeowner)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.ServiceCategory)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.Feedbacks)
+					.ThenInclude(f => f.Author)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.Feedbacks)
+					.ThenInclude(f => f.Replies)
+						.ThenInclude(r => r.Author)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.Questions)
+					.ThenInclude(q => q.Author)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.Questions)
+					.ThenInclude(q => q.TradesmanProfile)
+						.ThenInclude(tp => tp.User)
+			.FirstOrDefaultAsync(p => p.Id == projectId);
 
-        var project = await context.Projects
-            .Include(p => p.Homeowner)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.ServiceCategory)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.Feedbacks)
-                    .ThenInclude(f => f.Author)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.Feedbacks)
-                    .ThenInclude(f => f.Replies)
-                        .ThenInclude(r => r.Author)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.Questions)
-                    .ThenInclude(q => q.Author)
-            .Include(p => p.JobPosts)
-                .ThenInclude(j => j.Questions)
-                    .ThenInclude(q => q.TradesmanProfile)
-                        .ThenInclude(tp => tp.User)
-            .FirstOrDefaultAsync(p => p.Id == projectId);
+		if (project == null) return null;
 
-        if (project == null) return null;
+		var isAdmin = claimsPrincipal.IsInRole("Admin");
+		if (!isAdmin && project.HomeownerId != userId)
+		{
+			throw new GraphQLException("You are not authorized to view this project.");
+		}
 
-        var isAdmin = claimsPrincipal.IsInRole("Admin");
-        if (!isAdmin && project.HomeownerId != userId)
-        {
-            throw new GraphQLException("You are not authorized to view this project.");
-        }
-
-        return project;
-    }
+		return project;
+	}
 
 	[Authorize]
 	public async Task<IEnumerable<Notification>> GetMyNotifications(
@@ -267,13 +254,13 @@ public class Query
 		return await notificationRepository.GetAllByUserIdAsync(userId);
 	}
 
-    [Authorize]
-    public async Task<JobPostQuestion?> GetJobPostQuestionById(
-        Guid id,
-        [Service] IJobPostQuestionRepository repository)
-    {
-        return await repository.GetByIdAsync(id);
-    }
+	[Authorize]
+	public async Task<JobPostQuestion?> GetJobPostQuestionById(
+		Guid id,
+		[Service] IJobPostQuestionRepository repository)
+	{
+		return await repository.GetByIdAsync(id);
+	}
 
 	[UseProjection]
 	[UseFiltering]

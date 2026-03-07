@@ -25,5 +25,9 @@ public class JobPostFeedbackConfiguration : IEntityTypeConfiguration<JobPostFeed
             .WithMany(f => f.Replies)
             .HasForeignKey(f => f.ParentFeedbackId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Indexes for fast lookup via DataLoaders
+        builder.HasIndex(f => f.JobPostId);
+        builder.HasIndex(f => f.ParentFeedbackId);
     }
 }

@@ -73,12 +73,13 @@ public partial class AuctionHubViewModel : ObservableObject
             }
             }
 
-            private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
-            {
-            if (questionVm == null || IsBusy) return;
+    [RelayCommand]
+    private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
+    {
+        if (questionVm == null || IsBusy) return;
 
-            try
-            {
+        try
+        {
             IsBusy = true;
             var result = await _apiClient.GetQuestionReplies.ExecuteAsync(
                 questionVm.Question.Id, 
@@ -95,16 +96,23 @@ public partial class AuctionHubViewModel : ObservableObject
             {
                 questionVm.AddReplies(result.Data.QuestionReplies.Replies);
             }
-            }
-            catch (Exception ex)
-            {
+        }
+        catch (Exception ex)
+        {
             await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-            }
-            finally
-            {
+        }
+        finally
+        {
             IsBusy = false;
-            }
-            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleConversationAsync(QuestionViewModel questionVm)
+    {
+        if (questionVm == null) return;
+        await questionVm.ToggleConversationCommand.ExecuteAsync(null);
+    }
 
             [RelayCommand]
             private async Task BackAsync()    {

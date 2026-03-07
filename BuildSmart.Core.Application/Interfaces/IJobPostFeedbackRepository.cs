@@ -9,4 +9,5 @@ public interface IJobPostFeedbackRepository
     Task AddAsync(JobPostFeedback feedback);
     void Update(JobPostFeedback feedback);
     void Delete(JobPostFeedback feedback);
+    IQueryable<JobPostFeedback> GetQueryable();
 }

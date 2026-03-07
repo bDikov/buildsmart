@@ -1,10 +1,10 @@
 # Implementation Plan: Optimize View Performance (ProjectDetailPage & AuctionHubPage)
 
 ## Phase 1: Backend Optimization (GraphQL & EF Core)
-- [ ] Task: Analyze existing queries (`GetMyProjects`, `GetAvailableAuctions`, `jobPostQuestionById`) to identify and remove excessive `.Include()` chains in EF Core.
-- [ ] Task: Implement HotChocolate `DataLoaders` for related collections (Questions, Feedbacks) to eliminate N+1 queries during data fetching.
-- [ ] Task: Optimize database indexes if necessary to support the faster targeted queries.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend Optimization (GraphQL & EF Core)' (Protocol in workflow.md)
+- [x] Task: Analyze existing queries (`GetMyProjects`, `GetAvailableAuctions`, `jobPostQuestionById`) to identify and remove excessive `.Include()` chains in EF Core.
+- [x] Task: Implement HotChocolate `DataLoaders` for related collections (Questions, Feedbacks) to eliminate N+1 queries during data fetching.
+- [x] Task: Optimize database indexes if necessary to support the faster targeted queries.
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Backend Optimization (GraphQL & EF Core)' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Optimization (MAUI UI Thread & Bindings)
 - [ ] Task: Refactor `ProjectDetailPage.xaml` to improve UI Virtualization (e.g., using `CollectionView` effectively and minimizing nested `BindableLayout` depth).
