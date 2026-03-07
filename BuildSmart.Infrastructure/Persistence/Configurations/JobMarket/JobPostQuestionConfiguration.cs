@@ -37,5 +37,9 @@ public class JobPostQuestionConfiguration : IEntityTypeConfiguration<JobPostQues
             .WithMany(q => q.Replies)
             .HasForeignKey(q => q.ParentQuestionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Indexes for fast lookup via DataLoaders
+        builder.HasIndex(q => q.JobPostId);
+        builder.HasIndex(q => q.ParentQuestionId);
     }
 }

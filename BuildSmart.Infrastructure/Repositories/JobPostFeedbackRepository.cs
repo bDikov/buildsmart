@@ -48,4 +48,6 @@ public class JobPostFeedbackRepository : IJobPostFeedbackRepository
     {
         _context.JobPostFeedbacks.Remove(feedback);
     }
+
+    public IQueryable<JobPostFeedback> GetQueryable() => _context.JobPostFeedbacks;
 }

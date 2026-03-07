@@ -132,7 +132,8 @@ public class Mutation
 		string videoUrl;
 		using (var stream = file.OpenReadStream())
 		{
-			videoUrl = await storageService.SaveFileAsync(stream, file.Name, file.ContentType);
+			string? contentType = file.ContentType;
+			videoUrl = await storageService.SaveFileAsync(stream, file.Name, contentType);
 		}
 
 		user.TradesmanProfile.VideoIntroductionUrl = videoUrl;

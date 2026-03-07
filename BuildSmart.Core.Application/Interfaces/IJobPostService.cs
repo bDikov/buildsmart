@@ -48,4 +48,7 @@ public interface IJobPostService
     Task<IEnumerable<JobPostQuestion>> GetQuestionRepliesAsync(Guid parentQuestionId, int offset, int limit);
     Task<int> GetQuestionReplyCountAsync(Guid parentQuestionId);
     Task<IDictionary<Guid, int>> GetQuestionReplyCountsBatchAsync(IEnumerable<Guid> parentQuestionIds);
+    Task<ILookup<Guid, JobPostQuestion>> GetQuestionsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+    Task<ILookup<Guid, JobPostFeedback>> GetFeedbacksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+    Task<ILookup<Guid, Bid>> GetBidsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
 }
