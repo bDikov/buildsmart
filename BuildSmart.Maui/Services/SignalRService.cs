@@ -9,6 +9,8 @@ public class SignalRService : IAsyncDisposable
     private readonly IAuthService _authService;
 
     public event Action<string, string, object?>? NotificationReceived;
+    public event Action<System.Text.Json.JsonElement>? QuestionUpdated;
+    public event Action<System.Text.Json.JsonElement>? NewReplyReceived;
 
     public SignalRService(IAuthService authService)
     {
@@ -51,6 +53,16 @@ public class SignalRService : IAsyncDisposable
             });
         });
 
+        _hubConnection.On<System.Text.Json.JsonElement>("ReceiveQuestionUpdate", (payload) =>
+        {
+            MainThread.BeginInvokeOnMainThread(() => QuestionUpdated?.Invoke(payload));
+        });
+
+        _hubConnection.On<System.Text.Json.JsonElement>("ReceiveNewReply", (payload) =>
+        {
+            MainThread.BeginInvokeOnMainThread(() => NewReplyReceived?.Invoke(payload));
+        });
+
         try
         {
             await _hubConnection.StartAsync();
@@ -59,6 +71,22 @@ public class SignalRService : IAsyncDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"SignalR Connection Error: {ex.Message}");
+        }
+    }
+
+    public async Task JoinAuctionGroupAsync(string jobId)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("JoinAuctionGroup", jobId);
+        }
+    }
+
+    public async Task LeaveAuctionGroupAsync(string jobId)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("LeaveAuctionGroup", jobId);
         }
     }
 

@@ -29,3 +29,8 @@ These guidelines dictate how data binding, reactivity, and backend queries shoul
 ## 4. UI Rendering Restraints
 - **Avoid Heavy Layouts:** Minimize the use of deeply nested `StackLayout` or `Grid` components to prevent the Android Choreographer from skipping frames.
 - **Hardware Acceleration Considerations:** Be mindful of features that require hardware-accelerated canvases (like complex `RippleDrawable` patterns or intense shadowing) and provide simple fallbacks for lower-end devices.
+
+## 5. Real-Time Sync (SignalR)
+- **Push vs. Pull:** When another user (e.g., a tradesman or admin) interacts with the same data (like replying to a thread), do not rely on the user to manually refresh the page.
+- **Granular Payloads:** Use SignalR to push granular updates to the client. The payload should contain *only* the new or modified data (e.g., a single new reply object or an updated status flag), not the entire entity.
+- **Integration with Local Reactivity:** When the MAUI client receives a SignalR message, it should find the corresponding object in its local `ObservableCollection` and inject the update *in-place*, exactly as if the local user had performed the mutation (see Rule #1).

@@ -18,6 +18,9 @@ public class JobPostQuestionRepository : IJobPostQuestionRepository
     {
         return await _context.JobPostQuestions
             .Include(q => q.JobPost)
+            .Include(q => q.TradesmanProfile)
+                .ThenInclude(tp => tp.User)
+            .Include(q => q.Author)
             .FirstOrDefaultAsync(q => q.Id == id);
     }
 

@@ -39,4 +39,9 @@ public class NotificationService : INotificationService
         // 2. Send via SignalR (Target specific user by ID)
         await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, message, data);
     }
+
+    public async Task NotifyAuctionGroupAsync(Guid jobPostId, string method, object payload)
+    {
+        await _hubContext.Clients.Group($"Auction_{jobPostId}").SendAsync(method, payload);
+    }
 }
