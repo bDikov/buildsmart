@@ -100,17 +100,13 @@ mutation AskJobQuestion($tradesmanProfileId: UUID!, $jobPostId: UUID!, $question
 
 mutation EditJobQuestion($questionId: UUID!, $newText: String!) {
   editJobQuestion(questionId: $questionId, newText: $newText) {
-    id
-    questionText
-    isEdited
+    ... QuestionDetails
   }
 }
 
 mutation EditJobAnswer($questionId: UUID!, $newAnswer: String!) {
   editJobAnswer(questionId: $questionId, newAnswer: $newAnswer) {
-    id
-    answerText
-    isAnswerEdited
+    ... QuestionDetails
   }
 }
 
@@ -143,6 +139,6 @@ mutation SubmitBid($tradesmanProfileId: UUID!, $jobPostId: UUID!, $subtotal: Dec
 mutation ReplyToJobQuestion($parentQuestionId: UUID!, $replyText: String!) {
   replyToJobQuestion(parentQuestionId: $parentQuestionId, replyText: $replyText) {
     id
-    ... QuestionDetails
+    ... QuestionReplyDetails
   }
 }

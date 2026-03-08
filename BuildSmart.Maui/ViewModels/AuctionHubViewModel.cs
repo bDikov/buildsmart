@@ -9,10 +9,118 @@ namespace BuildSmart.Maui.ViewModels;
 public partial class AuctionHubViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly Services.SignalRService _signalRService;
 
-    public AuctionHubViewModel(IBuildSmartApiClient apiClient)
+    public AuctionHubViewModel(IBuildSmartApiClient apiClient, Services.SignalRService signalRService)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+    }
+
+    public async Task InitializeAsync()
+    {
+        _signalRService.QuestionUpdated += OnQuestionUpdated;
+        _signalRService.NewReplyReceived += OnNewReplyReceived;
+        
+        if (!string.IsNullOrEmpty(JobId))
+        {
+            await _signalRService.ConnectAsync();
+            await _signalRService.JoinAuctionGroupAsync(JobId);
+        }
+    }
+
+    public async Task CleanupAsync()
+    {
+        _signalRService.QuestionUpdated -= OnQuestionUpdated;
+        _signalRService.NewReplyReceived -= OnNewReplyReceived;
+        
+        if (!string.IsNullOrEmpty(JobId))
+        {
+            await _signalRService.LeaveAuctionGroupAsync(JobId);
+        }
+    }
+
+    private void OnQuestionUpdated(System.Text.Json.JsonElement payload)
+    {
+        if (payload.TryGetProperty("id", out var idProp) && Guid.TryParse(idProp.GetString(), out var id))
+        {
+            var vm = Questions.FirstOrDefault(q => q.Question?.Id == id);
+            if (vm != null)
+            {
+                vm.UpdateQuestion(new QuestionUpdateWrapper(vm.Question!, payload));
+            }
+        }
+    }
+
+    private void OnNewReplyReceived(System.Text.Json.JsonElement payload)
+    {
+        var parentProp = payload.EnumerateObject().FirstOrDefault(p => p.Name.Equals("parentQuestionId", StringComparison.OrdinalIgnoreCase)).Value;
+        if (parentProp.ValueKind != System.Text.Json.JsonValueKind.Undefined && parentProp.ValueKind != System.Text.Json.JsonValueKind.Null && Guid.TryParse(parentProp.GetString(), out var parentId))
+        {
+            var vm = Questions.FirstOrDefault(q => q.Question?.Id == parentId);
+            if (vm != null)
+            {
+                vm.AddReply(new ReplyWrapper(payload));
+            }
+        }
+    }
+
+    private class QuestionUpdateWrapper : IQuestionDetails
+    {
+        private readonly IQuestionDetails _original;
+        private readonly System.Text.Json.JsonElement _payload;
+
+        public QuestionUpdateWrapper(IQuestionDetails original, System.Text.Json.JsonElement payload)
+        {
+            _original = original;
+            _payload = payload;
+        }
+
+        public Guid Id => _original.Id;
+        public Guid JobPostId => _original.JobPostId;
+        public string QuestionText => _payload.TryGetProperty("questionText", out var p) ? p.GetString() ?? _original.QuestionText : _original.QuestionText;
+        public string? AnswerText => _payload.TryGetProperty("answerText", out var p) ? p.GetString() : _original.AnswerText;
+        public DateTimeOffset? AnsweredAt => _original.AnsweredAt;
+        public bool IsAnswered => _original.IsAnswered;
+        public bool IsEdited => _payload.TryGetProperty("isEdited", out var p) ? p.GetBoolean() : _original.IsEdited;
+        public bool IsAnswerEdited => _payload.TryGetProperty("isAnswerEdited", out var p) ? p.GetBoolean() : _original.IsAnswerEdited;
+        public bool IsEditable => _original.IsEditable;
+        public bool IsAnswerEditable => _original.IsAnswerEditable;
+        public Guid? AuthorId => _original.AuthorId;
+        public Guid? TradesmanProfileId => _original.TradesmanProfileId;
+        public DateTimeOffset CreatedAt => _original.CreatedAt;
+        public DateTimeOffset UpdatedAt => _payload.TryGetProperty("updatedAt", out var p) && p.TryGetDateTimeOffset(out var dt) ? dt : _original.UpdatedAt;
+        public int ReplyCount => _original.ReplyCount;
+        public IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_TradesmanProfile? TradesmanProfile => (IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_TradesmanProfile?)_original.TradesmanProfile;
+        public IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_Author? Author => (IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_Author?)_original.Author;
+    }
+
+    private class ReplyWrapper : IQuestionReplyDetails
+    {
+        private readonly System.Text.Json.JsonElement _payload;
+
+        public ReplyWrapper(System.Text.Json.JsonElement payload)
+        {
+            _payload = payload;
+        }
+
+        private System.Text.Json.JsonElement? GetProp(string name)
+        {
+            var prop = _payload.EnumerateObject().FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            return prop.Value.ValueKind != System.Text.Json.JsonValueKind.Undefined ? prop.Value : null;
+        }
+
+        public Guid Id => GetProp("id") is var p && p != null ? Guid.Parse(p.Value.GetString()!) : Guid.Empty;
+        public Guid? ParentQuestionId => GetProp("parentQuestionId") is var p && p != null && p.Value.ValueKind != System.Text.Json.JsonValueKind.Null ? Guid.Parse(p.Value.GetString()!) : null;
+        public Guid? TradesmanProfileId => GetProp("tradesmanProfileId") is var p && p != null && p.Value.ValueKind != System.Text.Json.JsonValueKind.Null ? Guid.Parse(p.Value.GetString()!) : null;
+        public Guid? AuthorId => GetProp("authorId") is var p && p != null && p.Value.ValueKind != System.Text.Json.JsonValueKind.Null ? Guid.Parse(p.Value.GetString()!) : null;
+        public string QuestionText => GetProp("questionText") is var p && p != null ? p.Value.GetString() ?? "" : "";
+        public DateTimeOffset CreatedAt => GetProp("createdAt") is var p && p != null && p.Value.TryGetDateTimeOffset(out var dt) ? dt : DateTimeOffset.UtcNow;
+        public DateTimeOffset UpdatedAt => GetProp("updatedAt") is var p && p != null && p.Value.TryGetDateTimeOffset(out var dt) ? dt : DateTimeOffset.UtcNow;
+        public bool IsEdited => false;
+        public bool IsEditable => false;
+        public IGetQuestionReplies_QuestionReplies_Replies_TradesmanProfile? TradesmanProfile => null;
+        public IGetQuestionReplies_QuestionReplies_Replies_Author? Author => null;
     }
 
     [ObservableProperty]
@@ -138,9 +246,14 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            if (Guid.TryParse(JobId, out var id))
+            var updatedQuestion = result.Data?.EditJobQuestion;
+            if (updatedQuestion != null)
             {
-                await LoadAuctionAsync(id);
+                var vm = Questions.FirstOrDefault(q => q.Question?.Id == question.Id);
+                if (vm != null)
+                {
+                    vm.UpdateQuestion(updatedQuestion);
+                }
             }
         }
         catch (Exception ex)
@@ -206,9 +319,14 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            if (Guid.TryParse(JobId, out var id))
+            var updatedQuestion = result.Data?.EditJobAnswer;
+            if (updatedQuestion != null)
             {
-                await LoadAuctionAsync(id);
+                var vm = Questions.FirstOrDefault(q => q.Question?.Id == question.Id);
+                if (vm != null)
+                {
+                    vm.UpdateAnswer(updatedQuestion);
+                }
             }
         }
         catch (Exception ex)
@@ -297,9 +415,14 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
             
-            if (Guid.TryParse(JobId, out var id))
+            var newReply = result.Data?.ReplyToJobQuestion;
+            if (newReply != null)
             {
-                await LoadAuctionAsync(id);
+                var vm = Questions.FirstOrDefault(q => q.Question?.Id == parentQuestionId);
+                if (vm != null)
+                {
+                    vm.AddReply(newReply);
+                }
             }
         }
         catch (Exception ex)

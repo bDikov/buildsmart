@@ -48,6 +48,7 @@ fragment QuestionReplyDetails on JobPostQuestion {
   authorId
   questionText
   createdAt
+  updatedAt
   isEdited
   isEditable
   tradesmanProfile {
@@ -75,6 +76,7 @@ fragment QuestionDetails on JobPostQuestion {
   authorId
   tradesmanProfileId
   createdAt
+  updatedAt
   replyCount
   tradesmanProfile {
     id

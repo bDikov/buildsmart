@@ -25,7 +25,11 @@ public partial class JobPostViewModel : ObservableObject
 
 public partial class QuestionViewModel : ObservableObject
 {
-    public IQuestionDetails Question { get; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasMoreReplies))]
+    [NotifyPropertyChangedFor(nameof(HasAnyReplies))]
+    [NotifyPropertyChangedFor(nameof(ButtonText))]
+    private IQuestionDetails _question;
     
     public ObservableCollection<IQuestionReplyDetails> Replies { get; } = new();
     
@@ -36,18 +40,48 @@ public partial class QuestionViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ButtonText))]
     private bool _isExpanded;
 
-    public bool HasMoreReplies => Question.ReplyCount > Replies.Count;
+    public bool HasMoreReplies => Question?.ReplyCount > Replies.Count;
     
-    public bool HasAnyReplies => Question.ReplyCount > 0;
+    public bool HasAnyReplies => Question?.ReplyCount > 0;
 
     public string ButtonText => IsExpanded 
-        ? (HasMoreReplies ? $"Show More ({Question.ReplyCount - Replies.Count} left)" : "Hide Conversation")
-        : $"See Conversation ({Question.ReplyCount})";
+        ? (HasMoreReplies ? $"Show More ({Question?.ReplyCount - Replies.Count} left)" : "Hide Conversation")
+        : $"See Conversation ({Question?.ReplyCount})";
 
     public QuestionViewModel(IQuestionDetails question, Func<QuestionViewModel, Task>? loadMoreAction = null)
     {
-        Question = question;
+        _question = question;
         _loadMoreAction = loadMoreAction;
+    }
+
+    public void UpdateQuestion(IQuestionDetails updatedQuestion)
+    {
+        Question = updatedQuestion;
+    }
+
+    public void UpdateAnswer(IQuestionDetails updatedQuestion)
+    {
+        Question = updatedQuestion;
+    }
+
+    public void AddReply(IQuestionReplyDetails newReply)
+    {
+        if (!Replies.Any(r => r.Id == newReply.Id))
+        {
+            Replies.Add(newReply);
+            OnPropertyChanged(nameof(HasMoreReplies));
+            OnPropertyChanged(nameof(ButtonText));
+        }
+    }
+
+    public void UpdateReply(IQuestionReplyDetails updatedReply)
+    {
+        var existing = Replies.FirstOrDefault(r => r.Id == updatedReply.Id);
+        if (existing != null)
+        {
+            var index = Replies.IndexOf(existing);
+            Replies[index] = updatedReply;
+        }
     }
 
     [RelayCommand]

@@ -715,13 +715,22 @@ public class JobPostService : IJobPostService
 			UpdatedAt = DateTime.UtcNow
 		};
 
+		reply.Author = user;
+
 		if (user.TradesmanProfile != null)
 		{
 			reply.TradesmanProfileId = user.TradesmanProfile.Id;
+			reply.TradesmanProfile = user.TradesmanProfile;
 		}
 
 		await _unitOfWork.JobPostQuestions.AddAsync(reply);
 		await _unitOfWork.SaveChangesAsync();
+
+		await _notificationService.NotifyAuctionGroupAsync(
+			reply.JobPostId,
+			"ReceiveNewReply",
+			new { Id = reply.Id, ParentQuestionId = reply.ParentQuestionId, QuestionText = reply.QuestionText, CreatedAt = reply.CreatedAt, AuthorId = reply.AuthorId, TradesmanProfileId = reply.TradesmanProfileId }
+		);
 
 		// Notification Logic
 		var parentAuthorId = parentQuestion.AuthorId;
@@ -794,6 +803,12 @@ public class JobPostService : IJobPostService
 		_unitOfWork.JobPostQuestions.Update(question);
 		await _unitOfWork.SaveChangesAsync();
 
+		await _notificationService.NotifyAuctionGroupAsync(
+			question.JobPostId,
+			"ReceiveQuestionUpdate",
+			new { Id = question.Id, QuestionText = question.QuestionText, IsEdited = question.IsEdited, UpdatedAt = question.UpdatedAt }
+		);
+
 		return question;
 	}
 
@@ -832,6 +847,12 @@ public class JobPostService : IJobPostService
 		_unitOfWork.JobPostQuestions.Update(question);
 		await _unitOfWork.SaveChangesAsync();
 
+		await _notificationService.NotifyAuctionGroupAsync(
+			question.JobPostId,
+			"ReceiveQuestionUpdate",
+			new { Id = question.Id, AnswerText = question.AnswerText, IsAnswerEdited = question.IsAnswerEdited, UpdatedAt = question.UpdatedAt }
+		);
+
 		return question;
 	}
 
@@ -856,11 +877,11 @@ public class JobPostService : IJobPostService
 
 	public async Task<IDictionary<Guid, int>> GetQuestionReplyCountsBatchAsync(IEnumerable<Guid> parentQuestionIds)
 	{
-	    return await _unitOfWork.JobPostQuestions.GetQueryable()
-	        .Where(q => q.ParentQuestionId != null && parentQuestionIds.Contains(q.ParentQuestionId.Value))
-	        .GroupBy(q => q.ParentQuestionId!.Value)
-	        .Select(g => new { ParentId = g.Key, Count = g.Count() })
-	        .ToDictionaryAsync(x => x.ParentId, x => x.Count);
+		return await _unitOfWork.JobPostQuestions.GetQueryable()
+			.Where(q => q.ParentQuestionId != null && parentQuestionIds.Contains(q.ParentQuestionId.Value))
+			.GroupBy(q => q.ParentQuestionId!.Value)
+			.Select(g => new { ParentId = g.Key, Count = g.Count() })
+			.ToDictionaryAsync(x => x.ParentId, x => x.Count);
 	}
 
 	public async Task<ILookup<Guid, JobPostQuestion>> GetQuestionsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds)
@@ -876,23 +897,25 @@ public class JobPostService : IJobPostService
 			.ToListAsync();
 		return questions.ToLookup(q => q.JobPostId);
 	}
+
 	public async Task<ILookup<Guid, JobPostFeedback>> GetFeedbacksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds)
 	{
-	    var feedbacks = await _unitOfWork.JobPostFeedbacks.GetQueryable()
-	        .Where(f => jobPostIds.Contains(f.JobPostId) && f.ParentFeedbackId == null) // Top level feedbacks only
-	        .Include(f => f.Author)
-	        .Include(f => f.Replies)
-	            .ThenInclude(r => r.Author)
-	        .ToListAsync();
-	    return feedbacks.ToLookup(f => f.JobPostId);
+		var feedbacks = await _unitOfWork.JobPostFeedbacks.GetQueryable()
+			.Where(f => jobPostIds.Contains(f.JobPostId) && f.ParentFeedbackId == null) // Top level feedbacks only
+			.Include(f => f.Author)
+			.Include(f => f.Replies)
+				.ThenInclude(r => r.Author)
+			.ToListAsync();
+		return feedbacks.ToLookup(f => f.JobPostId);
 	}
 
 	public async Task<ILookup<Guid, Bid>> GetBidsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds)
 	{
-	    var bids = await _unitOfWork.Bids.GetQueryable()
-	        .Where(b => jobPostIds.Contains(b.JobPostId))
-	        .Include(b => b.TradesmanProfile)
-	            .ThenInclude(tp => tp.User)
-	        .ToListAsync();
-	    return bids.ToLookup(b => b.JobPostId);
-	}}
+		var bids = await _unitOfWork.Bids.GetQueryable()
+			.Where(b => jobPostIds.Contains(b.JobPostId))
+			.Include(b => b.TradesmanProfile)
+				.ThenInclude(tp => tp.User)
+			.ToListAsync();
+		return bids.ToLookup(b => b.JobPostId);
+	}
+}
