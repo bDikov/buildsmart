@@ -641,7 +641,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
 				var userId = userResult.Data.CurrentUser.Id;
 
-				var projectResult = await _apiClient.CreateProject.ExecuteAsync(userId, ProjectTitle, ProjectDescription);
+				var projectResult = await _apiClient.CreateProject.ExecuteAsync(Guid.Parse(userId), ProjectTitle, ProjectDescription);
 				if (projectResult.Errors.Count > 0)
 				{
 					await Shell.Current.DisplayAlert("Error", "Failed to create project draft.", "OK");

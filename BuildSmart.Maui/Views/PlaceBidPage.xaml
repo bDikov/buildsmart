@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:Class="BuildSmart.Maui.Views.PlaceBidPage"
+             x:DataType="vm:PlaceBidViewModel"
+             Title="Place a Bid">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="Submit Your Proposal" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,0,0,10"/>
+
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Bid Amount (USD)" FontSize="14" FontAttributes="Bold" TextColor="Gray" />
+                <Frame Padding="0" BorderColor="LightGray" CornerRadius="8" HasShadow="False">
+                    <Entry Text="{Binding Amount}" 
+                           Keyboard="Numeric" 
+                           Placeholder="0.00" 
+                           FontSize="18" 
+                           Margin="10,0"/>
+                </Frame>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Earliest Start Date" FontSize="14" FontAttributes="Bold" TextColor="Gray" />
+                <Frame Padding="0" BorderColor="LightGray" CornerRadius="8" HasShadow="False">
+                    <DatePicker Date="{Binding EarliestStartDate}" 
+                                MinimumDate="{Binding EarliestStartDate}"
+                                FontSize="16" 
+                                Margin="10,0"/>
+                </Frame>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Proposal / Comments" FontSize="14" FontAttributes="Bold" TextColor="Gray" />
+                <Frame Padding="0" BorderColor="LightGray" CornerRadius="8" HasShadow="False">
+                    <Editor Text="{Binding Comment}" 
+                            Placeholder="Describe your approach, timeframe, or why they should choose you..." 
+                            HeightRequest="150" 
+                            FontSize="16" 
+                            Margin="10,5"/>
+                </Frame>
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,20,0,0">
+                <Button Grid.Column="0" 
+                        Text="Cancel" 
+                        Command="{Binding CancelCommand}" 
+                        BackgroundColor="Transparent" 
+                        BorderColor="Gray" 
+                        BorderWidth="1" 
+                        TextColor="Gray" 
+                        FontAttributes="Bold" 
+                        HeightRequest="50" 
+                        CornerRadius="8"/>
+                
+                <Button Grid.Column="1" 
+                        Text="Submit Bid" 
+                        Command="{Binding SubmitBidCommand}" 
+                        BackgroundColor="#4CAF50" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        HeightRequest="50" 
+                        CornerRadius="8"/>
+            </Grid>
+            
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" Color="#4CAF50" Margin="0,20,0,0"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

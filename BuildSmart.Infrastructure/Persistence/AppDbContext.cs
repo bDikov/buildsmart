@@ -20,6 +20,9 @@ public class AppDbContext : DbContext
 	public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
     public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
 	public DbSet<Bid> Bids { get; set; } = null!;
+	public DbSet<JobTask> JobTasks { get; set; } = null!;
+	public DbSet<TaskAcceptanceCriteria> TaskAcceptanceCriteria { get; set; } = null!;
+	public DbSet<BidItem> BidItems { get; set; } = null!;
 	public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;
 	public DbSet<Booking> Bookings { get; set; } = null!;
 	public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;

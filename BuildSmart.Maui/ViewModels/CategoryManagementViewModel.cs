@@ -64,13 +64,14 @@ public partial class CategoryManagementViewModel : ObservableObject
             if (globalCat != null)
             {
                 // Edit existing
-                await Shell.Current.GoToAsync($"{nameof(Views.Admin.CategoryDetailPage)}?id={globalCat.Id}");
+                var navParams = new Dictionary<string, object> { { "id", globalCat.Id.ToString() } };
+                await Shell.Current.GoToAsync(nameof(Views.Admin.CategoryDetailPage), navParams);
             }
             else
             {
-                // Create new Global Category (handled by passing a special flag or just creating it here?)
-                // Better UX: Pass a flag "isGlobalMode=true" to the detail page
-                await Shell.Current.GoToAsync($"{nameof(Views.Admin.CategoryDetailPage)}?isGlobalMode=true");
+                // Create new Global Category
+                var navParams = new Dictionary<string, object> { { "isGlobalMode", "true" } };
+                await Shell.Current.GoToAsync(nameof(Views.Admin.CategoryDetailPage), navParams);
             }
         }
         catch (Exception ex)
@@ -84,24 +85,45 @@ public partial class CategoryManagementViewModel : ObservableObject
     }
 
 	[RelayCommand]
-	private async Task UpdateStatusAsync(IGetAllServiceCategories_AllServiceCategories category)
+	private async Task UpdateStatusAsync(Guid categoryId)
 	{
-		if (category is null) return;
+		try 
+		{
+			var category = Categories.FirstOrDefault(c => c.Id == categoryId);
+			if (category is null) return;
 
-		var newStatus = category.Status == CategoryStatus.Draft
-			? CategoryStatus.Active
-			: CategoryStatus.Draft;
+			var newStatus = category.Status == CategoryStatus.Draft
+				? CategoryStatus.Active
+				: CategoryStatus.Draft;
 
-		await _apiClient.UpdateCategoryStatus.ExecuteAsync(category.Id, newStatus);
+			var result = await _apiClient.UpdateCategoryStatus.ExecuteAsync(category.Id, newStatus);
+			if (result.Errors.Count > 0) 
+			{
+				await Shell.Current.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
 
-		// For now, just refresh the list
-		await LoadCategoriesAsync();
+			// For now, just refresh the list
+			await LoadCategoriesAsync();
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Update Error", ex.Message, "OK");
+		}
 	}
 
 	[RelayCommand]
 	private async Task GoToDetailsAsync(Guid categoryId)
 	{
-		await Shell.Current.GoToAsync($"{nameof(Views.Admin.CategoryDetailPage)}?id={categoryId.ToString()}");
+		try
+		{
+			var navParams = new Dictionary<string, object> { { "id", categoryId.ToString() } };
+			await Shell.Current.GoToAsync(nameof(Views.Admin.CategoryDetailPage), navParams);
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Navigation Error", ex.Message, "OK");
+		}
 	}
 
 	[RelayCommand]

@@ -13,13 +13,16 @@ namespace BuildSmart.Maui.Tests;
 
 public class AuctionHubViewModelTests
 {
-    private readonly Mock<IBuildSmartApiClient> _apiClientMock;
+    private readonly Mock<IBuildSmartApiClient> _mockApiClient;
+    private readonly Mock<BuildSmart.Maui.Services.SignalRService> _mockSignalRService;
     private readonly AuctionHubViewModel _viewModel;
 
     public AuctionHubViewModelTests()
     {
-        _apiClientMock = new Mock<IBuildSmartApiClient>();
-        _viewModel = new AuctionHubViewModel(_apiClientMock.Object);
+        _mockApiClient = new Mock<IBuildSmartApiClient>();
+        var authServiceMock = new Mock<BuildSmart.Maui.Services.IAuthService>();
+        _mockSignalRService = new Mock<BuildSmart.Maui.Services.SignalRService>(authServiceMock.Object);
+        _viewModel = new AuctionHubViewModel(_mockApiClient.Object, _mockSignalRService.Object);
     }
 
     [Fact]
@@ -55,7 +58,7 @@ public class AuctionHubViewModelTests
         var queryMock = new Mock<IGetQuestionRepliesQuery>();
         queryMock.Setup(q => q.ExecuteAsync(questionId, 0, 5, default)).ReturnsAsync(responseMock.Object);
 
-        _apiClientMock.Setup(c => c.GetQuestionReplies).Returns(queryMock.Object);
+        _mockApiClient.Setup(c => c.GetQuestionReplies).Returns(queryMock.Object);
 
         // Act
         questionVm.IsExpanded = true;
@@ -77,7 +80,7 @@ public class AuctionHubViewModelTests
         mockQuestion.Setup(q => q.Id).Returns(questionId);
         mockQuestion.Setup(q => q.ReplyCount).Returns(5);
         
-        var questionVm = new QuestionViewModel(mockQuestion.Object);
+        var questionVm = new QuestionViewModel(mockQuestion.Object, async (vm) => await _viewModel.LoadMoreRepliesCommand.ExecuteAsync(vm));
         questionVm.IsExpanded.Should().BeFalse();
 
         var mockReply = new Mock<IGetQuestionReplies_QuestionReplies_Replies>();
@@ -95,7 +98,7 @@ public class AuctionHubViewModelTests
         var queryMock = new Mock<IGetQuestionRepliesQuery>();
         queryMock.Setup(q => q.ExecuteAsync(questionId, 0, 5, default)).ReturnsAsync(responseMock.Object);
 
-        _apiClientMock.Setup(c => c.GetQuestionReplies).Returns(queryMock.Object);
+        _mockApiClient.Setup(c => c.GetQuestionReplies).Returns(queryMock.Object);
 
         // Act
         await _viewModel.ToggleConversationCommand.ExecuteAsync(questionVm);

@@ -73,7 +73,7 @@ public partial class UserEditViewModel : ObservableObject, IQueryAttributable
                     {
                         Id = cat.Id,
                         Name = cat.Name,
-                        IsSelected = User?.TradesmanProfile?.Skills.Any(s => s.ServiceCategoryId == cat.Id) ?? false
+                        IsSelected = User?.TradesmanProfile?.Skills.Any(s => s.ServiceCategoryId.ToString() == cat.Id.ToString()) ?? false
                     };
                     Categories.Add(selection);
                 }
@@ -104,7 +104,7 @@ public partial class UserEditViewModel : ObservableObject, IQueryAttributable
                 .ToList();
 
             var result = await _apiClient.UpdateUserRoleAndCategories.ExecuteAsync(
-                User.Id, 
+                Guid.Parse(User.Id), 
                 SelectedRole, 
                 SelectedRole == UserRoleTypes.Tradesman ? selectedCategoryIds : null);
 

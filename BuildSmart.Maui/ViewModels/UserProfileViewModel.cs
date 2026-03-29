@@ -197,7 +197,7 @@ public partial class UserProfileViewModel : ObservableObject
             if (result.Data?.CurrentUser is not null)
             {
                 var user = result.Data.CurrentUser;
-                _userId = user.Id;
+                _userId = Guid.Parse(user.Id);
                 FirstName = user.FirstName;
                 LastName = user.LastName;
                 Email = user.Email;

@@ -57,6 +57,7 @@ public partial class CategoryDetailViewModel : ObservableObject
             IsGlobalSwitchVisible = false;
             CategoryName = "Global Questions";
             CategoryDescription = "Questions applied to all job posts.";
+            Status = CategoryStatus.Active; // Default to active so homeowners see it immediately
         }
     }
 

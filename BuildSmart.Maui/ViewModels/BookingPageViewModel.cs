@@ -57,7 +57,7 @@ namespace BuildSmart.Maui.ViewModels
 
                 // 2. Create booking
                 var result = await _apiClient.CreateBooking.ExecuteAsync(
-                    homeownerId,
+                    Guid.Parse(homeownerId),
                     Guid.Parse(TradesmanId),
                     RequestedDate,
                     JobDescription);

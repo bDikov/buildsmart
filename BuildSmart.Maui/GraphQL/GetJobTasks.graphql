@@ -1,0 +1,7 @@
+query GetJobTasks($jobPostId: UUID!) {
+  allJobPosts(where: { id: { eq: $jobPostId } }) {
+    jobTasks {
+      ... JobTaskDetails
+    }
+  }
+}

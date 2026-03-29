@@ -5,13 +5,6 @@ fragment UserDetails on User {
   profilePictureUrl
 }
 
-fragment CategoryDetails on ServiceCategory {
-  id
-  name
-  isGlobal
-  templateStructure
-}
-
 fragment FeedbackReplyDetails on JobPostFeedback {
   id
   jobPostId
@@ -89,6 +82,21 @@ fragment QuestionDetails on JobPostQuestion {
   }
 }
 
+fragment AcceptanceCriteriaDetails on TaskAcceptanceCriteria {
+  id
+  description
+}
+
+fragment JobTaskDetails on JobTask {
+  id
+  title
+  description
+  sequenceOrder
+  acceptanceCriteria {
+    ... AcceptanceCriteriaDetails
+  }
+}
+
 fragment JobPostDetails on JobPost {
   id
   title
@@ -108,8 +116,11 @@ fragment JobPostDetails on JobPost {
     currency
   }
   serviceCategory {
-    ... CategoryDetails
+    id
+    name
   }
+  createdAt
+  updatedAt
   feedbacks {
     ... FeedbackDetails
   }

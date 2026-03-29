@@ -1,6 +1,7 @@
 using BuildSmart.Api.GraphQL.Types;
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Api.GraphQL.DataLoaders;
 
 namespace BuildSmart.Api.GraphQL.Types;
 
@@ -19,16 +20,8 @@ public class AuctionType : ObjectType<Auction>
 			.Resolve(async context =>
 			{
 				var auction = context.Parent<Auction>();
-				var service = context.Service<IJobPostService>();
-
-				var dataLoader = context.BatchDataLoader<Guid, IEnumerable<Bid>>(
-					async (keys, ct) =>
-					{
-						var lookup = await service.GetBidsBatchByJobPostIdsAsync(keys);
-						return keys.ToDictionary(k => k, k => (IEnumerable<Bid>)lookup[k]);
-					});
-
-				return await dataLoader.LoadAsync(auction.Job.Id, context.RequestAborted);
+				return await context.DataLoader<BidsByJobPostIdDataLoader>()
+					.LoadAsync(auction.Job.Id, context.RequestAborted);
 			});
 
 		descriptor.Field(a => a.Questions)
@@ -36,16 +29,8 @@ public class AuctionType : ObjectType<Auction>
 			.Resolve(async context =>
 			{
 				var auction = context.Parent<Auction>();
-				var service = context.Service<IJobPostService>();
-
-				var dataLoader = context.BatchDataLoader<Guid, IEnumerable<JobPostQuestion>>(
-					async (keys, ct) =>
-					{
-						var lookup = await service.GetQuestionsBatchByJobPostIdsAsync(keys);
-						return keys.ToDictionary(k => k, k => (IEnumerable<JobPostQuestion>)lookup[k]);
-					});
-
-				return await dataLoader.LoadAsync(auction.Job.Id, context.RequestAborted);
+				return await context.DataLoader<QuestionsByJobPostIdDataLoader>()
+					.LoadAsync(auction.Job.Id, context.RequestAborted);
 			});
 	}
 }

@@ -31,6 +31,15 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <Button Text="Place Bid" 
+                    Command="{Binding GoToPlaceBidCommand}" 
+                    BackgroundColor="#4CAF50" 
+                    TextColor="White" 
+                    FontAttributes="Bold" 
+                    HeightRequest="50" 
+                    CornerRadius="8" 
+                    Margin="0,5"/>
+
             <BoxView HeightRequest="1" Color="LightGray" />
 
             <!-- Public Q&A Section -->

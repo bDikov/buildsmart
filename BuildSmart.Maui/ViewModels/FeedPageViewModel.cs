@@ -157,7 +157,7 @@ namespace BuildSmart.Maui.ViewModels
 					return;
 				}
 
-				var result = await _apiClient.PassAuction.ExecuteAsync(profileId.Value, auction.Job.Id);
+				var result = await _apiClient.PassAuction.ExecuteAsync(Guid.Parse(profileId), auction.Job.Id);
 
 				if (result.Errors.Count == 0)
 				{

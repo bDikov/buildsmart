@@ -173,6 +173,46 @@ public class JobPostServiceTests
     }
 
     [Fact]
+    public async Task UpdateJobTasksAsync_ShouldRemoveExistingAndAddNewTasks()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var existingTask = new JobTask { Id = Guid.NewGuid(), Title = "Old Task" };
+        var jobPost = new JobPost 
+        { 
+            Id = jobPostId, 
+            JobTasks = new List<JobTask> { existingTask } 
+        };
+
+        var mockJobTaskRepo = new Mock<IJobTaskRepository>();
+        _mockUow.Setup(u => u.JobTasks).Returns(mockJobTaskRepo.Object);
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId))
+            .ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var newTasksInput = new List<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)>
+        {
+            (null, "New Task", "Desc", 1, new List<(Guid? Id, string Description)>())
+        };
+
+        // Act
+        await _service.UpdateJobTasksAsync(jobPostId, newTasksInput);
+
+        // Assert
+        // 1. Verify old tasks were explicitly removed via RemoveRange to prevent concurrency errors
+        mockJobTaskRepo.Verify(r => r.RemoveRange(It.Is<IEnumerable<JobTask>>(tasks => tasks.Contains(existingTask))), Times.Once);
+        
+        // 2. Verify new tasks were added
+        mockJobTaskRepo.Verify(r => r.AddRangeAsync(It.Is<IEnumerable<JobTask>>(tasks => tasks.Any(t => t.Title == "New Task"))), Times.Once);
+
+        // 3. Verify JobPost timestamp was updated and changes saved
+        mockJobPostRepo.Verify(r => r.Update(jobPost), Times.Once);
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+    }
+
+    [Fact]
     public async Task GetQuestionRepliesAsync_ShouldReturnPaginatedReplies()
     {
         // Arrange

@@ -126,12 +126,24 @@ mutation RestoreAuction($jobId: UUID!) {
   restoreAuction(jobId: $jobId)
 }
 
-mutation SubmitBid($tradesmanProfileId: UUID!, $jobPostId: UUID!, $subtotal: Decimal!, $currency: String!, $comment: String) {
-  submitBid(tradesmanProfileId: $tradesmanProfileId, jobPostId: $jobPostId, subtotal: $subtotal, currency: $currency, comment: $comment) {
+mutation SubmitBid($input: SubmitBidInput!) {
+  submitBid(input: $input) {
     id
     amount {
       total
       currency
+    }
+    comment
+    earliestStartDate
+    latestStartDate
+    estimatedDurationDays
+    bidItems {
+      id
+      jobTaskId
+      price {
+        total
+      }
+      comment
     }
   }
 }

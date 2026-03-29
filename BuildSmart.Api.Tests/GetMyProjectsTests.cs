@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BuildSmart.Api.Tests;
 
@@ -194,10 +195,23 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
             
             // Mock IJobPostService for the field resolvers
             var mockJobPostService = new Mock<IJobPostService>();
+
+            var questionsLookup = new List<JobPostQuestion> { question }.ToLookup(q => q.JobPostId);
+            mockJobPostService.Setup(s => s.GetQuestionsBatchByJobPostIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(questionsLookup);
+
+            var feedbacksLookup = new List<JobPostFeedback> { feedback }.ToLookup(f => f.JobPostId);
+            mockJobPostService.Setup(s => s.GetFeedbacksBatchByJobPostIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(feedbacksLookup);
+
             mockJobPostService.Setup(s => s.GetQuestionRepliesAsync(question.Id, It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(question.Replies);
             mockJobPostService.Setup(s => s.GetQuestionReplyCountAsync(question.Id))
                 .ReturnsAsync(question.Replies.Count);
+
+            var replyCounts = new Dictionary<Guid, int> { { question.Id, question.Replies.Count } };
+            mockJobPostService.Setup(s => s.GetQuestionReplyCountsBatchAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(replyCounts);
                 
             services.AddSingleton(mockJobPostService.Object);
         }, userToken);
@@ -281,5 +295,134 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         
         Assert.False((bool)questionNode?["isEditable"]!);
         Assert.True((bool)questionNode?["isAnswerEditable"]!);
+    }
+
+    [Fact]
+    public async Task GetMyProjects_WithBids_ReturnsTasksAndCriteria()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var userToken = TestTokenHelper.GenerateJwtToken(userId, "user@example.com", "Homeowner", _configuration);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        var project = new Project
+        {
+            Id = Guid.NewGuid(),
+            Title = "Project with Bids",
+            HomeownerId = userId
+        };
+        var jobPost = new JobPost { Id = Guid.NewGuid(), ProjectId = project.Id, Project = project };
+        project.JobPosts = new List<JobPost> { jobPost };
+
+        var jobTask = new JobTask 
+        { 
+            Id = Guid.NewGuid(), 
+            Title = "Task 1", 
+            AcceptanceCriteria = new List<TaskAcceptanceCriteria>
+            {
+                new TaskAcceptanceCriteria { Id = Guid.NewGuid(), Description = "Criteria 1" }
+            }
+        };
+
+        var bid = new Bid
+        {
+            Id = Guid.NewGuid(),
+            JobPostId = jobPost.Id,
+            JobPost = jobPost,
+            BidItems = new List<BidItem>
+            {
+                new BidItem
+                {
+                    Id = Guid.NewGuid(),
+                    JobTaskId = jobTask.Id,
+                    JobTask = jobTask,
+                    Price = BuildSmart.Core.Domain.ValueObjects.Amount.Create("USD", 1000)
+                }
+            }
+        };
+
+        mockProjectRepo.Setup(r => r.GetProjectsByHomeownerAsync(userId)).ReturnsAsync(new List<Project> { project });
+
+        var client = CreateClient(services =>
+        {
+            services.AddSingleton(mockProjectRepo.Object);
+            
+            var mockJobPostService = new Mock<IJobPostService>();
+            var bidsLookup = new List<Bid> { bid }.ToLookup(b => b.JobPostId);
+            mockJobPostService.Setup(s => s.GetBidsBatchByJobPostIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(bidsLookup);
+
+            var jobTasksLookup = new List<JobTask> { jobTask }.ToLookup(jt => jobPost.Id);
+            mockJobPostService.Setup(s => s.GetJobTasksBatchByJobPostIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(jobTasksLookup);
+                
+            services.AddSingleton(mockJobPostService.Object);
+
+            var mockUnitOfWork = new Mock<IUnitOfWork>();
+            var mockJobTaskRepo = new Mock<IJobTaskRepository>();
+            mockJobTaskRepo.Setup(r => r.GetQueryable()).Returns(new List<JobTask> { jobTask }.AsQueryable());
+            mockUnitOfWork.Setup(u => u.JobTasks).Returns(mockJobTaskRepo.Object);
+            services.RemoveAll(typeof(IUnitOfWork));
+            services.AddSingleton(mockUnitOfWork.Object);
+
+        }, userToken);
+
+        var query = @"
+            query GetMyProjects {
+              myProjects {
+                jobPosts {
+                  jobTasks {
+                    title
+                    acceptanceCriteria { description }
+                  }
+                  bids {
+                    id
+                    bidItems {
+                      jobTask { title }
+                      price { total }
+                    }
+                  }
+                }
+              }
+            }";
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+        {
+            Content = new StringContent(
+                Newtonsoft.Json.JsonConvert.SerializeObject(new { query }),
+                Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        var response = await client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}, Content: {content}");
+        
+        var json = JObject.Parse(content);
+        if (json["errors"] != null)
+        {
+            Assert.Fail($"GraphQL Errors: {json["errors"]}");
+        }
+
+        var jobPostsArray = json["data"]?["myProjects"]?[0]?["jobPosts"] as JArray;
+        Assert.NotNull(jobPostsArray);
+        Assert.Single(jobPostsArray);
+
+        var jobTasksArray = jobPostsArray[0]?["jobTasks"] as JArray;
+        Assert.NotNull(jobTasksArray);
+        Assert.Single(jobTasksArray);
+        Assert.Equal("Task 1", jobTasksArray[0]?["title"]?.ToString());
+
+        var bidsArray = jobPostsArray[0]?["bids"] as JArray;
+        Assert.NotNull(bidsArray);
+        Assert.Single(bidsArray);
+        
+        var bidItemsArray = bidsArray[0]?["bidItems"] as JArray;
+        Assert.NotNull(bidItemsArray);
+        Assert.Single(bidItemsArray);
+        Assert.Equal("Task 1", bidItemsArray[0]?["jobTask"]?["title"]?.ToString());
     }
 }

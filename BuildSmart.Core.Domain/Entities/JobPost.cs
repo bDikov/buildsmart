@@ -74,6 +74,8 @@ public class JobPost : BaseEntity
 	public int AmendmentCount { get; private set; } = 0;
 
 	// --- Navigation ---
+	public ICollection<JobTask> JobTasks { get; set; } = new List<JobTask>();
+
 	public ICollection<JobPostQuestion> Questions { get; set; } = new List<JobPostQuestion>();
 
 	public ICollection<Bid> Bids { get; set; } = new List<Bid>();

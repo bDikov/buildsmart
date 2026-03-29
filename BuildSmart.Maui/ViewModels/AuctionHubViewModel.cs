@@ -153,7 +153,7 @@ public partial class AuctionHubViewModel : ObservableObject
 
             // Fetch current user's profile ID to control Edit button visibility
             var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-            CurrentTradesmanProfileId = userResult.Data?.CurrentUser?.TradesmanProfile?.Id;
+            CurrentTradesmanProfileId = userResult.Data?.CurrentUser?.TradesmanProfile?.Id != null ? Guid.Parse(userResult.Data.CurrentUser.TradesmanProfile.Id) : null;
 
             var result = await _apiClient.GetAuctionById.ExecuteAsync(jobId);
             
@@ -223,9 +223,22 @@ public partial class AuctionHubViewModel : ObservableObject
     }
 
             [RelayCommand]
-            private async Task BackAsync()    {
-        await Shell.Current.GoToAsync("..");
-    }
+            private async Task BackAsync()
+            {
+                await Shell.Current.GoToAsync("..");
+            }
+
+            [RelayCommand]
+            private async Task GoToPlaceBidAsync()
+            {
+                if (string.IsNullOrEmpty(JobId))
+                {
+                    await Shell.Current.DisplayAlert("Error", "No job selected.", "OK");
+                    return;
+                }
+
+                await Shell.Current.GoToAsync($"{nameof(Views.PlaceBidPage)}?jobId={JobId}");
+            }
 
     [RelayCommand]
     private async Task EditQuestionAsync(IQuestionDetails question)
@@ -361,7 +374,7 @@ public partial class AuctionHubViewModel : ObservableObject
                 return;
             }
 
-            var result = await _apiClient.AskJobQuestion.ExecuteAsync(profileId.Value, Auction.Job.Id, questionText);
+            var result = await _apiClient.AskJobQuestion.ExecuteAsync(Guid.Parse(profileId), Auction.Job.Id, questionText);
 
             if (result.Errors.Count > 0)
             {

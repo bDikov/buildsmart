@@ -39,7 +39,19 @@ public class MutationType : ObjectType<Mutation>
             .Description("Adds a sub-job to a project using the Wizard output.")
             .Authorize(roles: new[] { "Homeowner" });
 
-        descriptor.Field(m => m.SubmitBid(default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.SaveJobPostDraft(default!, default!, default!, default!, default!, default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.UpdateJobTasks(default!, default!))
+            .Description("Updates the standardized tasks for a job post.")
+            .Argument("input", a => a.Type<NonNullType<BuildSmart.Api.GraphQL.Types.Input.UpdateJobTasksInputType>>())
+            .Authorize(roles: new[] { "Homeowner", "Admin" });
+
+        descriptor.Field(m => m.SubmitJobPost(default!, default!))
+            .Authorize();
+
+        descriptor.Field(m => m.SubmitBid(default!, default!))
+            .Argument("input", a => a.Type<NonNullType<BuildSmart.Api.GraphQL.Types.Input.SubmitBidInputType>>())
             .Description("Submits a bid for a specific job post.")
             .Authorize(roles: new[] { "Tradesman" });
 
