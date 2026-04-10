@@ -27,7 +27,7 @@ public class UserManagementViewModelTests
     {
         // Arrange
         var mockUser = new Mock<IGetUsers_Users>();
-        mockUser.Setup(u => u.Id).Returns(Guid.NewGuid());
+        mockUser.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
         mockUser.Setup(u => u.FirstName).Returns("John");
         mockUser.Setup(u => u.LastName).Returns("Doe");
         mockUser.Setup(u => u.Email).Returns("john@doe.com");

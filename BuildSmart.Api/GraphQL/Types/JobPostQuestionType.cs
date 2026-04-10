@@ -1,6 +1,7 @@
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Application.Interfaces;
 using System.Security.Claims;
+using BuildSmart.Api.GraphQL.DataLoaders;
 
 namespace BuildSmart.Api.GraphQL.Types;
 
@@ -8,17 +9,17 @@ public class JobPostQuestionType : ObjectType<JobPostQuestion>
 {
 	protected override void Configure(IObjectTypeDescriptor<JobPostQuestion> descriptor)
 	{
-		descriptor.Field(q => q.Id).Type<NonNullType<IdType>>();
+		descriptor.Field(q => q.Id).Type<NonNullType<UuidType>>();
 		descriptor.Field(q => q.QuestionText).Type<NonNullType<StringType>>();
 		descriptor.Field(q => q.AnswerText).Type<StringType>();
 		descriptor.Field(q => q.AnsweredAt).Type<DateTimeType>();
 		descriptor.Field(q => q.IsAnswered).Type<NonNullType<BooleanType>>();
 		descriptor.Field(q => q.IsEdited).Type<NonNullType<BooleanType>>();
 		descriptor.Field(q => q.IsAnswerEdited).Type<NonNullType<BooleanType>>();
-		descriptor.Field(q => q.ParentQuestionId).Type<IdType>();
-		descriptor.Field(q => q.TradesmanProfileId).Type<IdType>();
+		descriptor.Field(q => q.ParentQuestionId).Type<UuidType>();
+		descriptor.Field(q => q.TradesmanProfileId).Type<UuidType>();
 		descriptor.Field(q => q.TradesmanProfile).Type<TradesmanProfileType>();
-		descriptor.Field(q => q.AuthorId).Type<IdType>();
+		descriptor.Field(q => q.AuthorId).Type<UuidType>();
 		descriptor.Field(q => q.Author).Type<UserType>();
 
 		descriptor.Field("replies")
@@ -40,17 +41,8 @@ public class JobPostQuestionType : ObjectType<JobPostQuestion>
 			.Resolve(async context =>
 			{
 				var question = context.Parent<JobPostQuestion>();
-				var service = context.Service<IJobPostService>();
-
-				var dataLoader = context.BatchDataLoader<Guid, int>(
-					async (keys, ct) =>
-					{
-						var counts = await service.GetQuestionReplyCountsBatchAsync(keys);
-						// Ensure all requested keys have a value, defaulting to 0
-						return keys.ToDictionary(k => k, k => counts.TryGetValue(k, out var count) ? count : 0);
-					});
-
-				return await dataLoader.LoadAsync(question.Id, context.RequestAborted);
+				return await context.DataLoader<QuestionReplyCountDataLoader>()
+					.LoadAsync(question.Id, context.RequestAborted);
 			});
 
 		// Computed field to check if the current user is the author of the question/reply        

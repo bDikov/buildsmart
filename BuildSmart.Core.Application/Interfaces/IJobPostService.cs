@@ -23,12 +23,13 @@ public interface IJobPostService
     Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId);
 
     Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
+    Task UpdateJobTasksAsync(Guid jobPostId, IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> tasks);
             
             Task SaveDraftAsync(Guid jobPostId, string jobDetailsJson, string? description, string? location, Amount? estimatedBudget);
             
             Task SubmitJobPostAsync(Guid jobPostId);
         
-            Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, Amount amount, string? comment);    
+            Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, string currency, string? comment, DateTime? earliestStartDate, DateTime? latestStartDate, int? estimatedDurationDays, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> bidItems);    
             Task PassAuctionAsync(Guid tradesmanProfileId, Guid jobPostId);
     Task<Booking> AcceptBidAsync(Guid bidId);
 
@@ -51,4 +52,5 @@ public interface IJobPostService
     Task<ILookup<Guid, JobPostQuestion>> GetQuestionsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
     Task<ILookup<Guid, JobPostFeedback>> GetFeedbacksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
     Task<ILookup<Guid, Bid>> GetBidsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+    Task<ILookup<Guid, JobTask>> GetJobTasksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
 }

@@ -22,6 +22,14 @@ public class JobPostRepository : IJobPostRepository
             .FirstOrDefaultAsync(jp => jp.Id == id);
     }
 
+    public async Task<JobPost?> GetByIdWithTasksAsync(Guid id)
+    {
+        return await _context.JobPosts
+            .Include(jp => jp.JobTasks)
+                .ThenInclude(jt => jt.AcceptanceCriteria)
+            .FirstOrDefaultAsync(jp => jp.Id == id);
+    }
+
     public async Task<IEnumerable<JobPost>> GetJobsByProjectIdAsync(Guid projectId)
     {
         return await _context.JobPosts

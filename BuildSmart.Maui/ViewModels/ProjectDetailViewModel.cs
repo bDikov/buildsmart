@@ -305,6 +305,22 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	}
 
 	[RelayCommand]
+	private async Task ViewTaskBreakdownAsync(IJobPostDetails job)
+	{
+		try
+		{
+			await Shell.Current.GoToAsync(nameof(Views.TaskBreakdownPage), new Dictionary<string, object>
+			{
+				{ "Job", job }
+			});
+		}
+		catch (Exception ex)
+		{
+			await Shell.Current.DisplayAlert("Navigation Error", ex.Message, "OK");
+		}
+	}
+
+	[RelayCommand]
 	private async Task RespondToAdminAsync(IJobPostDetails job)
 	{
 	        string response = await Shell.Current.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
@@ -344,7 +360,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         try
         {
             IsBusy = true;
-            var result = await _apiClient.EditJobFeedback.ExecuteAsync(feedback.Id, newText);
+            var result = await _apiClient.EditJobFeedback.ExecuteAsync(Guid.Parse(feedback.Id), newText);
 
             if (result.Errors.Count > 0)
             {
@@ -375,7 +391,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         try
         {
             IsBusy = true;
-            var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(feedback.Id, replyText);
+            var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(Guid.Parse(feedback.Id), replyText);
 
             if (result.Errors.Count > 0)
             {
@@ -468,7 +484,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         if (reply == null) return;
         
         var parentId = reply.ParentFeedbackId;
-        if (!parentId.HasValue) return;
+        if (string.IsNullOrEmpty(parentId)) return;
 
         string replyText = await Shell.Current.DisplayPromptAsync("Reply to Feedback", "Type your reply:", "Send", "Cancel", "...");
         if (string.IsNullOrWhiteSpace(replyText)) return;
@@ -476,7 +492,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         try
         {
             IsBusy = true;
-            var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(parentId.Value, replyText);
+            var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(Guid.Parse(parentId), replyText);
 
             if (result.Errors.Count > 0)
             {
@@ -567,7 +583,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         try
         {
             IsBusy = true;
-            var result = await _apiClient.EditJobFeedback.ExecuteAsync(reply.Id, newText);
+            var result = await _apiClient.EditJobFeedback.ExecuteAsync(Guid.Parse(reply.Id), newText);
 
             if (result.Errors.Count > 0)
             {

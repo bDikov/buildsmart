@@ -10,14 +10,7 @@ namespace BuildSmart.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "AdditionalQuestionsJson",
-                table: "JobPosts",
-                type: "jsonb",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
+            migrationBuilder.Sql(@"ALTER TABLE ""JobPosts"" ALTER COLUMN ""AdditionalQuestionsJson"" TYPE jsonb USING ""AdditionalQuestionsJson""::jsonb;");
         }
 
         /// <inheritdoc />

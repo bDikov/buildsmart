@@ -3,6 +3,7 @@ using BuildSmart.Core.Application.Services;
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
 using BuildSmart.Core.Domain.ValueObjects;
+using BuildSmart.Api.DTOs;
 using HotChocolate.Authorization;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
@@ -387,6 +388,16 @@ public class Mutation
 		return true;
 	}
 
+	[Authorize(Roles = new[] { "Homeowner", "Admin" })]
+	public async Task<bool> UpdateJobTasks(
+		UpdateJobTasksInput input,
+		[Service] IJobPostService jobPostService)
+	{
+		var tasks = input.Tasks.Select(t => (t.Id, t.Title, t.Description, t.SequenceOrder, t.Criteria.Select(c => (c.Id, c.Description))));
+		await jobPostService.UpdateJobTasksAsync(input.JobPostId, tasks);
+		return true;
+	}
+
 	public async Task<bool> SubmitJobPost(
 		Guid jobPostId,
 		[Service] IJobPostService jobPostService)
@@ -396,15 +407,20 @@ public class Mutation
 	}
 
 	public async Task<Bid> SubmitBid(
-		Guid tradesmanProfileId,
-		Guid jobPostId,
-		decimal subtotal,
-		string currency,
-		string? comment,
+		SubmitBidInput input,
 		[Service] IJobPostService jobPostService)
 	{
-		var amount = Amount.Create(currency, subtotal);
-		return await jobPostService.SubmitBidAsync(tradesmanProfileId, jobPostId, amount, comment);
+		var bidItems = input.BidItems.Select(bi => (bi.JobTaskId, bi.PriceSubtotal, bi.Comment));
+
+		return await jobPostService.SubmitBidAsync(
+			input.TradesmanProfileId, 
+			input.JobPostId, 
+			input.Currency, 
+			input.Comment, 
+			input.EarliestStartDate, 
+			input.LatestStartDate, 
+			input.EstimatedDurationDays, 
+			bidItems);
 	}
 
 	[Authorize(Roles = new[] { "Tradesman" })]

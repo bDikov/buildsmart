@@ -5,6 +5,7 @@
              xmlns:gql="clr-namespace:BuildSmart.Maui.GraphQL"
              x:DataType="vm:CategoryManagementViewModel"
              x:Class="BuildSmart.Maui.Views.CategoryManagementPage"
+             x:Name="PageRoot"
              Title="Category Management">
     <Grid RowDefinitions="Auto, Auto, *">
         
@@ -27,12 +28,13 @@
         </Grid>
 
         <!-- Categories List -->
-        <CollectionView Grid.Row="2" ItemsSource="{Binding Categories}" SelectionMode="Single">
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Categories}" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="gql:IGetAllServiceCategories_AllServiceCategories">
                     <Frame Margin="10" Padding="10" BorderColor="LightGray">
                         <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CategoryManagementViewModel}}, Path=GoToDetailsCommand}"
+                            <TapGestureRecognizer x:DataType="{x:Null}" 
+                                                  Command="{Binding BindingContext.GoToDetailsCommand, Source={x:Reference PageRoot}}"
                                                   CommandParameter="{Binding Id}"/>
                         </Frame.GestureRecognizers>
                         <Grid ColumnDefinitions="*, Auto">
@@ -41,9 +43,10 @@
                                 <Label Text="{Binding Status, StringFormat='Status: {0}'}" FontSize="12" />
                             </VerticalStackLayout>
                             <Button Grid.Column="1" 
+                                    x:DataType="{x:Null}"
                                     Text="Toggle Status" 
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CategoryManagementViewModel}}, Path=UpdateStatusCommand}"
-                                    CommandParameter="{Binding .}" />
+                                    Command="{Binding BindingContext.UpdateStatusCommand, Source={x:Reference PageRoot}}"
+                                    CommandParameter="{Binding Id}" />
                         </Grid>
                     </Frame>
                 </DataTemplate>

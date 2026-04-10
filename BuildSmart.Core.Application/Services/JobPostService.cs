@@ -60,8 +60,13 @@ public class JobPostService : IJobPostService
 
 	public async Task ApproveJobScopeAsync(Guid jobPostId, string finalScope)
 	{
-		var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
+		var jobPost = await _unitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId)
 			?? throw new ArgumentException("Job post not found");
+
+		if (jobPost.JobTasks == null || !jobPost.JobTasks.Any())
+		{
+			throw new InvalidOperationException("A task breakdown must be created before sending for approval.");
+		}
 
 		if (jobPost.Status == JobPostStatus.WaitingForAdminReview)
 		{
@@ -207,8 +212,46 @@ public class JobPostService : IJobPostService
 			?? throw new ArgumentException("Job post not found");
 
 		jobPost.UpdateScope(newDetailsJson, newDescription);
-
 		_unitOfWork.JobPosts.Update(jobPost);
+		await _unitOfWork.SaveChangesAsync();
+	}
+
+	public async Task UpdateJobTasksAsync(Guid jobPostId, IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> tasks)
+	{
+		var jobPost = await _unitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId)
+			?? throw new ArgumentException("Job post not found");
+
+		// Remove all existing tasks
+		if (jobPost.JobTasks.Any())
+		{
+			_unitOfWork.JobTasks.RemoveRange(jobPost.JobTasks);
+		}
+
+		// Add new tasks
+		var newTasks = tasks.Select(t => new JobTask
+		{
+			Id = t.Id ?? Guid.NewGuid(),
+			JobPostId = jobPostId,
+			Title = t.Title,
+			Description = t.Description,
+			SequenceOrder = t.SequenceOrder,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow,
+			AcceptanceCriteria = t.Criteria.Select(c => new TaskAcceptanceCriteria
+			{
+				Id = c.Id ?? Guid.NewGuid(),
+				Description = c.Description,
+				CreatedAt = DateTime.UtcNow,
+				UpdatedAt = DateTime.UtcNow
+			}).ToList()
+		}).ToList();
+
+		await _unitOfWork.JobTasks.AddRangeAsync(newTasks);
+
+		// Just update the timestamp on the job post to reflect activity
+		jobPost.UpdatedAt = DateTime.UtcNow;
+		_unitOfWork.JobPosts.Update(jobPost);
+
 		await _unitOfWork.SaveChangesAsync();
 	}
 
@@ -339,20 +382,38 @@ public class JobPostService : IJobPostService
 		}
 	}
 
-	public async Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, Amount amount, string? comment)
+	public async Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, string currency, string? comment, DateTime? earliestStartDate, DateTime? latestStartDate, int? estimatedDurationDays, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> bidItems)
 	{
 		var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
 			?? throw new ArgumentException("Job post not found");
+
+		var existingBids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfileId);
+		if (existingBids.Any(b => b.JobPostId == jobPostId))
+		{
+			throw new InvalidOperationException("You have already submitted a bid for this job post.");
+		}
 
 		var bid = new Bid
 		{
 			JobPostId = jobPostId,
 			TradesmanProfileId = tradesmanProfileId,
-			Amount = amount,
+			Amount = Amount.Create(currency, bidItems.Sum(i => i.PriceSubtotal)),
 			Comment = comment,
+			EarliestStartDate = earliestStartDate,
+			LatestStartDate = latestStartDate,
+			EstimatedDurationDays = estimatedDurationDays,
 			LinkedAmendmentVersion = jobPost.AmendmentCount,
 			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
+			UpdatedAt = DateTime.UtcNow,
+			BidItems = bidItems.Select(item => new BidItem
+			{
+				Id = Guid.NewGuid(),
+				JobTaskId = item.JobTaskId,
+				Price = Amount.Create(currency, item.PriceSubtotal),
+				Comment = item.Comment,
+				CreatedAt = DateTime.UtcNow,
+				UpdatedAt = DateTime.UtcNow
+			}).ToList()
 		};
 
 		await _unitOfWork.Bids.AddAsync(bid);
@@ -917,5 +978,15 @@ public class JobPostService : IJobPostService
 				.ThenInclude(tp => tp.User)
 			.ToListAsync();
 		return bids.ToLookup(b => b.JobPostId);
+	}
+
+	public async Task<ILookup<Guid, JobTask>> GetJobTasksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds)
+	{
+		var tasks = await _unitOfWork.JobTasks.GetQueryable()
+			.Where(jt => jobPostIds.Contains(jt.JobPostId))
+			.Include(jt => jt.AcceptanceCriteria)
+			.OrderBy(jt => jt.SequenceOrder)
+			.ToListAsync();
+		return tasks.ToLookup(jt => jt.JobPostId);
 	}
 }

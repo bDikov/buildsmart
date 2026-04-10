@@ -4,39 +4,89 @@
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
              x:Class="BuildSmart.Maui.Views.ScopeReviewPage"
              x:DataType="vm:ScopeReviewViewModel"
-             Title="Review AI Scope">
+             x:Name="PageRoot"
+             Title="Plan Tasks &amp; Milestones">
 
     <ScrollView Padding="20">
         <VerticalStackLayout Spacing="20">
-            <Label Text="AI Generated Scope of Work" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-            <Label Text="The following scope was generated based on your answers. Please review and edit it below." FontSize="14" TextColor="Gray" />
+            <Label Text="AI Generated Scope Reference" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+            <Label Text="Use the AI suggestion below to break your project into specific tasks." FontSize="14" TextColor="Gray" />
+
+            <Frame BorderColor="LightGray" Padding="15" HasShadow="False" BackgroundColor="#F9F9F9">
+                <Label Text="{Binding GeneratedScope}" TextColor="Gray" FontSize="12" />
+            </Frame>
 
             <BoxView HeightRequest="1" Color="#E0E0E0" />
 
-            <Label Text="Edit AI Generated Scope:" FontAttributes="Bold" FontSize="15" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-            <Frame BorderColor="{StaticResource Primary}" Padding="5" HasShadow="False" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}">
-                <Editor Text="{Binding EditableScope}" 
-                        AutoSize="TextChanges" 
-                        MinimumHeightRequest="400" 
-                        Placeholder="Edit the scope here..." 
-                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                        PlaceholderColor="Gray"
-                        FontSize="14" />
-            </Frame>
+            <Label Text="Task Breakdown (Agile Bidding)" FontAttributes="Bold" FontSize="18" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+            <Label Text="Tradesmen will bid on these specific tasks. Define what needs to be done and how you will accept the work." FontSize="12" TextColor="Gray" Margin="0,-10,0,10"/>
+
+            <!-- List of Tasks -->
+            <StackLayout BindableLayout.ItemsSource="{Binding Tasks}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:EditableTaskViewModel">
+                        <Frame x:Name="TaskRoot" BorderColor="{StaticResource Primary}" Padding="15" Margin="0,5" HasShadow="False" CornerRadius="8">
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="{Binding SequenceOrder, StringFormat='Task #{0}'}" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                    <Button Grid.Column="1" Text="Remove Task" 
+                                            x:DataType="{x:Null}"
+                                            Command="{Binding BindingContext.RemoveTaskCommand, Source={x:Reference PageRoot}}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="Transparent" TextColor="Red" FontSize="12" Padding="0" HeightRequest="30" />
+                                </Grid>
+
+                                <Entry Text="{Binding Title}" Placeholder="Task Title (e.g., Demolition)" FontAttributes="Bold" FontSize="16" />
+                                <Editor Text="{Binding Description}" Placeholder="Optional detailed description..." HeightRequest="60" FontSize="13" />
+
+                                <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,5" />
+                                <Label Text="Acceptance Criteria (Definition of Done)" FontSize="12" FontAttributes="Bold" TextColor="Gray" />
+
+                                <!-- List of Criteria within a Task -->
+                                <StackLayout BindableLayout.ItemsSource="{Binding Criteria}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:EditableCriteriaViewModel">
+                                            <Grid ColumnDefinitions="*, Auto" Margin="0,2">
+                                                <Entry Grid.Column="0" Text="{Binding Description}" Placeholder="e.g. Area is swept clean" FontSize="12" />
+                                                <Button Grid.Column="1" Text="X" 
+                                                        x:DataType="{x:Null}"
+                                                        Command="{Binding BindingContext.RemoveCriteriaCommand, Source={x:Reference TaskRoot}}"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="Transparent" TextColor="Gray" Padding="5,0" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </StackLayout>
+
+                                <Button Text="+ Add Criteria" 
+                                        Command="{Binding AddCriteriaCommand}" 
+                                        HorizontalOptions="Start" 
+                                        BackgroundColor="Transparent" 
+                                        TextColor="{StaticResource Primary}" 
+                                        FontSize="12" 
+                                        HeightRequest="30" 
+                                        Padding="0" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+
+            <Button Text="+ Add Another Task" Command="{Binding AddTaskCommand}" BackgroundColor="White" BorderColor="{StaticResource Primary}" BorderWidth="1" TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+
+            <BoxView HeightRequest="1" Color="#E0E0E0" Margin="0,10" />
 
             <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
                 <Button Grid.Column="0" Text="Approve &amp; Submit" 
                         Command="{Binding ApproveCommand}" 
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                        BackgroundColor="{StaticResource Primary}" 
+                        BackgroundColor="#4CAF50" 
                         TextColor="White" 
                         HeightRequest="50" 
                         CornerRadius="10" 
                         FontAttributes="Bold" />
                 
-                <!-- This button goes back to Project Detail where they can 'Edit Answers' -->
-                <Button Grid.Column="1" Text="Back to Edit Answers" 
-                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScopeReviewViewModel}}, Path=BackToEditAnswersCommand}"
+                <Button Grid.Column="1" Text="Back to Answers" 
+                        Command="{Binding BackToEditAnswersCommand}"
                         BackgroundColor="Gray" 
                         TextColor="White" 
                         HeightRequest="50" 

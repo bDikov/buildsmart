@@ -33,6 +33,7 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
             .HasForeignKey(b => b.TradesmanProfileId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(b => b.JobPostId);
+        builder.HasIndex(b => new { b.JobPostId, b.TradesmanProfileId })
+            .IsUnique();
     }
 }

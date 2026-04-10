@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels.Admin"
              x:DataType="vm:CategoryDetailViewModel"
              x:Class="BuildSmart.Maui.Views.Admin.CategoryDetailPage"
+             x:Name="PageRoot"
              Title="{Binding CategoryName, StringFormat='Edit: {0}'}">
 
     <ScrollView>
@@ -37,13 +38,14 @@
             <CollectionView ItemsSource="{Binding Questions}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:QuestionViewModel">
-                        <Frame Padding="15" Margin="0,10" BorderColor="Gainsboro" CornerRadius="10" HasShadow="False" BackgroundColor="White">
+                        <Frame x:Name="QuestionRoot" Padding="15" Margin="0,10" BorderColor="Gainsboro" CornerRadius="10" HasShadow="False" BackgroundColor="White">
                             <VerticalStackLayout Spacing="10">
                                 
                                 <Grid ColumnDefinitions="*, Auto">
                                     <Label Text="Question Definition" FontAttributes="Bold" VerticalOptions="Center" />
                                     <Button Grid.Column="1" Text="Remove Question" 
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CategoryDetailViewModel}}, Path=RemoveQuestionCommand}"
+                                            x:DataType="{x:Null}"
+                                            Command="{Binding BindingContext.RemoveQuestionCommand, Source={x:Reference PageRoot}}"
                                             CommandParameter="{Binding .}"
                                             BackgroundColor="Transparent" TextColor="Red" FontSize="12" />
                                 </Grid>
@@ -75,7 +77,8 @@
                                                 <Grid ColumnDefinitions="*, Auto" Margin="0,2">
                                                     <Entry Grid.Column="0" Text="{Binding Value}" Placeholder="Option Value" />
                                                     <Button Grid.Column="1" Text="X" 
-                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:QuestionViewModel}}, Path=RemoveOptionCommand}"
+                                                            x:DataType="{x:Null}"
+                                                            Command="{Binding BindingContext.RemoveOptionCommand, Source={x:Reference QuestionRoot}}"
                                                             CommandParameter="{Binding .}"
                                                             BackgroundColor="Transparent" TextColor="Gray" />
                                                 </Grid>

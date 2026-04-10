@@ -7,6 +7,9 @@ public class JobPostQuestion : BaseEntity
     public Guid JobPostId { get; set; }
     public JobPost JobPost { get; set; } = null!;
 
+    public Guid? JobTaskId { get; set; }
+    public JobTask? JobTask { get; set; }
+
     public Guid? TradesmanProfileId { get; set; }
     public TradesmanProfile? TradesmanProfile { get; set; }
 

@@ -11,7 +11,13 @@ public class Bid : BaseEntity
 	public Guid TradesmanProfileId { get; set; }
 	public TradesmanProfile TradesmanProfile { get; set; } = null!;
 
-	public Amount Amount { get; set; }
+	public Amount Amount { get; set; } = null!;
+
+	public ICollection<BidItem> BidItems { get; set; } = new List<BidItem>();
+
+	public DateTime? EarliestStartDate { get; set; }
+	public DateTime? LatestStartDate { get; set; }
+	public int? EstimatedDurationDays { get; set; }
 
 	public string? Comment { get; set; }
 

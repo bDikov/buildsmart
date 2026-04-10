@@ -77,8 +77,32 @@
                                             </Style.Triggers>
                                         </Style>
                                     </VerticalStackLayout.Style>
-                                    <Label Text="Finalized Scope of Work:" FontSize="12" FontAttributes="Bold" TextColor="#1565C0"/>
-                                    <Label Text="{Binding JobPost.GeneratedScope}" FontSize="12" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                    <Label Text="AI Original Scope:" FontSize="12" FontAttributes="Bold" TextColor="#1565C0"/>
+                                    <Label Text="{Binding JobPost.GeneratedScope}" FontSize="12" TextColor="Gray" />
+                                </VerticalStackLayout>
+
+                                <!-- Approved Tasks View -->
+                                <VerticalStackLayout Margin="0,10,0,0">
+                                    <VerticalStackLayout.Style>
+                                        <Style TargetType="VerticalStackLayout">
+                                            <Setter Property="IsVisible" Value="False" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding JobPost.Status}" Value="Open">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </VerticalStackLayout.Style>
+                                    
+                                    <Button Text="View Task Breakdown" 
+                                            Clicked="OnViewTaskBreakdownClicked"
+                                            CommandParameter="{Binding JobPost}"
+                                            BackgroundColor="White" 
+                                            BorderColor="#2E7D32" 
+                                            BorderWidth="1" 
+                                            TextColor="#2E7D32" 
+                                            HeightRequest="40" 
+                                            FontSize="12" />
                                 </VerticalStackLayout>
 
                                 <!-- Clarification Thread -->

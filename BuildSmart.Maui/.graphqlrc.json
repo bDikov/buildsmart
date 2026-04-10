@@ -6,7 +6,25 @@
     "strawberryShake": {
       "name": "BuildSmartApiClient",
       "namespace": "BuildSmart.Maui.GraphQL",
-      "url": "https://localhost:44378/graphql"
+      "url": "https://localhost:44378/graphql",
+      "typeMappings": [
+        {
+          "name": "UUID",
+          "runtimeType": "System.Guid"
+        },
+        {
+          "name": "ID",
+          "runtimeType": "System.Guid"
+        },
+        {
+          "name": "Decimal",
+          "runtimeType": "System.Decimal"
+        },
+        {
+          "name": "DateTime",
+          "runtimeType": "System.DateTimeOffset"
+        }
+      ]
     }
   }
 }

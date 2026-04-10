@@ -1,0 +1,3 @@
+mutation UpdateJobTasks($input: UpdateJobTasksInput!) {
+  updateJobTasks(input: $input)
+}

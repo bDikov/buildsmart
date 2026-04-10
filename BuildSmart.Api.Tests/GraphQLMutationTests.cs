@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using BuildSmart.Core.Application.Interfaces;
 using Moq;
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Domain.ValueObjects;
 using System.Linq;
 using System.Collections.Generic;
 using BuildSmart.Api; // Needed for Program class
@@ -315,6 +316,172 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
         
         // Snapshot testing for GraphQL responses, ignoring dynamic fields like dates and IDs
         Snapshot.Match(content, matchOptions => matchOptions.IgnoreField("data.createBooking.id").IgnoreField("data.createBooking.requestedDate"));
+    }
+
+    [Fact]
+    public async Task SubmitBid_WithBidItems_ReturnsSuccessfulBid()
+    {
+        // Arrange
+        var tradesmanId = Guid.NewGuid();
+        var jobPostId = Guid.NewGuid();
+        var jobTaskId = Guid.NewGuid();
+        var tradesmanToken = TestTokenHelper.GenerateJwtToken(tradesmanId, "tradesman@example.com", "Tradesman", _configuration);
+
+        var mockJobPostService = new Mock<IJobPostService>();
+        mockJobPostService.Setup(s => s.SubmitBidAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<int?>(),
+                It.IsAny<IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)>>()))
+            .ReturnsAsync((Guid tradesmanIdArg, Guid jobPostIdArg, string currency, string comment, DateTime? earliest, DateTime? latest, int? duration, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> itemsArg) =>
+            {
+                var newBid = new Bid
+                {
+                    Id = Guid.NewGuid(),
+                    TradesmanProfileId = tradesmanIdArg,
+                    JobPostId = jobPostIdArg,
+                    Amount = Amount.Create(currency, itemsArg.Sum(i => i.PriceSubtotal)),
+                    Comment = comment,
+                    EarliestStartDate = earliest,
+                    LatestStartDate = latest,
+                    EstimatedDurationDays = duration,
+                    BidItems = itemsArg.Select(i => new BidItem
+                    {
+                        Id = Guid.NewGuid(),
+                        JobTaskId = i.JobTaskId,
+                        Price = Amount.Create(currency, i.PriceSubtotal),
+                        Comment = i.Comment
+                    }).ToList()
+                };
+                return newBid;
+            });
+
+        var client = CreateClient(services =>
+        {
+            services.AddSingleton(mockJobPostService.Object);
+        }, tradesmanToken);
+
+        var graphQLRequest = new
+        {
+            query = @"
+                mutation SubmitBid($input: SubmitBidInput!) {
+                  submitBid(input: $input) {
+                    id
+                    amount {
+                      total
+                      currency
+                    }
+                    comment
+                    earliestStartDate
+                    latestStartDate
+                    estimatedDurationDays
+                    bidItems {
+                      id
+                      jobTaskId
+                      price {
+                        total
+                      }
+                      comment
+                    }
+                  }
+                }",
+            variables = new { 
+                input = new {
+                    tradesmanProfileId = tradesmanId,
+                    jobPostId = jobPostId,
+                    currency = "USD",
+                    comment = "This is a structured bid.",
+                    earliestStartDate = DateTime.UtcNow.AddDays(7),
+                    latestStartDate = DateTime.UtcNow.AddDays(14),
+                    estimatedDurationDays = 10,
+                    bidItems = new[] {
+                        new {
+                            jobTaskId = jobTaskId,
+                            priceSubtotal = 1500m,
+                            comment = "Demo phase"
+                        }
+                    }
+                } 
+            }
+        };
+
+        // Act
+        var response = await client.PostAsync("/graphql", new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json"));
+
+        // Assert
+        var content = await response.Content.ReadAsStringAsync();
+        _output.WriteLine(content); // Write response to output for debugging
+        response.EnsureSuccessStatusCode();
+
+        Snapshot.Match(content, matchOptions => matchOptions
+            .IgnoreField("data.submitBid.id")
+            .IgnoreField("data.submitBid.earliestStartDate")
+            .IgnoreField("data.submitBid.latestStartDate")
+            .IgnoreField("data.submitBid.bidItems[*].id")
+            .IgnoreField("data.submitBid.bidItems[*].jobTaskId"));
+    }
+
+    [Fact]
+    public async Task UpdateJobTasks_ValidData_ReturnsTrue()
+    {
+        // Arrange
+        var homeownerId = Guid.NewGuid();
+        var jobPostId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+        var criteriaId = Guid.NewGuid();
+        var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+
+        var mockJobPostService = new Mock<IJobPostService>();
+        mockJobPostService.Setup(s => s.UpdateJobTasksAsync(
+                It.Is<Guid>(id => id == jobPostId),
+                It.IsAny<IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)>>()))
+            .Returns(Task.CompletedTask);
+
+        var client = CreateClient(services =>
+        {
+            services.AddSingleton(mockJobPostService.Object);
+        }, homeownerToken);
+
+        var graphQLRequest = new
+        {
+            query = @"
+                mutation UpdateJobTasks($input: UpdateJobTasksInput!) {
+                  updateJobTasks(input: $input)
+                }",
+            variables = new { 
+                input = new {
+                    jobPostId = jobPostId,
+                    tasks = new[] {
+                        new {
+                            id = taskId,
+                            title = "Task 1",
+                            description = "Task Description",
+                            sequenceOrder = 1,
+                            criteria = new[] {
+                                new {
+                                    id = criteriaId,
+                                    description = "Criteria Description"
+                                }
+                            }
+                        }
+                    }
+                } 
+            }
+        };
+
+        // Act
+        var response = await client.PostAsync("/graphql", new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json"));
+
+        // Assert
+        var content = await response.Content.ReadAsStringAsync();
+        _output.WriteLine(content);
+        response.EnsureSuccessStatusCode();
+
+        Snapshot.Match(content);
     }
 
     [Fact]

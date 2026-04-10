@@ -14,6 +14,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 	public IReviewRepository Reviews { get; }
 	public IProjectRepository Projects { get; }
 	public IJobPostRepository JobPosts { get; }
+	public IJobTaskRepository JobTasks { get; }
 	public IJobPostFeedbackRepository JobPostFeedbacks { get; }
 	public IJobPostQuestionRepository JobPostQuestions { get; }
 	public IBidRepository Bids { get; }
@@ -33,6 +34,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 		Reviews = new ReviewRepository(_context);
 		Projects = new ProjectRepository(_context);
 		JobPosts = new JobPostRepository(_context);
+		JobTasks = new JobTaskRepository(_context);
 		JobPostFeedbacks = new JobPostFeedbackRepository(_context);
 		JobPostQuestions = new JobPostQuestionRepository(_context);
 		Bids = new BidRepository(_context);
