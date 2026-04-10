@@ -387,6 +387,12 @@ public class JobPostService : IJobPostService
 		var jobPost = await _unitOfWork.JobPosts.GetByIdAsync(jobPostId)
 			?? throw new ArgumentException("Job post not found");
 
+		var existingBids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfileId);
+		if (existingBids.Any(b => b.JobPostId == jobPostId))
+		{
+			throw new InvalidOperationException("You have already submitted a bid for this job post.");
+		}
+
 		var bid = new Bid
 		{
 			JobPostId = jobPostId,
