@@ -19,10 +19,6 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.RegisterUser(default!, default!, default!, default!, default!))
             .Description("Creates a new user in the system."); // No authorization
 
-        descriptor.Field(m => m.CreateBooking(default!, default!, default!, default!, default!))
-            .Description("Creates a new service booking request.")
-            .Authorize(roles: new[] { "Homeowner" }); // Only Homeowner
-
         descriptor.Field(m => m.SubmitReview(default!, default!, default!, default!, default!))
             .Description("Submits a review and updates the tradesman's average rating.")
             .Authorize(roles: new[] { "Homeowner" }); // Only Homeowner
@@ -59,8 +55,12 @@ public class MutationType : ObjectType<Mutation>
             .Description("Hides an auction from the tradesman's available feed.")
             .Authorize(roles: new[] { "Tradesman" });
 
-        descriptor.Field(m => m.AcceptBid(default!, default!))
+        descriptor.Field(m => m.AcceptBid(default!, default!, default!))
             .Description("Accepts a bid and creates a funded booking.")
+            .Authorize(roles: new[] { "Homeowner" });
+
+        descriptor.Field(m => m.ApproveMilestone(default!, default!, default!))
+            .Description("Approves a milestone for payment.")
             .Authorize(roles: new[] { "Homeowner" });
 
         descriptor.Field(m => m.SubmitJobForScopeGeneration(default!, default!))

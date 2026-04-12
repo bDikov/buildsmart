@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
 	public DbSet<BidItem> BidItems { get; set; } = null!;
 	public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;
 	public DbSet<Booking> Bookings { get; set; } = null!;
+	public DbSet<MilestonePayment> MilestonePayments { get; set; } = null!;
 	public DbSet<ChangeOrder> ChangeOrders { get; set; } = null!;
 	public DbSet<Review> Reviews { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;

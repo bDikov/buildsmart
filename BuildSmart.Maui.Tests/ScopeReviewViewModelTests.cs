@@ -95,4 +95,77 @@ public class ScopeReviewViewModelTests
         // Assert
         Assert.Single(task.Criteria);
     }
+
+    [Fact]
+    public async Task ApproveCommand_Aborts_WhenNoTasksExist()
+    {
+        // Arrange
+        var mockJob = new Mock<IJobPostDetails>();
+        mockJob.Setup(j => j.Id).Returns(Guid.NewGuid());
+        _viewModel.Job = mockJob.Object;
+        _viewModel.Tasks.Clear();
+
+        // Act & Assert
+        try
+        {
+            await _viewModel.ApproveCommand.ExecuteAsync(null);
+        }
+        catch (NullReferenceException)
+        {
+            // Shell.Current is null in unit tests, which means validation successfully triggered DisplayAlert
+        }
+
+        _mockApiClient.Verify(x => x.UpdateJobTasks.ExecuteAsync(It.IsAny<UpdateJobTasksInput>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockApiClient.Verify(x => x.ApproveJobScope.ExecuteAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ApproveCommand_Aborts_WhenTaskTitleIsEmpty()
+    {
+        // Arrange
+        var mockJob = new Mock<IJobPostDetails>();
+        mockJob.Setup(j => j.Id).Returns(Guid.NewGuid());
+        _viewModel.Job = mockJob.Object;
+        
+        _viewModel.Tasks.Clear();
+        _viewModel.Tasks.Add(new EditableTaskViewModel { Title = "" }); // Empty title
+
+        // Act & Assert
+        try
+        {
+            await _viewModel.ApproveCommand.ExecuteAsync(null);
+        }
+        catch (NullReferenceException)
+        {
+            // Shell.Current is null in unit tests
+        }
+
+        _mockApiClient.Verify(x => x.UpdateJobTasks.ExecuteAsync(It.IsAny<UpdateJobTasksInput>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ApproveCommand_Aborts_WhenCriteriaDescriptionIsEmpty()
+    {
+        // Arrange
+        var mockJob = new Mock<IJobPostDetails>();
+        mockJob.Setup(j => j.Id).Returns(Guid.NewGuid());
+        _viewModel.Job = mockJob.Object;
+        
+        var task = new EditableTaskViewModel { Title = "Valid Title" };
+        task.Criteria.Add(new EditableCriteriaViewModel { Description = "" }); // Empty criteria
+        _viewModel.Tasks.Clear();
+        _viewModel.Tasks.Add(task);
+
+        // Act & Assert
+        try
+        {
+            await _viewModel.ApproveCommand.ExecuteAsync(null);
+        }
+        catch (NullReferenceException)
+        {
+            // Shell.Current is null in unit tests
+        }
+
+        _mockApiClient.Verify(x => x.UpdateJobTasks.ExecuteAsync(It.IsAny<UpdateJobTasksInput>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

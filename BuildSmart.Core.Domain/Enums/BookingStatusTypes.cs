@@ -2,9 +2,9 @@
 
 public enum BookingStatusTypes
 {
-	Pending,    // Initial state, waiting for tradesman to accept
-	Confirmed,  // Tradesman has accepted the booking
-	Completed,  // The job is done
-	Cancelled,  // Cancelled by either party
-	Declined    // Tradesman declined the request
+    PendingDeposit, // Homeowner accepted bid, waiting for deposit to escrow
+    InProgress,     // Funds are in escrow, work can begin
+    Completed,      // All milestones are paid out
+    Disputed,       // A milestone or the overall booking is in dispute
+    Cancelled       // Booking was cancelled before completion
 }

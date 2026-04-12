@@ -111,6 +111,19 @@ public class JobPost : BaseEntity
 	        }
 	    }
 	
+        public void ContractJob()
+        {
+            if (Status == JobPostStatus.Open || Status == JobPostStatus.BiddingClosed)
+            {
+                Status = JobPostStatus.Contracted;
+                UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Cannot contract job from status {Status}");
+            }
+        }
+	
 	    public void SubmitForScopeGeneration()
 	    {
 	        if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview)

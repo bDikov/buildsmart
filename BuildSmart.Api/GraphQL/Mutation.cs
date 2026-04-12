@@ -250,21 +250,6 @@ public class Mutation
 		return await authService.UpdateUserProfileAsync(userId, firstName, lastName, bio, location, profilePictureUrl);
 	}
 
-	public async Task<Booking> CreateBooking(
-		Guid homeownerId,
-		Guid tradesmanProfileId,
-		DateTime requestedDate,
-		string jobDescription,
-		[Service] IBookingService bookingService)
-	{
-		return await bookingService.CreateBookingAsync(
-			homeownerId,
-			tradesmanProfileId,
-			requestedDate,
-			jobDescription
-		);
-	}
-
 	public async Task<Review> SubmitReview(
 		Guid bookingId,
 		Guid homeownerId,
@@ -533,11 +518,35 @@ public class Mutation
 		return await jobPostService.ReplyToQuestionAsync(parentQuestionId, userId, replyText);
 	}
 
+	[Authorize(Roles = new[] { "Homeowner" })]
 	public async Task<Booking> AcceptBid(
 		Guid bidId,
-		[Service] IJobPostService jobPostService)
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IPaymentService paymentService)
 	{
-		return await jobPostService.AcceptBidAsync(bidId);
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		return await paymentService.AcceptBidAsync(userId, bidId);
+	}
+
+	[Authorize(Roles = new[] { "Homeowner" })]
+	public async Task<bool> ApproveMilestone(
+		Guid milestonePaymentId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IPaymentService paymentService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		await paymentService.ApproveMilestoneAsync(userId, milestonePaymentId);
+		return true;
 	}
 
 	[Authorize]

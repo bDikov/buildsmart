@@ -39,4 +39,6 @@ public interface IBookingRepository
 	/// <param name="homeownerId">The homeowner's user ID.</param>
 	/// <returns>A collection of bookings.</returns>
 	Task<IEnumerable<Booking>> GetBookingsForHomeownerAsync(Guid homeownerId);
+
+	IQueryable<Booking> GetQueryable();
 }

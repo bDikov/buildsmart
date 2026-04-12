@@ -169,6 +169,7 @@ public partial class Program
 			.AddType<UserType>()
 			.AddType<JobPostType>()
 			.AddType<BookingType>()
+			.AddType<MilestonePaymentType>()
 			.AddType<ReviewType>()
 			.AddType<CertificationType>()
 			.AddType<PortfolioEntryType>()
