@@ -4,14 +4,21 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BuildSmart.Maui.ViewModels;
 
-[QueryProperty(nameof(Bid), "Bid")]
-public partial class CheckoutViewModel : ObservableObject
+public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IBuildSmartApiClient _apiClient;
 
     public CheckoutViewModel(IBuildSmartApiClient apiClient)
     {
         _apiClient = apiClient;
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue("Bid", out var bidObj))
+        {
+            Bid = bidObj;
+        }
     }
 
     [ObservableProperty]

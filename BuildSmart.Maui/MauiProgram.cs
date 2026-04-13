@@ -96,6 +96,12 @@ public static class MauiProgram
         builder.Services.AddTransient<BidDetailsPage>();
         builder.Services.AddTransient<BidDetailsViewModel>();
 
+        builder.Services.AddTransient<CheckoutPage>();
+        builder.Services.AddTransient<CheckoutViewModel>();
+
+        builder.Services.AddTransient<BookingDashboardPage>();
+        builder.Services.AddTransient<BookingDashboardViewModel>();
+
         builder.Services.AddTransient<PlaceBidPage>();
         builder.Services.AddTransient<PlaceBidViewModel>();
 
