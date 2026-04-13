@@ -28,35 +28,6 @@ public class BookingService : IBookingService
 	/// <exception cref="InvalidOperationException">Thrown if the tradesman is already booked for that time.</exception>
 	public async Task<Booking> CreateBookingAsync(Guid homeownerUserId, Guid tradesmanProfileId, DateTime requestedDateTime, string description)
 	{
-		var homeowner = await _unitOfWork.Users.GetByIdAsync(homeownerUserId);
-		if (homeowner == null || homeowner.Role != UserRoleTypes.Homeowner)
-		{
-			throw new ArgumentException("Invalid homeowner ID.", nameof(homeownerUserId));
-		}
-
-		var tradesmanProfile = await _unitOfWork.TradesmanProfiles.GetByIdAsync(tradesmanProfileId);
-		if (tradesmanProfile == null)
-		{
-			throw new ArgumentException("Invalid tradesman profile ID.", nameof(tradesmanProfileId));
-		}
-
-		var existingBookings = await _unitOfWork.Bookings.GetBookingsForTradesmanAsync(tradesmanProfile.Id);
-		if (existingBookings.Any(b => b.RequestedDate.Date == requestedDateTime.Date && b.Status != BookingStatusTypes.Cancelled && b.Status != BookingStatusTypes.Completed))
-		{
-			throw new InvalidOperationException("This tradesman is already booked for the selected date.");
-		}
-
-		var newBooking = new Booking
-		{
-			HomeownerId = homeownerUserId,
-			TradesmanProfileId = tradesmanProfileId,
-			RequestedDate = requestedDateTime,
-			JobDescription = description,
-		};
-
-		await _unitOfWork.Bookings.AddAsync(newBooking);
-		await _unitOfWork.SaveChangesAsync();
-
-		return newBooking;
+        throw new NotImplementedException("Direct booking is deprecated. Bookings are now generated via the Accepted Bid (Escrow) workflow.");
 	}
 }

@@ -13,9 +13,6 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
 		builder.HasKey(b => b.Id);
 
-		builder.Property(b => b.JobDescription)
-			.HasMaxLength(2000); // string? is nullable, so IsRequired() is not needed
-
 		builder.Property(b => b.Status)
 			.HasConversion(
 				s => s.ToString(),
@@ -67,6 +64,18 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 			.WithMany(tp => tp.Bookings)
 			.HasForeignKey(b => b.TradesmanProfileId)
 			.OnDelete(DeleteBehavior.Restrict);
+
+        // Relationship to JobPost
+        builder.HasOne(b => b.JobPost)
+            .WithMany()
+            .HasForeignKey(b => b.JobPostId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Relationship to Bid
+        builder.HasOne(b => b.Bid)
+            .WithMany()
+            .HasForeignKey(b => b.BidId)
+            .OnDelete(DeleteBehavior.Restrict);
 
 		// Relationship to Review
 		builder.HasOne(b => b.Review)

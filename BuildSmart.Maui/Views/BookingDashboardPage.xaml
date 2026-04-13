@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:Class="BuildSmart.Maui.Views.BookingDashboardPage"
+             x:DataType="vm:BookingDashboardViewModel"
+             Title="Active Booking">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="Booking Overview" FontSize="22" FontAttributes="Bold" TextColor="#1565C0"/>
+            <Label Text="Review your active contract and approve milestones to release funds to the tradesman." TextColor="Gray" FontSize="14" />
+            
+            <Frame BorderColor="LightGray" CornerRadius="8" HasShadow="False" Padding="15">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Milestone Tracker" FontSize="18" FontAttributes="Bold" />
+                    <!-- Placeholder UI for milestones. In a real app this binds to Booking.MilestonePayments -->
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,10">
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Text="Sample Milestone 1" FontAttributes="Bold" FontSize="14"/>
+                            <Label Text="Status: PENDING" TextColor="Orange" FontSize="12"/>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="Approve &amp; Pay" BackgroundColor="#4CAF50" TextColor="White" HeightRequest="35" Padding="10,0"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

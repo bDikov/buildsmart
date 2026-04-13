@@ -72,6 +72,67 @@ public class AuctionHubViewModelTests
     }
 
     [Fact]
+    public async Task InitializeAsync_SetsHasSubmittedBid_WhenMatchingBidExists()
+    {
+        // Arrange
+        var testJobId = Guid.NewGuid();
+        var testProfileId = Guid.NewGuid().ToString();
+
+        // 1. Mock Current User
+        var mockUserResult = new Mock<IGetCurrentUserResult>();
+        var mockCurrentUser = new Mock<IGetCurrentUser_CurrentUser>();
+        var mockTradesmanProfile = new Mock<IGetCurrentUser_CurrentUser_TradesmanProfile>();
+        
+        mockTradesmanProfile.Setup(t => t.Id).Returns(testProfileId);
+        mockCurrentUser.Setup(u => u.TradesmanProfile).Returns(mockTradesmanProfile.Object);
+        mockUserResult.Setup(d => d.CurrentUser).Returns(mockCurrentUser.Object);
+
+        var userResponse = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponse.Setup(r => r.Data).Returns(mockUserResult.Object);
+        userResponse.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+        var userQuery = new Mock<IGetCurrentUserQuery>();
+        userQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponse.Object);
+        _mockApiClient.Setup(c => c.GetCurrentUser).Returns(userQuery.Object);
+
+        // 2. Mock Auction Data with a Bid
+        var mockAuctionResult = new Mock<IGetAuctionByIdResult>();
+        var mockAuction = new Mock<IGetAuctionById_AuctionById>();
+        
+        var mockBid = new Mock<IGetAuctionById_AuctionById_Bids>();
+        var mockBidProfile = new Mock<IGetAuctionById_AuctionById_Bids_TradesmanProfile>();
+        mockBidProfile.Setup(t => t.Id).Returns(testProfileId);
+        mockBid.Setup(b => b.TradesmanProfile).Returns(mockBidProfile.Object);
+
+        mockAuction.Setup(a => a.Bids).Returns(new List<IGetAuctionById_AuctionById_Bids> { mockBid.Object });
+        mockAuctionResult.Setup(d => d.AuctionById).Returns(mockAuction.Object);
+
+        var auctionResponse = new Mock<IOperationResult<IGetAuctionByIdResult>>();
+        auctionResponse.Setup(r => r.Data).Returns(mockAuctionResult.Object);
+        auctionResponse.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+        var auctionQuery = new Mock<IGetAuctionByIdQuery>();
+        auctionQuery.Setup(q => q.ExecuteAsync(testJobId, default)).ReturnsAsync(auctionResponse.Object);
+        _mockApiClient.Setup(c => c.GetAuctionById).Returns(auctionQuery.Object);
+
+        // 3. Mock Job Tasks
+        var tasksResponse = new Mock<IOperationResult<IGetJobTasksResult>>();
+        tasksResponse.Setup(r => r.Errors).Returns(new List<IClientError>());
+        var tasksQuery = new Mock<IGetJobTasksQuery>();
+        tasksQuery.Setup(q => q.ExecuteAsync(testJobId, default)).ReturnsAsync(tasksResponse.Object);
+        _mockApiClient.Setup(c => c.GetJobTasks).Returns(tasksQuery.Object);
+
+        _viewModel.JobId = testJobId.ToString();
+
+        // Act
+        await _viewModel.InitializeAsync();
+
+        // Assert
+        _viewModel.HasSubmittedBid.Should().BeTrue();
+        _viewModel.MyBid.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task ToggleConversationAsync_ExpandsAndLoadsReplies()
     {
         // Arrange

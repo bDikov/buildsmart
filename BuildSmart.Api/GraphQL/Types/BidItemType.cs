@@ -15,7 +15,8 @@ public class BidItemType : ObjectType<BidItem>
         descriptor.Field(bi => bi.JobTaskId).Type<NonNullType<UuidType>>();
         
         descriptor.Field(bi => bi.Price)
-            .Description("The price proposed for this task.");
+            .Description("The price proposed for this task.")
+            .Resolve(ctx => ctx.Parent<BidItem>().Price);
 
         descriptor.Field(bi => bi.Comment).Type<StringType>();
 

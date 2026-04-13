@@ -479,12 +479,12 @@ public class JobPostService : IJobPostService
 		{
 			HomeownerId = bid.JobPost.Project.HomeownerId,
 			TradesmanProfileId = bid.TradesmanProfileId,
+            JobPostId = bid.JobPostId,
+            BidId = bid.Id,
 			AgreedBidAmount = bid.Amount,
 			PlatformFeeHomeowner = feeHomeowner,
 			PlatformFeeTradesman = feeTradesman,
 			TotalEscrowAmount = totalEscrow,
-			JobDescription = bid.JobPost.Description,
-			RequestedDate = DateTime.UtcNow, // Or from project?
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};

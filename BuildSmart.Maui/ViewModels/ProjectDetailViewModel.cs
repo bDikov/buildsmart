@@ -320,6 +320,37 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		}
 	}
 
+    [RelayCommand]
+    private async Task ReviewBidAsync(object bidObj)
+    {
+        try
+        {
+            Guid jobPostId = Guid.Empty;
+            Guid bidId = Guid.Empty;
+
+            if (bidObj is IGetProjectById_ProjectById_JobPosts_Bids pb)
+            {
+                jobPostId = pb.JobPostId;
+                bidId = pb.Id;
+            }
+            else if (bidObj is IGetProjectsForReview_ProjectsForReview_JobPosts_Bids pr)
+            {
+                jobPostId = pr.JobPostId;
+                bidId = pr.Id;
+            }
+            else
+            {
+                throw new Exception("Unknown bid object type.");
+            }
+
+            await Shell.Current.GoToAsync($"{nameof(Views.BidDetailsPage)}?jobPostId={jobPostId}&bidId={bidId}");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Navigation Error", ex.Message, "OK");
+        }
+    }
+
 	[RelayCommand]
 	private async Task RespondToAdminAsync(IJobPostDetails job)
 	{

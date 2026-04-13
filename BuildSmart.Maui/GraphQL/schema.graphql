@@ -59,9 +59,8 @@ type BidItem {
 "Represents a booking for a service from a homeowner to a tradesman."
 type Booking {
   id: ID!
-  requestedDate: DateTime!
-  scheduledDate: DateTime
-  jobDescription: String
+  jobPostId: ID!
+  bidId: ID!
   status: BookingStatusTypes!
   homeownerId: ID!
   tradesmanProfileId: ID!
@@ -70,10 +69,23 @@ type Booking {
   platformFeeTradesman: Amount!
   totalEscrowAmount: Amount!
   isFunded: Boolean!
+  milestonePayments: [MilestonePayment!]!
   homeowner: User!
   tradesmanProfile: TradesmanProfile!
   review: Review
   changeOrders: [ChangeOrder!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"Represents a specific task payout milestone linked to a booking."
+type MilestonePayment {
+  id: ID!
+  bookingId: ID!
+  jobTaskId: ID!
+  amountAllocated: Amount!
+  status: MilestoneStatus!
+  stripeTransferId: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -227,6 +239,8 @@ type Mutation {
   passAuction(tradesmanProfileId: UUID! jobPostId: UUID!): Boolean! @authorize(roles: [ "Tradesman" ]) @authorize(roles: [ "Tradesman" ]) @cost(weight: "10")
   "Accepts a bid and creates a funded booking."
   acceptBid(bidId: UUID!): Booking! @authorize(roles: [ "Homeowner" ]) @cost(weight: "10")
+  "Approves a milestone for payment."
+  approveMilestone(milestonePaymentId: UUID!): Boolean! @authorize(roles: [ "Homeowner" ]) @cost(weight: "10")
   submitJobForScopeGeneration(jobPostId: UUID!): Boolean! @authorize @authorize @cost(weight: "10")
   approveJobScope(jobPostId: UUID! finalScope: String!): Boolean! @authorize @authorize @cost(weight: "10")
   adminReviewJobScope(jobPostId: UUID! approved: Boolean! feedback: String): Boolean! @authorize(roles: [ "Admin" ]) @authorize(roles: [ "Admin" ]) @cost(weight: "10")
@@ -303,6 +317,7 @@ type Project {
 
 "The root query object."
 type Query {
+  bidDetailsById(bidId: UUID!): Bid
   "Gets a queryable list of tradesman profiles."
   tradesmanProfiles: [TradesmanProfile!]! @authorize(roles: [ "Admin", "Homeowner", "Tradesman" ]) @cost(weight: "10")
   "Gets the currently authenticated user."
@@ -1129,11 +1144,18 @@ enum ApplyPolicy {
 }
 
 enum BookingStatusTypes {
-  PENDING
-  CONFIRMED
+  PENDING_DEPOSIT
+  IN_PROGRESS
   COMPLETED
+  DISPUTED
   CANCELLED
-  DECLINED
+}
+
+enum MilestoneStatus {
+  PENDING
+  APPROVED
+  PAID
+  DISPUTED
 }
 
 enum CategoryStatus {

@@ -28,7 +28,7 @@ public class BookingRepository : IBookingRepository
 			.Where(b => b.TradesmanProfileId == tradesmanProfileId)
 			.Include(b => b.Homeowner)
 			.Include(b => b.Review)
-			.OrderByDescending(b => b.RequestedDate)
+			.OrderByDescending(b => b.CreatedAt)
 			.ToListAsync();
 	}
 
@@ -39,7 +39,7 @@ public class BookingRepository : IBookingRepository
 			.Include(b => b.TradesmanProfile)
 				.ThenInclude(tp => tp.User) // Also include the Tradesman's user info
 			.Include(b => b.Review)
-			.OrderByDescending(b => b.RequestedDate)
+			.OrderByDescending(b => b.CreatedAt)
 			.ToListAsync();
 	}
 
@@ -52,5 +52,10 @@ public class BookingRepository : IBookingRepository
 	public void Update(Booking booking)
 	{
 		_context.Bookings.Update(booking);
+	}
+
+	public IQueryable<Booking> GetQueryable()
+	{
+		return _context.Bookings;
 	}
 }

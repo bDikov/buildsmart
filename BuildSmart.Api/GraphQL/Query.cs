@@ -210,6 +210,7 @@ public class Query
 		}
 
 		var project = await context.Projects
+			.AsSplitQuery()
 			.Include(p => p.Homeowner)
 			.Include(p => p.JobPosts)
 				.ThenInclude(j => j.ServiceCategory)
@@ -235,6 +236,17 @@ public class Query
 		if (!isAdmin && project.HomeownerId != userId)
 		{
 			throw new GraphQLException("You are not authorized to view this project.");
+		}
+
+		foreach (var jp in project.JobPosts)
+		{
+			foreach (var bid in jp.Bids)
+			{
+				await context.Entry(bid).Collection(b => b.BidItems).Query()
+					.Include(bi => bi.JobTask)
+						.ThenInclude(jt => jt.AcceptanceCriteria)
+					.LoadAsync();
+			}
 		}
 
 		return project;
@@ -266,6 +278,17 @@ public class Query
 	[UseFiltering]
 	[UseSorting]
 	public IQueryable<JobPost> GetAllJobPosts([Service] AppDbContext context) => context.JobPosts;
+
+	public async Task<Bid?> GetBidDetailsById(Guid bidId, [Service] AppDbContext context)
+	{
+		return await context.Bids
+			.Include(b => b.TradesmanProfile)
+				.ThenInclude(tp => tp.User)
+			.Include(b => b.BidItems)
+				.ThenInclude(bi => bi.JobTask)
+					.ThenInclude(jt => jt.AcceptanceCriteria)
+			.FirstOrDefaultAsync(b => b.Id == bidId);
+	}
 
 	[UseProjection]
 	[UseFiltering]

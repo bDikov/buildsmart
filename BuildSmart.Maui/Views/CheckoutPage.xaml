@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             x:Class="BuildSmart.Maui.Views.CheckoutPage"
+             x:DataType="vm:CheckoutViewModel"
+             Title="Secure Escrow Deposit">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <!-- Header -->
+            <Label Text="Review &amp; Hire" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Text="You are about to hire this tradesman and deposit the project funds into a secure BuildSmart escrow account." 
+                   TextColor="Gray" FontSize="14" HorizontalTextAlignment="Center" Margin="0,0,0,10"/>
+
+            <!-- Tradesman Info -->
+            <Frame BorderColor="LightGray" CornerRadius="8" HasShadow="False" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Tradesman Details" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Primary}"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <Image Source="{Binding TradesmanPhoto}" WidthRequest="50" HeightRequest="50">
+                            <Image.Clip>
+                                <EllipseGeometry RadiusX="25" RadiusY="25" Center="25,25"/>
+                            </Image.Clip>
+                        </Image>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="{Binding TradesmanName, StringFormat='{0} (Verified Pro)'}" FontAttributes="Bold" FontSize="16"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Proposal Summary -->
+            <Frame BorderColor="LightGray" CornerRadius="8" HasShadow="False" Padding="15">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Proposal Notes" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Primary}"/>
+                    <Label Text="{Binding BidComment}" FontSize="14" TextColor="Gray" LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Financial Breakdown -->
+            <Frame BorderColor="#90CAF9" BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#0D47A1}" CornerRadius="8" HasShadow="False" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Payment Breakdown" FontSize="16" FontAttributes="Bold" TextColor="#1976D2"/>
+                    
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                        <!-- Tradesman Bid -->
+                        <Label Grid.Row="0" Grid.Column="0" Text="Tradesman Bid Amount:" FontSize="14"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding BidAmount, StringFormat='${0:F2}'}" FontSize="14" FontAttributes="Bold"/>
+
+                        <!-- Platform Escrow Fee -->
+                        <Label Grid.Row="1" Grid.Column="0" Text="BuildSmart Escrow Fee (3%):" FontSize="14"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding PlatformFee, StringFormat='${0:F2}'}" FontSize="14"/>
+
+                        <BoxView Grid.Row="2" Grid.ColumnSpan="2" HeightRequest="1" Color="#90CAF9"/>
+
+                        <!-- Total to Charge -->
+                        <Label Grid.Row="3" Grid.Column="0" Text="Total Amount to Deposit:" FontSize="16" FontAttributes="Bold" TextColor="#1565C0"/>
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding TotalCharge, StringFormat='${0:F2}'}" FontSize="18" FontAttributes="Bold" TextColor="#1565C0"/>
+                    </Grid>
+
+                    <Label Text="Funds will be held securely in escrow. They are only released to the tradesman when you approve completed milestones." 
+                           FontSize="11" TextColor="#1565C0" FontAttributes="Italic" Margin="0,10,0,0"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" Color="{StaticResource Primary}"/>
+
+            <!-- Action Buttons -->
+            <Button Text="Deposit &amp; Hire" 
+                    Command="{Binding AcceptBidCommand}" 
+                    BackgroundColor="#4CAF50" TextColor="White" 
+                    FontAttributes="Bold" HeightRequest="50" CornerRadius="8"
+                    IsVisible="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

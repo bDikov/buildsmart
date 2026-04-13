@@ -29,345 +29,277 @@ namespace BuildSmart.Api.Tests;
 
 public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 {
-    private readonly TestApplicationFactory _factory;
-    private readonly ITestOutputHelper _output; // Add ITestOutputHelper
-    private readonly IConfiguration _configuration; // To access JWT settings
+	private readonly TestApplicationFactory _factory;
+	private readonly ITestOutputHelper _output; // Add ITestOutputHelper
+	private readonly IConfiguration _configuration; // To access JWT settings
 
-    public GraphQLMutationTests(TestApplicationFactory factory, ITestOutputHelper output)
-    {
-        _factory = factory;
-        _output = output; // Initialize ITestOutputHelper
-        // Build configuration for JWT settings from in-memory collection
-        var inMemorySettings = new Dictionary<string, string> {
-            {"Jwt:Issuer", "test-issuer"},
-            {"Jwt:Audience", "test-audience"},
-            {"Jwt:Key", "supersecretkeythatisatleast32characterslong"}
-        };
-        _configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-    }
+	public GraphQLMutationTests(TestApplicationFactory factory, ITestOutputHelper output)
+	{
+		_factory = factory;
+		_output = output; // Initialize ITestOutputHelper
+						  // Build configuration for JWT settings from in-memory collection
+		var inMemorySettings = new Dictionary<string, string> {
+			{"Jwt:Issuer", "test-issuer"},
+			{"Jwt:Audience", "test-audience"},
+			{"Jwt:Key", "supersecretkeythatisatleast32characterslong"}
+		};
+		_configuration = new ConfigurationBuilder()
+			.AddInMemoryCollection(inMemorySettings)
+			.Build();
+	}
 
-    private HttpClient CreateClient(Action<IServiceCollection>? configureServices = null, string? jwtToken = null, bool useBasicAuth = false)
-    {
-        var client = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                // Basic setup for ITradesmanProfileRepository and IUserRepository
-                // These mocks are reset for each test or configured as needed per test
-                services.RemoveAll(typeof(ITradesmanProfileRepository));
-                services.AddSingleton(new Mock<ITradesmanProfileRepository>().Object);
-                services.RemoveAll(typeof(IUserRepository));
-                services.AddSingleton(new Mock<IUserRepository>().Object);
-                services.RemoveAll(typeof(IBookingService));
-                services.AddSingleton(new Mock<IBookingService>().Object);
+	private HttpClient CreateClient(Action<IServiceCollection>? configureServices = null, string? jwtToken = null, bool useBasicAuth = false)
+	{
+		var client = _factory.WithWebHostBuilder(builder =>
+		{
+			builder.ConfigureTestServices(services =>
+			{
+				// Basic setup for ITradesmanProfileRepository and IUserRepository
+				// These mocks are reset for each test or configured as needed per test
+				services.RemoveAll(typeof(ITradesmanProfileRepository));
+				services.AddSingleton(new Mock<ITradesmanProfileRepository>().Object);
+				services.RemoveAll(typeof(IUserRepository));
+				services.AddSingleton(new Mock<IUserRepository>().Object);
+				services.RemoveAll(typeof(IBookingService));
+				services.AddSingleton(new Mock<IBookingService>().Object);
 
+				// Always use our test configuration for JWT settings
+				services.RemoveAll(typeof(IConfiguration));
+				services.AddSingleton(_configuration);
 
-                // Always use our test configuration for JWT settings
-                services.RemoveAll(typeof(IConfiguration));
-                services.AddSingleton(_configuration);
+				configureServices?.Invoke(services);
+			});
+		}).CreateClient();
 
-                configureServices?.Invoke(services);
-            });
-        }).CreateClient();
+		// If useBasicAuth is true, explicitly add the Basic Authorization header.
+		// Otherwise, the TestAuthHandler will handle JWT authentication based on whether jwtToken is provided.
+		if (useBasicAuth)
+		{
+			var byteArray = Encoding.ASCII.GetBytes("basicauth:basicauth");
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+		}
+		else if (jwtToken != null)
+		{
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+		}
 
-        // If useBasicAuth is true, explicitly add the Basic Authorization header.
-        // Otherwise, the TestAuthHandler will handle JWT authentication based on whether jwtToken is provided.
-        if (useBasicAuth)
-        {
-            var byteArray = Encoding.ASCII.GetBytes("basicauth:basicauth");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-        }
-        else if (jwtToken != null)
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-        }
+		return client;
+	}
 
-        return client;
-    }
+	[Fact]
+	public async Task Login_ValidCredentials_ReturnsJwtToken()
+	{
+		// Arrange
+		var mockUserRepository = new Mock<IUserRepository>();
+		var testUser = new User
+		{
+			Id = Guid.NewGuid(),
+			Email = "test@example.com",
+			HashedPassword = BCrypt.Net.BCrypt.HashPassword("password123"),
+			Role = BuildSmart.Core.Domain.Enums.UserRoleTypes.Homeowner
+		};
+		mockUserRepository.Setup(repo => repo.GetByEmailAsync("test@example.com"))
+			.ReturnsAsync(testUser);
 
-    [Fact]
-    public async Task Login_ValidCredentials_ReturnsJwtToken()
-    {
-        // Arrange
-        var mockUserRepository = new Mock<IUserRepository>();
-        var testUser = new User
-        {
-            Id = Guid.NewGuid(),
-            Email = "test@example.com",
-            HashedPassword = BCrypt.Net.BCrypt.HashPassword("password123"),
-            Role = BuildSmart.Core.Domain.Enums.UserRoleTypes.Homeowner
-        };
-        mockUserRepository.Setup(repo => repo.GetByEmailAsync("test@example.com"))
-            .ReturnsAsync(testUser);
+		var mockUnitOfWork = new Mock<IUnitOfWork>();
+		mockUnitOfWork.Setup(uow => uow.Users).Returns(mockUserRepository.Object);
 
-        var mockUnitOfWork = new Mock<IUnitOfWork>();
-        mockUnitOfWork.Setup(uow => uow.Users).Returns(mockUserRepository.Object);
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IUnitOfWork));
+			services.AddSingleton(mockUnitOfWork.Object);
+		}, useBasicAuth: true); // Use basic auth for this test
 
-        var client = CreateClient(services =>
-        {
-            services.RemoveAll(typeof(IUnitOfWork));
-            services.AddSingleton(mockUnitOfWork.Object);
-        }, useBasicAuth: true); // Use basic auth for this test
+		var graphQLRequest = new
+		{
+			query = "mutation Login($email: String!, $password: String!) { login(email: $email, password: $password) }",
+			variables = new
+			{
+				email = "test@example.com",
+				password = "password123"
+			},
+			operationName = "Login"
+		};
 
-        var graphQLRequest = new
-        {
-            query = "mutation Login($email: String!, $password: String!) { login(email: $email, password: $password) }",
-            variables = new
-            {
-                email = "test@example.com",
-                password = "password123"
-            },
-            operationName = "Login"
-        };
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				System.Text.Encoding.UTF8,
+				"application/json")
+		};
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
-        {
-            Content = new StringContent(
-                JsonConvert.SerializeObject(graphQLRequest),
-                System.Text.Encoding.UTF8,
-                "application/json")
-        };
+		// Act
+		var response = await client.SendAsync(request);
 
-        // Act
-        var response = await client.SendAsync(request);
+		// Assert
+		response.EnsureSuccessStatusCode();
+		var content = await response.Content.ReadAsStringAsync();
 
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        
-        // Assert that a token is returned and it's a valid JWT structure
-        var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
-        string? token = jsonResponse?.data?.login; // Made token nullable
+		// Assert that a token is returned and it's a valid JWT structure
+		var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
+		string? token = jsonResponse?.data?.login; // Made token nullable
 
-        Assert.False(string.IsNullOrEmpty(token));
-        var handler = new JwtSecurityTokenHandler();
-        Assert.True(handler.CanReadToken(token));
-    }
+		Assert.False(string.IsNullOrEmpty(token));
+		var handler = new JwtSecurityTokenHandler();
+		Assert.True(handler.CanReadToken(token));
+	}
 
-    [Fact]
-    public async Task MigratePasswords_ReturnsUpdatedCount()
-    {
-        // Arrange
-        var adminId = Guid.NewGuid();
-        var adminToken = TestTokenHelper.GenerateJwtToken(adminId, "admin@example.com", "Admin", _configuration);
+	[Fact]
+	public async Task MigratePasswords_ReturnsUpdatedCount()
+	{
+		// Arrange
+		var adminId = Guid.NewGuid();
+		var adminToken = TestTokenHelper.GenerateJwtToken(adminId, "admin@example.com", "Admin", _configuration);
 
-        var mockUnitOfWork = new Mock<IUnitOfWork>();
-        var mockDataMigrationService = new Mock<DataMigrationService>(mockUnitOfWork.Object); // Pass mocked IUnitOfWork
-        mockDataMigrationService.Setup(service => service.HashExistingPasswordsAsync())
-            .ReturnsAsync(5);
+		var mockUnitOfWork = new Mock<IUnitOfWork>();
+		var mockDataMigrationService = new Mock<DataMigrationService>(mockUnitOfWork.Object); // Pass mocked IUnitOfWork
+		mockDataMigrationService.Setup(service => service.HashExistingPasswordsAsync())
+			.ReturnsAsync(5);
 
-        var client = CreateClient(services =>
-        {
-            services.RemoveAll(typeof(DataMigrationService));
-            services.AddSingleton(mockDataMigrationService.Object);
-            services.RemoveAll(typeof(IUnitOfWork)); // Ensure the mocked UoW is used if DataMigrationService is resolved by DI
-            services.AddSingleton(mockUnitOfWork.Object);
-        }, adminToken); // Pass Admin JWT token
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(DataMigrationService));
+			services.AddSingleton(mockDataMigrationService.Object);
+			services.RemoveAll(typeof(IUnitOfWork)); // Ensure the mocked UoW is used if DataMigrationService is resolved by DI
+			services.AddSingleton(mockUnitOfWork.Object);
+		}, adminToken); // Pass Admin JWT token
 
-        var graphQLRequest = new
-        {
-            query = "mutation { migratePasswords }"
-        };
+		var graphQLRequest = new
+		{
+			query = "mutation { migratePasswords }"
+		};
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
-        {
-            Content = new StringContent(
-                JsonConvert.SerializeObject(graphQLRequest),
-                System.Text.Encoding.UTF8,
-                "application/json")
-        };
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				System.Text.Encoding.UTF8,
+				"application/json")
+		};
 
-        // Act
-        var response = await client.SendAsync(request);
+		// Act
+		var response = await client.SendAsync(request);
 
-        // Assert
-        _output.WriteLine($"Status Code: {response.StatusCode}"); // Print status code
-        var content = await response.Content.ReadAsStringAsync();
-        _output.WriteLine($"Response Content: {content}"); // Print response content
-        response.EnsureSuccessStatusCode();
-        
-        // Snapshot testing for GraphQL responses
-        Snapshot.Match(content);
-    }
+		// Assert
+		_output.WriteLine($"Status Code: {response.StatusCode}"); // Print status code
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine($"Response Content: {content}"); // Print response content
+		response.EnsureSuccessStatusCode();
 
-    // [Fact]
-    // public async Task RegisterUser_ValidData_ReturnsNewUser()
-    // {
-    //     // Arrange
-    //     var mockUserRepository = new Mock<IUserRepository>();
-    //     mockUserRepository.Setup(repo => repo.AddAsync(It.IsAny<User>()))
-    //         .Returns(Task.CompletedTask);
-        
-    //     mockUserRepository.Setup(repo => repo.GetByEmailAsync("newuser@example.com"))
-    //         .ReturnsAsync((User?)null); // Ensure user does not exist
+		// Snapshot testing for GraphQL responses
+		Snapshot.Match(content);
+	}
 
-    //     var mockUnitOfWork = new Mock<IUnitOfWork>();
-    //     mockUnitOfWork.Setup(uow => uow.Users).Returns(mockUserRepository.Object);
-    //     mockUnitOfWork.Setup(uow => uow.SaveChangesAsync()).ReturnsAsync(1);
+	// [Fact]
+	// public async Task RegisterUser_ValidData_ReturnsNewUser()
+	// {
+	//     // Arrange
+	//     var mockUserRepository = new Mock<IUserRepository>();
+	//     mockUserRepository.Setup(repo => repo.AddAsync(It.IsAny<User>()))
+	//         .Returns(Task.CompletedTask);
 
-    //     var client = _factory.WithWebHostBuilder(builder =>
-    //     {
-    //         builder.ConfigureTestServices(services =>
-    //         {
-    //             services.RemoveAll(typeof(IUnitOfWork));
-    //             services.AddSingleton(mockUnitOfWork.Object);
-    //         });
-    //     }).CreateClient();
+	//     mockUserRepository.Setup(repo => repo.GetByEmailAsync("newuser@example.com"))
+	//         .ReturnsAsync((User?)null); // Ensure user does not exist
 
-    //     // Add Basic Authentication Header (assuming admin role for registration)
-    //     var byteArray = Encoding.ASCII.GetBytes("basicauth:basicauth");
-    //     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+	//     var mockUnitOfWork = new Mock<IUnitOfWork>();
+	//     mockUnitOfWork.Setup(uow => uow.Users).Returns(mockUserRepository.Object);
+	//     mockUnitOfWork.Setup(uow => uow.SaveChangesAsync()).ReturnsAsync(1);
 
-    //     var graphQLRequest = new
-    //     {
-    //         query = "mutation RegisterUser($firstName: String!, $lastName: String!, $email: String!, $password: String!) { registerUser(firstName: $firstName, lastName: $lastName, email: $email, password: $password) { id firstName lastName email role } }",
-    //         variables = new
-    //         {
-    //             firstName = "New",
-    //             lastName = "User",
-    //             email = "newuser@example.com",
-    //             password = "SecurePassword123"
-    //         },
-    //         operationName = "RegisterUser"
-    //     };
+	//     var client = _factory.WithWebHostBuilder(builder =>
+	//     {
+	//         builder.ConfigureTestServices(services =>
+	//         {
+	//             services.RemoveAll(typeof(IUnitOfWork));
+	//             services.AddSingleton(mockUnitOfWork.Object);
+	//         });
+	//     }).CreateClient();
 
-    //     var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
-    //     {
-    //         Content = new StringContent(
-    //             JsonConvert.SerializeObject(graphQLRequest),
-    //             System.Text.Encoding.UTF8,
-    //             "application/json")
-    //     };
+	//     // Add Basic Authentication Header (assuming admin role for registration)
+	//     var byteArray = Encoding.ASCII.GetBytes("basicauth:basicauth");
+	//     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
-    //     // Act
-    //     var response = await client.SendAsync(request);
+	//     var graphQLRequest = new
+	//     {
+	//         query = "mutation RegisterUser($firstName: String!, $lastName: String!, $email: String!, $password: String!) { registerUser(firstName: $firstName, lastName: $lastName, email: $email, password: $password) { id firstName lastName email role } }",
+	//         variables = new
+	//         {
+	//             firstName = "New",
+	//             lastName = "User",
+	//             email = "newuser@example.com",
+	//             password = "SecurePassword123"
+	//         },
+	//         operationName = "RegisterUser"
+	//     };
 
-    //     // Assert
-    //     response.EnsureSuccessStatusCode();
-    //     var content = await response.Content.ReadAsStringAsync();
-        
-    //     // No snapshot assertion for now
-    // }
+	//     var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+	//     {
+	//         Content = new StringContent(
+	//             JsonConvert.SerializeObject(graphQLRequest),
+	//             System.Text.Encoding.UTF8,
+	//             "application/json")
+	//     };
 
-    [Fact]
-    public async Task CreateBooking_ValidData_ReturnsNewBooking()
-    {
-        // Arrange
-        var newBookingId = Guid.NewGuid();
-        var homeownerId = Guid.NewGuid();
-        var tradesmanProfileId = Guid.NewGuid();
-        var requestedDate = DateTime.UtcNow.AddDays(7);
-        var jobDescription = "Fix leaky faucet";
+	//     // Act
+	//     var response = await client.SendAsync(request);
 
-        var mockBookingService = new Mock<IBookingService>();
-        mockBookingService.Setup(service => service.CreateBookingAsync(
-            homeownerId,
-            tradesmanProfileId,
-            requestedDate,
-            jobDescription))
-            .ReturnsAsync(new Booking
-            {
-                Id = newBookingId,
-                HomeownerId = homeownerId,
-                TradesmanProfileId = tradesmanProfileId,
-                RequestedDate = requestedDate
-                // Removed Status assignment as it has a private setter
-            });
+	//     // Assert
+	//     response.EnsureSuccessStatusCode();
+	//     var content = await response.Content.ReadAsStringAsync();
 
-        var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+	//     // No snapshot assertion for now
+	// }
 
-        var client = CreateClient(services =>
-        {
-            services.RemoveAll(typeof(IBookingService));
-            services.AddSingleton(mockBookingService.Object);
-        }, homeownerToken);
+	[Fact]
+	public async Task SubmitBid_WithBidItems_ReturnsSuccessfulBid()
+	{
+		// Arrange
+		var tradesmanId = Guid.NewGuid();
+		var jobPostId = Guid.NewGuid();
+		var jobTaskId = Guid.NewGuid();
+		var tradesmanToken = TestTokenHelper.GenerateJwtToken(tradesmanId, "tradesman@example.com", "Tradesman", _configuration);
 
-        var graphQLRequest = new
-        {
-            query = "mutation CreateBooking($homeownerId: UUID!, $tradesmanProfileId: UUID!, $requestedDate: DateTime!, $jobDescription: String!) { createBooking(homeownerId: $homeownerId, tradesmanProfileId: $tradesmanProfileId, requestedDate: $requestedDate, jobDescription: $jobDescription) { id homeownerId tradesmanProfileId requestedDate jobDescription status } }",
-            variables = new
-            {
-                homeownerId = homeownerId.ToString(), // Convert to string
-                tradesmanProfileId = tradesmanProfileId.ToString(), // Convert to string
-                requestedDate = requestedDate.ToString("yyyy-MM-ddTHH:mm:ssZ"), // Convert to ISO 8601 string
-                jobDescription = jobDescription
-            },
-            operationName = "CreateBooking"
-        };
+		var mockJobPostService = new Mock<IJobPostService>();
+		mockJobPostService.Setup(s => s.SubmitBidAsync(
+				It.IsAny<Guid>(),
+				It.IsAny<Guid>(),
+				It.IsAny<string>(),
+				It.IsAny<string>(),
+				It.IsAny<DateTime?>(),
+				It.IsAny<DateTime?>(),
+				It.IsAny<int?>(),
+				It.IsAny<IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)>>()))
+			.ReturnsAsync((Guid tradesmanIdArg, Guid jobPostIdArg, string currency, string comment, DateTime? earliest, DateTime? latest, int? duration, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> itemsArg) =>
+			{
+				var newBid = new Bid
+				{
+					Id = Guid.NewGuid(),
+					TradesmanProfileId = tradesmanIdArg,
+					JobPostId = jobPostIdArg,
+					Amount = Amount.Create(currency, itemsArg.Sum(i => i.PriceSubtotal)),
+					Comment = comment,
+					EarliestStartDate = earliest,
+					LatestStartDate = latest,
+					EstimatedDurationDays = duration,
+					BidItems = itemsArg.Select(i => new BidItem
+					{
+						Id = Guid.NewGuid(),
+						JobTaskId = i.JobTaskId,
+						Price = Amount.Create(currency, i.PriceSubtotal),
+						Comment = i.Comment
+					}).ToList()
+				};
+				return newBid;
+			});
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
-        {
-            Content = new StringContent(
-                JsonConvert.SerializeObject(graphQLRequest),
-                System.Text.Encoding.UTF8,
-                "application/json")
-        };
+		var client = CreateClient(services =>
+		{
+			services.AddSingleton(mockJobPostService.Object);
+		}, tradesmanToken);
 
-        // Act
-        var response = await client.SendAsync(request);
-
-        // Assert
-        _output.WriteLine($"Status Code: {response.StatusCode}"); // Print status code
-        var content = await response.Content.ReadAsStringAsync();
-        _output.WriteLine($"Response Content: {content}"); // Print response content
-        response.EnsureSuccessStatusCode();
-        
-        // Snapshot testing for GraphQL responses, ignoring dynamic fields like dates and IDs
-        Snapshot.Match(content, matchOptions => matchOptions.IgnoreField("data.createBooking.id").IgnoreField("data.createBooking.requestedDate"));
-    }
-
-    [Fact]
-    public async Task SubmitBid_WithBidItems_ReturnsSuccessfulBid()
-    {
-        // Arrange
-        var tradesmanId = Guid.NewGuid();
-        var jobPostId = Guid.NewGuid();
-        var jobTaskId = Guid.NewGuid();
-        var tradesmanToken = TestTokenHelper.GenerateJwtToken(tradesmanId, "tradesman@example.com", "Tradesman", _configuration);
-
-        var mockJobPostService = new Mock<IJobPostService>();
-        mockJobPostService.Setup(s => s.SubmitBidAsync(
-                It.IsAny<Guid>(),
-                It.IsAny<Guid>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<DateTime?>(),
-                It.IsAny<DateTime?>(),
-                It.IsAny<int?>(),
-                It.IsAny<IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)>>()))
-            .ReturnsAsync((Guid tradesmanIdArg, Guid jobPostIdArg, string currency, string comment, DateTime? earliest, DateTime? latest, int? duration, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> itemsArg) =>
-            {
-                var newBid = new Bid
-                {
-                    Id = Guid.NewGuid(),
-                    TradesmanProfileId = tradesmanIdArg,
-                    JobPostId = jobPostIdArg,
-                    Amount = Amount.Create(currency, itemsArg.Sum(i => i.PriceSubtotal)),
-                    Comment = comment,
-                    EarliestStartDate = earliest,
-                    LatestStartDate = latest,
-                    EstimatedDurationDays = duration,
-                    BidItems = itemsArg.Select(i => new BidItem
-                    {
-                        Id = Guid.NewGuid(),
-                        JobTaskId = i.JobTaskId,
-                        Price = Amount.Create(currency, i.PriceSubtotal),
-                        Comment = i.Comment
-                    }).ToList()
-                };
-                return newBid;
-            });
-
-        var client = CreateClient(services =>
-        {
-            services.AddSingleton(mockJobPostService.Object);
-        }, tradesmanToken);
-
-        var graphQLRequest = new
-        {
-            query = @"
+		var graphQLRequest = new
+		{
+			query = @"
                 mutation SubmitBid($input: SubmitBidInput!) {
                   submitBid(input: $input) {
                     id
@@ -389,161 +321,274 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
                     }
                   }
                 }",
-            variables = new { 
-                input = new {
-                    tradesmanProfileId = tradesmanId,
-                    jobPostId = jobPostId,
-                    currency = "USD",
-                    comment = "This is a structured bid.",
-                    earliestStartDate = DateTime.UtcNow.AddDays(7),
-                    latestStartDate = DateTime.UtcNow.AddDays(14),
-                    estimatedDurationDays = 10,
-                    bidItems = new[] {
-                        new {
-                            jobTaskId = jobTaskId,
-                            priceSubtotal = 1500m,
-                            comment = "Demo phase"
-                        }
-                    }
-                } 
-            }
-        };
+			variables = new
+			{
+				input = new
+				{
+					tradesmanProfileId = tradesmanId,
+					jobPostId = jobPostId,
+					currency = "USD",
+					comment = "This is a structured bid.",
+					earliestStartDate = DateTime.UtcNow.AddDays(7),
+					latestStartDate = DateTime.UtcNow.AddDays(14),
+					estimatedDurationDays = 10,
+					bidItems = new[] {
+						new {
+							jobTaskId = jobTaskId,
+							priceSubtotal = 1500m,
+							comment = "Demo phase"
+						}
+					}
+				}
+			}
+		};
 
-        // Act
-        var response = await client.PostAsync("/graphql", new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json"));
+		// Act
+		var response = await client.PostAsync("/graphql", new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json"));
 
-        // Assert
-        var content = await response.Content.ReadAsStringAsync();
-        _output.WriteLine(content); // Write response to output for debugging
-        response.EnsureSuccessStatusCode();
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content); // Write response to output for debugging
+		response.EnsureSuccessStatusCode();
 
-        Snapshot.Match(content, matchOptions => matchOptions
-            .IgnoreField("data.submitBid.id")
-            .IgnoreField("data.submitBid.earliestStartDate")
-            .IgnoreField("data.submitBid.latestStartDate")
-            .IgnoreField("data.submitBid.bidItems[*].id")
-            .IgnoreField("data.submitBid.bidItems[*].jobTaskId"));
-    }
+		Snapshot.Match(content, matchOptions => matchOptions
+			.IgnoreField("data.submitBid.id")
+			.IgnoreField("data.submitBid.earliestStartDate")
+			.IgnoreField("data.submitBid.latestStartDate")
+			.IgnoreField("data.submitBid.bidItems[*].id")
+			.IgnoreField("data.submitBid.bidItems[*].jobTaskId"));
+	}
 
-    [Fact]
-    public async Task UpdateJobTasks_ValidData_ReturnsTrue()
-    {
-        // Arrange
-        var homeownerId = Guid.NewGuid();
-        var jobPostId = Guid.NewGuid();
-        var taskId = Guid.NewGuid();
-        var criteriaId = Guid.NewGuid();
-        var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+	[Fact]
+	public async Task UpdateJobTasks_ValidData_ReturnsTrue()
+	{
+		// Arrange
+		var homeownerId = Guid.NewGuid();
+		var jobPostId = Guid.NewGuid();
+		var taskId = Guid.NewGuid();
+		var criteriaId = Guid.NewGuid();
+		var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
 
-        var mockJobPostService = new Mock<IJobPostService>();
-        mockJobPostService.Setup(s => s.UpdateJobTasksAsync(
-                It.Is<Guid>(id => id == jobPostId),
-                It.IsAny<IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)>>()))
-            .Returns(Task.CompletedTask);
+		var mockJobPostService = new Mock<IJobPostService>();
+		mockJobPostService.Setup(s => s.UpdateJobTasksAsync(
+				It.Is<Guid>(id => id == jobPostId),
+				It.IsAny<IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)>>()))
+			.Returns(Task.CompletedTask);
 
-        var client = CreateClient(services =>
-        {
-            services.AddSingleton(mockJobPostService.Object);
-        }, homeownerToken);
+		var client = CreateClient(services =>
+		{
+			services.AddSingleton(mockJobPostService.Object);
+		}, homeownerToken);
 
-        var graphQLRequest = new
-        {
-            query = @"
+		var graphQLRequest = new
+		{
+			query = @"
                 mutation UpdateJobTasks($input: UpdateJobTasksInput!) {
                   updateJobTasks(input: $input)
                 }",
-            variables = new { 
-                input = new {
-                    jobPostId = jobPostId,
-                    tasks = new[] {
-                        new {
-                            id = taskId,
-                            title = "Task 1",
-                            description = "Task Description",
-                            sequenceOrder = 1,
-                            criteria = new[] {
-                                new {
-                                    id = criteriaId,
-                                    description = "Criteria Description"
-                                }
-                            }
-                        }
-                    }
-                } 
-            }
-        };
+			variables = new
+			{
+				input = new
+				{
+					jobPostId = jobPostId,
+					tasks = new[] {
+						new {
+							id = taskId,
+							title = "Task 1",
+							description = "Task Description",
+							sequenceOrder = 1,
+							criteria = new[] {
+								new {
+									id = criteriaId,
+									description = "Criteria Description"
+								}
+							}
+						}
+					}
+				}
+			}
+		};
 
-        // Act
-        var response = await client.PostAsync("/graphql", new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json"));
+		// Act
+		var response = await client.PostAsync("/graphql", new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json"));
 
-        // Assert
-        var content = await response.Content.ReadAsStringAsync();
-        _output.WriteLine(content);
-        response.EnsureSuccessStatusCode();
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content);
+		response.EnsureSuccessStatusCode();
 
-        Snapshot.Match(content);
-    }
+		Snapshot.Match(content);
+	}
 
-    [Fact]
-    public async Task ReplyToJobQuestion_ValidData_ReturnsReply()
-    {
-        // Arrange
-        var parentQuestionId = Guid.NewGuid();
-        var authorId = Guid.NewGuid();
-        var replyId = Guid.NewGuid();
-        var replyText = "This is a reply text.";
+	[Fact]
+	public async Task ReplyToJobQuestion_ValidData_ReturnsReply()
+	{
+		// Arrange
+		var parentQuestionId = Guid.NewGuid();
+		var authorId = Guid.NewGuid();
+		var replyId = Guid.NewGuid();
+		var replyText = "This is a reply text.";
 
-        var mockJobPostService = new Mock<IJobPostService>();
-        mockJobPostService.Setup(service => service.ReplyToQuestionAsync(
-            parentQuestionId,
-            authorId,
-            replyText))
-            .ReturnsAsync(new JobPostQuestion
-            {
-                Id = replyId,
-                ParentQuestionId = parentQuestionId,
-                AuthorId = authorId,
-                QuestionText = replyText
-            });
+		var mockJobPostService = new Mock<IJobPostService>();
+		mockJobPostService.Setup(service => service.ReplyToQuestionAsync(
+			parentQuestionId,
+			authorId,
+			replyText))
+			.ReturnsAsync(new JobPostQuestion
+			{
+				Id = replyId,
+				ParentQuestionId = parentQuestionId,
+				AuthorId = authorId,
+				QuestionText = replyText
+			});
 
-        var userToken = TestTokenHelper.GenerateJwtToken(authorId, "user@example.com", "Tradesman", _configuration);
+		var userToken = TestTokenHelper.GenerateJwtToken(authorId, "user@example.com", "Tradesman", _configuration);
 
-        var client = CreateClient(services =>
-        {
-            services.RemoveAll(typeof(IJobPostService));
-            services.AddSingleton(mockJobPostService.Object);
-        }, userToken);
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IJobPostService));
+			services.AddSingleton(mockJobPostService.Object);
+		}, userToken);
 
-        var graphQLRequest = new
-        {
-            query = "mutation ReplyToJobQuestion($parentQuestionId: UUID!, $replyText: String!) { replyToJobQuestion(parentQuestionId: $parentQuestionId, replyText: $replyText) { id parentQuestionId authorId questionText } }",
-            variables = new
-            {
-                parentQuestionId = parentQuestionId.ToString(),
-                replyText = replyText
-            },
-            operationName = "ReplyToJobQuestion"
-        };
+		var graphQLRequest = new
+		{
+			query = "mutation ReplyToJobQuestion($parentQuestionId: UUID!, $replyText: String!) { replyToJobQuestion(parentQuestionId: $parentQuestionId, replyText: $replyText) { id parentQuestionId authorId questionText } }",
+			variables = new
+			{
+				parentQuestionId = parentQuestionId.ToString(),
+				replyText = replyText
+			},
+			operationName = "ReplyToJobQuestion"
+		};
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
-        {
-            Content = new StringContent(
-                JsonConvert.SerializeObject(graphQLRequest),
-                System.Text.Encoding.UTF8,
-                "application/json")
-        };
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				System.Text.Encoding.UTF8,
+				"application/json")
+		};
 
-        // Act
-        var response = await client.SendAsync(request);
+		// Act
+		var response = await client.SendAsync(request);
 
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        
-        // Snapshot testing
-        Snapshot.Match(content, matchOptions => matchOptions
-            .IgnoreField("data.replyToJobQuestion.id")
-            .IgnoreField("data.replyToJobQuestion.parentQuestionId")
-            .IgnoreField("data.replyToJobQuestion.authorId"));
-    }
+		// Assert
+		response.EnsureSuccessStatusCode();
+		var content = await response.Content.ReadAsStringAsync();
+
+		// Snapshot testing
+		Snapshot.Match(content, matchOptions => matchOptions
+			.IgnoreField("data.replyToJobQuestion.id")
+			.IgnoreField("data.replyToJobQuestion.parentQuestionId")
+			.IgnoreField("data.replyToJobQuestion.authorId"));
+	}
+
+	[Fact]
+	public async Task AcceptBid_ValidData_ReturnsAcceptedBooking()
+	{
+		// Arrange
+		var homeownerId = Guid.NewGuid();
+		var bidId = Guid.NewGuid();
+		var bookingId = Guid.NewGuid();
+
+		var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+
+		var mockPaymentService = new Mock<IPaymentService>();
+		mockPaymentService.Setup(s => s.AcceptBidAsync(homeownerId, bidId))
+			.ReturnsAsync(new Booking
+			{
+				Id = bookingId,
+				HomeownerId = homeownerId,
+				BidId = bidId
+			});
+
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IPaymentService));
+			services.AddSingleton(mockPaymentService.Object);
+		}, homeownerToken);
+
+		var graphQLRequest = new
+		{
+			query = @"
+                mutation AcceptBid($bidId: UUID!) {
+                  acceptBid(bidId: $bidId) {
+                    id
+                    status
+                  }
+                }",
+			variables = new
+			{
+				bidId = bidId.ToString()
+			}
+		};
+
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				Encoding.UTF8,
+				"application/json")
+		};
+
+		// Act
+		var response = await client.SendAsync(request);
+
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content);
+		response.EnsureSuccessStatusCode();
+
+		Snapshot.Match(content, matchOptions => matchOptions.IgnoreField("data.acceptBid.id"));
+	}
+
+	[Fact]
+	public async Task ApproveMilestone_ValidData_ReturnsTrue()
+	{
+		// Arrange
+		var homeownerId = Guid.NewGuid();
+		var milestoneId = Guid.NewGuid();
+
+		var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+
+		var mockPaymentService = new Mock<IPaymentService>();
+		mockPaymentService.Setup(s => s.ApproveMilestoneAsync(homeownerId, milestoneId))
+			.Returns(Task.CompletedTask);
+
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IPaymentService));
+			services.AddSingleton(mockPaymentService.Object);
+		}, homeownerToken);
+
+		var graphQLRequest = new
+		{
+			query = @"
+                mutation ApproveMilestone($milestoneId: UUID!) {
+                  approveMilestone(milestonePaymentId: $milestoneId)
+                }",
+			variables = new
+			{
+				milestoneId = milestoneId.ToString()
+			}
+		};
+
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				Encoding.UTF8,
+				"application/json")
+		};
+
+		// Act
+		var response = await client.SendAsync(request);
+
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content);
+		response.EnsureSuccessStatusCode();
+
+		Snapshot.Match(content);
+	}
 }
