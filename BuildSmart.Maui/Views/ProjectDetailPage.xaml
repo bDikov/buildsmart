@@ -361,20 +361,41 @@
                                     </VerticalStackLayout>
                                 </VerticalStackLayout>
 
-                                <!-- Review Bids Button -->
-                                <Button Text="{Binding JobPost.Bids.Count, StringFormat='Review Bids ({0})'}" 
-                                        Clicked="OnReviewBidsClicked"
-                                        CommandParameter="{Binding JobPost}"
-                                        BackgroundColor="#1976D2" TextColor="White" HeightRequest="40" FontSize="14" FontAttributes="Bold" Margin="0,15,0,0">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="IsVisible" Value="False" />
-                                            <Style.Triggers>
-                                                <DataTrigger TargetType="Button" Binding="{Binding JobPost.Status}" Value="Open"><Setter Property="IsVisible" Value="True" /></DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                <!-- Tradesman Bids Section -->
+                                <VerticalStackLayout IsVisible="{Binding JobPost.Status, Converter={StaticResource EqualConverter}, ConverterParameter='Open'}" Margin="0,15,0,0" Spacing="8">
+                                    <Label Text="Submitted Bids:" FontAttributes="Bold" FontSize="14" TextColor="#1565C0"/>
+                                    
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding JobPost.Bids}">
+                                        <BindableLayout.EmptyView>
+                                            <Label Text="No bids submitted yet." TextColor="Gray" FontSize="12" FontAttributes="Italic" Margin="10,0"/>
+                                        </BindableLayout.EmptyView>
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="graphql:IGetProjectsForReview_ProjectsForReview_JobPosts_Bids">
+                                                <Frame BorderColor="#90CAF9" BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#0D47A1}" Padding="15" Margin="0,5" CornerRadius="8" HasShadow="False">
+                                                    <VerticalStackLayout Spacing="5">
+                                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                                            <Image Grid.Column="0" Source="{Binding TradesmanProfile.User.ProfilePictureUrl}" WidthRequest="40" HeightRequest="40" VerticalOptions="Center">
+                                                                <Image.Clip>
+                                                                    <EllipseGeometry RadiusX="20" RadiusY="20" Center="20,20"/>
+                                                                </Image.Clip>
+                                                            </Image>
+                                                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="10,0,0,0">
+                                                                <Label Text="{Binding TradesmanProfile.User.FirstName, StringFormat='{0} (Tradesman)'}" FontAttributes="Bold" FontSize="14" />
+                                                                <Label Text="{Binding Amount.Total, StringFormat='Bid Amount: ${0:F2}'}" FontSize="14" FontAttributes="Bold" TextColor="#1976D2" />
+                                                            </VerticalStackLayout>
+                                                            <Button Grid.Column="2" Text="View Offer" 
+                                                                    Command="{Binding Source={x:Reference thisPage}, Path=BindingContext.ReviewBidCommand}"
+                                                                    CommandParameter="{Binding .}"
+                                                                    x:DataType="{x:Null}"
+                                                                    BackgroundColor="#4CAF50" TextColor="White" HeightRequest="35" Padding="10,0" CornerRadius="8" VerticalOptions="Center"/>
+                                                        </Grid>
+                                                        <Label Text="{Binding Comment}" FontSize="13" TextColor="Gray" Margin="0,5,0,0" LineBreakMode="WordWrap" />
+                                                    </VerticalStackLayout>
+                                                </Frame>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
 
                                 <Button Text="Edit Answers" 
                                         Clicked="OnEditAnswersClicked"

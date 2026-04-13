@@ -1,0 +1,37 @@
+query GetBidDetails($bidId: UUID!) {
+  bidDetailsById(bidId: $bidId) {
+    id
+    amount {
+      total
+      currency
+    }
+    comment
+    earliestStartDate
+    isAccepted
+    tradesmanProfile {
+      id
+      averageRating
+      user {
+        ...UserDetails
+      }
+    }
+    bidItems {
+      id
+      price {
+        total
+        currency
+      }
+      comment
+      jobTask {
+        id
+        title
+        description
+        sequenceOrder
+        acceptanceCriteria {
+          id
+          description
+        }
+      }
+    }
+  }
+}

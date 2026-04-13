@@ -38,14 +38,6 @@ public partial class ProjectDetailPage : ContentPage
         }
     }
 
-    private async void OnReviewBidsClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.CommandParameter is IJobPostDetails job)
-        {
-            await _viewModel.ReviewBidsCommand.ExecuteAsync(job);
-        }
-    }
-
     private async void OnReplyToAdminClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.CommandParameter is IJobPostDetails job)

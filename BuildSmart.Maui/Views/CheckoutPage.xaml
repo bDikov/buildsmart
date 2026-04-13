@@ -18,14 +18,13 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Tradesman Details" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Primary}"/>
                     <HorizontalStackLayout Spacing="10">
-                        <Image Source="{Binding Bid.TradesmanProfile.User.ProfilePictureUrl}" WidthRequest="50" HeightRequest="50">
+                        <Image Source="{Binding TradesmanPhoto}" WidthRequest="50" HeightRequest="50">
                             <Image.Clip>
                                 <EllipseGeometry RadiusX="25" RadiusY="25" Center="25,25"/>
                             </Image.Clip>
                         </Image>
                         <VerticalStackLayout VerticalOptions="Center">
-                            <Label Text="{Binding Bid.TradesmanProfile.User.FirstName, StringFormat='{0} (Verified Pro)'}" FontAttributes="Bold" FontSize="16"/>
-                            <Label Text="{Binding Bid.TradesmanProfile.AverageRating, StringFormat='Rating: {0:F1} ★'}" TextColor="#FFA000" FontSize="14"/>
+                            <Label Text="{Binding TradesmanName, StringFormat='{0} (Verified Pro)'}" FontAttributes="Bold" FontSize="16"/>
                         </VerticalStackLayout>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
@@ -35,7 +34,7 @@
             <Frame BorderColor="LightGray" CornerRadius="8" HasShadow="False" Padding="15">
                 <VerticalStackLayout Spacing="5">
                     <Label Text="Proposal Notes" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Primary}"/>
-                    <Label Text="{Binding Bid.Comment}" FontSize="14" TextColor="Gray" LineBreakMode="WordWrap"/>
+                    <Label Text="{Binding BidComment}" FontSize="14" TextColor="Gray" LineBreakMode="WordWrap"/>
                 </VerticalStackLayout>
             </Frame>
 
@@ -47,7 +46,7 @@
                     <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
                         <!-- Tradesman Bid -->
                         <Label Grid.Row="0" Grid.Column="0" Text="Tradesman Bid Amount:" FontSize="14"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Bid.Amount.Total, StringFormat='${0:F2}'}" FontSize="14" FontAttributes="Bold"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding BidAmount, StringFormat='${0:F2}'}" FontSize="14" FontAttributes="Bold"/>
 
                         <!-- Platform Escrow Fee -->
                         <Label Grid.Row="1" Grid.Column="0" Text="BuildSmart Escrow Fee (3%):" FontSize="14"/>

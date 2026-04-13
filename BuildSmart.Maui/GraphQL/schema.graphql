@@ -317,6 +317,7 @@ type Project {
 
 "The root query object."
 type Query {
+  bidDetailsById(bidId: UUID!): Bid
   "Gets a queryable list of tradesman profiles."
   tradesmanProfiles: [TradesmanProfile!]! @authorize(roles: [ "Admin", "Homeowner", "Tradesman" ]) @cost(weight: "10")
   "Gets the currently authenticated user."

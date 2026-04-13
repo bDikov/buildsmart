@@ -93,13 +93,10 @@ public static class MauiProgram
         builder.Services.AddTransient<TaskBreakdownPage>();
         builder.Services.AddTransient<TaskBreakdownViewModel>();
 
-        builder.Services.AddTransient<ProjectBidsPage>();
-        builder.Services.AddTransient<ProjectBidsViewModel>();
-
         builder.Services.AddTransient<BidDetailsPage>();
         builder.Services.AddTransient<BidDetailsViewModel>();
 
-        builder.Services.AddTransient<CheckoutPage>();
+        builder.Services.AddTransient<PlaceBidPage>();
         builder.Services.AddTransient<PlaceBidViewModel>();
 
         builder.Services.AddTransient<PassedAuctionsPage>();
@@ -135,7 +132,6 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(NotificationsPage), typeof(NotificationsPage));
         Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));
         Routing.RegisterRoute(nameof(TaskBreakdownPage), typeof(TaskBreakdownPage));
-        Routing.RegisterRoute(nameof(ProjectBidsPage), typeof(ProjectBidsPage));
         Routing.RegisterRoute(nameof(BidDetailsPage), typeof(BidDetailsPage));
         Routing.RegisterRoute(nameof(PlaceBidPage), typeof(PlaceBidPage));
         Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));

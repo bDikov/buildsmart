@@ -129,6 +129,7 @@ fragment JobPostDetails on JobPost {
   }
   bids {
     id
+    jobPostId
     amount {
       total
       currency
@@ -141,20 +142,6 @@ fragment JobPostDetails on JobPost {
       id
       user {
         ... UserDetails
-      }
-    }
-    bidItems {
-      id
-      price {
-        total
-        currency
-      }
-      comment
-      jobTask {
-        id
-        title
-        description
-        sequenceOrder
       }
     }
   }

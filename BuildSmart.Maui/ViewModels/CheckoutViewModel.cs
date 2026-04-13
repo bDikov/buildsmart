@@ -4,7 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BuildSmart.Maui.ViewModels;
 
-public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
+[QueryProperty(nameof(Bid), "Bid")]
+public partial class CheckoutViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
 
@@ -14,24 +15,44 @@ public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
     }
 
     [ObservableProperty]
-    private IGetProjectsForReview_ProjectsForReview_JobPosts_Bids? _bid;
+    private object? _bid;
+
+    public Guid BidId { get; private set; }
+    public decimal BidAmount { get; private set; }
+    public string TradesmanName { get; private set; } = string.Empty;
+    public string TradesmanPhoto { get; private set; } = string.Empty;
+    public string BidComment { get; private set; } = string.Empty;
 
     [ObservableProperty]
     private bool _isBusy;
 
-    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    public decimal PlatformFee => BidAmount * 0.03m;
+    public decimal TotalCharge => BidAmount + PlatformFee;
+
+    partial void OnBidChanged(object? value)
     {
-        if (query.TryGetValue("Bid", out var bidObj) && bidObj is IGetProjectsForReview_ProjectsForReview_JobPosts_Bids bid)
+        if (value is IGetProjectsForReview_ProjectsForReview_JobPosts_Bids prBid)
         {
-            Bid = bid;
+            BidId = prBid.Id;
+            BidAmount = prBid.Amount.Total;
+            TradesmanName = prBid.TradesmanProfile.User.FirstName;
+            TradesmanPhoto = prBid.TradesmanProfile.User.ProfilePictureUrl ?? "";
+            BidComment = prBid.Comment ?? "";
         }
-    }
+        else if (value is IGetBidDetails_BidDetailsById bdBid)
+        {
+            BidId = bdBid.Id;
+            BidAmount = bdBid.Amount.Total;
+            TradesmanName = bdBid.TradesmanProfile.User.FirstName;
+            TradesmanPhoto = bdBid.TradesmanProfile.User.ProfilePictureUrl ?? "";
+            BidComment = bdBid.Comment ?? "";
+        }
 
-    public decimal PlatformFee => Bid != null ? Bid.Amount.Total * 0.03m : 0;
-    public decimal TotalCharge => Bid != null ? Bid.Amount.Total + PlatformFee : 0;
-
-    partial void OnBidChanged(IGetProjectsForReview_ProjectsForReview_JobPosts_Bids? value)
-    {
+        OnPropertyChanged(nameof(BidId));
+        OnPropertyChanged(nameof(BidAmount));
+        OnPropertyChanged(nameof(TradesmanName));
+        OnPropertyChanged(nameof(TradesmanPhoto));
+        OnPropertyChanged(nameof(BidComment));
         OnPropertyChanged(nameof(PlatformFee));
         OnPropertyChanged(nameof(TotalCharge));
     }
@@ -39,7 +60,7 @@ public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task AcceptBidAsync()
     {
-        if (Bid == null) return;
+        if (Bid == null || BidId == Guid.Empty) return;
 
         bool confirm = await Shell.Current.DisplayAlert("Confirm Payment", 
             $"Are you sure you want to deposit {TotalCharge:C2} into escrow and hire this tradesman?", 
@@ -53,8 +74,7 @@ public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
         {
             IsBusy = true;
             
-            // Assume we call stripe here or mock it, then call our backend to Accept
-            var result = await _apiClient.AcceptBid.ExecuteAsync(Bid.Id);
+            var result = await _apiClient.AcceptBid.ExecuteAsync(BidId);
             
             if (result.Errors.Count > 0)
             {
@@ -64,7 +84,6 @@ public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
 
             await Shell.Current.DisplayAlert("Success", "Funds have been securely deposited into escrow! The tradesman has been hired.", "OK");
             
-            // Go back to the project page
             await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
