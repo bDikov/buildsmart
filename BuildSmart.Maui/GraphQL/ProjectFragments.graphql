@@ -127,6 +127,37 @@ fragment JobPostDetails on JobPost {
   questions {
     ... QuestionDetails
   }
+  bids {
+    id
+    amount {
+      total
+      currency
+    }
+    comment
+    isAccepted
+    isRejected
+    isOutdated
+    tradesmanProfile {
+      id
+      user {
+        ... UserDetails
+      }
+    }
+    bidItems {
+      id
+      price {
+        total
+        currency
+      }
+      comment
+      jobTask {
+        id
+        title
+        description
+        sequenceOrder
+      }
+    }
+  }
 }
 
 fragment ProjectDetails on Project {

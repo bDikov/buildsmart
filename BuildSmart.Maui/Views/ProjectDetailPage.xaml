@@ -361,6 +361,21 @@
                                     </VerticalStackLayout>
                                 </VerticalStackLayout>
 
+                                <!-- Review Bids Button -->
+                                <Button Text="{Binding JobPost.Bids.Count, StringFormat='Review Bids ({0})'}" 
+                                        Clicked="OnReviewBidsClicked"
+                                        CommandParameter="{Binding JobPost}"
+                                        BackgroundColor="#1976D2" TextColor="White" HeightRequest="40" FontSize="14" FontAttributes="Bold" Margin="0,15,0,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="IsVisible" Value="False" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding JobPost.Status}" Value="Open"><Setter Property="IsVisible" Value="True" /></DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
                                 <Button Text="Edit Answers" 
                                         Clicked="OnEditAnswersClicked"
                                         CommandParameter="{Binding JobPost}"

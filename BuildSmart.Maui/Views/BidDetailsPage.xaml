@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             x:Class="BuildSmart.Maui.Views.BidDetailsPage"
+             x:DataType="vm:BidDetailsViewModel"
+             Title="Offer Details">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="Itemized Offer" FontSize="24" FontAttributes="Bold" TextColor="#1565C0"/>
+            <Label Text="Review the tradesman's specific pricing for each task." TextColor="Gray" FontSize="14" />
+
+            <Frame BorderColor="LightGray" CornerRadius="8" HasShadow="False" Padding="15">
+                <HorizontalStackLayout Spacing="10">
+                    <Image Source="{Binding Bid.TradesmanProfile.User.ProfilePictureUrl}" WidthRequest="50" HeightRequest="50" VerticalOptions="Center">
+                        <Image.Clip>
+                            <EllipseGeometry RadiusX="25" RadiusY="25" Center="25,25"/>
+                        </Image.Clip>
+                    </Image>
+                    <VerticalStackLayout VerticalOptions="Center">
+                        <Label Text="{Binding Bid.TradesmanProfile.User.FirstName, StringFormat='{0} (Verified Pro)'}" FontAttributes="Bold" FontSize="16"/>
+                        <Label Text="{Binding Bid.Amount.Total, StringFormat='Total Bid: ${0:F2}'}" TextColor="#1976D2" FontAttributes="Bold" FontSize="14"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </Frame>
+
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Task Breakdown" FontSize="16" FontAttributes="Bold" TextColor="#2E7D32"/>
+
+                <StackLayout BindableLayout.ItemsSource="{Binding Bid.BidItems}">
+                    <BindableLayout.EmptyView>
+                        <Label Text="No task breakdowns provided." FontSize="14" TextColor="Gray" FontAttributes="Italic" Margin="0,10"/>
+                    </BindableLayout.EmptyView>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="graphql:IGetProjectsForReview_ProjectsForReview_JobPosts_Bids_BidItems">
+                            <Border Stroke="#E0E0E0" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}" Padding="15" Margin="0,5">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+                                <VerticalStackLayout Spacing="5">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding JobTask.Title}" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                        <Label Grid.Column="1" Text="{Binding Price.Total, StringFormat='${0:F2}'}" FontSize="16" FontAttributes="Bold" TextColor="#1976D2" />
+                                    </Grid>
+                                    <Label Text="{Binding JobTask.Description}" FontSize="14" TextColor="Gray" LineBreakMode="WordWrap" Margin="0,5,0,0"/>
+                                    
+                                    <VerticalStackLayout IsVisible="{Binding Comment, Converter={StaticResource StringIsNotNullOrEmptyConverter}}" Margin="0,10,0,0">
+                                        <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,5"/>
+                                        <Label Text="Tradesman Note:" FontSize="12" FontAttributes="Bold" TextColor="Gray"/>
+                                        <Label Text="{Binding Comment}" FontSize="13" TextColor="Gray" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+            </VerticalStackLayout>
+
+            <Button Text="Proceed to Checkout" 
+                    Command="{Binding ProceedToCheckoutCommand}"
+                    BackgroundColor="#4CAF50" TextColor="White" 
+                    FontAttributes="Bold" HeightRequest="50" CornerRadius="8" Margin="0,20,0,0"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

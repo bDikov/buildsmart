@@ -35,51 +35,8 @@ namespace BuildSmart.Maui.ViewModels
         [RelayCommand]
         public async Task ConfirmBookingAsync()
         {
-            if (string.IsNullOrEmpty(JobDescription))
-            {
-                await Shell.Current.DisplayAlert("Error", "Please provide a job description.", "OK");
-                return;
-            }
-
-            try
-            {
-                IsBusy = true;
-
-                // 1. Get current user ID
-                var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-                if (userResult.Errors.Count != 0 || userResult.Data?.CurrentUser == null)
-                {
-                    await Shell.Current.DisplayAlert("Error", "Could not identify current user. Please log in again.", "OK");
-                    return;
-                }
-
-                var homeownerId = userResult.Data.CurrentUser.Id;
-
-                // 2. Create booking
-                var result = await _apiClient.CreateBooking.ExecuteAsync(
-                    Guid.Parse(homeownerId),
-                    Guid.Parse(TradesmanId),
-                    RequestedDate,
-                    JobDescription);
-
-                if (result.Errors.Count == 0)
-                {
-                    await Shell.Current.DisplayAlert("Success", "Booking request sent!", "OK");
-                    await Shell.Current.GoToAsync("..");
-                }
-                else
-                {
-                    await Shell.Current.DisplayAlert("Error", "Failed to create booking.", "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            await Shell.Current.DisplayAlert("Deprecated", "Direct bookings are deprecated. Please use the Auction/Escrow workflow.", "OK");
+            await Shell.Current.GoToAsync("..");
         }
     }
 }

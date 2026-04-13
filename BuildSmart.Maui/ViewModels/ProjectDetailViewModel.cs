@@ -320,6 +320,22 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		}
 	}
 
+    [RelayCommand]
+    private async Task ReviewBidsAsync(IJobPostDetails job)
+    {
+        try
+        {
+            await Shell.Current.GoToAsync(nameof(Views.ProjectBidsPage), new Dictionary<string, object>
+            {
+                { "Job", job }
+            });
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Navigation Error", ex.Message, "OK");
+        }
+    }
+
 	[RelayCommand]
 	private async Task RespondToAdminAsync(IJobPostDetails job)
 	{
