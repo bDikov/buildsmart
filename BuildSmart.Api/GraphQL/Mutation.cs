@@ -524,13 +524,22 @@ public class Mutation
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IPaymentService paymentService)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
-		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		try
 		{
-			throw new GraphQLException("Invalid user credentials.");
-		}
+			var userIdClaim = claimsPrincipal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+			if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+			{
+				throw new GraphQLException("Invalid user credentials.");
+			}
 
-		return await paymentService.AcceptBidAsync(userId, bidId);
+			return await paymentService.AcceptBidAsync(userId, bidId);
+		}
+		catch (Exception ex)
+		{
+			// Unroll inner exceptions so we can see the true EF Core crash!
+			var realError = ex.InnerException?.Message ?? ex.Message;
+			throw new GraphQLException($"AcceptBid crashed: {realError} | {ex.StackTrace}");
+		}
 	}
 
 	[Authorize(Roles = new[] { "Homeowner" })]

@@ -11,7 +11,8 @@ public class MilestonePaymentType : ObjectType<MilestonePayment>
         descriptor.Field(mp => mp.Id).Type<NonNullType<IdType>>();
         descriptor.Field(mp => mp.BookingId).Type<NonNullType<IdType>>();
         descriptor.Field(mp => mp.JobTaskId).Type<NonNullType<IdType>>();
-        descriptor.Field(mp => mp.AmountAllocated);
+        descriptor.Field(mp => mp.AmountAllocated)
+            .Resolve(ctx => ctx.Parent<MilestonePayment>().AmountAllocated);
         descriptor.Field(mp => mp.Status).Type<NonNullType<EnumType<BuildSmart.Core.Domain.Enums.MilestoneStatus>>>();
         descriptor.Field(mp => mp.StripeTransferId).Type<StringType>();
         descriptor.Field(mp => mp.CreatedAt).Type<NonNullType<DateTimeType>>();

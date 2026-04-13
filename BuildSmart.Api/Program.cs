@@ -78,6 +78,7 @@ public partial class Program
 		builder.Services.AddScoped<ITradesmanProfileService, TradesmanProfileService>();
 		builder.Services.AddScoped<IReviewService, ReviewService>();
 		builder.Services.AddScoped<IJobPostService, JobPostService>();
+		builder.Services.AddScoped<IPaymentService, PaymentService>();
 		builder.Services.AddScoped<IJobsNotificationService, BuildSmart.Api.Services.JobsNotificationService>();
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
