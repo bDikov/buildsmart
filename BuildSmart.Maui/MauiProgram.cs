@@ -102,6 +102,12 @@ public static class MauiProgram
         builder.Services.AddTransient<BookingDashboardPage>();
         builder.Services.AddTransient<BookingDashboardViewModel>();
 
+        builder.Services.AddTransient<ActiveJobsPage>();
+        builder.Services.AddTransient<ActiveJobsViewModel>();
+
+        builder.Services.AddTransient<TradesmanBookingDashboardPage>();
+        builder.Services.AddTransient<TradesmanBookingDashboardViewModel>();
+
         builder.Services.AddTransient<PlaceBidPage>();
         builder.Services.AddTransient<PlaceBidViewModel>();
 
@@ -142,6 +148,8 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(PlaceBidPage), typeof(PlaceBidPage));
         Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
         Routing.RegisterRoute(nameof(PassedAuctionsPage), typeof(PassedAuctionsPage));
+        Routing.RegisterRoute(nameof(ActiveJobsPage), typeof(ActiveJobsPage));
+        Routing.RegisterRoute(nameof(TradesmanBookingDashboardPage), typeof(TradesmanBookingDashboardPage));
         Routing.RegisterRoute(nameof(CheckoutPage), typeof(CheckoutPage));
         Routing.RegisterRoute(nameof(BookingDashboardPage), typeof(BookingDashboardPage));
 

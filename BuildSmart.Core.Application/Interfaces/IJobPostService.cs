@@ -8,14 +8,14 @@ public interface IJobPostService
     Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description);
     
     Task<JobPost> AddJobToProjectAsync(
-        Guid projectId, 
-        Guid categoryId, 
-        string title, 
+        Guid projectId,
+        Guid categoryId,
+        string title,
         string jobDetailsJson,
         string location,
         Amount? estimatedBudget,
-        List<string> imageUrls);
-    
+        List<string> imageUrls,
+        DateTime? preferredSiteVisitDate);    
     Task SubmitJobForScopeGenerationAsync(Guid jobPostId);
     
     Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);

@@ -169,7 +169,8 @@ public class JobPostService : IJobPostService
 		string jobDetailsJson,
 		string location,
 		Amount? estimatedBudget,
-		List<string> imageUrls)
+		List<string> imageUrls,
+		DateTime? preferredSiteVisitDate)
 	{
 		var project = await _unitOfWork.Projects.GetByIdAsync(projectId)
 			?? throw new ArgumentException("Project not found");
@@ -196,6 +197,7 @@ public class JobPostService : IJobPostService
 			Location = location,
 			EstimatedBudget = estimatedBudget,
 			ImageUrls = imageUrls,
+			PreferredSiteVisitDate = preferredSiteVisitDate,
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};

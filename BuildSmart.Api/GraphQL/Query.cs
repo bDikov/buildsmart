@@ -294,4 +294,29 @@ public class Query
 	[UseFiltering]
 	[UseSorting]
 	public IQueryable<Project> GetAllProjects([Service] AppDbContext context) => context.Projects;
+
+	[Authorize(Roles = new[] { "Tradesman" })]
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
+	public IQueryable<Booking> GetMyActiveBookings(
+		ClaimsPrincipal claimsPrincipal,
+		[Service] AppDbContext context)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var tradesmanProfile = context.TradesmanProfiles.FirstOrDefault(tp => tp.UserId == userId);
+		if (tradesmanProfile == null)
+		{
+			return Enumerable.Empty<Booking>().AsQueryable();
+		}
+
+		return context.Bookings
+			.Where(b => b.TradesmanProfileId == tradesmanProfile.Id)
+			.OrderByDescending(b => b.CreatedAt);
+	}
 }

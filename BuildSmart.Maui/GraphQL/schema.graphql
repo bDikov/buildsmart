@@ -145,6 +145,7 @@ type JobPost {
   additionalQuestionsJson: String
   location: String!
   imageUrls: [String!]!
+  preferredSiteVisitDate: DateTime
   status: JobPostStatus!
   estimatedBudget: Amount
   amendmentCount: Int!
@@ -228,7 +229,7 @@ type Mutation {
   "Creates a new project for a homeowner."
   createProject(homeownerId: UUID! title: String! description: String!): Project! @authorize(roles: [ "Homeowner" ]) @cost(weight: "10")
   "Adds a sub-job to a project using the Wizard output."
-  addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! location: String estimatedSubtotal: Decimal currency: String! imageUrls: [String!]!): JobPost! @authorize(roles: [ "Homeowner" ]) @cost(weight: "10")
+  addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! location: String estimatedSubtotal: Decimal currency: String! imageUrls: [String!]! preferredSiteVisitDate: DateTime): JobPost! @authorize(roles: [ "Homeowner" ]) @cost(weight: "10")
   saveJobPostDraft(jobPostId: UUID! jobDetailsJson: String! description: String location: String estimatedSubtotal: Decimal currency: String!): Boolean! @authorize @cost(weight: "10")
   "Updates the standardized tasks for a job post."
   updateJobTasks(input: UpdateJobTasksInput!): Boolean! @authorize(roles: [ "Admin", "Homeowner" ]) @authorize(roles: [ "Admin", "Homeowner" ]) @cost(weight: "10")
@@ -336,6 +337,8 @@ type Query {
   myNotifications: [Notification!]! @authorize @authorize @cost(weight: "10")
   "Gets all open auctions that match the authenticated tradesman's skills."
   availableAuctions: [Auction] @authorize(roles: [ "Tradesman" ]) @authorize(roles: [ "Tradesman" ]) @cost(weight: "10")
+  "Gets active bookings (escrow contracts) for the authenticated tradesman."
+  myActiveBookings: [Booking!]! @authorize(roles: [ "Tradesman" ]) @cost(weight: "10")
   "Gets a specific auction by Job ID."
   auctionById(jobId: UUID!): Auction @authorize @authorize(roles: [ "Admin", "Homeowner", "Tradesman" ]) @cost(weight: "10")
   "Gets a specific job post question by ID."

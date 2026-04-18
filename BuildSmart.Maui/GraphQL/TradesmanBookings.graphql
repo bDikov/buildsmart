@@ -1,0 +1,34 @@
+query GetMyActiveBookings {
+  myActiveBookings {
+    id
+    status
+    agreedBidAmount {
+      total
+      currency
+    }
+    platformFeeTradesman {
+      total
+      currency
+    }
+    totalEscrowAmount {
+      total
+      currency
+    }
+    createdAt
+    homeowner {
+      id
+      firstName
+      lastName
+      profilePictureUrl
+    }
+    milestonePayments {
+      id
+      jobTaskId
+      amountAllocated {
+        total
+        currency
+      }
+      status
+    }
+  }
+}

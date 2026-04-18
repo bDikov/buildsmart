@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
              xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              x:Class="BuildSmart.Maui.Views.JobWizardPage"
              x:DataType="vm:JobWizardViewModel"
              Title="Create Project">
@@ -29,6 +30,15 @@
             
             <Label Text="Location" FontSize="18" FontAttributes="Bold" TextColor="{Binding LocationHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Entry Text="{Binding ProjectLocation}" Placeholder="e.g., New York, NY" Margin="0,0,0,10"/>
+
+            <Label Text="Preferred Site Visit Date (Optional)" FontSize="18" FontAttributes="Bold" TextColor="Gray" />
+            <DatePicker Date="{Binding PreferredSiteVisitDate}" MinimumDate="{Binding Source={x:Static sys:DateTime.Today}}" Margin="0,0,0,10" Format="dd MMM yyyy">
+                <DatePicker.Triggers>
+                    <DataTrigger TargetType="DatePicker" Binding="{Binding PreferredSiteVisitDate}" Value="{x:Null}">
+                        <Setter Property="TextColor" Value="LightGray" />
+                    </DataTrigger>
+                </DatePicker.Triggers>
+            </DatePicker>
 
             <Label Text="Description" FontSize="18" FontAttributes="Bold" TextColor="{Binding DescriptionHasError, Converter={StaticResource ErrorColorConverter}}"/>
             <Editor Text="{Binding ProjectDescription}" HeightRequest="100" Placeholder="Describe your project..." />

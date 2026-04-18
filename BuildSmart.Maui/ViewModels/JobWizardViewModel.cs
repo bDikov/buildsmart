@@ -47,6 +47,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private string _projectLocation = string.Empty;
 
+	[ObservableProperty]
+	private DateTime? _preferredSiteVisitDate = null;
+
 	// Errors
 	[ObservableProperty] private bool _titleHasError;
 
@@ -664,7 +667,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						cat.Category.Name,
 						answersJson,
 						ProjectLocation,
-						null, "USD", new List<string>()
+						null, "USD", new List<string>(), PreferredSiteVisitDate
 					);
 
 					if (jobResult.Data?.AddJobToProject != null)

@@ -7,14 +7,15 @@ mutation CreateProject($homeownerId: UUID!, $title: String!, $description: Strin
 }
 
 mutation AddJobToProject(
-    $projectId: UUID!, 
-    $categoryId: UUID!, 
-    $title: String!, 
-    $jobDetailsJson: String!, 
+    $projectId: UUID!,
+    $categoryId: UUID!,
+    $title: String!,
+    $jobDetailsJson: String!,
     $location: String,
     $estimatedSubtotal: Decimal,
     $currency: String!,
-    $imageUrls: [String!]!
+    $imageUrls: [String!]!,
+    $preferredSiteVisitDate: DateTime
 ) {
     addJobToProject(
         projectId: $projectId,
@@ -24,9 +25,9 @@ mutation AddJobToProject(
         location: $location,
         estimatedSubtotal: $estimatedSubtotal,
         currency: $currency,
-        imageUrls: $imageUrls
-    ) {
-        id
+        imageUrls: $imageUrls,
+        preferredSiteVisitDate: $preferredSiteVisitDate
+    ) {        id
         title
         amendmentCount
     }

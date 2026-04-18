@@ -335,6 +335,7 @@ public class Mutation
 		decimal? estimatedSubtotal,
 		string currency,
 		List<string> imageUrls,
+		DateTime? preferredSiteVisitDate,
 		[Service] IJobPostService jobPostService)
 	{
 		Amount? budget = estimatedSubtotal.HasValue
@@ -352,7 +353,8 @@ public class Mutation
 			jobDetailsJson,
 			finalLocation,
 			budget,
-			imageUrls
+			imageUrls,
+			preferredSiteVisitDate
 		);
 	}
 
