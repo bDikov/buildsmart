@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels.Admin"
+             xmlns:models="clr-namespace:BuildSmart.Maui.GraphQL"
+             x:Class="BuildSmart.Maui.Views.Admin.AdminCategorySkusPage"
+             x:DataType="vm:AdminCategorySkusViewModel"
+             x:Name="PageRoot"
+             Title="Manage SKUs">
+
+	<Grid RowDefinitions="Auto, Auto, *">
+		<VerticalStackLayout Grid.Row="0" Padding="20">
+			<Label Text="Service SKUs Catalog" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10" />
+			<Button Text="+ Add New SKU" Command="{Binding ShowCreateSkuFormCommand}" HorizontalOptions="Start">
+				<Button.Triggers>
+					<DataTrigger TargetType="Button" Binding="{Binding IsCreatingSku}" Value="True">
+						<Setter Property="IsVisible" Value="False" />
+					</DataTrigger>
+				</Button.Triggers>
+			</Button>
+		</VerticalStackLayout>
+
+		<!-- New/Edit SKU Form Card -->
+		<Frame Grid.Row="1" IsVisible="{Binding IsCreatingSku}" Margin="20,0,20,10" Padding="15" BorderColor="LightGray" CornerRadius="8" BackgroundColor="#F9F9F9">
+			<VerticalStackLayout Spacing="10">
+				<Label Text="SKU Details" FontSize="16" FontAttributes="Bold" />
+
+				<Entry Placeholder="SKU Code (e.g., ELEC_OUTLET)" Text="{Binding NewSkuCode}" TextColor="Black" />
+				<Entry Placeholder="Name (e.g., Install Outlet)" Text="{Binding NewSkuName}" TextColor="Black" />
+				<Entry Placeholder="Description (Optional)" Text="{Binding NewSkuDescription}" TextColor="Black" />
+				<Entry Placeholder="Base Price (e.g., 25.00)" Text="{Binding NewSkuBasePrice}" Keyboard="Numeric" TextColor="Black" />
+
+				<Picker Title="Select Unit Type" ItemsSource="{Binding AvailableUnitTypes}" SelectedItem="{Binding NewSkuUnitType}" />
+
+				<Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,10,0,0">
+					<Button Grid.Column="0" Text="Cancel" Command="{Binding CancelCreateSkuCommand}" BackgroundColor="Gray" TextColor="White" />
+					<Button Grid.Column="1" Text="Save SKU" Command="{Binding SaveNewSkuCommand}" BackgroundColor="{StaticResource Primary}" TextColor="White" FontAttributes="Bold" />
+				</Grid>
+			</VerticalStackLayout>
+		</Frame>
+
+		<RefreshView Grid.Row="2" Command="{Binding LoadSkusCommand}" IsRefreshing="{Binding IsBusy}">
+			<CollectionView ItemsSource="{Binding Skus}">
+				<CollectionView.ItemTemplate>
+					<DataTemplate x:DataType="models:IGetCategorySkus_ServiceSkusByCategory">
+						<Frame Margin="20,5" Padding="15" BorderColor="LightGray" CornerRadius="8">
+							<Grid ColumnDefinitions="*, Auto, Auto">
+								<VerticalStackLayout Grid.Column="0">
+									<Label Text="{Binding SkuCode}" FontSize="12" TextColor="DarkCyan" FontAttributes="Bold" />
+									<Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+									<Label Text="{Binding BasePrice, StringFormat='${0:F2}'}" FontSize="14" TextColor="Green" />
+									<Label Text="{Binding UnitType}" FontSize="12" TextColor="Gray" />
+								</VerticalStackLayout>
+
+								<Button Grid.Column="1"
+                                        Text="Edit"
+                                        TextColor="Blue"
+                                        x:DataType="{x:Null}"
+                                        BackgroundColor="Transparent"
+                                        Command="{Binding BindingContext.EditSkuCommand, Source={x:Reference PageRoot}}"
+                                        CommandParameter="{Binding .}"
+                                        VerticalOptions="Center" Margin="0,0,10,0" />
+
+								<Button Grid.Column="2"
+                                        Text="Delete"
+                                        TextColor="Red"
+                                        x:DataType="{x:Null}"
+                                        BackgroundColor="Transparent"
+                                        Command="{Binding BindingContext.DeleteSkuCommand, Source={x:Reference PageRoot}}"
+                                        CommandParameter="{Binding Id}"
+                                        VerticalOptions="Center" />
+							</Grid>
+						</Frame>
+					</DataTemplate>
+				</CollectionView.ItemTemplate>
+				<CollectionView.EmptyView>
+					<Label Text="No SKUs defined for this category yet." HorizontalOptions="Center" VerticalOptions="Center" Margin="20" />
+				</CollectionView.EmptyView>
+			</CollectionView>
+		</RefreshView>
+	</Grid>
+</ContentPage>

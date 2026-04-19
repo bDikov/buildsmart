@@ -81,10 +81,9 @@
                                 <VerticalStackLayout Spacing="5">
                                     <Label Text="{Binding CategoryName}" FontSize="10" TextColor="#1565C0" FontAttributes="Bold" TextTransform="Uppercase"/>
                                     <HorizontalStackLayout Spacing="2">
-                                        <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" TextColor="{Binding HasError, Converter={StaticResource ErrorColorConverter}}"/>
+                                        <Label Text="{Binding Text}" FontSize="16" FontAttributes="Bold" TextColor="{Binding HasError, Converter={StaticResource ErrorColorConverter}}" LineBreakMode="WordWrap" />
                                         <Label Text="*" FontSize="16" TextColor="Red" IsVisible="{Binding IsRequired}" />
-                                    </HorizontalStackLayout>
-                                    
+                                    </HorizontalStackLayout>                                    
                                     <!-- Text Input -->
                                     <Entry Text="{Binding Answer}" Placeholder="Type your answer here..." IsVisible="{Binding IsText}" />
                                     

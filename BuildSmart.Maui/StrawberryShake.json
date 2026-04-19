@@ -1,6 +1,6 @@
 {
   "schema": {
-    "url": "https://localhost:44378/graphql",
+    "url": "https://localhost:7212/graphql/",
     "type": "code"
   },
   "client": {

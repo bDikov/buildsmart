@@ -30,6 +30,8 @@ public interface IUnitOfWork
 	/// Gets the repository for ServiceCategory operations.
 	/// </summary>
 	IServiceCategoryRepository ServiceCategories { get; }
+    
+    IServiceSkuRepository ServiceSkus { get; }
 
     IProjectRepository Projects { get; }
     IJobPostRepository JobPosts { get; }

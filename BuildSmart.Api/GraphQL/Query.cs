@@ -41,6 +41,12 @@ public class Query
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
+	public IQueryable<ServiceSku> GetServiceSkusByCategory([Service] AppDbContext context, Guid categoryId)
+	{
+		return context.ServiceSkus.Where(s => s.ServiceCategoryId == categoryId);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
 	[UseProjection]
 	[UseFiltering]
 	[UseSorting]

@@ -21,6 +21,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 	public IAuctionActionRepository AuctionActions { get; }
 	public INotificationRepository Notifications { get; }
 	public ICertificationRepository Certifications { get; }
+	public IServiceSkuRepository ServiceSkus { get; }
 
 	public UnitOfWork(AppDbContext context)
 	{
@@ -41,6 +42,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 		AuctionActions = new AuctionActionRepository(_context);
 		Notifications = new NotificationRepository(_context);
 		Certifications = new CertificationRepository(_context);
+		ServiceSkus = new BuildSmart.Infrastructure.Repositories.ServiceSkuRepository(_context);
 	}
 
 	/// <summary>

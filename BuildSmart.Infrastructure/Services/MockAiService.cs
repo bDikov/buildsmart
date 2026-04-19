@@ -1,21 +1,22 @@
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Application.DTOs;
 using System.Text;
 
 namespace BuildSmart.Infrastructure.Services;
 
 public class MockAiService : IAiService
 {
-	public async Task<string> GenerateJobScopeAsync(JobPost jobPost)
+	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus)
 	{
 		// Simulate AI processing delay
 		await Task.Delay(3000);
 
-		var sb = new StringBuilder();
+		var sb = new System.Text.StringBuilder();
 		sb.AppendLine($"## AI Generated Scope for: {jobPost.Title}");
 		sb.AppendLine();
 		sb.AppendLine("**Overview**");
-		sb.AppendLine($"Based on your responses, we have outlined the following scope of work for your {jobPost.ServiceCategory.Name} project.");
+		sb.AppendLine($"Based on your responses, we have outlined the following scope of work for your {jobPost.ServiceCategory?.Name ?? "project"}.");
 		sb.AppendLine();
 		sb.AppendLine("**Details**");
 		sb.AppendLine($"- **Location:** {jobPost.Location}");
@@ -29,7 +30,21 @@ public class MockAiService : IAiService
 		sb.AppendLine();
 		sb.AppendLine($"*(This is a mock AI response generated at {DateTime.UtcNow})*");
 
-		return sb.ToString();
+        var tasks = new List<BuildSmart.Core.Application.DTOs.AiTaskBreakdownItem>();
+        if (allowedSkus.Any())
+        {
+            tasks.Add(new BuildSmart.Core.Application.DTOs.AiTaskBreakdownItem(
+                "Mock Task 1",
+                "Mock Description",
+                new List<BuildSmart.Core.Application.DTOs.AiTaskSkuItemDto>
+                {
+                    new BuildSmart.Core.Application.DTOs.AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1)
+                },
+                new List<string> { "Criteria 1" }
+            ));
+        }
+
+		return new BuildSmart.Core.Application.DTOs.AiScopeBreakdownResponse(sb.ToString(), tasks);
 	}
 
 	public async Task<string> GenerateProjectSummaryAsync(Project project)

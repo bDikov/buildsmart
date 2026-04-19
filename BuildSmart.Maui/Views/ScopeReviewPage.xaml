@@ -13,7 +13,7 @@
             <Label Text="Use the AI suggestion below to break your project into specific tasks." FontSize="14" TextColor="Gray" />
 
             <Frame BorderColor="LightGray" Padding="15" HasShadow="False" BackgroundColor="#F9F9F9">
-                <Label Text="{Binding GeneratedScope}" TextColor="Gray" FontSize="12" />
+                <Label Text="{Binding GeneratedScope}" TextColor="Black" FontSize="12" />
             </Frame>
 
             <BoxView HeightRequest="1" Color="#E0E0E0" />
@@ -36,8 +36,8 @@
                                             BackgroundColor="Transparent" TextColor="Red" FontSize="12" Padding="0" HeightRequest="30" />
                                 </Grid>
 
-                                <Entry Text="{Binding Title}" Placeholder="Task Title (e.g., Demolition)" FontAttributes="Bold" FontSize="16" />
-                                <Editor Text="{Binding Description}" Placeholder="Optional detailed description..." HeightRequest="60" FontSize="13" />
+                                <Entry Text="{Binding Title}" Placeholder="Task Title (e.g., Demolition)" FontAttributes="Bold" FontSize="16" TextColor="Black" />
+                                <Editor Text="{Binding Description}" Placeholder="Optional detailed description..." AutoSize="TextChanges" FontSize="13" TextColor="Black" />
 
                                 <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,5" />
                                 <Label Text="Acceptance Criteria (Definition of Done)" FontSize="12" FontAttributes="Bold" TextColor="Gray" />
@@ -47,7 +47,7 @@
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="vm:EditableCriteriaViewModel">
                                             <Grid ColumnDefinitions="*, Auto" Margin="0,2">
-                                                <Entry Grid.Column="0" Text="{Binding Description}" Placeholder="e.g. Area is swept clean" FontSize="12" />
+                                                <Editor Grid.Column="0" Text="{Binding Description}" Placeholder="e.g. Area is swept clean" FontSize="12" TextColor="Black" AutoSize="TextChanges" />
                                                 <Button Grid.Column="1" Text="X" 
                                                         x:DataType="{x:Null}"
                                                         Command="{Binding BindingContext.RemoveCriteriaCommand, Source={x:Reference TaskRoot}}"

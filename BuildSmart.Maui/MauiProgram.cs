@@ -121,6 +121,8 @@ public static class MauiProgram
 		builder.Services.AddTransient<CategoryManagementViewModel>();
 		builder.Services.AddTransient<CategoryDetailPage>();
 		builder.Services.AddTransient<CategoryDetailViewModel>();
+		builder.Services.AddTransient<AdminCategorySkusPage>();
+		builder.Services.AddTransient<AdminCategorySkusViewModel>();
 
 		builder.Services.AddTransient<AdminJobReviewPage>();
 		builder.Services.AddTransient<AdminJobReviewViewModel>();
@@ -137,6 +139,7 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
 		Routing.RegisterRoute(nameof(BookingPage), typeof(BookingPage));
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
+		Routing.RegisterRoute(nameof(AdminCategorySkusPage), typeof(AdminCategorySkusPage));
         Routing.RegisterRoute(nameof(UserEditPage), typeof(UserEditPage));
         Routing.RegisterRoute(nameof(UserProfilePage), typeof(UserProfilePage));
         Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));

@@ -88,7 +88,7 @@ public partial class Program
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, ScopeGenerationQueue>();
 		builder.Services.AddHostedService<ScopeGenerationWorker>();
-		builder.Services.AddScoped<IAiService, MockAiService>();
+		builder.Services.AddScoped<IAiService, GeminiAiService>();
 
 		// --- JWT Authentication Setup ---
 		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

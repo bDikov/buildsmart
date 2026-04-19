@@ -55,7 +55,7 @@ public partial class TradesmanBookingDashboardViewModel : ObservableObject, IQue
 
             if (result.Data?.MyActiveBookings != null)
             {
-                Booking = result.Data.MyActiveBookings.FirstOrDefault(b => b.Id == BookingId);
+                Booking = result.Data.MyActiveBookings.FirstOrDefault(b => b.Id.ToString() == BookingId);
                 
                 if (Booking != null)
                 {

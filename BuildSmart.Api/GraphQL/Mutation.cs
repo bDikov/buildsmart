@@ -703,6 +703,72 @@ public class Mutation
 		return category;
 	}
 
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<ServiceSku> CreateServiceSku(
+		Guid categoryId,
+		string skuCode,
+		string name,
+		string description,
+		decimal basePrice,
+		string unitType,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var sku = new ServiceSku
+		{
+			Id = Guid.NewGuid(),
+			ServiceCategoryId = categoryId,
+			SkuCode = skuCode,
+			Name = name,
+			Description = description,
+			BasePrice = basePrice,
+			UnitType = unitType,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
+		};
+
+		await unitOfWork.ServiceSkus.AddAsync(sku);
+		await unitOfWork.SaveChangesAsync();
+		return sku;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<ServiceSku> UpdateServiceSku(
+		Guid id,
+		string skuCode,
+		string name,
+		string description,
+		decimal basePrice,
+		string unitType,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var sku = await unitOfWork.ServiceSkus.GetByIdAsync(id)
+			?? throw new GraphQLException("SKU not found.");
+
+		sku.SkuCode = skuCode;
+		sku.Name = name;
+		sku.Description = description;
+		sku.BasePrice = basePrice;
+		sku.UnitType = unitType;
+		sku.UpdatedAt = DateTime.UtcNow;
+
+		unitOfWork.ServiceSkus.Update(sku);
+		await unitOfWork.SaveChangesAsync();
+		return sku;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> DeleteServiceSku(
+		Guid id,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var sku = await unitOfWork.ServiceSkus.GetByIdAsync(id)
+			?? throw new GraphQLException("SKU not found.");
+
+		unitOfWork.ServiceSkus.Delete(sku);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+
 	[Authorize]
 	public async Task<bool> DeleteAllNotifications(
 		ClaimsPrincipal claimsPrincipal,

@@ -1,0 +1,39 @@
+query GetCategorySkus($categoryId: UUID!) {
+  serviceSkusByCategory(categoryId: $categoryId) {
+    id
+    serviceCategoryId
+    skuCode
+    name
+    description
+    basePrice
+    unitType
+  }
+}
+
+mutation CreateServiceSku($categoryId: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!) {
+  createServiceSku(categoryId: $categoryId, skuCode: $skuCode, name: $name, description: $description, basePrice: $basePrice, unitType: $unitType) {
+    id
+    serviceCategoryId
+    skuCode
+    name
+    description
+    basePrice
+    unitType
+  }
+}
+
+mutation UpdateServiceSku($id: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!) {
+  updateServiceSku(id: $id, skuCode: $skuCode, name: $name, description: $description, basePrice: $basePrice, unitType: $unitType) {
+    id
+    serviceCategoryId
+    skuCode
+    name
+    description
+    basePrice
+    unitType
+  }
+}
+
+mutation DeleteServiceSku($id: UUID!) {
+  deleteServiceSku(id: $id)
+}

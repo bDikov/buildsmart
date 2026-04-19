@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DotNetBrowserLinkEnabled>false</DotNetBrowserLinkEnabled>
+    <UserSecretsId>c9376afe-d0fe-478d-a8e7-3b5ba182f57d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
