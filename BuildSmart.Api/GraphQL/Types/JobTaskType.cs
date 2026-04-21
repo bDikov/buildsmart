@@ -14,10 +14,15 @@ public class JobTaskType : ObjectType<JobTask>
         descriptor.Field(t => t.Title).Type<NonNullType<StringType>>();
         descriptor.Field(t => t.Description).Type<StringType>();
         descriptor.Field(t => t.SequenceOrder).Type<NonNullType<IntType>>();
+        descriptor.Field(t => t.EstimatedPrice).Type<NonNullType<DecimalType>>();
 
         descriptor.Field(t => t.AcceptanceCriteria)
             .Type<NonNullType<ListType<NonNullType<TaskAcceptanceCriteriaType>>>>()
             .ResolveWith<JobTaskResolvers>(r => r.GetAcceptanceCriteria(default!, default!));
+
+        descriptor.Field(t => t.SkuItems)
+            .Type<NonNullType<ListType<NonNullType<TaskSkuItemType>>>>()
+            .ResolveWith<JobTaskResolvers>(r => r.GetSkuItems(default!, default!));
 
         descriptor.Field(t => t.BidItems)
             .Type<NonNullType<ListType<NonNullType<BidItemType>>>>()
@@ -33,6 +38,11 @@ public class JobTaskType : ObjectType<JobTask>
         public IEnumerable<TaskAcceptanceCriteria> GetAcceptanceCriteria([Parent] JobTask jobTask, [Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)
         {
             return dbContext.TaskAcceptanceCriteria.Where(c => c.JobTaskId == jobTask.Id);
+        }
+
+        public IEnumerable<TaskSkuItem> GetSkuItems([Parent] JobTask jobTask, [Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)
+        {
+            return dbContext.TaskSkuItems.Where(s => s.JobTaskId == jobTask.Id);
         }
 
         public IEnumerable<BidItem> GetBidItems([Parent] JobTask jobTask, [Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)

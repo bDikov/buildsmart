@@ -28,6 +28,9 @@ public partial class EditableTaskViewModel : ObservableObject
     [ObservableProperty]
     private int _sequenceOrder;
 
+    [ObservableProperty]
+    private decimal _estimatedPrice;
+
     public ObservableCollection<EditableCriteriaViewModel> Criteria { get; }
 
     [RelayCommand]
@@ -222,20 +225,12 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
                 return;
             }
 
-            // 2. Submit the overall Approval to change the status
-            Console.WriteLine($"[ScopeReview] Sending ApproveJobScope mutation...");
-            var approveResult = await _apiClient.ApproveJobScope.ExecuteAsync(Job.Id, string.Empty); // We no longer need the big text scope
-
-            if (approveResult.Errors.Count > 0)
+            // 2. Navigate to the OfferView instead of approving
+            var navParams = new Dictionary<string, object>
             {
-                await Shell.Current.DisplayAlert("Server Error", approveResult.Errors[0].Message, "OK");
-                return;
-            }
-
-            await Shell.Current.DisplayAlert("Success", "Your task breakdown has been submitted to the Admin for final review.", "OK");
-            
-            // Redirect back to Project Details
-            await Shell.Current.GoToAsync("//MyProjectsPage");
+                { "Job", Job }
+            };
+            await Shell.Current.GoToAsync("GeneratedOfferPage", navParams);
         }
         catch (Exception ex)
         {

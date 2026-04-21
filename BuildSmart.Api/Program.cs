@@ -179,6 +179,7 @@ public partial class Program
             .AddType<JobPostFeedbackType>()
 			.AddType<JobTaskType>()
 			.AddType<TaskAcceptanceCriteriaType>()
+			.AddType<TaskSkuItemType>()
 			.AddType<BidItemType>()
 			.AddType<BuildSmart.Api.GraphQL.Types.Input.SubmitBidInputType>()
 			.AddType<BuildSmart.Api.GraphQL.Types.Input.UpdateJobTasksInputType>()

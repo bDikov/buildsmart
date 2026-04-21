@@ -251,15 +251,15 @@ type Amount {
 }
 
 type TaskSkuItem {
+  id: UUID!
   jobTaskId: UUID!
-  jobTask: JobTask!
   serviceSkuId: UUID!
-  serviceSku: ServiceSku!
   quantity: Decimal!
   estimatedPrice: Decimal!
-  id: UUID!
   createdAt: DateTime!
   updatedAt: DateTime!
+  serviceSku: ServiceSku!
+  jobTask: JobTask!
 }
 
 type JobPostFeedback {
@@ -399,15 +399,16 @@ input ReviewFilterInput {
   updatedAt: DateTimeOperationFilterInput
 }
 
+"Represents a billable SKU item for a specific service category."
 type ServiceSku {
+  id: UUID!
   serviceCategoryId: UUID!
-  serviceCategory: ServiceCategory!
   skuCode: String!
   name: String!
-  description: String!
+  description: String
   basePrice: Decimal!
   unitType: String!
-  id: UUID!
+  serviceCategory: ServiceCategory!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -568,12 +569,12 @@ type JobTask {
   title: String!
   description: String
   sequenceOrder: Int!
+  estimatedPrice: Decimal!
   acceptanceCriteria: [TaskAcceptanceCriteria!]!
+  skuItems: [TaskSkuItem!]!
   bidItems: [BidItem!]!
   questions: [JobPostQuestion!]!
   jobPost: JobPost!
-  estimatedPrice: Decimal!
-  skuItems: [TaskSkuItem!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
