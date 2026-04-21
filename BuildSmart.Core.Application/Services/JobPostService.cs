@@ -223,32 +223,85 @@ public class JobPostService : IJobPostService
 		var jobPost = await _unitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId)
 			?? throw new ArgumentException("Job post not found");
 
-		// Remove all existing tasks
-		if (jobPost.JobTasks.Any())
+		// Handle deletions: Remove tasks from DB that are NOT in the input
+		var inputIds = tasks.Where(t => t.Id.HasValue).Select(t => t.Id!.Value).ToHashSet();
+		var tasksToDelete = jobPost.JobTasks.Where(t => !inputIds.Contains(t.Id)).ToList();
+		foreach(var t in tasksToDelete)
 		{
-			_unitOfWork.JobTasks.RemoveRange(jobPost.JobTasks);
+			_unitOfWork.JobTasks.Delete(t);
 		}
 
-		// Add new tasks
-		var newTasks = tasks.Select(t => new JobTask
+		// Handle updates and additions
+		foreach (var tInput in tasks)
 		{
-			Id = t.Id ?? Guid.NewGuid(),
-			JobPostId = jobPostId,
-			Title = t.Title,
-			Description = t.Description,
-			SequenceOrder = t.SequenceOrder,
-			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow,
-			AcceptanceCriteria = t.Criteria.Select(c => new TaskAcceptanceCriteria
-			{
-				Id = c.Id ?? Guid.NewGuid(),
-				Description = c.Description,
-				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
-			}).ToList()
-		}).ToList();
+			var existingTask = tInput.Id.HasValue ? jobPost.JobTasks.FirstOrDefault(t => t.Id == tInput.Id.Value) : null;
 
-		await _unitOfWork.JobTasks.AddRangeAsync(newTasks);
+			if (existingTask != null)
+			{
+				// Update existing task (preserves SkuItems and EstimatedPrice)
+				existingTask.Title = tInput.Title;
+				existingTask.Description = tInput.Description;
+				existingTask.SequenceOrder = tInput.SequenceOrder;
+				existingTask.UpdatedAt = DateTime.UtcNow;
+
+				// Handle Criteria
+				var criteriaInputIds = tInput.Criteria.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToHashSet();
+				
+				// Delete criteria NOT in input
+				var criteriaToDelete = existingTask.AcceptanceCriteria.Where(c => !criteriaInputIds.Contains(c.Id)).ToList();
+				foreach(var c in criteriaToDelete)
+				{
+					existingTask.AcceptanceCriteria.Remove(c);
+				}
+
+				// Update or add criteria
+				foreach(var cInput in tInput.Criteria)
+				{
+					var existingCriteria = cInput.Id.HasValue ? existingTask.AcceptanceCriteria.FirstOrDefault(c => c.Id == cInput.Id.Value) : null;
+					if(existingCriteria != null)
+					{
+						existingCriteria.Description = cInput.Description;
+						existingCriteria.UpdatedAt = DateTime.UtcNow;
+					}
+					else
+					{
+						existingTask.AcceptanceCriteria.Add(new TaskAcceptanceCriteria
+						{
+							Id = Guid.NewGuid(),
+							JobTaskId = existingTask.Id,
+							Description = cInput.Description,
+							CreatedAt = DateTime.UtcNow,
+							UpdatedAt = DateTime.UtcNow
+						});
+					}
+				}
+				
+				_unitOfWork.JobTasks.Update(existingTask);
+			}
+			else
+			{
+				// Create new task (no SKUs assigned yet)
+				var newTask = new JobTask
+				{
+					Id = Guid.NewGuid(),
+					JobPostId = jobPostId,
+					Title = tInput.Title,
+					Description = tInput.Description,
+					SequenceOrder = tInput.SequenceOrder,
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow,
+					EstimatedPrice = 0,
+					AcceptanceCriteria = tInput.Criteria.Select(c => new TaskAcceptanceCriteria
+					{
+						Id = Guid.NewGuid(),
+						Description = c.Description,
+						CreatedAt = DateTime.UtcNow,
+						UpdatedAt = DateTime.UtcNow
+					}).ToList()
+				};
+				await _unitOfWork.JobTasks.AddAsync(newTask);
+			}
+		}
 
 		// Just update the timestamp on the job post to reflect activity
 		jobPost.UpdatedAt = DateTime.UtcNow;
@@ -987,6 +1040,8 @@ public class JobPostService : IJobPostService
 		var tasks = await _unitOfWork.JobTasks.GetQueryable()
 			.Where(jt => jobPostIds.Contains(jt.JobPostId))
 			.Include(jt => jt.AcceptanceCriteria)
+			.Include(jt => jt.SkuItems)
+				.ThenInclude(si => si.ServiceSku)
 			.OrderBy(jt => jt.SequenceOrder)
 			.ToListAsync();
 		return tasks.ToLookup(jt => jt.JobPostId);

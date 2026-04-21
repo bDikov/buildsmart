@@ -35,6 +35,11 @@ public class JobTaskRepository : IJobTaskRepository
         await _context.JobTasks.AddRangeAsync(entities);
     }
 
+    public void Update(JobTask entity)
+    {
+        _context.JobTasks.Update(entity);
+    }
+
     public void Delete(JobTask entity)
     {
         _context.JobTasks.Remove(entity);
