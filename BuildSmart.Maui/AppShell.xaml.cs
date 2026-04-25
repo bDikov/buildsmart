@@ -1,4 +1,4 @@
-﻿using BuildSmart.Maui.Views;
+using BuildSmart.Maui.Views;
 
 namespace BuildSmart.Maui;
 

@@ -1,0 +1,106 @@
+@inherits LayoutComponentBase
+@using BuildSmart.Maui.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject INavigationBridge NavigationBridge
+@inject IAuthService AuthService
+
+<div class="page">
+    <div class="sidebar border-end shadow-sm" style="background-color: #f8f9fa; min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; padding-top: 20px; overflow-y: auto;">
+        <h4 class="text-center fw-bold text-primary mb-4">BuildSmart</h4>
+        <ul class="nav flex-column px-3">
+            
+            <!-- Standard Blazor Links -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-dark fw-bold" href="feed">
+                    <span class="me-2">🏠</span> Marketplace
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-dark fw-bold" href="job-wizard">
+                    <span class="me-2">✨</span> Post Job
+                </a>
+            </li>
+
+            <!-- Role-based Native XAML Bridges -->
+            <AuthorizeView Roles="Homeowner, HOMEOWNER, Tradesman, TRADESMAN">
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.MyProjectsPage))" @onclick:preventDefault>
+                        <span class="me-2">📁</span> My Projects
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.ActiveJobsPage))" @onclick:preventDefault>
+                        <span class="me-2">🔨</span> Active Jobs
+                    </a>
+                </li>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Admin, ADMIN">
+                <li class="nav-item mt-3 mb-1">
+                    <span class="text-muted small fw-bold text-uppercase px-3">Management</span>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.CategoryManagementPage))" @onclick:preventDefault>
+                        <span class="me-2">🗂️</span> Categories
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.Admin.UserManagementPage))" @onclick:preventDefault>
+                        <span class="me-2">👥</span> Users
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.Admin.AdminJobReviewPage))" @onclick:preventDefault>
+                        <span class="me-2">📋</span> Job Reviews
+                    </a>
+                </li>
+            </AuthorizeView>
+
+            <li class="nav-item mt-4 mb-2">
+                <hr />
+            </li>
+            
+            <li class="nav-item mb-2">
+                <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.NotificationsPage))" @onclick:preventDefault>
+                    <span class="me-2">🔔</span> Notifications
+                </a>
+            </li>
+            
+            <li class="nav-item mb-2">
+                <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.UserProfilePage))" @onclick:preventDefault>
+                    <span class="me-2">⚙️</span> Profile Settings
+                </a>
+            </li>
+            
+            <li class="nav-item mb-2">
+                <a class="nav-link text-danger fw-bold" href="#" @onclick="LogoutAsync" @onclick:preventDefault>
+                    <span class="me-2">🚪</span> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <main style="margin-left: 250px; width: calc(100% - 250px);">
+        <article class="content px-4 py-3">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        await AuthService.ClearTokenAsync();
+        
+        await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            var services = Microsoft.Maui.Controls.Application.Current?.Handler?.MauiContext?.Services;
+            if (services != null)
+            {
+                Microsoft.Maui.Controls.Application.Current!.MainPage = new Microsoft.Maui.Controls.NavigationPage(
+                    services.GetRequiredService<BuildSmart.Maui.Views.LoginPage>()
+                );
+            }
+        });
+    }
+}

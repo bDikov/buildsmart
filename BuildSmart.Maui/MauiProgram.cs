@@ -23,6 +23,11 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
+        builder.Services.AddMauiBlazorWebView();
+#if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools();
+#endif
+
 		// Configure StrawberryShake GraphQL Client
 
 		        builder.Services.AddSingleton<IMediaPicker>(MediaPicker.Default);
@@ -32,9 +37,14 @@ public static class MauiProgram
 		        builder.Services.AddSingleton<IAuthService, AuthService>();
                 builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
                 builder.Services.AddSingleton<IFileService, FileService>();
+                builder.Services.AddSingleton<INavigationBridge, NavigationBridge>();
                 builder.Services.AddHttpClient();
                 builder.Services.AddTransient<AuthHeaderHandler>();
 		builder.Services.AddTransient<LoggingHandler>();
+
+        // Blazor Authentication & Authorization
+        builder.Services.AddAuthorizationCore();
+        builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, MauiAuthenticationStateProvider>();
 
 		// Register Strawberry Shake with fluent configuration
 		builder.Services.AddBuildSmartApiClient()
@@ -118,8 +128,6 @@ public static class MauiProgram
         builder.Services.AddTransient<PassedAuctionsViewModel>();
 
 		// Admin Pages
-		builder.Services.AddSingleton<AdminShell>();
-		builder.Services.AddTransient<AppShell>();
 		builder.Services.AddTransient<CategoryManagementPage>();
 		builder.Services.AddTransient<CategoryManagementViewModel>();
 		builder.Services.AddTransient<CategoryDetailPage>();
@@ -135,8 +143,11 @@ public static class MauiProgram
         builder.Services.AddTransient<UserEditPage>();
         builder.Services.AddTransient<UserEditViewModel>();
 
-		builder.Services.AddSingleton<MainShell>();
-
+		Routing.RegisterRoute(nameof(MyProjectsPage), typeof(MyProjectsPage));
+        Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
+        Routing.RegisterRoute(nameof(Views.Admin.UserManagementPage), typeof(Views.Admin.UserManagementPage));
+        Routing.RegisterRoute(nameof(Views.Admin.AdminJobReviewPage), typeof(Views.Admin.AdminJobReviewPage));
+        
 		Routing.RegisterRoute(nameof(DetailedViewPage), typeof(DetailedViewPage));
 		Routing.RegisterRoute(nameof(CreateAccountPage), typeof(CreateAccountPage));
 		Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
@@ -159,6 +170,7 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(TradesmanBookingDashboardPage), typeof(TradesmanBookingDashboardPage));
         Routing.RegisterRoute(nameof(CheckoutPage), typeof(CheckoutPage));
         Routing.RegisterRoute(nameof(BookingDashboardPage), typeof(BookingDashboardPage));
+        Routing.RegisterRoute(nameof(BlazorHostPage), typeof(BlazorHostPage));
 
         builder.Logging.AddDebug();
 

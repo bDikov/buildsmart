@@ -1,4 +1,5 @@
 using BuildSmart.Maui.ViewModels;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 
 namespace BuildSmart.Maui.Views;
 
@@ -11,19 +12,24 @@ public partial class FeedPage : ContentPage
 		InitializeComponent();
         _viewModel = viewModel;
         BindingContext = _viewModel;
+
+        var blazorWebView = new BlazorWebView
+        {
+            HostPage = "wwwroot/index.html"
+        };
+        
+        blazorWebView.RootComponents.Add(new RootComponent
+        {
+            Selector = "#app",
+            ComponentType = typeof(Components.Pages.Feed)
+        });
+
+        Content = blazorWebView;
 	}
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await _viewModel.LoadFeedCommand.ExecuteAsync(null);
-    }
-
-    private async void OnViewAndBidClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.CommandParameter != null)
-        {
-            await _viewModel.NavigateToDetailsCommand.ExecuteAsync(button.CommandParameter);
-        }
     }
 }

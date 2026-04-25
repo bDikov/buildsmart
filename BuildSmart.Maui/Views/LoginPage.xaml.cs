@@ -9,4 +9,10 @@ public partial class LoginPage : ContentPage
 		InitializeComponent();
 		BindingContext = viewModel;
 	}
+
+    private async void OnTestBlazorClicked(object sender, EventArgs e)
+    {
+        // Navigate to the BlazorHostPage we registered in MauiProgram.cs
+        await Shell.Current.GoToAsync(nameof(BlazorHostPage));
+    }
 }

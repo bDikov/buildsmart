@@ -40,7 +40,7 @@ namespace BuildSmart.Maui.ViewModels
 				{
 					var errorMessage = result.Errors.FirstOrDefault()?.Message ?? "Unknown GraphQL error.";
 					await MainThread.InvokeOnMainThreadAsync(() =>
-						Shell.Current.DisplayAlert("Login Failed", errorMessage, "OK"));
+						Application.Current.MainPage.DisplayAlert("Login Failed", errorMessage, "OK"));
 					return;
 				}
 
@@ -51,45 +51,39 @@ namespace BuildSmart.Maui.ViewModels
 
 					var userRole = _authService.GetUserRoleFromToken(token);
 
-					await MainThread.InvokeOnMainThreadAsync(() =>
+					await MainThread.InvokeOnMainThreadAsync(async () =>
 					{
-						if (userRole == "Admin")
-						{
-							Application.Current.MainPage = _serviceProvider.GetRequiredService<AdminShell>();
-						}
-						else
-						{
-							Application.Current.MainPage = _serviceProvider.GetRequiredService<MainShell>();
-						}
+                        Application.Current.MainPage = new AppShell();
+                        await Shell.Current.GoToAsync("//BlazorHostPage");
 					});
 				}
 				else
 				{
 					await MainThread.InvokeOnMainThreadAsync(() =>
-						Shell.Current.DisplayAlert("Login Failed", "Received an empty or invalid response from the server.", "OK"));
+						Application.Current.MainPage.DisplayAlert("Login Failed", "Received an empty or invalid response from the server.", "OK"));
 				}
 			}
 			catch (OperationCanceledException)
 			{
 				await MainThread.InvokeOnMainThreadAsync(() =>
-					Shell.Current.DisplayAlert("Request Timed Out", "The server did not respond in time. Please check your network and ensure the API is running correctly.", "OK"));
+					Application.Current.MainPage.DisplayAlert("Request Timed Out", "The server did not respond in time. Please check your network and ensure the API is running correctly.", "OK"));
 			}
 			catch (System.Net.Http.HttpRequestException httpEx)
 			{
 				await MainThread.InvokeOnMainThreadAsync(() =>
-					Shell.Current.DisplayAlert("Connection Error", $"Could not connect to the server. Please check the API is running and accessible. Details: {httpEx.Message}", "OK"));
+					Application.Current.MainPage.DisplayAlert("Connection Error", $"Could not connect to the server. Please check the API is running and accessible. Details: {httpEx.Message}", "OK"));
 			}
 			catch (Exception ex)
 			{
 				await MainThread.InvokeOnMainThreadAsync(() =>
-					Shell.Current.DisplayAlert("An Unexpected Error Occurred", ex.ToString(), "OK"));
+					Application.Current.MainPage.DisplayAlert("An Unexpected Error Occurred", ex.ToString(), "OK"));
 			}
 		}
 
 		[RelayCommand]
 		private async Task CreateAccountAsync()
 		{
-			await Shell.Current.GoToAsync(nameof(CreateAccountPage));
+			await Application.Current.MainPage.Navigation.PushAsync(_serviceProvider.GetRequiredService<Views.CreateAccountPage>());
 		}
 
 		[RelayCommand]
@@ -105,7 +99,8 @@ namespace BuildSmart.Maui.ViewModels
 				{
 					// You can now access the token from authResult.AccessToken
 					// Store the token securely
-					Application.Current.MainPage = _serviceProvider.GetRequiredService<MainShell>();
+					Application.Current.MainPage = new AppShell();
+                    await Shell.Current.GoToAsync("//BlazorHostPage");
 				}
 			}
 			catch (TaskCanceledException)
@@ -114,7 +109,7 @@ namespace BuildSmart.Maui.ViewModels
 			}
 			catch (Exception ex)
 			{
-				await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+				await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
 			}
 		}
 
@@ -131,7 +126,8 @@ namespace BuildSmart.Maui.ViewModels
 				{
 					// You can now access the token from authResult.AccessToken
 					// Store the token securely
-					Application.Current.MainPage = _serviceProvider.GetRequiredService<MainShell>();
+					Application.Current.MainPage = new AppShell();
+                    await Shell.Current.GoToAsync("//BlazorHostPage");
 				}
 			}
 			catch (TaskCanceledException)
@@ -140,7 +136,7 @@ namespace BuildSmart.Maui.ViewModels
 			}
 			catch (Exception ex)
 			{
-				await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+				await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
 			}
 		}
 	}

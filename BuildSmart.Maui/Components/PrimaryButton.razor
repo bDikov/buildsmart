@@ -1,0 +1,19 @@
+<button class="primary-button @CssClass" @onclick="OnClick" disabled="@IsDisabled" type="@Type">
+    @if (IsLoading)
+    {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    }
+    else
+    {
+        @ChildContent
+    }
+</button>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs> OnClick { get; set; }
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string CssClass { get; set; } = string.Empty;
+    [Parameter] public string Type { get; set; } = "button";
+}
