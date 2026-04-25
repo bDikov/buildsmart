@@ -1,0 +1,77 @@
+<div class="promo-card">
+    <button class="close-btn">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 8L24 24M24 8L8 24" />
+        </svg>
+    </button>
+    <div class="promo-content">
+        <h2>Sharing with family?</h2>
+        <p>Add personal profiles for adults, teens or kids.</p>
+        <button class="btn-primary">Add profile</button>
+    </div>
+</div>
+
+<style>
+    .promo-card {
+        background-color: rgb(34, 37, 51);
+        border-radius: 10px;
+        width: 562px;
+        height: 274px;
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        align-items: center;
+        padding-left: 80px;
+        box-sizing: border-box;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        background: transparent;
+        border: none;
+        color: rgb(229, 229, 229);
+        opacity: 0.5;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .close-btn:hover {
+        opacity: 1;
+    }
+
+    .promo-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .promo-content h2 {
+        color: rgb(255, 255, 255);
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0 0 16px 0;
+    }
+
+    .promo-content p {
+        color: rgb(255, 255, 255);
+        font-size: 18px;
+        font-weight: 400;
+        margin: 0 0 40px 0;
+    }
+
+    .btn-primary {
+        background-color: rgb(113, 50, 193);
+        border-radius: 5px;
+        border: none;
+        color: rgb(229, 229, 229);
+        font-size: 16px;
+        padding: 16px 42px;
+        cursor: pointer;
+        width: fit-content;
+    }
+
+    .btn-primary:hover {
+        background-color: rgb(130, 60, 220);
+    }
+</style>

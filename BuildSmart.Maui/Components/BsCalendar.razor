@@ -1,0 +1,263 @@
+@using System.Globalization
+
+<div class="bs-calendar-wrapper">
+    <div class="bs-input bs-calendar-input" @onclick="ToggleCalendar">
+        <span class="@(Value.HasValue ? "selected-text" : "bs-placeholder")">
+            @(Value.HasValue ? Value.Value.ToString("MMM dd, yyyy") : Placeholder)
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+    </div>
+
+    @if (_isOpen)
+    {
+        <div class="calendar-overlay" @onclick="CloseCalendar"></div>
+        <div class="bs-calendar-popup">
+            <div class="calendar-header">
+                <div class="month-year">@_currentMonth.ToString("MMM yyyy")</div>
+                <div class="nav-buttons">
+                    <button type="button" class="nav-btn" @onmousedown:preventDefault="true" @onclick="PrevMonth" @onclick:stopPropagation="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <button type="button" class="nav-btn" @onmousedown:preventDefault="true" @onclick="NextMonth" @onclick:stopPropagation="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="weekdays">
+                    <span>M</span>
+                    <span>T</span>
+                    <span>W</span>
+                    <span>T</span>
+                    <span>F</span>
+                    <span>S</span>
+                    <span>S</span>
+                </div>
+                <div class="days">
+                    @foreach (var day in GetDaysInMonth())
+                    {
+                        var isSelected = Value.HasValue && day.Date == Value.Value.Date;
+                        var isOtherMonth = day.Date.Month != _currentMonth.Month;
+                        var isPast = MinDate.HasValue && day.Date < MinDate.Value.Date;
+
+                        <div class="day-cell @(isSelected ? "selected" : "") @(isOtherMonth ? "other-month" : "") @(isPast ? "disabled" : "")"
+                             @onclick="() => !isPast ? SelectDate(day.Date) : Task.CompletedTask"
+                             @onclick:stopPropagation="true">
+                            @day.Date.Day
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .bs-calendar-wrapper {
+        position: relative;
+        width: 100%;
+        outline: none;
+        font-family: var(--font-primary);
+    }
+
+    .bs-calendar-input {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .selected-text {
+        color: var(--text-primary);
+    }
+
+    .bs-placeholder {
+        color: var(--text-muted);
+        font-weight: 400;
+    }
+
+    .bs-calendar-popup {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        width: 100%;
+        min-width: 250px;
+        background-color: var(--bg-card);
+        border-radius: 15px;
+        box-shadow: 0px 24px 25px -15px rgba(22, 25, 44, 0.4); /* Figma Day 1327 Drop Shadow adapted for dark theme */
+        padding: 12px;
+        z-index: 100;
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .month-year {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-family: var(--font-primary);
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .nav-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .calendar-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 13px;
+    }
+
+    .days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        row-gap: 5px;
+        text-align: center;
+    }
+
+    .day-cell {
+        padding: 6px 0;
+        font-size: 14px;
+        color: var(--text-primary);
+        cursor: pointer;
+        border-radius: 30px; /* Day 1327 Active state pill */
+        transition: background-color 0.2s ease;
+    }
+
+    .day-cell:hover:not(.disabled):not(.selected) {
+        background-color: var(--bg-card-alt);
+    }
+
+    .day-cell.selected {
+        background-color: var(--color-primary); /* Figma Purple */
+        color: rgb(255, 255, 255);
+        font-weight: 700;
+    }
+
+    .day-cell.other-month {
+        opacity: 0.3;
+    }
+
+    .day-cell.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        text-decoration: line-through;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public DateTime? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    [Parameter]
+    public DateTime? MinDate { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Select a date";
+
+    private bool _isOpen = false;
+    private DateTime _currentMonth = DateTime.Today;
+
+    private void ToggleCalendar()
+    {
+        _isOpen = !_isOpen;
+        if (_isOpen && Value.HasValue)
+        {
+            _currentMonth = new DateTime(Value.Value.Year, Value.Value.Month, 1);
+        }
+    }
+
+    private void CloseCalendar()
+    {
+        _isOpen = false;
+    }
+
+    private void PrevMonth()
+    {
+        _currentMonth = _currentMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        _currentMonth = _currentMonth.AddMonths(1);
+    }
+
+    private async Task SelectDate(DateTime date)
+    {
+        Value = date;
+        _isOpen = false;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private class CalendarDay
+    {
+        public DateTime Date { get; set; }
+    }
+
+    private List<CalendarDay> GetDaysInMonth()
+    {
+        var days = new List<CalendarDay>();
+        var firstDayOfMonth = new DateTime(_currentMonth.Year, _currentMonth.Month, 1);
+        
+        // ISO 8601: Monday is 1, Sunday is 7
+        int offset = (int)firstDayOfMonth.DayOfWeek - (int)DayOfWeek.Monday;
+        if (offset < 0) offset += 7; // If it's Sunday (0), offset should be 6
+
+        var currentDay = firstDayOfMonth.AddDays(-offset);
+
+        // Always show 6 weeks to keep grid consistent
+        for (int i = 0; i < 42; i++)
+        {
+            days.Add(new CalendarDay { Date = currentDay });
+            currentDay = currentDay.AddDays(1);
+        }
+
+        return days;
+    }
+}

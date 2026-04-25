@@ -237,7 +237,7 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
             // Handle common transition errors gracefully
             if (ex.Message.Contains("WaitingForAdminReview") || ex.Message.Contains("status OPEN"))
             {
-                await Shell.Current.GoToAsync("//MyProjectsPage");
+                await Shell.Current.GoToAsync("//BlazorHostPage");
             }
             else
             {

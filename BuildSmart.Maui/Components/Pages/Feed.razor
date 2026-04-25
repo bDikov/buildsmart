@@ -22,9 +22,15 @@
                 <!-- Homeowner Action Header -->
                 @if (ViewModel.IsHomeowner)
                 {
-                    <button class="btn btn-primary w-100 fw-bold mb-4 shadow-sm" style="border-radius: 8px; padding: 12px;" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
-                        + Start New Project
-                    </button>
+                    <div class="mb-4">
+                        <button class="bs-btn-primary w-100" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Start New Project
+                        </button>
+                    </div>
                 }
 
                 <!-- Tradesman Feed Header -->
@@ -52,31 +58,38 @@
                     <!-- 1. Homeowner View: Pros Directory -->
                     @if (ViewModel.IsHomeowner && ViewModel.Tradesmen != null)
                     {
-                        <div class="d-flex flex-column gap-3">
+                        <div class="tradesman-grid">
                             @foreach (var tradesman in ViewModel.Tradesmen)
                             {
-                                <div class="card border-0 shadow-sm rounded-4" style="cursor: pointer;" @onclick="() => ViewModel.NavigateToDetailsCommand.Execute(tradesman)">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex mb-2">
-                                            <img src="@(string.IsNullOrEmpty(tradesman.User?.ProfilePictureUrl) ? "dotnet_bot.png" : tradesman.User.ProfilePictureUrl)" 
-                                                 class="rounded-circle me-3" 
-                                                 style="width: 50px; height: 50px; object-fit: cover;" 
-                                                 alt="Profile Picture" />
-                                            <div class="flex-grow-1">
-                                                <h5 class="fw-bold mb-0" style="font-size: 1rem;">@tradesman.User?.FirstName</h5>
-                                                <small class="text-muted">Professional</small>
+                                <div class="tradesman-card" @onclick="() => ViewModel.NavigateToDetailsCommand.Execute(tradesman)">
+                                    <div class="tc-avatar-section">
+                                        <div class="tc-avatar-ring">
+                                            <img src="@(string.IsNullOrEmpty(tradesman.User?.ProfilePictureUrl) ? "dotnet_bot.png" : tradesman.User.ProfilePictureUrl)" alt="Profile" class="tc-avatar-image" />
+                                        </div>
+                                    </div>
+                                    <div class="tc-info-section">
+                                        <h3 class="tc-name">@tradesman.User?.FirstName @tradesman.User?.LastName</h3>
+                                        <p class="tc-role">Professional・@tradesman.User?.Location</p>
+                                        
+                                        <div class="tc-stats">
+                                            <div class="tc-stat-item">
+                                                <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                </svg>
+                                                <span>@string.Format("{0:F1}", tradesman.AverageRating)</span>
                                             </div>
-                                            <div class="align-self-start bg-primary bg-opacity-10 px-2 py-1 rounded">
-                                                <span class="text-primary fw-bold" style="font-size: 0.75rem;">⭐ @string.Format("{0:F1}", tradesman.AverageRating)</span>
+                                            <div class="tc-stat-item">
+                                                <svg width="25" height="25" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M2.08333 12.5C2.08333 12.5 6.25 4.16667 12.5 4.16667C18.75 4.16667 22.9167 12.5 22.9167 12.5C22.9167 12.5 18.75 20.8333 12.5 20.8333C6.25 20.8333 2.08333 12.5 2.08333 12.5Z" />
+                                                    <circle cx="12.5" cy="12.5" r="3.125" />
+                                                </svg>
+                                                <span>Professional</span>
                                             </div>
                                         </div>
-                                        <p class="text-dark mb-2" style="font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                                            @tradesman.User?.Bio
-                                        </p>
-                                        <div class="d-flex align-items-center">
-                                            <span class="me-1" style="font-size: 0.8rem;">📍</span>
-                                            <small class="text-muted">@tradesman.User?.Location</small>
-                                        </div>
+
+                                        <button class="tc-action-btn">
+                                            View Profile
+                                        </button>
                                     </div>
                                 </div>
                             }
@@ -144,6 +157,112 @@
         </div>
     </ErrorContent>
 </ErrorBoundary>
+
+<style>
+    .tradesman-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 25px;
+        padding-bottom: 40px;
+    }
+
+    .tradesman-card {
+        background-color: rgb(45, 44, 67);
+        border-radius: 20px;
+        box-shadow: 0px 31px 22px -20px rgba(19, 18, 37, 0.40);
+        padding: 30px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 25px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .tradesman-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0px 35px 25px -20px rgba(19, 18, 37, 0.60);
+    }
+
+    .tc-avatar-section {
+        flex-shrink: 0;
+    }
+
+    .tc-avatar-ring {
+        width: 114px;
+        height: 114px;
+        background-color: rgb(30, 29, 47);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .tc-avatar-image {
+        width: 94px;
+        height: 94px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .tc-info-section {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .tc-name {
+        font-family: var(--font-heading);
+        font-size: 20px;
+        font-weight: 700;
+        color: rgb(255, 255, 255);
+        margin: 0 0 5px 0;
+    }
+
+    .tc-role {
+        font-family: var(--font-primary);
+        font-size: 16px;
+        font-weight: 400;
+        color: rgb(255, 255, 255);
+        opacity: 0.8;
+        margin: 0 0 20px 0;
+    }
+
+    .tc-stats {
+        display: flex;
+        flex-direction: row;
+        gap: 35px;
+        margin-bottom: 20px;
+    }
+
+    .tc-stat-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+        color: rgb(255, 255, 255);
+        font-family: var(--font-primary);
+        font-size: 16px;
+    }
+
+    .tc-action-btn {
+        background-color: rgb(143, 90, 255);
+        border-radius: 30px;
+        border: none;
+        color: rgb(255, 255, 255);
+        font-family: var(--font-primary);
+        font-size: 16px;
+        font-weight: 700;
+        padding: 10px 30px;
+        width: fit-content;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .tc-action-btn:hover {
+        background-color: rgb(160, 115, 255);
+    }
+</style>
 
 @code {
     protected override async Task OnInitializedAsync()

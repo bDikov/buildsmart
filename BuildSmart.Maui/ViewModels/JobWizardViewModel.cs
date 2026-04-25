@@ -730,7 +730,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 
 			await Shell.Current.DisplayAlert("Success", "Project submitted for review!", "OK");
-			await Shell.Current.GoToAsync("//MyProjectsPage");
+			await Shell.Current.GoToAsync("//BlazorHostPage");
 		}
 		catch (Exception ex)
 		{

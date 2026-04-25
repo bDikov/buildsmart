@@ -1,0 +1,138 @@
+<div class="profile-menu-container">
+    <div class="profile-header">
+        <div class="avatar"></div>
+        <div class="profile-info">
+            <span class="name">Tammy Park</span>
+            <span class="handle">@@tamp</span>
+        </div>
+    </div>
+
+    <button class="add-profile-btn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M10 4V16M4 10H16" />
+        </svg>
+        Add profile
+    </button>
+
+    <div class="menu-items">
+        <button class="menu-item">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.625">
+                <rect x="4" y="5" width="16" height="16" rx="2" />
+            </svg>
+            Edit profiles
+        </button>
+        <button class="menu-item active">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.625">
+                <circle cx="13" cy="13" r="9.75" />
+            </svg>
+            App settings
+        </button>
+        <button class="menu-item">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.625">
+                <path d="M13 13C15.7614 13 18 10.7614 18 8C18 5.23858 15.7614 3 13 3C10.2386 3 8 5.23858 8 8C8 10.7614 10.2386 13 13 13Z" />
+                <path d="M6.5 22.75V19.5C6.5 17.7051 7.95507 16.25 9.75 16.25H16.25C18.0449 16.25 19.5 17.7051 19.5 19.5V22.75" />
+            </svg>
+            Account
+        </button>
+        <button class="menu-item">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.625">
+                <circle cx="13" cy="13" r="9.75" />
+            </svg>
+            Help
+        </button>
+        <button class="menu-item">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.625">
+                <path d="M9 13H19M19 13L15 9M19 13L15 17M10 4H7C5.89543 4 5 4.89543 5 6V20C5 21.1046 5.89543 22 7 22H10" />
+            </svg>
+            Log out
+        </button>
+    </div>
+</div>
+
+<style>
+    .profile-menu-container {
+        background-color: rgb(34, 37, 51);
+        border-radius: 10px;
+        width: 308px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 31px;
+        font-family: 'Roboto', sans-serif;
+        box-sizing: border-box;
+    }
+
+    .profile-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: #3a3d52;
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .name {
+        color: rgb(218, 218, 218);
+        font-size: 18px;
+        font-weight: 400;
+    }
+
+    .handle {
+        color: rgb(125, 129, 147);
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .add-profile-btn {
+        background-color: rgb(26, 28, 41);
+        border-radius: 5px;
+        border: none;
+        padding: 18px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        color: rgb(229, 229, 229);
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .add-profile-btn:hover {
+        background-color: rgb(40, 43, 60);
+    }
+
+    .menu-items {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .menu-item {
+        background: transparent;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgb(229, 229, 229);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0;
+        text-align: left;
+    }
+
+    .menu-item.active {
+        color: rgb(255, 255, 255);
+    }
+</style>

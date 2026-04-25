@@ -1,0 +1,186 @@
+@using BuildSmart.Maui.ViewModels
+
+<div class="profile-card">
+    <div class="profile-header">
+        <div class="avatar-container">
+            <div class="avatar-border">
+                @if (!string.IsNullOrEmpty(ViewModel.ProfilePictureUrl))
+                {
+                    <img src="@ViewModel.ProfilePictureUrl" class="avatar-image" alt="Profile Picture" />
+                }
+                else
+                {
+                    <div class="avatar-placeholder"></div>
+                }
+            </div>
+        </div>
+        
+        <div class="user-info">
+            <h2 class="name">@(string.IsNullOrWhiteSpace(ViewModel.FirstName) ? "User Name" : $"{ViewModel.FirstName} {ViewModel.LastName}")</h2>
+            <p class="role">@(ViewModel.IsTradesman ? "Tradesman" : "Homeowner")</p>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="action-btn" @onclick="ViewModel.ChangePhotoCommand.ExecuteAsync">
+            <div class="icon-container">
+                <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M30 13H14L10 18H5C3.89543 18 3 18.8954 3 20V34C3 35.1046 3.89543 36 5 36H39C40.1046 36 41 35.1046 41 34V20C41 18.8954 40.1046 18 39 18H34L30 13Z" />
+                    <circle cx="22" cy="27" r="6" />
+                </svg>
+            </div>
+            <span>Change Picture</span>
+        </button>
+
+        <button class="action-btn" @onclick="OnEditProfileClicked">
+            <div class="icon-container">
+                <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 28.5L26 14.5L30 18.5L16 32.5H12V28.5Z" />
+                </svg>
+            </div>
+            <span>Edit profile</span>
+        </button>
+
+        @if (ViewModel.IsTradesman)
+        {
+            <button class="action-btn" @onclick="OnMoreClicked">
+                <div class="icon-container">
+                    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="22" r="1.8" />
+                        <circle cx="22" cy="22" r="1.8" />
+                        <circle cx="33" cy="22" r="1.8" />
+                    </svg>
+                </div>
+                <span>More</span>
+            </button>
+        }
+    </div>
+</div>
+
+<style>
+    .profile-card {
+        background-color: var(--bg-card);
+        border-radius: 24px;
+        box-shadow: var(--shadow-main);
+        width: 540px;
+        padding: 76px 56px 88px 56px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        box-sizing: border-box;
+        font-family: var(--font-secondary);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+    }
+
+    .avatar-container {
+        width: 164px;
+        height: 164px;
+        position: relative;
+    }
+
+    .avatar-border {
+        width: 164px;
+        height: 164px;
+        border-radius: 50%;
+        background-color: var(--bg-card-alt);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar-image, .avatar-placeholder {
+        width: 134px;
+        height: 134px;
+        border-radius: 50%;
+        background-color: var(--border-color);
+        object-fit: cover;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .name {
+        color: var(--text-primary);
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+        text-align: center;
+    }
+
+    .role {
+        color: var(--text-secondary);
+        font-size: 18px;
+        font-weight: 500;
+        margin: 0;
+        text-align: center;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .action-btn {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        width: 132px;
+        height: 88px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-primary);
+    }
+
+    .action-btn:hover {
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-2px);
+        background-color: var(--bg-card-alt);
+    }
+
+    .icon-container {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--text-primary);
+        opacity: 0.8;
+    }
+
+    .action-btn span {
+        font-size: 16px;
+        font-weight: 500;
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserProfileViewModel ViewModel { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnEditProfileClicked { get; set; }
+
+    [Parameter]
+    public EventCallback OnMoreClicked { get; set; }
+}

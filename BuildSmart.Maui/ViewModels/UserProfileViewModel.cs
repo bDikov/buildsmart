@@ -50,7 +50,6 @@ public partial class UserProfileViewModel : ObservableObject
         _mediaPicker = mediaPicker;
         _filePicker = filePicker;
         _fileService = fileService;
-        LoadProfileAsync();
     }
 
     [RelayCommand]

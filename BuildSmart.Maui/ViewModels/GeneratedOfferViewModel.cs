@@ -83,7 +83,7 @@ public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributa
             }
 
             await Shell.Current.DisplayAlert("Success", "Your offer has been submitted to the Admin for final review.", "OK");
-            await Shell.Current.GoToAsync("//MyProjectsPage");
+            await Shell.Current.GoToAsync("//BlazorHostPage");
         }
         catch (Exception ex)
         {

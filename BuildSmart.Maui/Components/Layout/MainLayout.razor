@@ -5,87 +5,286 @@
 @inject IAuthService AuthService
 
 <div class="page">
-    <div class="sidebar border-end shadow-sm" style="background-color: #f8f9fa; min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; padding-top: 20px; overflow-y: auto;">
-        <h4 class="text-center fw-bold text-primary mb-4">BuildSmart</h4>
-        <ul class="nav flex-column px-3">
+    <div class="sidebar shadow-sm">
+        <div class="sidebar-header">
+            <div class="logo-block">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="logo-text">BuildSmart</span>
+            </div>
+        </div>
+
+        <div class="sidebar-search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" class="search-input" placeholder="Search" />
+        </div>
+
+        <div class="nav flex-column sidebar-nav">
             
             <!-- Standard Blazor Links -->
-            <li class="nav-item mb-2">
-                <a class="nav-link text-dark fw-bold" href="feed">
-                    <span class="me-2">🏠</span> Marketplace
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link text-dark fw-bold" href="job-wizard">
-                    <span class="me-2">✨</span> Post Job
-                </a>
-            </li>
+            <a class="nav-item-dark" href="feed">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                Marketplace
+            </a>
 
-            <!-- Role-based Native XAML Bridges -->
+            <!-- Role-based Native XAML Bridges & Blazor Pages -->
             <AuthorizeView Roles="Homeowner, HOMEOWNER, Tradesman, TRADESMAN">
-                <li class="nav-item mb-2">
-                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.MyProjectsPage))" @onclick:preventDefault>
-                        <span class="me-2">📁</span> My Projects
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.ActiveJobsPage))" @onclick:preventDefault>
-                        <span class="me-2">🔨</span> Active Jobs
-                    </a>
-                </li>
+                <a class="nav-item-dark" href="my-projects">
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    My Projects
+                </a>
+                <a class="nav-item-dark" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.ActiveJobsPage))" @onclick:preventDefault>
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    Active Jobs
+                </a>
             </AuthorizeView>
 
             <AuthorizeView Roles="Admin, ADMIN">
-                <li class="nav-item mt-3 mb-1">
-                    <span class="text-muted small fw-bold text-uppercase px-3">Management</span>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.CategoryManagementPage))" @onclick:preventDefault>
-                        <span class="me-2">🗂️</span> Categories
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.Admin.UserManagementPage))" @onclick:preventDefault>
-                        <span class="me-2">👥</span> Users
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.Admin.AdminJobReviewPage))" @onclick:preventDefault>
-                        <span class="me-2">📋</span> Job Reviews
-                    </a>
-                </li>
+                <div class="nav-item-header mt-4 mb-2">
+                    Manage
+                </div>
+                <a class="nav-item-dark" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.CategoryManagementPage))" @onclick:preventDefault>
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Categories
+                </a>
+                <a class="nav-item-dark" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.Admin.UserManagementPage))" @onclick:preventDefault>
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Users
+                </a>
+                <a class="nav-item-dark" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.Admin.AdminJobReviewPage))" @onclick:preventDefault>
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Job Reviews
+                </a>
             </AuthorizeView>
 
-            <li class="nav-item mt-4 mb-2">
-                <hr />
-            </li>
+            <div class="nav-item-header mt-4 mb-2">
+                Tools
+            </div>
+            <a class="nav-item-dark" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.NotificationsPage))" @onclick:preventDefault>
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                Notifications
+            </a>
             
-            <li class="nav-item mb-2">
-                <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.NotificationsPage))" @onclick:preventDefault>
-                    <span class="me-2">🔔</span> Notifications
-                </a>
-            </li>
+            <a class="nav-item-dark" href="user-profile">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Settings
+            </a>
             
-            <li class="nav-item mb-2">
-                <a class="nav-link text-dark fw-bold" href="#" @onclick="() => NavigationBridge.NavigateToAsync(nameof(BuildSmart.Maui.Views.UserProfilePage))" @onclick:preventDefault>
-                    <span class="me-2">⚙️</span> Profile Settings
-                </a>
-            </li>
-            
-            <li class="nav-item mb-2">
-                <a class="nav-link text-danger fw-bold" href="#" @onclick="LogoutAsync" @onclick:preventDefault>
-                    <span class="me-2">🚪</span> Logout
-                </a>
-            </li>
-        </ul>
+        </div>
+
+        <div class="sidebar-account">
+            <div class="account-info">
+                <div class="account-avatar">
+                    <!-- Generic user icon -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div class="account-details">
+                    <span class="account-name">BuildSmart User</span>
+                    <span class="account-email">user@buildsmart.com</span>
+                </div>
+            </div>
+            <button class="logout-btn" @onclick="LogoutAsync" @onclick:preventDefault title="Logout">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
     </div>
 
-    <main style="margin-left: 250px; width: calc(100% - 250px);">
+    <main class="main-content">
         <article class="content px-4 py-3">
             @Body
         </article>
     </main>
 </div>
+
+<style>
+    .sidebar {
+        background-color: var(--bg-card);
+        border-right: 1px solid var(--border-color);
+        min-height: 100vh;
+        width: 312px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        color: var(--text-primary);
+        font-family: 'Inter', var(--font-primary);
+        z-index: 100;
+    }
+
+    .sidebar-header {
+        padding: 24px 16px;
+    }
+
+    .logo-block {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background-color: var(--text-primary);
+        color: var(--bg-card);
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .logo-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .sidebar-search {
+        margin: 0 16px 24px 16px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        gap: 12px;
+    }
+
+    .search-icon {
+        color: var(--text-muted);
+    }
+
+    .search-input {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-size: 16px;
+        width: 100%;
+        outline: none;
+    }
+
+    .search-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .sidebar-nav {
+        padding: 0 16px;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .nav-item-dark {
+        height: 40px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        cursor: pointer;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        font-size: 14px;
+        font-weight: 500;
+        gap: 12px;
+        margin-bottom: 4px;
+    }
+
+    .nav-item-dark:hover, .nav-item-dark:focus {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+    }
+
+    .nav-item-dark:active {
+        background-color: var(--color-primary);
+        color: var(--bg-card);
+    }
+
+    .nav-icon {
+        opacity: 0.8;
+    }
+
+    .nav-item-header {
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 16px 12px 8px 12px;
+    }
+
+    .sidebar-account {
+        padding: 24px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+    }
+
+    .account-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .account-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: var(--bg-card-alt);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--text-muted);
+    }
+
+    .account-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .account-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .account-email {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .logout-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .logout-btn:hover {
+        color: rgb(255, 107, 107);
+        background-color: rgba(255, 107, 107, 0.1);
+    }
+
+    .main-content {
+        margin-left: 312px;
+        width: calc(100% - 312px);
+        background-color: var(--bg-page);
+        min-height: 100vh;
+        transition: background-color 0.3s ease;
+    }
+</style>
 
 @code {
     private async Task LogoutAsync()

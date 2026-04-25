@@ -1,0 +1,173 @@
+<div class="progress-card-container">
+    <div class="progress-card-shadow"></div>
+    <div class="progress-card-main bs-card">
+        <h2 class="progress-title">@Title</h2>
+        <div class="progress-content">
+            <div class="circular-progress">
+                <svg viewBox="0 0 118 118" class="circular-chart">
+                    <circle class="circular-bg" cx="59" cy="59" r="51"></circle>
+                    <circle class="circular-fill" cx="59" cy="59" r="51" stroke-dashoffset="@CalculateOffset()"></circle>
+                </svg>
+                <div class="circular-text">@(Math.Round(ProgressPercentage))%</div>
+            </div>
+            <div class="progress-info">
+                <div class="progress-step">@StepText</div>
+                <div class="progress-subtitle">@SubtitleText</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress-card-container {
+        position: relative;
+        width: 100%;
+        margin-bottom: 40px;
+        font-family: var(--font-primary);
+    }
+
+    .progress-card-shadow {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: calc(100% - 20px);
+        height: 100%;
+        background-color: var(--color-primary); /* Uses the theme purple */
+        opacity: 0.3;
+        border-radius: 30px;
+        z-index: 0;
+    }
+
+    .progress-card-main {
+        position: relative;
+        background-color: var(--bg-card);
+        border-radius: 30px;
+        padding: 35px 45px;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        box-shadow: var(--shadow-main);
+    }
+
+    .progress-title {
+        font-family: var(--font-heading);
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .progress-content {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .circular-progress {
+        position: relative;
+        width: 118px;
+        height: 118px;
+        flex-shrink: 0;
+    }
+
+    .circular-chart {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .circular-bg {
+        fill: none;
+        stroke: var(--border-color);
+        stroke-width: 8;
+    }
+
+    .circular-fill {
+        fill: none;
+        stroke: var(--color-primary);
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.5s ease-out;
+        stroke-dasharray: 320.44; /* Circumference of circle with r=51 (2 * pi * 51) */
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        filter: drop-shadow(0px 14px 10px rgba(113, 50, 193, 0.4));
+    }
+
+    .circular-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 28px;
+        font-weight: 900;
+        color: var(--text-primary);
+        font-family: var(--font-primary);
+    }
+
+    .progress-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .progress-step {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .progress-subtitle {
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 600px) {
+        .progress-card-main {
+            padding: 25px;
+        }
+        .progress-content {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: center;
+        }
+        .progress-info {
+            align-items: center;
+            width: 100%;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Your progress";
+
+    [Parameter]
+    public double ProgressPercentage { get; set; }
+
+    [Parameter]
+    public string StepText { get; set; } = "Step X of Y complete";
+
+    [Parameter]
+    public string SubtitleText { get; set; } = "Complete all steps to finish.";
+
+    private double CalculateOffset()
+    {
+        // Total circumference of circle with radius 51 is ~320.44
+        double circumference = 320.44;
+        
+        // Ensure progress is bounded
+        double progress = Math.Max(0, Math.Min(100, ProgressPercentage));
+        
+        // Calculate offset (100% = 0 offset, 0% = full circumference offset)
+        return circumference - (progress / 100.0) * circumference;
+    }
+}
