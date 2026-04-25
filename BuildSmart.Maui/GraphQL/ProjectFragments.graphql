@@ -87,11 +87,27 @@ fragment AcceptanceCriteriaDetails on TaskAcceptanceCriteria {
   description
 }
 
+fragment SkuItemDetails on TaskSkuItem {
+  id
+  quantity
+  estimatedPrice
+  serviceSku {
+    id
+    skuCode
+    name
+    unitType
+  }
+}
+
 fragment JobTaskDetails on JobTask {
   id
   title
   description
   sequenceOrder
+  estimatedPrice
+  skuItems {
+    ... SkuItemDetails
+  }
   acceptanceCriteria {
     ... AcceptanceCriteriaDetails
   }

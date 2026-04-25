@@ -19,6 +19,8 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Google;
 using AspNet.Security.OAuth.Apple;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 [assembly: InternalsVisibleTo("BuildSmart.Api.Tests")]
 
@@ -78,6 +80,7 @@ public partial class Program
 		builder.Services.AddScoped<ITradesmanProfileService, TradesmanProfileService>();
 		builder.Services.AddScoped<IReviewService, ReviewService>();
 		builder.Services.AddScoped<IJobPostService, JobPostService>();
+		builder.Services.AddScoped<IPaymentService, PaymentService>();
 		builder.Services.AddScoped<IJobsNotificationService, BuildSmart.Api.Services.JobsNotificationService>();
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
@@ -85,9 +88,28 @@ public partial class Program
 		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
 
 		// --- Background Services (Scope Generation) ---
-		builder.Services.AddSingleton<IScopeGenerationQueue, ScopeGenerationQueue>();
-		builder.Services.AddHostedService<ScopeGenerationWorker>();
-		builder.Services.AddScoped<IAiService, MockAiService>();
+		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
+		builder.Services.AddScoped<IAiService, GeminiAiService>();
+
+		// --- Hangfire Configuration ---
+		builder.Services.AddHangfire(configuration => configuration
+			.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+			.UseSimpleAssemblyNameTypeSerializer()
+			.UseRecommendedSerializerSettings()
+			.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+		builder.Services.AddHangfireServer(options =>
+		{
+			options.ServerName = String.Format("{0}:DefaultServer", Environment.MachineName);
+			options.Queues = new[] { "default" };
+		});
+		
+		builder.Services.AddHangfireServer(options =>
+		{
+			options.ServerName = String.Format("{0}:AiServer", Environment.MachineName);
+			options.Queues = new[] { "ai-queue" };
+			options.WorkerCount = 1;
+		});
 
 		// --- JWT Authentication Setup ---
 		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -178,6 +200,7 @@ public partial class Program
             .AddType<JobPostFeedbackType>()
 			.AddType<JobTaskType>()
 			.AddType<TaskAcceptanceCriteriaType>()
+			.AddType<TaskSkuItemType>()
 			.AddType<BidItemType>()
 			.AddType<BuildSmart.Api.GraphQL.Types.Input.SubmitBidInputType>()
 			.AddType<BuildSmart.Api.GraphQL.Types.Input.UpdateJobTasksInputType>()
@@ -231,6 +254,8 @@ public partial class Program
 		app.UseCors(MyAllowSpecificOrigins);
 
 		app.UseRouting();
+
+		app.UseHangfireDashboard("/hangfire");
 
 		// Authenticate and Authorize for ALL requests BEFORE any endpoint routing
 		app.UseAuthentication();

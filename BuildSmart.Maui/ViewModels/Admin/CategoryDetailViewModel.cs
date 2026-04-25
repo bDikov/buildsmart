@@ -204,8 +204,18 @@ public partial class CategoryDetailViewModel : ObservableObject
                                                                                                                 
 
                                                                                                                     [RelayCommand]
+    private async Task ManageSkusAsync()
+    {
+        if (CategoryId == null || CategoryId == Guid.Empty)
+        {
+            await Shell.Current.DisplayAlert("Error", "Please save the category first before managing SKUs.", "OK");
+            return;
+        }
+        await Shell.Current.GoToAsync($"AdminCategorySkusPage?categoryId={CategoryId}");
+    }
 
-                                                                                                                    private async Task SaveCategoryAsync()
+    [RelayCommand]
+    private async Task SaveCategoryAsync()
 
                                                                                                                     {
 

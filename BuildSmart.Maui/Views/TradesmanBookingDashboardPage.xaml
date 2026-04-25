@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:graphql="clr-namespace:BuildSmart.Maui.GraphQL"
+             xmlns:converters="clr-namespace:BuildSmart.Maui.Converters"
+             x:Class="BuildSmart.Maui.Views.TradesmanBookingDashboardPage"
+             x:DataType="vm:TradesmanBookingDashboardViewModel"
+             Title="Active Job &amp; Payouts">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" Color="{StaticResource Primary}"/>
+
+            <VerticalStackLayout IsVisible="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" Spacing="20">
+                
+                <!-- Status Header -->
+                <Frame BackgroundColor="{AppThemeBinding Light=#E8F5E9, Dark=#1B5E20}" BorderColor="#4CAF50" CornerRadius="8" HasShadow="False" Padding="15">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Job Status:" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="{Binding Booking.Status}" FontSize="18" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center" TextTransform="Uppercase"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Financial Breakdown -->
+                <Frame BorderColor="#90CAF9" BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#0D47A1}" CornerRadius="8" HasShadow="False" Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Your Payout Breakdown" FontSize="16" FontAttributes="Bold" TextColor="#1976D2"/>
+                        
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                            <!-- Tradesman Bid -->
+                            <Label Grid.Row="0" Grid.Column="0" Text="Agreed Bid Amount:" FontSize="14"/>
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Booking.AgreedBidAmount.Total, StringFormat='${0:F2}'}" FontSize="14" FontAttributes="Bold"/>
+
+                            <!-- Platform Fee (Tradesman) -->
+                            <Label Grid.Row="1" Grid.Column="0" Text="Platform Fee (5%):" FontSize="14" TextColor="Red"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Booking.PlatformFeeTradesman.Total, StringFormat='-${0:F2}'}" FontSize="14" FontAttributes="Bold" TextColor="Red"/>
+
+                            <BoxView Grid.Row="2" Grid.ColumnSpan="2" HeightRequest="1" Color="#90CAF9" Margin="0,5"/>
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,5,0,0">
+                            <Label Grid.Column="0" Text="Expected Net Payout:" FontSize="16" FontAttributes="Bold" TextColor="#2E7D32"/>
+                            <Label Grid.Column="1" Text="{Binding Booking.TotalEscrowAmount.Total, StringFormat='${0:F2}'}" FontSize="18" FontAttributes="Bold" TextColor="#2E7D32"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="Milestone Payouts" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Primary}" Margin="0,10,0,0"/>
+
+                <!-- Milestones List -->
+                <StackLayout BindableLayout.ItemsSource="{Binding MilestonePayments}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="graphql:IGetMyActiveBookings_MyActiveBookings_MilestonePayments">
+                            <Border Stroke="LightGray" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D2D}" Padding="15" Margin="0,5">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto,Auto">
+                                    <VerticalStackLayout Grid.Column="0" Grid.Row="0" Spacing="2">
+                                        <Label Text="{Binding Id, StringFormat='Milestone #{0}'}" FontSize="12" TextColor="Gray"/>
+                                        <Label Text="{Binding AmountAllocated.Total, StringFormat='Payout: ${0:F2}'}" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Primary}"/>
+                                    </VerticalStackLayout>
+                                    
+                                    <Label Grid.Column="1" Grid.Row="0" Text="{Binding Status}" FontAttributes="Bold" VerticalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="PENDING">
+                                                <Setter Property="TextColor" Value="Orange"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="APPROVED">
+                                                <Setter Property="TextColor" Value="#4CAF50"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="PAID">
+                                                <Setter Property="TextColor" Value="Green"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+
+                <Label Text="* Wait for the homeowner to approve each milestone before funds are transferred to your Stripe account." 
+                       FontSize="12" TextColor="Gray" FontAttributes="Italic" HorizontalTextAlignment="Center" Margin="0,10"/>
+                
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

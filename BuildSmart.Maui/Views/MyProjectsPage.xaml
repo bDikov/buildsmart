@@ -70,7 +70,7 @@
                                             <Label Text="No specific jobs added." FontSize="10" FontAttributes="Italic" TextColor="Gray" Margin="5,0"/>
                                         </BindableLayout.EmptyView>
                                         <BindableLayout.ItemTemplate>
-                                            <DataTemplate x:DataType="graphql:IGetMyProjects_MyProjects_JobPosts">
+                                            <DataTemplate>
                                                 <Frame Padding="10" Margin="0,5" BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#333333}" BorderColor="Transparent">
                                                     <Grid ColumnDefinitions="*, Auto">
                                                         <VerticalStackLayout Grid.Column="0" Spacing="2">

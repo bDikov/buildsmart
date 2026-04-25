@@ -6,6 +6,8 @@ using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.TestHost;
 using System.Linq;
+using BuildSmart.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace BuildSmart.Api.Tests
 {
@@ -15,6 +17,22 @@ namespace BuildSmart.Api.Tests
         {
             builder.ConfigureTestServices(services =>
             {
+                // Remove all Entity Framework Core services to ensure a clean slate for the InMemory provider
+                var descriptors = services.Where(
+                    d => d.ServiceType.Namespace != null && 
+                         d.ServiceType.Namespace.StartsWith("Microsoft.EntityFrameworkCore")).ToList();
+
+                foreach (var descriptor in descriptors)
+                {
+                    services.Remove(descriptor);
+                }
+
+                // Add in-memory database for testing
+                services.AddDbContext<AppDbContext>(options =>
+                {
+                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                });
+
                 // We want to override the default authentication scheme with our test scheme.
                 services.AddAuthentication(TestAuthHandler.SchemeName)
                     .AddScheme<TestAuthHandlerOptions, TestAuthHandler>(TestAuthHandler.SchemeName, options => { });

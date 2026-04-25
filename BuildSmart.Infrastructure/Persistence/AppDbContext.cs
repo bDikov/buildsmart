@@ -12,8 +12,9 @@ public class AppDbContext : DbContext
 	// Define DbSets only for your Aggregate Roots
 	public DbSet<User> Users { get; set; } = null!;
     public DbSet<HomeownerProfile> HomeownerProfiles { get; set; } = null!;
-    public DbSet<TradesmanSkill> TradesmanSkills { get; set; } = null!;
+	public DbSet<TradesmanSkill> TradesmanSkills { get; set; } = null!;
 	public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
+	public DbSet<ServiceSku> ServiceSkus { get; set; } = null!;
 	public DbSet<TradesmanProfile> TradesmanProfiles { get; set; } = null!;
 	public DbSet<Project> Projects { get; set; } = null!;
 	public DbSet<JobPost> JobPosts { get; set; } = null!;
@@ -21,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
 	public DbSet<Bid> Bids { get; set; } = null!;
 	public DbSet<JobTask> JobTasks { get; set; } = null!;
+	public DbSet<TaskSkuItem> TaskSkuItems { get; set; } = null!;
 	public DbSet<TaskAcceptanceCriteria> TaskAcceptanceCriteria { get; set; } = null!;
 	public DbSet<BidItem> BidItems { get; set; } = null!;
 	public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;

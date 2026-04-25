@@ -91,7 +91,15 @@ public partial class CheckoutViewModel : ObservableObject, IQueryAttributable
 
             await Shell.Current.DisplayAlert("Success", "Funds have been securely deposited into escrow! The tradesman has been hired.", "OK");
             
-            await Shell.Current.GoToAsync("..");
+            if (result.Data?.AcceptBid?.Id != null)
+            {
+                var bookingId = result.Data.AcceptBid.Id;
+                await Shell.Current.GoToAsync($"../../{nameof(Views.BookingDashboardPage)}?bookingId={bookingId}");
+            }
+            else
+            {
+                await Shell.Current.GoToAsync("../..");
+            }
         }
         catch (Exception ex)
         {

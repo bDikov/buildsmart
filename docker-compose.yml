@@ -11,11 +11,11 @@ services:
     ports:
       - '5432:5432'
 
-tests:
-  build:
-    context: .
-    dockerfile: BuildSmart.Api.Tests/Dockerfile
-  depends_on:
-    - db
-  environment:
-    - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=buildsmart_test;Username=testuser;Password=testpassword
+  tests:
+    build:
+      context: .
+      dockerfile: BuildSmart.Api.Tests/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=buildsmart_test;Username=testuser;Password=testpassword

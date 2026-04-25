@@ -6,7 +6,7 @@
     "strawberryShake": {
       "name": "BuildSmartApiClient",
       "namespace": "BuildSmart.Maui.GraphQL",
-      "url": "https://localhost:44378/graphql",
+      "url": "http://localhost:5086/graphql/",
       "typeMappings": [
         {
           "name": "UUID",

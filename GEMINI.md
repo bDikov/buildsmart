@@ -79,6 +79,10 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 *   **Testing**: The project has a dedicated test project using xUnit, Moq, and Snapshot testing.
 *   **AI Integration**: The platform uses Google Gemini 1.5 Pro for automated construction scope generation. See `AI_IMPLEMENTATION.md` for technical details.
 
+### StrawberryShake GraphQL Generation
+**STRICT RULE:** You must **NEVER** change the GraphQL API URL or ports in `StrawberryShake.json` or `.graphqlrc.json` without explicit user permission. You must **NEVER** attempt to run the `BuildSmart.Api` project via `dotnet run` in the background to update the GraphQL schema. 
+When a schema update is required, **always ask the user** to start the API manually via Visual Studio (ensuring it runs on the configured port, usually IIS Express on 44378 or https on 7212). Only run `dotnet graphql update` after the user confirms the API is running. If StrawberryShake causes MAUI build errors because of missing schema fields, comment out the offending `.graphql` files so the user can compile the API first.
+
 ### Manual Migrations
 
 **IMPORTANT:** The Gemini agent is configured to **never** execute migration commands automatically.
@@ -140,3 +144,18 @@ To support the new feedback system and domain changes, please run:
 dotnet ef migrations add AddJobPostFeedback --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
 dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
 ```
+
+## Database Seeding (Questions & SKUs)
+
+If you ever need to re-seed or manually update the Smart Blueprint questions or Service SKUs without wiping the database, use the dedicated Console Runner.
+
+Because questions are stored as a raw JSON string inside the `"ServiceCategories"."TemplateStructure"` column (and not in a separate table), standard Entity Framework seeding can be difficult.
+
+1. **The JSON Data**: 
+   - `Categories_Seed_Templates.json` (Contains the raw JSON for Global and Electrical questions).
+   - `Electrical_SKUs_Seed.json` (Contains the detailed pricing items).
+2. **The SQL Script**: 
+   - `UpdateQuestions.sql` safely updates the exact Guids for the Global and Electrical categories (`ec7af4e8-16cb-4ec1-b618-35c739be9408` and `e69f9926-d576-4515-a438-e80a850af656`).
+3. **The Execution**: 
+   - A standalone C# console app is located in `BuildSmart/UpdateQuestionsRunner/`.
+   - Run `dotnet run` inside that folder to instantly inject the `.sql` and JSON files directly into the PostgreSQL container, bypassing any Visual Studio/Docker locks.

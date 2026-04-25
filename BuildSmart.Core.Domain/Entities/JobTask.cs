@@ -11,8 +11,11 @@ public class JobTask : BaseEntity
     public string Description { get; set; } = string.Empty;
     public int SequenceOrder { get; set; }
 
+    public decimal EstimatedPrice { get; set; }
+
+    public ICollection<TaskSkuItem> SkuItems { get; set; } = new List<TaskSkuItem>();
     public ICollection<TaskAcceptanceCriteria> AcceptanceCriteria { get; set; } = new List<TaskAcceptanceCriteria>();
-    
+
     public ICollection<BidItem> BidItems { get; set; } = new List<BidItem>();
 
     public ICollection<JobPostQuestion> Questions { get; set; } = new List<JobPostQuestion>();

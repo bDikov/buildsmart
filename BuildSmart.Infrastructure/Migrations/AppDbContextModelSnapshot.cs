@@ -318,6 +318,9 @@ namespace BuildSmart.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<DateTime?>("PreferredSiteVisitDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
@@ -464,6 +467,9 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<decimal>("EstimatedPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<Guid>("JobPostId")
                         .HasColumnType("uuid");
@@ -755,6 +761,47 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("ServiceCategories", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BasePrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ServiceCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SkuCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UnitType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceCategoryId");
+
+                    b.ToTable("ServiceSkus");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskAcceptanceCriteria", b =>
                 {
                     b.Property<Guid>("Id")
@@ -780,6 +827,39 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasIndex("JobTaskId");
 
                     b.ToTable("TaskAcceptanceCriteria", (string)null);
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskSkuItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("EstimatedPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("JobTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("ServiceSkuId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobTaskId");
+
+                    b.HasIndex("ServiceSkuId");
+
+                    b.ToTable("TaskSkuItems");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanAuctionAction", b =>
@@ -1512,6 +1592,17 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("TradesmanProfile");
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceCategory", "ServiceCategory")
+                        .WithMany()
+                        .HasForeignKey("ServiceCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceCategory");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskAcceptanceCriteria", b =>
                 {
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobTask", "JobTask")
@@ -1521,6 +1612,25 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("JobTask");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskSkuItem", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.JobTask", "JobTask")
+                        .WithMany("SkuItems")
+                        .HasForeignKey("JobTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceSku", "ServiceSku")
+                        .WithMany()
+                        .HasForeignKey("ServiceSkuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobTask");
+
+                    b.Navigation("ServiceSku");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanAuctionAction", b =>
@@ -1595,6 +1705,8 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("BidItems");
 
                     b.Navigation("Questions");
+
+                    b.Navigation("SkuItems");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Project", b =>

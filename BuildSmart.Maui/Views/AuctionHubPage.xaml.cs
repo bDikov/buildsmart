@@ -1,5 +1,6 @@
 using BuildSmart.Maui.ViewModels;
 using BuildSmart.Maui.GraphQL;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 
 namespace BuildSmart.Maui.Views;
 
@@ -11,6 +12,23 @@ public partial class AuctionHubPage : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = _viewModel = viewModel;
+
+        var blazorWebView = new BlazorWebView
+        {
+            HostPage = "wwwroot/index.html"
+        };
+        
+        blazorWebView.RootComponents.Add(new RootComponent
+        {
+            Selector = "#app",
+            ComponentType = typeof(Components.Pages.AuctionHub),
+            Parameters = new Dictionary<string, object?>
+            {
+                { "ViewModel", _viewModel }
+            }
+        });
+
+        Content = blazorWebView;
 	}
 
     protected override async void OnAppearing()
@@ -23,50 +41,5 @@ public partial class AuctionHubPage : ContentPage
     {
         base.OnDisappearing();
         await _viewModel.CleanupAsync();
-    }
-
-    private async void OnEditQuestionClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.CommandParameter is IQuestionDetails question)
-        {
-            await _viewModel.EditQuestionCommand.ExecuteAsync(question);
-        }
-    }
-
-    private async void OnEditNestedQuestionClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.CommandParameter is IQuestionReplyDetails reply)
-        {
-            await _viewModel.EditNestedQuestionCommand.ExecuteAsync(reply);
-        }
-    }
-
-    private async void OnEditAnswerClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.CommandParameter is IQuestionDetails question)
-        {
-            await _viewModel.EditAnswerCommand.ExecuteAsync(question);
-        }
-    }
-
-    private async void OnReplyQuestionClicked(object sender, TappedEventArgs e)
-    {
-        try
-        {
-            var parameter = e.Parameter ?? (sender as BindableObject)?.BindingContext;
-            
-            if (parameter is IQuestionDetails question)
-            {
-                await _viewModel.ReplyToQuestionCommand.ExecuteAsync(question);
-            }
-            else if (parameter is IQuestionReplyDetails reply)
-            {
-                await _viewModel.ReplyToNestedQuestionCommand.ExecuteAsync(reply);
-            }
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        }
     }
 }

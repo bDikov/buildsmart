@@ -1,0 +1,247 @@
+@page "/job-wizard"
+@using BuildSmart.Maui.ViewModels
+@using System.ComponentModel
+@layout BuildSmart.Maui.Components.Layout.MainLayout
+@implements IDisposable
+@inject JobWizardViewModel ViewModel
+
+<ErrorBoundary>
+    <ChildContent>
+        @if (ViewModel == null)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="container py-4">
+                <!-- Progress Bar & Title -->
+                <div class="mb-4">
+                    <h2 class="h4 fw-bold text-center">@ViewModel.CurrentStepTitle</h2>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: @(CalculateProgress())%" 
+                             aria-valuenow="@(CalculateProgress())" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <!-- Step 0: Basic Info -->
+                @if (ViewModel.IsInfoStepVisible)
+                {
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold @(ViewModel.TitleHasError ? "text-danger" : "")">Project Title</label>
+                                <input type="text" class="form-control" placeholder="e.g., Kitchen Remodel" @bind="ViewModel.ProjectTitle" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold @(ViewModel.LocationHasError ? "text-danger" : "")">Location</label>
+                                <input type="text" class="form-control" placeholder="e.g., New York, NY" @bind="ViewModel.ProjectLocation" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Preferred Site Visit Date (Optional)</label>
+                                <input type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" @bind="ViewModel.PreferredSiteVisitDate" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold @(ViewModel.DescriptionHasError ? "text-danger" : "")">Description</label>
+                                <textarea class="form-control" rows="4" placeholder="Describe your project..." @bind="ViewModel.ProjectDescription"></textarea>
+                            </div>
+
+                            <button class="btn btn-primary mt-3 w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToNextStepCommand.Execute(null)">
+                                Next: Select Category
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <!-- Step 1: Category Selection -->
+                @if (ViewModel.IsCategoryStepVisible)
+                {
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h3 class="h5 fw-bold mb-3 @(ViewModel.CategorySelectionHasError ? "text-danger" : "")">Select Job Categories</h3>
+                            
+                            <div class="list-group mb-4">
+                                @if (ViewModel.SelectableCategories != null)
+                                {
+                                    @foreach (var cat in ViewModel.SelectableCategories)
+                                    {
+                                        <label class="list-group-item d-flex gap-3 align-items-center">
+                                            <input class="form-check-input flex-shrink-0" type="checkbox" style="font-size: 1.375em;" @bind="cat.IsSelected">
+                                            <span class="pt-1 form-checked-content">
+                                                <strong>@cat.Category?.Name</strong>
+                                            </span>
+                                        </label>
+                                    }
+                                }
+                            </div>
+
+                            <button class="btn btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToNextStepCommand.Execute(null)">
+                                @ViewModel.NextButtonText
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <!-- Dynamic Questions Step -->
+                @if (ViewModel.IsQuestionStepVisible)
+                {
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            @if (ViewModel.Questions != null)
+                            {
+                                @foreach (var q in ViewModel.Questions)
+                                {
+                                    <div class="mb-4">
+                                        <div class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">@q.CategoryName</div>
+                                        <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")">
+                                            @q.Text
+                                            @if (q.IsRequired)
+                                            {
+                                                <span class="text-danger ms-1">*</span>
+                                            }
+                                        </label>
+
+                                        @if (q.IsText)
+                                        {
+                                            <input type="text" class="form-control" placeholder="Type your answer here..." @bind="q.Answer" />
+                                        }
+                                        else if (q.IsChoice && q.Options != null)
+                                        {
+                                            <select class="form-select" @bind="q.Answer">
+                                                <option value="">-- Select an option --</option>
+                                                @foreach (var opt in q.Options)
+                                                {
+                                                    <option value="@opt">@opt</option>
+                                                }
+                                            </select>
+                                        }
+                                        else if (q.IsBoolean)
+                                        {
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" />
+                                                <label class="form-check-label" for="@($"check_{q.Id}")">Yes</label>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+
+                            <div class="d-flex flex-column gap-2 mt-4">
+                                <button class="btn btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToNextStepCommand.Execute(null)">
+                                    @ViewModel.NextButtonText
+                                </button>
+                                
+                                @if (!ViewModel.IsEditing)
+                                {
+                                    <button class="btn btn-link text-muted text-decoration-none w-100" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToPreviousStepCommand.Execute(null)">
+                                        Back
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Review Step -->
+                @if (ViewModel.IsReviewStepVisible)
+                {
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h3 class="h4 fw-bold mb-4">Review &amp; Submit</h3>
+                            
+                            <div class="mb-3">
+                                <span class="fw-bold">Title:</span>
+                                <div>@ViewModel.ProjectTitle</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="fw-bold">Selected Categories:</span>
+                                <ul class="list-unstyled mb-0">
+                                    @if (ViewModel.SelectableCategories != null)
+                                    {
+                                        @foreach (var cat in ViewModel.SelectableCategories.Where(c => c.IsSelected))
+                                        {
+                                            <li>&bull; @cat.Category?.Name</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="fw-bold">Job Details:</span>
+                                <div class="bg-light p-3 rounded" style="max-height: 250px; overflow-y: auto;">
+                                    @if (ViewModel.AnswersList != null)
+                                    {
+                                        @foreach (var ans in ViewModel.AnswersList)
+                                        {
+                                            <div class="mb-2">
+                                                <div class="text-muted" style="font-size: 0.85rem;">@ans.Key</div>
+                                                <div class="fw-bold" style="font-size: 0.95rem;">@ans.Value</div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <button class="btn btn-success w-100 fw-bold mt-3 py-2" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitProjectCommand.Execute(null)">
+                                Post Project
+                            </button>
+                            
+                            <button class="btn btn-link text-muted text-decoration-none w-100 mt-2" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToPreviousStepCommand.Execute(null)">
+                                Back
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-3">
+            <h4>Rendering Error</h4>
+            <p>@context.Message</p>
+            <pre style="font-size: 10px; overflow-x: auto;">@context.StackTrace</pre>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    private async void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+
+    private double CalculateProgress()
+    {
+        // Simple logic for progress bar: 4 standard steps (0 to 3) + dynamic
+        // This is a rough estimation since questions are dynamic
+        if (ViewModel.IsInfoStepVisible) return 25;
+        if (ViewModel.IsCategoryStepVisible) return 50;
+        if (ViewModel.IsQuestionStepVisible) return 75;
+        if (ViewModel.IsReviewStepVisible) return 100;
+        return 0;
+    }
+}

@@ -18,7 +18,7 @@ public class PaymentService : IPaymentService
 
     public async Task<Booking> AcceptBidAsync(Guid homeownerId, Guid bidId)
     {
-        var bid = await _context_Bids_GetQueryable()
+        var bid = await _unitOfWork.Bids.GetQueryable()
             .Include(b => b.JobPost)
                 .ThenInclude(jp => jp.Project)
             .Include(b => b.BidItems)
@@ -42,18 +42,19 @@ public class PaymentService : IPaymentService
         _unitOfWork.JobPosts.Update(bid.JobPost);
 
         // Fee logic
-        var agreedAmount = bid.Amount;
-        var currency = agreedAmount.Currency;
+        var currency = bid.Amount.Currency;
+        var agreedAmountTotal = bid.Amount.Total;
+        var agreedAmount = Amount.Create(currency, agreedAmountTotal); // Clone to prevent EF Core tracking errors
         
         // 3% Homeowner Fee
-        var homeownerFeeTotal = Math.Round(agreedAmount.Total * 0.03m, 2);
+        var homeownerFeeTotal = Math.Round(agreedAmountTotal * 0.03m, 2);
         var platformFeeHomeowner = Amount.Create(currency, homeownerFeeTotal);
 
         // 5% Tradesman Fee
-        var tradesmanFeeTotal = Math.Round(agreedAmount.Total * 0.05m, 2);
+        var tradesmanFeeTotal = Math.Round(agreedAmountTotal * 0.05m, 2);
         var platformFeeTradesman = Amount.Create(currency, tradesmanFeeTotal);
 
-        var totalEscrow = Amount.Create(currency, agreedAmount.Total + homeownerFeeTotal);
+        var totalEscrow = Amount.Create(currency, agreedAmountTotal + homeownerFeeTotal);
 
         var booking = new Booking
         {
@@ -74,7 +75,7 @@ public class PaymentService : IPaymentService
             booking.MilestonePayments.Add(new MilestonePayment
             {
                 JobTaskId = item.JobTaskId,
-                AmountAllocated = item.Price,
+                AmountAllocated = Amount.Create(item.Price.Currency, item.Price.Total), // Clone instance
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });
@@ -88,7 +89,8 @@ public class PaymentService : IPaymentService
 
     public async Task ApproveMilestoneAsync(Guid homeownerId, Guid milestonePaymentId)
     {
-        var milestone = await _context_MilestonePayments_GetQueryable()
+        var milestone = await _unitOfWork.Bookings.GetQueryable()
+            .SelectMany(b => b.MilestonePayments)
             .Include(m => m.Booking)
             .FirstOrDefaultAsync(m => m.Id == milestonePaymentId);
 
@@ -102,17 +104,5 @@ public class PaymentService : IPaymentService
         // In a real system, trigger Stripe transfer here
         
         await _unitOfWork.SaveChangesAsync();
-    }
-
-    private Microsoft.EntityFrameworkCore.DbSet<Bid> _context_Bids_GetQueryable()
-    {
-        // Ideally exposed on repository
-        return (Microsoft.EntityFrameworkCore.DbSet<Bid>)_unitOfWork.Bids.GetQueryable();
-    }
-
-    private Microsoft.EntityFrameworkCore.DbSet<MilestonePayment> _context_MilestonePayments_GetQueryable()
-    {
-        // This is a hack for the sample, assuming we add IMilestonePaymentRepository
-        throw new NotImplementedException();
     }
 }

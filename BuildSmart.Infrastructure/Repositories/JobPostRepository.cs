@@ -27,6 +27,9 @@ public class JobPostRepository : IJobPostRepository
         return await _context.JobPosts
             .Include(jp => jp.JobTasks)
                 .ThenInclude(jt => jt.AcceptanceCriteria)
+            .Include(jp => jp.JobTasks)
+                .ThenInclude(jt => jt.SkuItems)
+                    .ThenInclude(si => si.ServiceSku)
             .FirstOrDefaultAsync(jp => jp.Id == id);
     }
 

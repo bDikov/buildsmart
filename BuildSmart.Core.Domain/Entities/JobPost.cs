@@ -62,6 +62,9 @@ public class JobPost : BaseEntity
 	// but a string array or list of URLs is fine for now.
 	public List<string> ImageUrls { get; set; } = new();
 
+	// --- Site Visit ---
+	public DateTime? PreferredSiteVisitDate { get; set; }
+
 	// --- Auction Mechanics ---
 	public JobPostStatus Status { get; private set; } = JobPostStatus.Draft;
 
