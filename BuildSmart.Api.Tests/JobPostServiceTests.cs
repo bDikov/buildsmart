@@ -201,11 +201,11 @@ public class JobPostServiceTests
         await _service.UpdateJobTasksAsync(jobPostId, newTasksInput);
 
         // Assert
-        // 1. Verify old tasks were explicitly removed via RemoveRange to prevent concurrency errors
-        mockJobTaskRepo.Verify(r => r.RemoveRange(It.Is<IEnumerable<JobTask>>(tasks => tasks.Contains(existingTask))), Times.Once);
+        // 1. Verify old tasks were explicitly removed via Delete to prevent concurrency errors
+        mockJobTaskRepo.Verify(r => r.Delete(existingTask), Times.Once);
         
         // 2. Verify new tasks were added
-        mockJobTaskRepo.Verify(r => r.AddRangeAsync(It.Is<IEnumerable<JobTask>>(tasks => tasks.Any(t => t.Title == "New Task"))), Times.Once);
+        mockJobTaskRepo.Verify(r => r.AddAsync(It.Is<JobTask>(t => t.Title == "New Task")), Times.Once);
 
         // 3. Verify JobPost timestamp was updated and changes saved
         mockJobPostRepo.Verify(r => r.Update(jobPost), Times.Once);

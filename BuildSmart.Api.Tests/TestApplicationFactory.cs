@@ -17,11 +17,12 @@ namespace BuildSmart.Api.Tests
         {
             builder.ConfigureTestServices(services =>
             {
-                // Remove the real database context registration
-                var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+                // Remove all Entity Framework Core services to ensure a clean slate for the InMemory provider
+                var descriptors = services.Where(
+                    d => d.ServiceType.Namespace != null && 
+                         d.ServiceType.Namespace.StartsWith("Microsoft.EntityFrameworkCore")).ToList();
 
-                if (descriptor != null)
+                foreach (var descriptor in descriptors)
                 {
                     services.Remove(descriptor);
                 }
