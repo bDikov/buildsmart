@@ -9,6 +9,10 @@ namespace BuildSmart.Api.Workers;
 
 public class ScopeGenerationWorker
 {
+	internal static DateTime _lastApiCallTime = DateTime.MinValue;
+	internal static Func<TimeSpan, Task> DelayTask = Task.Delay;
+	internal static Func<DateTime> UtcNowProvider = () => DateTime.UtcNow;
+
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<ScopeGenerationWorker> _logger;
 
@@ -25,10 +29,6 @@ public class ScopeGenerationWorker
 	public async Task ProcessJobAsync(Guid jobPostId)
 	{
 		_logger.LogInformation("Processing Job Scope for Job ID: {JobId}", jobPostId);
-
-		// Strict rate limiting: 30-second delay guarantees max 2 executions per minute
-		// since the "ai-queue" WorkerCount is configured to 1 in Program.cs.
-		await Task.Delay(TimeSpan.FromSeconds(30));
 
 		using var scope = _serviceProvider.CreateScope();
 		var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -62,7 +62,17 @@ public class ScopeGenerationWorker
 						_logger.LogWarning(exception, "Gemini API failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
 					});
 
-			var aiResponse = await retryPolicy.ExecuteAsync(() => aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus));
+			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
+			{
+				var timeSinceLastCall = UtcNowProvider() - _lastApiCallTime;
+				if (timeSinceLastCall < TimeSpan.FromSeconds(30))
+				{
+					await DelayTask(TimeSpan.FromSeconds(30) - timeSinceLastCall);
+				}
+				_lastApiCallTime = UtcNowProvider();
+
+				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus);
+			});
 
 			// 4. Clear existing Tasks if any (in case of regeneration)
 			var existingTasks = await unitOfWork.JobTasks.GetTasksByJobPostAsync(jobPostId);
