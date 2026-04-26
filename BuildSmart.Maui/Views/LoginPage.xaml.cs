@@ -1,3 +1,4 @@
+using BuildSmart.SharedUI.ViewModels;
 namespace BuildSmart.Maui.Views;
 
 public partial class LoginPage : ContentPage
@@ -7,3 +8,4 @@ public partial class LoginPage : ContentPage
 		InitializeComponent();
 	}
 }
+

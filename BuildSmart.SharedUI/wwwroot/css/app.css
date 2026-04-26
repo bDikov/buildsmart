@@ -1,0 +1,164 @@
+:root {
+    /* Fonts */
+    --font-primary: 'Roboto', 'Open Sans', 'Segoe UI', Tahoma, sans-serif;
+    --font-heading: 'Merriweather', serif;
+    --font-secondary: 'Poppins', sans-serif;
+
+    /* Hardcoded Dark Theme Colors */
+    --bg-page: rgb(27, 29, 40);
+    --bg-card: rgb(34, 37, 51);
+    --bg-card-alt: rgb(40, 44, 60);
+    --text-primary: rgb(255, 255, 255);
+    --text-secondary: rgb(229, 229, 229);
+    --text-muted: rgb(125, 129, 147);
+    --border-color: rgb(52, 57, 78);
+    --shadow-main: 0px 10px 30px rgba(0,0,0,0.5);
+    --shadow-hover: 0px 15px 35px rgba(0,0,0,0.6);
+    
+    /* Primary Accents */
+    --color-primary: rgb(113, 50, 193);
+    --color-primary-hover: rgb(130, 60, 220);
+}
+
+/* ==========================================================================
+   BASE HTML OVERRIDES (Applies Figma design universally)
+   ========================================================================== */
+
+html, body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    margin-top: 0;
+}
+
+p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-primary-hover);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 20px 0;
+}
+
+/* ==========================================================================
+   GLOBAL DESIGN SYSTEM CLASSES (From Figma)
+   ========================================================================== */
+
+/* Buttons */
+.bs-btn-primary {
+    background-color: var(--color-primary);
+    border-radius: 5px;
+    border: none;
+    color: rgb(229, 229, 229); /* Always light text on purple */
+    font-size: 16px;
+    padding: 16px 42px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-family: var(--font-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.bs-btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+.bs-btn-dark {
+    background-color: rgb(26, 28, 41); /* Specifically dark regardless of theme */
+    border-radius: 5px;
+    border: none;
+    color: rgb(229, 229, 229);
+    font-size: 16px;
+    padding: 16px 25px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-family: var(--font-primary);
+    font-weight: 500;
+}
+
+.bs-btn-dark:hover {
+    background-color: rgb(40, 43, 60);
+    transform: translateY(-1px);
+}
+
+/* Inputs */
+.bs-input {
+    background-color: var(--bg-card-alt);
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 16px;
+    padding: 16px 24px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--font-primary);
+    transition: border-color 0.2s ease;
+}
+
+.bs-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.bs-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Cards */
+.bs-card {
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    box-shadow: var(--shadow-main);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Blazor Error UI */
+#blazor-error-ui {
+    background: var(--color-primary);
+    color: white;
+    bottom: 0;
+    box-shadow: 0 -1px 10px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}

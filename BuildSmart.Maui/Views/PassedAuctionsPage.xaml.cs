@@ -1,29 +1,29 @@
-using BuildSmart.Maui.ViewModels;
-using BuildSmart.Maui.GraphQL;
+using BuildSmart.SharedUI.GraphQL;
+using BuildSmart.SharedUI.ViewModels;
 
 namespace BuildSmart.Maui.Views;
 
 public partial class PassedAuctionsPage : ContentPage
 {
-    private readonly PassedAuctionsViewModel _viewModel;
+	private readonly PassedAuctionsViewModel _viewModel;
 
-    public PassedAuctionsPage(PassedAuctionsViewModel viewModel)
-    {
-        InitializeComponent();
-        BindingContext = _viewModel = viewModel;
-    }
+	public PassedAuctionsPage(PassedAuctionsViewModel viewModel)
+	{
+		InitializeComponent();
+		BindingContext = _viewModel = viewModel;
+	}
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await _viewModel.LoadPassedAuctionsAsync();
-    }
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+		await _viewModel.LoadPassedAuctionsAsync();
+	}
 
-    private async void OnRestoreClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.CommandParameter is IGetPassedAuctions_PassedAuctions auction)
-        {
-            await _viewModel.RestoreAuctionCommand.ExecuteAsync(auction);
-        }
-    }
+	private async void OnRestoreClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button && button.CommandParameter is IGetPassedAuctions_PassedAuctions auction)
+		{
+			await _viewModel.RestoreAuctionCommand.ExecuteAsync(auction);
+		}
+	}
 }

@@ -66,32 +66,21 @@
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.3" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.10" />
-		<PackageReference Include="StrawberryShake.Maui" Version="13.9.2" />
-		<!-- Removed <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.120" /> -->
+				<!-- Removed <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.120" /> -->
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="StrawberryShake.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  
 
-  <ItemGroup>
-    <GraphQL Include="GraphQL\*.graphql" />
-  </ItemGroup>
+  
 
 	<ItemGroup>
 	  <ProjectReference Include="..\BuildSmart.Core.Application\BuildSmart.Core.Application.csproj" />
 	  <ProjectReference Include="..\BuildSmart.Core.Domain\BuildSmart.Core.Domain.csproj" />
+	  <ProjectReference Include="..\BuildSmart.SharedUI\BuildSmart.SharedUI.csproj" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Generated\**\*.cs" ExcludeFromCurrentProject="true" />
-  </ItemGroup>
+  </Project>
 
-  <Target Name="CleanStrawberryShake" AfterTargets="Clean">
-    <RemoveDir Directories="Generated" />
-  </Target>
-</Project>
+

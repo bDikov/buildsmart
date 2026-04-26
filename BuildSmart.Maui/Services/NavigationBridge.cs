@@ -1,3 +1,4 @@
+using BuildSmart.SharedUI.Services;
 namespace BuildSmart.Maui.Services;
 
 public class NavigationBridge : INavigationBridge
@@ -29,3 +30,4 @@ public class NavigationBridge : INavigationBridge
         return Task.CompletedTask;
     }
 }
+

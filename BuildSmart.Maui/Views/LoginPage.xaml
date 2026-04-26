@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:BuildSmart.Maui"
-             xmlns:pages="clr-namespace:BuildSmart.Maui.Components.Pages"
+             xmlns:pages="clr-namespace:BuildSmart.SharedUI.Components.Pages;assembly=BuildSmart.SharedUI"
              x:Class="BuildSmart.Maui.Views.LoginPage"
              Title="Login"
              Shell.NavBarIsVisible="False">

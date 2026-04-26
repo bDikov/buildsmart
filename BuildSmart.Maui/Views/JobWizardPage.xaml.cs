@@ -1,4 +1,4 @@
-using BuildSmart.Maui.ViewModels;
+using BuildSmart.SharedUI.ViewModels;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 
 namespace BuildSmart.Maui.Views;
@@ -21,9 +21,10 @@ public partial class JobWizardPage : ContentPage
         blazorWebView.RootComponents.Add(new RootComponent
         {
             Selector = "#app",
-            ComponentType = typeof(Components.Pages.JobWizard)
+            ComponentType = typeof(BuildSmart.SharedUI.Components.Pages.JobWizard)
         });
 
         Content = blazorWebView;
 	}
 }
+

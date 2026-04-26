@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
-using BuildSmart.Maui.GraphQL; // Added
-using StrawberryShake.Transport.WebSockets; // Added
 using BuildSmart.Maui.Views;
-using BuildSmart.Maui.ViewModels;
+using BuildSmart.SharedUI.ViewModels;
 using BuildSmart.Maui.Services;
-using BuildSmart.Maui.Handlers;
+using BuildSmart.SharedUI.Services;
 using BuildSmart.Maui.Views.Admin;
-using BuildSmart.Maui.ViewModels.Admin;
+using BuildSmart.SharedUI.ViewModels.Admin;
+using BuildSmart.SharedUI.Handlers;
+using BuildSmart.SharedUI;
 
 namespace BuildSmart.Maui;
 
@@ -14,6 +14,16 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		// Configure SharedUI API Config based on MAUI platform
+		if (Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android)
+		{
+			BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://10.0.2.2:7212";
+		}
+		else
+		{
+			BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://localhost:7212";
+		}
+
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
@@ -30,14 +40,16 @@ public static class MauiProgram
 
 		// Configure StrawberryShake GraphQL Client
 
-		builder.Services.AddSingleton<IMediaPicker>(MediaPicker.Default);
-		builder.Services.AddSingleton<IFilePicker>(FilePicker.Default); // Good practice to add commonly used essentials
+		builder.Services.AddSingleton<BuildSmart.SharedUI.MauiMocks.IMediaPicker, BuildSmart.Maui.Services.AppMediaPicker>();
+		builder.Services.AddSingleton<BuildSmart.SharedUI.MauiMocks.IFilePicker, BuildSmart.Maui.Services.AppFilePicker>(); // Good practice to add commonly used essentials
 
 		// Services
 		builder.Services.AddSingleton<IAuthService, AuthService>();
 		builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
 		builder.Services.AddSingleton<IFileService, FileService>();
 		builder.Services.AddSingleton<INavigationBridge, NavigationBridge>();
+		builder.Services.AddSingleton<IAlertService, AlertService>();
+		builder.Services.AddSingleton<IAppMainThread, AppMainThread>();
 		builder.Services.AddHttpClient();
 		builder.Services.AddTransient<AuthHeaderHandler>();
 		builder.Services.AddTransient<LoggingHandler>();
@@ -56,9 +68,11 @@ public static class MauiProgram
 				client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 			}, builder =>
 			{
-				builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-				{
-					ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+				builder.ConfigurePrimaryHttpMessageHandler(() => {
+					return new HttpClientHandler
+					{
+						ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+					};
 				})
 				.AddHttpMessageHandler<LoggingHandler>()
 				.AddHttpMessageHandler<AuthHeaderHandler>();
@@ -70,8 +84,8 @@ public static class MauiProgram
 		builder.Services.AddTransient<CreateAccountPage>();
 		builder.Services.AddTransient<CreateAccountPageViewModel>();
 
-		builder.Services.AddSingleton<FeedPage>();
-		builder.Services.AddSingleton<FeedPageViewModel>();
+		builder.Services.AddTransient<FeedPage>();
+		builder.Services.AddTransient<FeedPageViewModel>();
 
 		builder.Services.AddTransient<TradesmanDetailsPage>();
 		builder.Services.AddTransient<TradesmanDetailsViewModel>();
@@ -170,6 +184,12 @@ public static class MauiProgram
 
 		builder.Logging.AddDebug();
 
-		return builder.Build();
+		var app = builder.Build();
+
+		AppServiceLocator.Navigation = app.Services.GetRequiredService<INavigationBridge>();
+		AppServiceLocator.Alerts = app.Services.GetRequiredService<IAlertService>();
+		AppServiceLocator.MainThread = app.Services.GetRequiredService<IAppMainThread>();
+
+		return app;
 	}
 }

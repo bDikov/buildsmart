@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BuildSmart.Maui.Views.DetailedViewPage"
-             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:viewModels="clr-namespace:BuildSmart.SharedUI.ViewModels;assembly=BuildSmart.SharedUI"
              x:DataType="viewModels:DetailedViewPageViewModel"
              Title="User Profile">
     <VerticalStackLayout Spacing="10" Padding="20">

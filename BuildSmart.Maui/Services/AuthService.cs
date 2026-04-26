@@ -1,3 +1,4 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -6,22 +7,9 @@ using Microsoft.Maui.Storage;
 
 namespace BuildSmart.Maui.Services
 {
-	public interface IAuthService
-	{
-		Task<string?> GetTokenAsync();
+	
 
-		Task SaveTokenAsync(string token);
-
-		Task ClearTokenAsync();
-
-		bool IsAuthenticated { get; }
-
-		string? GetUserRoleFromToken(string? token);
-
-		Guid? GetUserIdFromToken(string? token);
-		}
-
-		public class AuthService : IAuthService
+		public class AuthService : BuildSmart.SharedUI.Services.IAuthService
 		{
 		private const string TokenKey = "auth_token";
 		private string? _cachedToken;
@@ -87,5 +75,6 @@ namespace BuildSmart.Maui.Services
 
 			return null;
 		}
-		}
-		}
+	}
+}
+
