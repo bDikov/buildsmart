@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSmart.Core.Domain.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSmart.SharedUI", "BuildSmart.SharedUI\BuildSmart.SharedUI.csproj", "{25CDEF52-50CD-4D79-A12F-2D5C7555521C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildSmart.Web", "BuildSmart.Web\BuildSmart.Web.csproj", "{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,18 @@ Global
 		{25CDEF52-50CD-4D79-A12F-2D5C7555521C}.Release|x64.Build.0 = Release|Any CPU
 		{25CDEF52-50CD-4D79-A12F-2D5C7555521C}.Release|x86.ActiveCfg = Release|Any CPU
 		{25CDEF52-50CD-4D79-A12F-2D5C7555521C}.Release|x86.Build.0 = Release|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Debug|x64.Build.0 = Debug|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Debug|x86.Build.0 = Debug|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Release|x64.ActiveCfg = Release|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Release|x64.Build.0 = Release|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Release|x86.ActiveCfg = Release|Any CPU
+		{1F4F273F-46B4-41E1-AC90-E535E3FDABE8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

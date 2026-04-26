@@ -1,0 +1,33 @@
+@inject BuildSmart.SharedUI.Services.INavigationBridge NavBridge
+@inject BuildSmart.SharedUI.Services.IAlertService AlertService
+@inject BuildSmart.SharedUI.Services.IAppMainThread MainThread
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(BuildSmart.SharedUI.Components.Layout.MainLayout).Assembly }">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(BuildSmart.SharedUI.Components.Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="typeof(BuildSmart.SharedUI.Components.Layout.MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (MainThread is BuildSmart.Web.Services.WebAppMainThread webThread)
+        {
+            webThread.DispatcherInvoke = async (action) => await InvokeAsync(action);
+            webThread.DispatcherInvokeAsync = async (func) => await InvokeAsync(func);
+        }
+
+        BuildSmart.SharedUI.Services.AppServiceLocator.Navigation = NavBridge;
+        BuildSmart.SharedUI.Services.AppServiceLocator.Alerts = AlertService;
+        BuildSmart.SharedUI.Services.AppServiceLocator.MainThread = MainThread;
+    }
+}

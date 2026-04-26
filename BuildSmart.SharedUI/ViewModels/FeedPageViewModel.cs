@@ -82,7 +82,14 @@ namespace BuildSmart.SharedUI.ViewModels
 		    {
 		        IsLoading = true;
 
-		        await EnsureRoleDetectedAsync();
+		        if (!await EnsureRoleDetectedAsync())
+				{
+					await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(() =>
+					{
+						AppServiceLocator.Navigation.NavigateToAsync("/login");
+					});
+					return;
+				}
 
 		        if (IsTradesman)
 		        {
