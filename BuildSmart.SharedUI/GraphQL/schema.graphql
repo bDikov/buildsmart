@@ -974,7 +974,7 @@ type Mutation {
   updateVideoIntroduction(file: Upload!): Boolean!
   "Restores a previously passed auction for a tradesman."
   restoreAuction(jobId: UUID!): Boolean!
-  updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String): User!
+  updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
   deleteProject(projectId: UUID!): Boolean!
   replyToJobQuestion(parentQuestionId: UUID! replyText: String!): JobPostQuestion!
   replyToJobFeedback(parentFeedbackId: UUID! text: String!): JobPostFeedback!

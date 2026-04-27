@@ -245,9 +245,11 @@ public class Mutation
 		string? bio,
 		string? location,
 		string? profilePictureUrl,
+		string? phoneNumber,
+		string? email,
 		[Service] IAuthService authService)
 	{
-		return await authService.UpdateUserProfileAsync(userId, firstName, lastName, bio, location, profilePictureUrl);
+		return await authService.UpdateUserProfileAsync(userId, firstName, lastName, bio, location, profilePictureUrl, phoneNumber, email);
 	}
 
 	public async Task<Review> SubmitReview(

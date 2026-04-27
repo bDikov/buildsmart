@@ -1,4 +1,3 @@
-using BuildSmart.SharedUI.MauiMocks;
 using BuildSmart.SharedUI.GraphQL;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,6 +23,9 @@ public partial class UserProfileViewModel : ObservableObject
 
     [ObservableProperty]
     private string _email = string.Empty; // Read-only usually
+
+    [ObservableProperty]
+    private string _phoneNumber = string.Empty;
 
     [ObservableProperty]
     private string _bio = string.Empty;
@@ -202,6 +204,7 @@ public partial class UserProfileViewModel : ObservableObject
                 FirstName = user.FirstName;
                 LastName = user.LastName;
                 Email = user.Email;
+                PhoneNumber = user.PhoneNumber ?? string.Empty;
                 Bio = user.Bio ?? string.Empty;
                 Location = user.Location ?? string.Empty;
                 ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty;
@@ -249,7 +252,9 @@ public partial class UserProfileViewModel : ObservableObject
                 LastName,
                 Bio,
                 Location,
-                ProfilePictureUrl
+                ProfilePictureUrl,
+                PhoneNumber,
+                Email
             );
 
             if (result.Errors.Count > 0)

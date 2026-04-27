@@ -38,20 +38,16 @@
 
 					<div class="modal-body">
 						<div class="form-group">
-							<label>First Name</label>
-							<input class="bs-input" @bind="ViewModel.FirstName" />
+							<label>Email</label>
+							<input class="bs-input" type="email" @bind="ViewModel.Email" />
 						</div>
 						<div class="form-group">
-							<label>Last Name</label>
-							<input class="bs-input" @bind="ViewModel.LastName" />
+							<label>Phone Number</label>
+							<input class="bs-input" type="tel" @bind="ViewModel.PhoneNumber" />
 						</div>
 						<div class="form-group">
 							<label>Location</label>
 							<input class="bs-input" @bind="ViewModel.Location" />
-						</div>
-						<div class="form-group" style="margin-bottom: 10px;">
-							<label>Bio</label>
-							<textarea class="bs-input" rows="4" @bind="ViewModel.Bio"></textarea>
 						</div>
 
 						<div class="modal-actions">

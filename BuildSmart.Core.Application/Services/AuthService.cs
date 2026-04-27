@@ -68,7 +68,7 @@ public class AuthService : IAuthService
 		return user;
 	}
 
-	public async Task<User> UpdateUserProfileAsync(Guid userId, string firstName, string lastName, string? bio, string? location, string? profilePictureUrl)
+	public async Task<User> UpdateUserProfileAsync(Guid userId, string firstName, string lastName, string? bio, string? location, string? profilePictureUrl, string? phoneNumber, string? email)
 	{
 		var user = await _unitOfWork.Users.GetByIdAsync(userId);
 		if (user == null)
@@ -81,6 +81,13 @@ public class AuthService : IAuthService
 		user.Bio = bio;
 		user.Location = location;
 		user.ProfilePictureUrl = profilePictureUrl;
+		user.PhoneNumber = phoneNumber;
+
+		if (!string.IsNullOrWhiteSpace(email))
+		{
+			user.Email = email;
+		}
+
 		user.UpdatedAt = DateTime.UtcNow;
 
 		_unitOfWork.Users.Update(user);
