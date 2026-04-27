@@ -5,7 +5,13 @@
 <CascadingAuthenticationState>
     <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(BuildSmart.SharedUI.Components.Layout.MainLayout).Assembly }">
         <Found Context="routeData">
-            <RouteView RouteData="routeData" DefaultLayout="typeof(BuildSmart.SharedUI.Components.Layout.MainLayout)" />
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(BuildSmart.SharedUI.Components.Layout.MainLayout)">
+                <NotAuthorized>
+                    <LayoutView Layout="typeof(BuildSmart.SharedUI.Components.Layout.BlankLayout)">
+                        <RedirectToLogin />
+                    </LayoutView>
+                </NotAuthorized>
+            </AuthorizeRouteView>
             <FocusOnNavigate RouteData="routeData" Selector="h1" />
         </Found>
         <NotFound>

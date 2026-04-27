@@ -1,0 +1,24 @@
+@inherits LayoutComponentBase
+
+<div class="blank-layout">
+    <ErrorBoundary>
+        <ChildContent>
+            @Body
+        </ChildContent>
+        <ErrorContent>
+            <div class="alert alert-danger m-3">
+                <h4>Rendering Error</h4>
+                <p>@context.Message</p>
+                <pre style="font-size: 10px; overflow-x: auto;">@context.StackTrace</pre>
+            </div>
+        </ErrorContent>
+    </ErrorBoundary>
+</div>
+
+<style>
+    .blank-layout {
+        min-height: 100vh;
+        width: 100vw;
+        background-color: var(--bg-page);
+    }
+</style>

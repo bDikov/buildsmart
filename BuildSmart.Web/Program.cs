@@ -56,6 +56,7 @@ builder.Services.AddScoped<IAuthService, WebAuthService>();
 builder.Services.AddScoped<INavigationBridge, WebNavigationBridge>();
 builder.Services.AddScoped<IAlertService, WebAlertService>();
 builder.Services.AddScoped<IAppMainThread, WebAppMainThread>();
+builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, CircuitContextHandler>();
 
 // Shared Services
 builder.Services.AddScoped<SignalRService>();
@@ -66,7 +67,12 @@ builder.Services.AddTransient<AuthHeaderHandler>();
 builder.Services.AddTransient<LoggingHandler>();
 
 // Blazor Authentication & Authorization
-builder.Services.AddAuthorizationCore();
+builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+    });
+builder.Services.AddAuthorization();
 builder.Services.AddScoped<AuthenticationStateProvider, MauiAuthenticationStateProvider>();
 
 // Register Strawberry Shake with fluent configuration
@@ -131,6 +137,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();

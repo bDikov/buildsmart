@@ -51,6 +51,10 @@ namespace BuildSmart.SharedUI.ViewModels
 
 					var userRole = _authService.GetUserRoleFromToken(token);
 
+                    // Notify Blazor that the user is now authenticated
+                    var authStateProvider = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+                    authStateProvider?.NotifyAuthenticationStateChanged();
+
 					await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
 					{
                         // Application navigation removed for shared UI

@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject INavigationBridge NavigationBridge
 @inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="page">
     <!-- Mobile Header -->
@@ -308,6 +309,13 @@
         padding-top: 0;
     }
 
+    .main-content-unauth {
+        width: 100%;
+        background-color: var(--bg-page);
+        min-height: 100vh;
+        padding-top: 0;
+    }
+
     /* Mobile Responsive Styles */
     @@media (max-width: 992px) {
         .sidebar {
@@ -396,6 +404,12 @@
     private async Task LogoutAsync()
     {
         await AuthService.ClearTokenAsync();
+        
+        // Notify the Blazor authentication system that the user is now anonymous
+        if (AuthStateProvider is MauiAuthenticationStateProvider mauiProvider)
+        {
+            mauiProvider.NotifyAuthenticationStateChanged();
+        }
         
         await BuildSmart.SharedUI.MauiMocks.MainThread.InvokeOnMainThreadAsync(() =>
         {

@@ -4,8 +4,33 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using BuildSmart.SharedUI.Services;
 using BuildSmart.SharedUI.MauiMocks;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 
 namespace BuildSmart.Web.Services;
+
+public static class BlazorCircuitContext
+{
+    public static readonly AsyncLocal<IServiceProvider?> CurrentServices = new();
+}
+
+public class CircuitContextHandler : CircuitHandler
+{
+    private readonly IServiceProvider _services;
+
+    public CircuitContextHandler(IServiceProvider services)
+    {
+        _services = services;
+    }
+
+    public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(Func<CircuitInboundActivityContext, Task> next)
+    {
+        return async context =>
+        {
+            BlazorCircuitContext.CurrentServices.Value = _services;
+            await next(context);
+        };
+    }
+}
 
 public class WebAuthService : IAuthService
 {
@@ -116,7 +141,11 @@ public class WebNavigationBridge : INavigationBridge
     public Task NavigateToAsync(string route, IDictionary<string, object>? parameters = null)
     {
         var url = route;
-        if (route.StartsWith("//")) url = route.Substring(2);
+        
+        // Intercept native MAUI shell routes and translate them to Web routes
+        if (url == "//BlazorHostPage") url = "/";
+        else if (url == "//LoginPage") url = "/login";
+        else if (url.StartsWith("//")) url = url.Substring(2);
         
         if (parameters != null && parameters.Count > 0)
         {

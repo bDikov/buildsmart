@@ -1,5 +1,7 @@
 @page "/login"
 @using BuildSmart.SharedUI.ViewModels
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
 @inject LoginPageViewModel ViewModel
 
 <div class="login-container">

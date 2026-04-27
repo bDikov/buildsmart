@@ -102,3 +102,20 @@ When the `AlertService` attempted to display a popup dialog (`DisplayAlert`) fro
 ### 7. Dependency Injection Crash on Native Pickers
 Clicking the "Settings" menu (which navigates to `UserProfileViewModel`) caused an instant `InvalidOperationException: Unable to resolve service` crash. This occurred because the ViewModel in the `SharedUI` project required `BuildSmart.SharedUI.MauiMocks.IMediaPicker`, but `MauiProgram.cs` was attempting to inject the actual native Android/iOS `Microsoft.Maui.Media.IMediaPicker`.
 *   **Fix:** Created "Adapter" classes in the native MAUI project (`AppMediaPicker` and `AppFilePicker`) that implement the `SharedUI.MauiMocks` interfaces but secretly call the real `Microsoft.Maui` native hardware APIs under the hood. Registered these adapters in `MauiProgram.cs`.
+
+### 8. Blazor Web App (InteractiveServer) Crashes on JS Interop
+When initializing the `BuildSmart.Web` project (Blazor Interactive Server), the SignalR circuit would instantly disconnect with a generic `_processIncomingData` JavaScript error.
+*   **Fix:**
+    *   **Prerendering:** Disabled prerendering on `<Routes>` and `<HeadOutlet>` because static server rendering executing `JSInterop` calls for authentication tokens (`localStorage.getItem`) before the SignalR circuit was fully established caused fatal `InvalidOperationException`s.
+    *   **MainThread Invocation:** Adapted the static `AppServiceLocator.MainThread` implementation for the web (`WebAppMainThread`) to hook into Blazor's native `InvokeAsync(StateHasChanged)` dispatcher, wrapping the execution in `try/catch` blocks to prevent unhandled background thread exceptions from tearing down the circuit.
+
+### 9. SignalR Message Size Limits (Blank Feed Pages)
+Loading the Tradesmen or Auctions feed caused immediate SignalR disconnections (`_processIncomingData` errors) without C# stack traces.
+*   **Fix:** By default, Blazor Server enforces a strict 32KB limit on SignalR messages. Downloading database records with large texts or Base64 images exceeded this buffer. We increased `MaximumReceiveMessageSize` to 100MB in `Program.cs` via `builder.Services.AddSignalR()` and `.AddHubOptions()`.
+
+### 10. Navigation Sidebar Flashing on Unauthorized Routes
+When accessing the Web App without a valid token, the Blazor `<AuthorizeRouteView>` correctly redirected users to the `/login` page via the `<NotAuthorized>` state. However, because `<NotAuthorized>` didn't have an explicit layout, it rendered the default `MainLayout` (showing the sidebar) before executing the `NavigationManager.NavigateTo` redirect.
+*   **Fix:** 
+    *   Created a `BlankLayout.razor` (a layout without the sidebar/navigation).
+    *   Wrapped the `<RedirectToLogin />` component inside a `<LayoutView Layout="typeof(BlankLayout)">` within the `<NotAuthorized>` block in `Routes.razor`.
+    *   Removed `forceLoad: true` from the `NavigateTo` call in `RedirectToLogin.razor` to allow seamless client-side routing instead of a jarring page refresh.

@@ -1,6 +1,7 @@
 @page "/create-account"
 @using BuildSmart.SharedUI.ViewModels
-@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
 @inject CreateAccountPageViewModel ViewModel
 
 <Card CssClass="m-4 shadow-sm">
