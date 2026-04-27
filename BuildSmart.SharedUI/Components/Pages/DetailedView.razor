@@ -1,0 +1,102 @@
+@page "/detailed-view"
+@using BuildSmart.SharedUI.ViewModels
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@inject DetailedViewPageViewModel ViewModel
+
+<div class="detailed-view-container">
+    <div class="header-section">
+        <h2 class="page-title">User Profile</h2>
+    </div>
+
+    @if (ViewModel.User == null)
+    {
+        <div class="loading-state">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading profile...</p>
+        </div>
+    }
+    else
+    {
+        <div class="bs-card profile-details">
+            <div class="detail-group">
+                <label class="detail-label">First Name:</label>
+                <span class="detail-value">@ViewModel.User.FirstName</span>
+            </div>
+            
+            <div class="detail-group">
+                <label class="detail-label">Last Name:</label>
+                <span class="detail-value">@ViewModel.User.LastName</span>
+            </div>
+            
+            <div class="detail-group">
+                <label class="detail-label">Email:</label>
+                <span class="detail-value">@ViewModel.User.Email</span>
+            </div>
+            
+            <div class="detail-group">
+                <label class="detail-label">Role:</label>
+                <span class="detail-value">@ViewModel.User.Role</span>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .detailed-view-container {
+        padding: 40px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: var(--font-primary);
+        color: var(--text-primary);
+    }
+
+    .header-section {
+        margin-bottom: 24px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        font-family: var(--font-heading);
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .profile-details {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 24px;
+    }
+
+    .detail-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .detail-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .detail-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadUserAsync();
+    }
+}

@@ -66,9 +66,10 @@ public static class MauiProgram
 				// Force HTTP/1.1 for local development compatibility
 				client.DefaultRequestVersion = System.Net.HttpVersion.Version11;
 				client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
-			}, builder =>
+			}, static builder =>
 			{
-				builder.ConfigurePrimaryHttpMessageHandler(() => {
+				builder.ConfigurePrimaryHttpMessageHandler(static () =>
+				{
 					return new HttpClientHandler
 					{
 						ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -109,7 +110,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<GeneratedOfferPage>();
 		builder.Services.AddTransient<GeneratedOfferViewModel>();
 
-		builder.Services.AddTransient<NotificationsPage>();
 		builder.Services.AddTransient<NotificationsViewModel>();
 
 		builder.Services.AddTransient<AuctionHubPage>();
@@ -169,7 +169,6 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
 		Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
 		Routing.RegisterRoute(nameof(GeneratedOfferPage), typeof(GeneratedOfferPage));
-		Routing.RegisterRoute(nameof(NotificationsPage), typeof(NotificationsPage));
 		Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));
 		Routing.RegisterRoute(nameof(TaskBreakdownPage), typeof(TaskBreakdownPage));
 		Routing.RegisterRoute(nameof(BidDetailsPage), typeof(BidDetailsPage));

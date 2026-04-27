@@ -1,0 +1,271 @@
+@page "/NotificationsPage"
+@using BuildSmart.SharedUI.ViewModels
+@using System.ComponentModel
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+@inject NotificationsViewModel ViewModel
+
+<div class="notifications-container">
+    <div class="header-section">
+        <h2 class="page-title">Notifications</h2>
+    </div>
+
+    @if (ViewModel.IsBusy && ViewModel.Notifications.Count == 0)
+    {
+        <div class="loading-state">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading notifications...</p>
+        </div>
+    }
+    else if (ViewModel.Notifications.Count == 0)
+    {
+        <div class="empty-state">
+            <p class="empty-title">No notifications yet.</p>
+            <p class="empty-subtitle">Important updates will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="notifications-list @(_isClearing ? "clearing" : "")">
+            @foreach (var note in ViewModel.Notifications)
+            {
+                <div class="ios-notification-card @(note.IsRead ? "read" : "unread")" @onclick="() => ViewModel.MarkAsReadCommand.ExecuteAsync(note)">
+                    <div class="ios-app-icon">
+                        <!-- BuildSmart Logo Icon -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="ios-notification-content">
+                        <div class="ios-notification-header">
+                            <span class="ios-notification-title">@note.Title</span>
+                            <span class="ios-notification-time">@note.CreatedAt.ToString("t")</span>
+                        </div>
+                        <span class="ios-notification-message">@note.Message</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="footer-actions">
+            <button class="clear-btn" @onclick="ClearAll">
+                Clear All Notifications
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .notifications-container {
+        padding: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .header-section {
+        margin-bottom: 24px;
+        padding-left: 8px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .loading-state, .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 8px 0;
+    }
+
+    .empty-subtitle {
+        font-size: 15px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .notifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: transform 0.4s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 0.4s ease;
+    }
+
+    .notifications-list.clearing {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    /* iOS 15 Notification Styling from Figma */
+    .ios-notification-card {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 12px;
+        gap: 12px;
+        
+        /* Figma Specs: Background Blur & Color */
+        background-color: rgba(37, 37, 37, 0.60);
+        backdrop-filter: blur(33.2px);
+        -webkit-backdrop-filter: blur(33.2px);
+        border-radius: 18px;
+        box-shadow: 0px 2.6px 33px rgba(0, 0, 0, 0.25);
+        
+        cursor: pointer;
+        transition: opacity 0.3s ease, transform 0.2s ease;
+    }
+    
+    @@media (prefers-color-scheme: light) {
+        .ios-notification-card {
+            background-color: rgba(255, 255, 255, 0.70);
+            box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.08);
+        }
+    }
+
+    .ios-notification-card:active {
+        transform: scale(0.98);
+    }
+
+    .ios-notification-card.read {
+        opacity: 0.5;
+    }
+
+    .ios-app-icon {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--color-primary) 0%, #1e5dd1 100%);
+        border-radius: 9px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .ios-notification-content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 2px;
+        padding-top: 2px;
+    }
+
+    .ios-notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+
+    .ios-notification-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -0.2px;
+    }
+    
+    @@media (prefers-color-scheme: light) {
+        .ios-notification-title,
+        .ios-notification-message {
+            color: #000000 !important;
+        }
+        .ios-notification-time {
+            color: rgba(60, 60, 67, 0.60) !important;
+        }
+    }
+
+    .ios-notification-card.read .ios-notification-title {
+        font-weight: 500;
+    }
+
+    .ios-notification-time {
+        font-size: 13px;
+        font-weight: 400;
+        color: rgba(235, 235, 245, 0.60);
+    }
+
+    .ios-notification-message {
+        font-size: 15px;
+        font-weight: 400;
+        color: white;
+        line-height: 1.35;
+        letter-spacing: -0.1px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .footer-actions {
+        margin-top: 32px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .clear-btn {
+        color: #FF3B30;
+        font-size: 15px;
+        font-weight: 600;
+        background: transparent;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .clear-btn:hover {
+        background-color: rgba(255, 59, 48, 0.1);
+    }
+</style>
+
+@code {
+    private bool _isClearing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        await ViewModel.LoadNotificationsCommand.ExecuteAsync(null);
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ClearAll()
+    {
+        if (ViewModel.Notifications.Count == 0) return;
+
+        // Trigger CSS animation class
+        _isClearing = true;
+        StateHasChanged();
+
+        // Wait for animation to finish (0.4s)
+        await Task.Delay(400);
+
+        await ViewModel.DeleteAllCommand.ExecuteAsync(null);
+
+        _isClearing = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

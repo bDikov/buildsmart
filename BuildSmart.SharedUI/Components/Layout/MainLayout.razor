@@ -16,13 +16,23 @@
             </div>
             <span class="logo-text" style="font-size: 16px;">BuildSmart</span>
         </div>
-        <button class="mobile-menu-btn" @onclick="ToggleSidebar">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
+        
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <a class="notification-bell mobile-bell" href="/NotificationsPage">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+            
+            <button class="mobile-menu-btn" @onclick="ToggleSidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="sidebar-overlay @(_isSidebarOpen ? "open" : "")" @onclick="CloseSidebar"></div>
@@ -88,10 +98,6 @@
             <div class="nav-item-header mt-4 mb-2">
                 Tools
             </div>
-            <a class="nav-item-dark" href="#" @onclick='() => Navigate("NotificationsPage")' @onclick:preventDefault>
-                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                Notifications
-            </a>
             
             <a class="nav-item-dark" href="/user-profile" @onclick="CloseSidebar">
                 <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -118,6 +124,15 @@
     </div>
 
     <main class="main-content">
+        <div class="top-app-bar desktop-top-bar">
+            <div class="spacer"></div>
+            <a class="notification-bell desktop-notification-bell" href="/NotificationsPage">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+        </div>
         <article class="content px-4 py-3">
             @Body
         </article>
@@ -316,8 +331,44 @@
         padding-top: 0;
     }
 
+    .top-app-bar {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 24px;
+        background-color: var(--bg-page); /* Solid background to hide content scrolling under it */
+        position: sticky; /* Keep it visible at the top while scrolling */
+        top: 0;
+        z-index: 90;
+    }
+
+    .spacer {
+        flex-grow: 1;
+    }
+
+    .notification-bell {
+        color: var(--text-primary);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+    .notification-bell:hover {
+        background-color: var(--bg-card-alt);
+    }
+
     /* Mobile Responsive Styles */
     @@media (max-width: 992px) {
+        .top-app-bar {
+            display: none !important;
+        }
+        
         .sidebar {
             transform: translateX(-100%);
             box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
@@ -330,7 +381,7 @@
         .main-content {
             margin-left: 0;
             width: 100%;
-            padding-top: 60px; /* Space for mobile header */
+            padding-top: 60px; /* Space for fixed mobile header */
         }
 
         .mobile-header {
@@ -341,11 +392,11 @@
             height: 60px;
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
-            position: fixed;
+            position: fixed; /* Strictly stick to top */
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 50;
+            z-index: 100; /* Higher z-index to stay above content */
         }
 
         .mobile-menu-btn {
