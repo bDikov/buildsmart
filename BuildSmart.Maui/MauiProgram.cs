@@ -80,7 +80,6 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddSingleton<LoginPage>(); builder.Services.AddSingleton<LoginPageViewModel>();
-		builder.Services.AddTransient<DetailedViewPage>();
 		builder.Services.AddTransient<DetailedViewPageViewModel>();
 		builder.Services.AddTransient<CreateAccountPage>();
 		builder.Services.AddTransient<CreateAccountPageViewModel>();
@@ -88,7 +87,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<FeedPage>();
 		builder.Services.AddTransient<FeedPageViewModel>();
 
-		builder.Services.AddTransient<TradesmanDetailsPage>();
 		builder.Services.AddTransient<TradesmanDetailsViewModel>();
 
 		builder.Services.AddTransient<BookingPage>();
@@ -159,9 +157,7 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(Views.Admin.UserManagementPage), typeof(Views.Admin.UserManagementPage));
 		Routing.RegisterRoute(nameof(Views.Admin.AdminJobReviewPage), typeof(Views.Admin.AdminJobReviewPage));
 
-		Routing.RegisterRoute(nameof(DetailedViewPage), typeof(DetailedViewPage));
 		Routing.RegisterRoute(nameof(CreateAccountPage), typeof(CreateAccountPage));
-		Routing.RegisterRoute(nameof(TradesmanDetailsPage), typeof(TradesmanDetailsPage));
 		Routing.RegisterRoute(nameof(BookingPage), typeof(BookingPage));
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
 		Routing.RegisterRoute(nameof(AdminCategorySkusPage), typeof(AdminCategorySkusPage));

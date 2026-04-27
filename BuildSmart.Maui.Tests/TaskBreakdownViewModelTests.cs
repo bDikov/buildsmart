@@ -1,5 +1,5 @@
-using BuildSmart.Maui.GraphQL;
-using BuildSmart.Maui.ViewModels;
+using BuildSmart.SharedUI.GraphQL;
+using BuildSmart.SharedUI.ViewModels;
 using Moq;
 using StrawberryShake;
 using System.Text.Json;
