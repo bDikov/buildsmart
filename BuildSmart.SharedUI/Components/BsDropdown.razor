@@ -1,0 +1,172 @@
+@typeparam TValue
+
+<div class="bs-dropdown" @onfocusout="HandleFocusOut" tabindex="0">
+    <div class="bs-dropdown-header @(_isOpen ? "open" : "")" @onclick="ToggleDropdown">
+        <span class="bs-dropdown-selected">
+            @if (Value == null || string.IsNullOrEmpty(Value.ToString()))
+            {
+                <span class="bs-placeholder">@Placeholder</span>
+            }
+            else
+            {
+                @Value.ToString()
+            }
+        </span>
+        <div class="bs-dropdown-icon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                @if (_isOpen)
+                {
+                    <polyline points="16 14 11 9 6 14"></polyline>
+                }
+                else
+                {
+                    <polyline points="6 9 11 14 16 9"></polyline>
+                }
+            </svg>
+        </div>
+    </div>
+    
+    @if (_isOpen)
+    {
+        <div class="bs-dropdown-menu">
+            @foreach (var option in Options)
+            {
+                <div class="bs-dropdown-item @(EqualityComparer<TValue>.Default.Equals(option, Value) ? "selected" : "")" 
+                     @onclick="() => SelectOption(option)"
+                     @onclick:stopPropagation="true">
+                    <span>@option?.ToString()</span>
+                    @if (EqualityComparer<TValue>.Default.Equals(option, Value))
+                    {
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="check-icon">
+                            <polyline points="4 10 8 14 16 5"></polyline>
+                        </svg>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .bs-dropdown {
+        position: relative;
+        width: 100%;
+        font-family: var(--font-primary);
+        outline: none; /* remove focus outline on the wrapper */
+    }
+
+    .bs-dropdown-header {
+        background-color: var(--bg-card-alt);
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        min-height: 58px;
+        box-sizing: border-box;
+    }
+
+    .bs-dropdown-header.open, .bs-dropdown:focus-within .bs-dropdown-header {
+        border-color: var(--color-primary); /* rgb(154, 116, 234) Figma purple accent */
+    }
+
+    .bs-dropdown-selected {
+        color: var(--text-primary);
+        font-size: 16px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bs-dropdown-selected .bs-placeholder {
+        color: var(--text-muted);
+        font-weight: 400;
+    }
+
+    .bs-dropdown-icon {
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bs-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 100%;
+        background-color: var(--bg-card);
+        border-radius: 10px;
+        padding: 8px 0;
+        box-shadow: 0px 30px 12px -12px rgba(22, 25, 44, 0.54); /* Exact Figma Drop Shadow */
+        z-index: 100;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .bs-dropdown-item {
+        padding: 12px 20px;
+        color: var(--text-primary);
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s ease;
+    }
+
+    .bs-dropdown-item:hover {
+        background-color: var(--bg-page); /* Hover effect matching Day 1415 */
+    }
+
+    .bs-dropdown-item.selected {
+        background-color: var(--bg-card-alt);
+        font-weight: 700;
+    }
+
+    .check-icon {
+        color: var(--text-primary);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public IEnumerable<TValue> Options { get; set; } = Array.Empty<TValue>();
+
+    [Parameter]
+    public TValue Value { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "-- Select an option --";
+
+    private bool _isOpen = false;
+
+    private void ToggleDropdown()
+    {
+        _isOpen = !_isOpen;
+    }
+
+    private void HandleFocusOut()
+    {
+        // Delay closing slightly to allow item clicks to register
+        Task.Delay(150).ContinueWith(_ => 
+        {
+            _isOpen = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private async Task SelectOption(TValue option)
+    {
+        Value = option;
+        _isOpen = false;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

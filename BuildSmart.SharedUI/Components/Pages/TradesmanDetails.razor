@@ -1,0 +1,489 @@
+@page "/tradesman-details"
+@using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.GraphQL
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@inject TradesmanDetailsViewModel ViewModel
+@using System.ComponentModel
+
+<div class="tradesman-details-container">
+    @if (ViewModel.IsLoading && ViewModel.Tradesman == null)
+    {
+        <div class="loading-state">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading profile...</p>
+        </div>
+    }
+    else if (ViewModel.Tradesman == null)
+    {
+        <div class="empty-state">
+            <p class="empty-title">Tradesman not found.</p>
+            <button class="bs-btn-secondary mt-3" @onclick="GoBack">Go Back</button>
+        </div>
+    }
+    else
+    {
+        <div class="header-section">
+            <button class="back-btn" @onclick="GoBack">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <h2 class="page-title">Tradesman Profile</h2>
+        </div>
+
+        <div class="profile-header bs-card">
+            <div class="profile-cover"></div>
+            <div class="profile-avatar-container">
+                <img src="@(string.IsNullOrEmpty(ViewModel.Tradesman.User.ProfilePictureUrl) ? "dotnet_bot.png" : ViewModel.Tradesman.User.ProfilePictureUrl)" class="profile-avatar" />
+            </div>
+            
+            <div class="profile-info-center">
+                <h3 class="profile-name">@ViewModel.Tradesman.User.FirstName</h3>
+                <p class="profile-category">@(ViewModel.Tradesman.Skills.FirstOrDefault()?.ServiceCategory.Name ?? "General Professional")</p>
+                <div class="profile-rating">
+                    <span class="star">⭐</span> @string.Format("{0:F1}", ViewModel.Tradesman.AverageRating)
+                </div>
+                <p class="profile-location">@ViewModel.Tradesman.User.Location</p>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="left-column">
+                <!-- About Section -->
+                <div class="bs-card section-card">
+                    <h4 class="section-title">About</h4>
+                    <p class="section-text">@(string.IsNullOrEmpty(ViewModel.Tradesman.User.Bio) ? "No bio provided." : ViewModel.Tradesman.User.Bio)</p>
+                </div>
+
+                <!-- Video Intro -->
+                @if (!string.IsNullOrEmpty(ViewModel.Tradesman.VideoIntroductionUrl))
+                {
+                    <div class="bs-card section-card highlight-card">
+                        <h4 class="section-title">Video Introduction</h4>
+                        <div class="video-promo">
+                            <div class="play-icon">▶</div>
+                            <span>Watch Introduction Video</span>
+                        </div>
+                    </div>
+                }
+
+                <!-- Certifications -->
+                <div class="bs-card section-card">
+                    <h4 class="section-title">Certifications &amp; Credentials</h4>
+                    @if (ViewModel.Tradesman.Certifications.Count > 0)
+                    {
+                        <div class="certifications-list">
+                            @foreach (var cert in ViewModel.Tradesman.Certifications)
+                            {
+                                <div class="cert-item">
+                                    <div class="cert-icon">🏆</div>
+                                    <span class="cert-name">@cert.Title</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="empty-text">No certificates listed.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="right-column">
+                <!-- Portfolio -->
+                <div class="bs-card section-card">
+                    <h4 class="section-title">Portfolio</h4>
+                    @if (ViewModel.Tradesman.PortfolioEntries.Count > 0)
+                    {
+                        <div class="portfolio-grid">
+                            @foreach (var entry in ViewModel.Tradesman.PortfolioEntries)
+                            {
+                                <div class="portfolio-item">
+                                    <img src="@(string.IsNullOrEmpty(entry.ImageUrl) ? "dotnet_bot.png" : entry.ImageUrl)" alt="@entry.Title" class="portfolio-img" />
+                                    <div class="portfolio-overlay">
+                                        <span class="portfolio-title">@entry.Title</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="empty-text">No portfolio items available.</p>
+                    }
+                </div>
+
+                <!-- Reviews -->
+                <div class="bs-card section-card">
+                    <h4 class="section-title">Reviews</h4>
+                    @if (ViewModel.Tradesman.Reviews.Count > 0)
+                    {
+                        <div class="reviews-list">
+                            @foreach (var review in ViewModel.Tradesman.Reviews)
+                            {
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <span class="reviewer-name">Client</span>
+                                        <span class="review-rating">⭐ @review.Rating</span>
+                                    </div>
+                                    <p class="review-comment">@review.Comment</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="empty-text">No reviews yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed-bottom-bar">
+            <button class="bs-btn-primary book-btn" @onclick="() => ViewModel.BookNowCommand.ExecuteAsync(null)">
+                Book Now
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .tradesman-details-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px 20px 100px 20px; /* Extra padding bottom for fixed bar */
+        font-family: var(--font-primary);
+        color: var(--text-primary);
+    }
+
+    .header-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .back-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .back-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+        font-family: var(--font-heading);
+    }
+
+    .loading-state, .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .profile-header {
+        position: relative;
+        padding: 0;
+        overflow: hidden;
+        margin-bottom: 24px;
+        border-radius: 20px;
+    }
+
+    .profile-cover {
+        height: 120px;
+        background: linear-gradient(135deg, var(--color-primary) 0%, #1565C0 100%);
+    }
+
+    .profile-avatar-container {
+        position: absolute;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid var(--bg-card);
+        background-color: var(--bg-card);
+        overflow: hidden;
+    }
+
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-info-center {
+        text-align: center;
+        padding: 70px 20px 30px 20px;
+    }
+
+    .profile-name {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        font-family: var(--font-heading);
+    }
+
+    .profile-category {
+        color: var(--text-secondary);
+        font-size: 16px;
+        margin: 0 0 10px 0;
+    }
+
+    .profile-rating {
+        color: #FBC02D;
+        font-weight: 600;
+        font-size: 18px;
+        margin: 0 0 10px 0;
+    }
+
+    .profile-location {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    @@media (min-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .section-card {
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .highlight-card {
+        background-color: rgba(21, 101, 192, 0.05);
+        border: 1px solid rgba(21, 101, 192, 0.2);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 15px 0;
+        font-family: var(--font-heading);
+    }
+
+    .section-text {
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        font-style: italic;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .video-promo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--color-primary);
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .play-icon {
+        width: 40px;
+        height: 40px;
+        background-color: var(--color-primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .certifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cert-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+
+    .cert-icon {
+        font-size: 20px;
+    }
+
+    .cert-name {
+        font-weight: 500;
+        font-size: 15px;
+    }
+
+    .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+
+    .portfolio-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .portfolio-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .portfolio-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        padding: 20px 10px 10px 10px;
+    }
+
+    .portfolio-title {
+        color: white;
+        font-size: 12px;
+        font-weight: 500;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .review-item {
+        padding: 16px;
+        background-color: var(--bg-page);
+        border-radius: 12px;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .reviewer-name {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .review-rating {
+        color: #FBC02D;
+        font-weight: 600;
+    }
+
+    .review-comment {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .fixed-bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px 24px;
+        background-color: var(--bg-card);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: center;
+        z-index: 100;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+    }
+
+    .book-btn {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: 600;
+        padding: 14px;
+    }
+
+    @@media (min-width: 992px) {
+        .fixed-bottom-bar {
+            width: calc(100% - 280px); /* Adjust for sidebar */
+            left: 280px;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string TradesmanId { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(TradesmanId) && ViewModel.TradesmanId != TradesmanId)
+        {
+            ViewModel.TradesmanId = TradesmanId;
+            await ViewModel.LoadTradesmanDetailsCommand.ExecuteAsync(null);
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void GoBack()
+    {
+        ViewModel.GoBackCommand.Execute(null);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

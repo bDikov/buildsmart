@@ -1,4 +1,4 @@
-using BuildSmart.Maui.ViewModels;
+using BuildSmart.SharedUI.ViewModels;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 
 namespace BuildSmart.Maui.Views;
@@ -21,7 +21,7 @@ public partial class FeedPage : ContentPage
         blazorWebView.RootComponents.Add(new RootComponent
         {
             Selector = "#app",
-            ComponentType = typeof(Components.Pages.Feed)
+            ComponentType = typeof(BuildSmart.SharedUI.Components.Pages.Feed)
         });
 
         Content = blazorWebView;
@@ -33,3 +33,4 @@ public partial class FeedPage : ContentPage
         await _viewModel.LoadFeedCommand.ExecuteAsync(null);
     }
 }
+

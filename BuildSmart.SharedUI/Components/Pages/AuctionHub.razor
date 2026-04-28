@@ -1,0 +1,250 @@
+@page "/auction-hub"
+@using BuildSmart.SharedUI.ViewModels
+@using System.ComponentModel
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+
+<ErrorBoundary>
+    <ChildContent>
+        @if (ViewModel == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <div class="container py-4">
+                <button class="btn btn-link text-decoration-none ps-0 mb-3" @onclick="() => ViewModel.BackCommand.Execute(null)">
+                    &larr; Back to Listings
+                </button>
+
+                @if (ViewModel.Auction?.Job != null)
+                {
+                    <!-- Job Overview -->
+                    <div class="card mb-4 border-light shadow-sm">
+                        <div class="card-body">
+                            <h2 class="card-title h4 fw-bold">@ViewModel.Auction.Job.Title</h2>
+                            <p class="card-text text-muted mb-1">Location: @ViewModel.Auction.Job.Location</p>
+                            <p class="card-text fw-bold text-warning mb-3">Status: @ViewModel.Auction.Job.Status</p>
+                            <p class="card-text">@ViewModel.Auction.Job.Description</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Task Breakdown -->
+                <div class="mb-4">
+                    <h3 class="h5 fw-bold text-success mb-1">Standardized Tasks</h3>
+                    <p class="text-muted small mb-3">Your bid should cover the following required tasks and criteria:</p>
+
+                    @if (ViewModel.IsBusy)
+                    {
+                        <div class="text-center my-3">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (ViewModel.JobTasks == null || !ViewModel.JobTasks.Any())
+                    {
+                        <p class="text-muted fst-italic small">No standardized tasks provided.</p>
+                    }
+                    else
+                    {
+                        @foreach (var task in ViewModel.JobTasks)
+                        {
+                            <div class="card mb-3 border-light shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold">@task.Title</h4>
+                                    <p class="text-muted small mb-3">@task.Description</p>
+                                    
+                                    <hr class="text-muted" />
+                                    <h5 class="fw-bold text-muted" style="font-size: 0.85rem;">Acceptance Criteria:</h5>
+                                    
+                                    @if (task.AcceptanceCriteria != null && task.AcceptanceCriteria.Any())
+                                    {
+                                        <ul class="list-unstyled mb-0 mt-2">
+                                            @foreach (var criteria in task.AcceptanceCriteria)
+                                            {
+                                                <li class="d-flex align-items-start mb-1">
+                                                    <span class="text-success me-2">&bull;</span>
+                                                    <span class="small">@criteria.Description</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- My Submitted Bid Section -->
+                @if (ViewModel.HasSubmittedBid)
+                {
+                    <div class="mb-4">
+                        <h3 class="h5 fw-bold text-primary mb-2">Your Submitted Bid</h3>
+                        <div class="card border-primary bg-light shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-bold">Total Amount Submitted:</span>
+                                    <span class="h5 fw-bold text-primary mb-0">$@string.Format("{0:F2}", ViewModel.MyBid?.Amount?.Total ?? 0)</span>
+                                </div>
+
+                                <h5 class="fw-bold mb-1" style="font-size: 0.9rem;">Status:</h5>
+                                @if (ViewModel.MyBid?.IsAccepted == true)
+                                {
+                                    <p class="fw-bold text-success mb-3">Accepted!</p>
+                                }
+                                else
+                                {
+                                    <p class="fst-italic text-warning mb-3">Under Review</p>
+                                }
+
+                                <h5 class="fw-bold mb-1" style="font-size: 0.9rem;">Your Proposal:</h5>
+                                <p class="text-muted small mb-0">@ViewModel.MyBid?.Comment</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (!ViewModel.IsBusy)
+                {
+                    <button class="btn btn-success w-100 fw-bold py-2 mb-4 shadow-sm" style="border-radius: 8px;" @onclick="() => ViewModel.GoToPlaceBidCommand.Execute(null)">
+                        Place Bid
+                    </button>
+                }
+
+                <hr class="text-muted my-4" />
+
+                <!-- Public Q&A Section -->
+                <div class="d-flex align-items-center mb-3">
+                    <h3 class="h5 fw-bold mb-0 me-3">Public Q&amp;A</h3>
+                    <button class="btn btn-primary btn-sm rounded-pill px-3" style="font-size: 0.75rem;" @onclick="() => ViewModel.AskQuestionCommand.Execute(null)">
+                        Ask a Question
+                    </button>
+                </div>
+
+                @if (ViewModel.Questions == null || !ViewModel.Questions.Any())
+                {
+                    <p class="text-muted fst-italic small">No public questions yet.</p>
+                }
+                else
+                {
+                    @foreach (var qViewModel in ViewModel.Questions)
+                    {
+                        <div class="card mb-2 border-success bg-light shadow-sm">
+                            <div class="card-body p-3">
+                                <!-- Original Question -->
+                                <div class="d-flex align-items-center mb-2">
+                                    @if (qViewModel.Question.IsEditable)
+                                    {
+                                        <button class="btn btn-link text-secondary p-0 me-2 text-decoration-none" @onclick="() => ViewModel.EditQuestionCommand.ExecuteAsync(qViewModel.Question)">&#x270E;</button>
+                                    }
+                                    <span class="fw-bold text-success" style="font-size: 0.75rem;">Q from @qViewModel.Question.TradesmanProfile?.User?.FirstName:</span>
+                                    @if (qViewModel.Question.IsEdited)
+                                    {
+                                        <span class="text-muted ms-2" style="font-size: 0.65rem;">(EDITED)</span>
+                                    }
+                                    <span class="text-muted ms-auto" style="font-size: 0.7rem;">@qViewModel.Question.CreatedAt.ToString("g")</span>
+                                </div>
+                                
+                                <p class="fw-bold mb-3" style="font-size: 0.85rem;">@qViewModel.Question.QuestionText</p>
+
+                                <!-- Answer -->
+                                @if (qViewModel.Question.IsAnswered)
+                                {
+                                    <hr class="text-success my-2" />
+                                    <div class="mt-2">
+                                        <div class="d-flex align-items-center mb-1">
+                                            @if (qViewModel.Question.IsAnswerEditable)
+                                            {
+                                                <button class="btn btn-link text-success p-0 me-2 text-decoration-none" @onclick="() => ViewModel.EditAnswerCommand.ExecuteAsync(qViewModel.Question)">&#x270E;</button>
+                                            }
+                                            <span class="fw-bold text-success" style="font-size: 0.75rem;">Homeowner's Answer:</span>
+                                            @if (qViewModel.Question.IsAnswerEdited)
+                                            {
+                                                <span class="text-muted ms-2" style="font-size: 0.65rem;">(EDITED)</span>
+                                            }
+                                            <span class="text-muted ms-auto" style="font-size: 0.7rem;">@qViewModel.Question.AnsweredAt?.ToString("g")</span>
+                                        </div>
+                                        <p class="mb-2" style="font-size: 0.85rem;">@qViewModel.Question.AnswerText</p>
+                                    </div>
+                                }
+
+                                <div class="d-flex gap-3 mt-2">
+                                    <a href="#" class="text-secondary fw-bold text-decoration-none" style="font-size: 0.8rem;" @onclick="() => ViewModel.ReplyToQuestionCommand.ExecuteAsync(qViewModel.Question)" @onclick:preventDefault>Reply</a>
+                                    
+                                    @if (qViewModel.HasAnyReplies)
+                                    {
+                                        <a href="#" class="text-primary fw-bold text-decoration-none" style="font-size: 0.8rem;" @onclick="() => qViewModel.ToggleConversationCommand.Execute(null)" @onclick:preventDefault>@qViewModel.ButtonText</a>
+                                    }
+                                </div>
+
+                                <!-- Nested Replies -->
+                                @if (qViewModel.IsExpanded && qViewModel.Replies != null)
+                                {
+                                    <div class="mt-3 ps-3 border-start border-2 border-secondary">
+                                        @foreach (var reply in qViewModel.Replies)
+                                        {
+                                            <div class="mb-2">
+                                                <div class="card border-0 bg-secondary bg-opacity-10 rounded-4">
+                                                    <div class="card-body p-2 px-3">
+                                                        <div class="d-flex align-items-center mb-1">
+                                                            @if (reply.IsEditable)
+                                                            {
+                                                                <button class="btn btn-link text-secondary p-0 me-2 text-decoration-none" @onclick="() => ViewModel.EditNestedQuestionCommand.ExecuteAsync(reply)">&#x270E;</button>
+                                                            }
+                                                            <span class="fw-bold text-primary" style="font-size: 0.75rem;">@reply.Author?.FirstName</span>
+                                                            @if (reply.IsEdited)
+                                                            {
+                                                                <span class="text-muted ms-2" style="font-size: 0.65rem;">(EDITED)</span>
+                                                            }
+                                                            <span class="text-muted ms-auto" style="font-size: 0.7rem;">@reply.CreatedAt.ToString("g")</span>
+                                                        </div>
+                                                        <p class="mb-0" style="font-size: 0.85rem;">@reply.QuestionText</p>
+                                                    </div>
+                                                </div>
+                                                <a href="#" class="text-secondary fw-bold text-decoration-none ms-3 mt-1 d-inline-block" style="font-size: 0.75rem;" @onclick="() => ViewModel.ReplyToNestedQuestionCommand.ExecuteAsync(reply)" @onclick:preventDefault>Reply</a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-3">
+            <h4>Rendering Error</h4>
+            <p>@context.Message</p>
+            <pre style="font-size: 10px; overflow-x: auto;">@context.StackTrace</pre>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [Parameter]
+    public AuctionHubViewModel ViewModel { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    private async void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

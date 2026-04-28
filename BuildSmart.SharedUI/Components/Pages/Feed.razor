@@ -1,0 +1,326 @@
+@page "/"
+@page "/feed"
+@using BuildSmart.SharedUI.ViewModels
+@using System.ComponentModel
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+@inject FeedPageViewModel ViewModel
+@inject NavigationManager NavManager
+
+<ErrorBoundary>
+    <ChildContent>
+        @if (ViewModel == null)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="container-fluid py-3" style="min-height: 100vh;">
+                <!-- Homeowner Action Header -->
+                @if (ViewModel.IsHomeowner)
+                {
+                    <div class="mb-4">
+                        <button class="bs-btn-primary w-100" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Start New Project
+                        </button>
+                    </div>
+                }
+
+                <!-- Tradesman Feed Header -->
+                @if (ViewModel.IsTradesman)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                        <h2 class="h5 fw-bold mb-0">Available Auctions</h2>
+                        <a href="#" class="text-primary text-decoration-underline" style="font-size: 0.85rem;" @onclick='() => NavManager.NavigateTo("/passed-auctions")' @onclick:preventDefault>
+                            Dismissed Jobs
+                        </a>
+                    </div>
+                }
+
+                <!-- Loading Indicator -->
+                @if (ViewModel.IsLoading)
+                {
+                    <div class="text-center my-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- 1. Homeowner View: Pros Directory -->
+                    @if (ViewModel.IsHomeowner && ViewModel.Tradesmen != null)
+                    {
+                        <div class="tradesman-grid">
+                            @foreach (var tradesman in ViewModel.Tradesmen)
+                            {
+                                <div class="tradesman-card" @onclick="() => NavigateToTradesmanProfile(tradesman.Id.ToString())">
+                                    <div class="tc-avatar-section">
+                                        <div class="tc-avatar-ring">
+                                            <img src="@(string.IsNullOrEmpty(tradesman.User?.ProfilePictureUrl) ? "dotnet_bot.png" : tradesman.User.ProfilePictureUrl)" alt="Profile" class="tc-avatar-image" />
+                                        </div>
+                                    </div>
+                                    <div class="tc-info-section">
+                                        <h3 class="tc-name">@tradesman.User?.FirstName @tradesman.User?.LastName</h3>
+                                        <p class="tc-role">Professional・@tradesman.User?.Location</p>
+                                        
+                                        <div class="tc-stats">
+                                            <div class="tc-stat-item">
+                                                <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                </svg>
+                                                <span>@string.Format("{0:F1}", tradesman.AverageRating)</span>
+                                            </div>
+                                            <div class="tc-stat-item">
+                                                <svg width="25" height="25" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M2.08333 12.5C2.08333 12.5 6.25 4.16667 12.5 4.16667C18.75 4.16667 22.9167 12.5 22.9167 12.5C22.9167 12.5 18.75 20.8333 12.5 20.8333C6.25 20.8333 2.08333 12.5 2.08333 12.5Z" />
+                                                    <circle cx="12.5" cy="12.5" r="3.125" />
+                                                </svg>
+                                                <span>Professional</span>
+                                            </div>
+                                        </div>
+
+                                        <button class="tc-action-btn">
+                                            View Profile
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- 2. Tradesman View: Available Auctions Feed -->
+                    @if (ViewModel.IsTradesman && ViewModel.Auctions != null)
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var auction in ViewModel.Auctions)
+                            {
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body p-3">
+                                        <!-- Job Header -->
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">@auction.Job?.Title</h5>
+                                                <small class="text-primary d-block">@auction.Job?.ServiceCategory?.Name</small>
+                                            </div>
+                                            <span class="fw-bold text-success" style="font-size: 1.1rem;">
+                                                @(auction.Job?.EstimatedBudget != null ? string.Format("{0:C0}", auction.Job.EstimatedBudget.Total) : "N/A")
+                                            </span>
+                                        </div>
+
+                                        <!-- Details -->
+                                        <p class="mb-3" style="font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            @auction.Job?.Description
+                                        </p>
+                                        
+                                        <div class="d-flex gap-4 mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-1" style="font-size: 0.8rem;">📍</span>
+                                                <small class="text-muted">@auction.Job?.Location</small>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-1" style="font-size: 0.8rem;">💬</span>
+                                                <small class="text-muted">@auction.Questions?.Count questions</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-outline-secondary w-50 py-2" style="border-radius: 8px;" @onclick="() => ViewModel.PassAuctionCommand.Execute(auction)">
+                                                Pass
+                                            </button>
+                                            <button class="btn btn-primary w-50 py-2" style="border-radius: 8px;" @onclick="() => ViewModel.NavigateToDetailsCommand.Execute(auction)">
+                                                View &amp; Bid
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-3">
+            <h4>Rendering Error</h4>
+            <p>@context.Message</p>
+            <pre style="font-size: 10px; overflow-x: auto;">@context.StackTrace</pre>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+<style>
+    .tradesman-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
+        gap: 25px;
+        padding-bottom: 40px;
+    }
+
+    .tradesman-card {
+        background-color: rgb(45, 44, 67);
+        border-radius: 20px;
+        box-shadow: 0px 31px 22px -20px rgba(19, 18, 37, 0.40);
+        padding: 24px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .tradesman-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0px 35px 25px -20px rgba(19, 18, 37, 0.60);
+    }
+
+    .tc-avatar-section {
+        flex-shrink: 0;
+    }
+
+    .tc-avatar-ring {
+        width: 100px;
+        height: 100px;
+        background-color: rgb(30, 29, 47);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .tc-avatar-image {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .tc-info-section {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-width: 0; /* Prevents flex items from overflowing text */
+    }
+
+    .tc-name {
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 700;
+        color: rgb(255, 255, 255);
+        margin: 0 0 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tc-role {
+        font-family: var(--font-primary);
+        font-size: 14px;
+        font-weight: 400;
+        color: rgb(255, 255, 255);
+        opacity: 0.8;
+        margin: 0 0 16px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tc-stats {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        margin-bottom: 16px;
+    }
+
+    .tc-stat-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+        color: rgb(255, 255, 255);
+        font-family: var(--font-primary);
+        font-size: 14px;
+    }
+
+    .tc-action-btn {
+        background-color: rgb(143, 90, 255);
+        border-radius: 30px;
+        border: none;
+        color: rgb(255, 255, 255);
+        font-family: var(--font-primary);
+        font-size: 14px;
+        font-weight: 700;
+        padding: 8px 24px;
+        width: fit-content;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .tc-action-btn:hover {
+        background-color: rgb(160, 115, 255);
+    }
+    
+    @@media (max-width: 576px) {
+        .tradesman-card {
+            flex-direction: column;
+            text-align: center;
+            align-items: center;
+        }
+        
+        .tc-stats {
+            justify-content: center;
+        }
+        
+        .tc-action-btn {
+            margin: 0 auto;
+        }
+    }
+</style>
+
+@code {
+    private string _errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                await ViewModel.LoadFeedCommand.ExecuteAsync(null);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+            Console.WriteLine($"[Feed.razor] OnInitializedAsync Error: {ex}");
+        }
+    }
+
+    private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-details?TradesmanId={id}");
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

@@ -1,0 +1,163 @@
+<div class="add-profile-container">
+    <h2>Add profile</h2>
+    
+    <div class="upload-section">
+        <div class="avatar-placeholder">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4v24M4 16h24" stroke="rgb(125, 129, 147)" />
+            </svg>
+        </div>
+        <button class="upload-btn">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.25">
+                 <path d="M4 15V16C4 16.5304 4.21071 17.0391 4.58579 17.4142C4.96086 17.7893 5.46957 18 6 18H14C14.5304 18 15.0391 17.7893 15.4142 17.4142C15.7893 17.0391 16 16.5304 16 16V15M10 4L10 13M10 4L6.5 7.5M10 4L13.5 7.5" />
+            </svg>
+            Upload image
+        </button>
+    </div>
+
+    <input type="text" class="input-field" placeholder="Profile name" />
+
+    <div class="toggle-section">
+        <div class="toggle-text">
+            <span class="toggle-title">Kid's profile</span>
+            <span class="toggle-desc">A profile with curated content and features, and a simplified user interface.</span>
+        </div>
+        <div class="toggle-switch">
+            <div class="toggle-thumb"></div>
+        </div>
+    </div>
+
+    <button class="btn-save">Save</button>
+</div>
+
+<style>
+    .add-profile-container {
+        background-color: rgb(34, 37, 51);
+        border-radius: 10px;
+        width: 432px;
+        padding: 40px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h2 {
+        color: rgb(229, 229, 229);
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0 0 30px 0;
+    }
+
+    .upload-section {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 38px;
+    }
+
+    .avatar-placeholder {
+        width: 98px;
+        height: 98px;
+        border-radius: 50%;
+        background-color: rgb(27, 29, 40);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .upload-btn {
+        background-color: rgb(26, 28, 41);
+        border-radius: 5px;
+        border: none;
+        padding: 16px 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgb(229, 229, 229);
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .input-field {
+        background-color: rgb(27, 29, 40);
+        border: 2px solid rgb(52, 57, 78);
+        border-radius: 3px;
+        color: rgb(255, 255, 255);
+        font-size: 16px;
+        padding: 20px 30px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 40px;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .input-field::placeholder {
+        color: rgb(125, 129, 147);
+    }
+
+    .toggle-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+        gap: 15px;
+    }
+
+    .toggle-text {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .toggle-title {
+        color: rgb(255, 255, 255);
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .toggle-desc {
+        color: rgb(125, 129, 147);
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .toggle-switch {
+        width: 50px;
+        height: 24px;
+        background-color: rgb(27, 29, 40);
+        border: 2px solid rgb(52, 57, 78);
+        border-radius: 24px;
+        position: relative;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .toggle-thumb {
+        width: 20px;
+        height: 20px;
+        background-color: rgb(125, 129, 147);
+        border-radius: 50%;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+
+    .btn-save {
+        background-color: rgb(113, 50, 193);
+        border-radius: 5px;
+        border: none;
+        color: rgb(229, 229, 229);
+        font-size: 16px;
+        padding: 16px;
+        width: 100%;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .btn-save:hover {
+        background-color: rgb(130, 60, 220);
+    }
+</style>

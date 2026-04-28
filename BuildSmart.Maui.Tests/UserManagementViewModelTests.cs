@@ -1,7 +1,7 @@
 using Xunit;
 using Moq;
-using BuildSmart.Maui.ViewModels.Admin;
-using BuildSmart.Maui.GraphQL;
+using BuildSmart.SharedUI.ViewModels.Admin;
+using BuildSmart.SharedUI.GraphQL;
 using FluentAssertions;
 using StrawberryShake;
 using System.Collections.Generic;

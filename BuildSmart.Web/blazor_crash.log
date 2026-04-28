@@ -1,0 +1,497 @@
+[4/26/2026 11:09:27 PM] MissingMethodException: Method not found: 'System.String Microsoft.AspNetCore.SignalR.IInvocationBinder.GetTarget(System.ReadOnlySpan`1<Byte>)'.
+   at Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocolWorker.ReadString(MessagePackReader& reader, IInvocationBinder binder, String field)
+
+[4/26/2026 11:09:27 PM] InvalidDataException: Reading 'target' as String failed.
+   at Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocolWorker.ReadString(MessagePackReader& reader, IInvocationBinder binder, String field)
+
+[4/26/2026 11:09:27 PM] InvalidDataException: Reading 'target' as String failed.
+   at Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocolWorker.ReadString(MessagePackReader& reader, IInvocationBinder binder, String field)
+   at Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocolWorker.CreateInvocationMessage(MessagePackReader& reader, IInvocationBinder binder, Int32 itemCount)
+   at Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocolWorker.TryParseMessage(ReadOnlySequence`1& input, IInvocationBinder binder, HubMessage& message)
+   at Microsoft.AspNetCore.SignalR.HubConnectionHandler`1.DispatchMessagesAsync(HubConnectionContext connection)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:23 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+
+[4/26/2026 11:17:23 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContextDispatcher.InvokeAsync(Action workItem)
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_0(Action action) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 25
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:45 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:45 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+
+[4/26/2026 11:17:45 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:45 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:45 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_1(Func`1 func) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 26
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:46 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:46 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+
+[4/26/2026 11:17:46 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:46 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:46 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_1(Func`1 func) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 26
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:50 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:50 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+
+[4/26/2026 11:17:50 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:50 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:51 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_1(Func`1 func) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 26
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:51 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:51 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+
+[4/26/2026 11:17:51 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:51 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:17:51 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_1(Func`1 func) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 26
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:06 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:06 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+
+[4/26/2026 11:18:06 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:06 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:06 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_1(Func`1 func) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 26
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:07 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:07 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+
+[4/26/2026 11:18:07 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:07 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/26/2026 11:18:07 PM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.LoginPageViewModel.<>c.<<LoginAsync>b__6_3>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\LoginPageViewModel.cs:line 57
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass10_0.<<InvokeOnMainThreadAsync>b__0>d.MoveNext() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 183
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContext.<>c.<<InvokeAsync>b__10_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_1(Func`1 func) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 26
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/27/2026 8:44:51 AM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+
+[4/27/2026 8:44:51 AM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContextDispatcher.InvokeAsync(Action workItem)
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_0(Action action) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 25
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/27/2026 8:45:03 AM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+
+[4/27/2026 8:45:03 AM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContextDispatcher.InvokeAsync(Action workItem)
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_0(Action action) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 25
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/27/2026 8:45:11 AM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+
+[4/27/2026 8:45:11 AM] NavigationException: Exception of type 'Microsoft.AspNetCore.Components.NavigationException' was thrown.
+   at Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager.NavigateToCore(String uri, NavigationOptions options)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(String uri, Boolean forceLoad)
+   at Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(String uri, Boolean forceLoad, Boolean replace)
+   at BuildSmart.Web.Services.WebNavigationBridge.NavigateToAsync(String route, IDictionary`2 parameters) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 127
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.<>c.<LoadFeedAsync>b__12_0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 89
+   at BuildSmart.Web.Services.WebAppMainThread.<>c__DisplayClass9_0.<InvokeOnMainThreadAsync>b__0() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Services\WebServices.cs:line 169
+   at Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContextDispatcher.InvokeAsync(Action workItem)
+   at BuildSmart.Web.Components.Routes.<OnInitialized>b__1_0(Action action) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Components\Routes.razor:line 25
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/28/2026 4:43:02 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/28/2026 4:43:05 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/28/2026 5:55:05 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/28/2026 5:55:05 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/28/2026 5:55:35 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/28/2026 5:55:35 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

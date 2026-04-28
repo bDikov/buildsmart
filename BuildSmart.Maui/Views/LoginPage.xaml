@@ -1,54 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:BuildSmart.Maui"
+             xmlns:pages="clr-namespace:BuildSmart.SharedUI.Components.Pages;assembly=BuildSmart.SharedUI"
              x:Class="BuildSmart.Maui.Views.LoginPage"
-             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
-             x:DataType="viewModels:LoginPageViewModel"
-             Title="Login">
-    <ScrollView>
-        <VerticalStackLayout 
-            Spacing="25" 
-            Padding="30,30" 
-            VerticalOptions="Center">
+             Title="Login"
+             Shell.NavBarIsVisible="False">
 
-            <Image Source="dotnet_bot.png"
-                   SemanticProperties.Description="Cute dot net bot waving hi to you!"
-                   HeightRequest="200"
-                   HorizontalOptions="Center" />
+    <BlazorWebView HostPage="wwwroot/index.html">
+        <BlazorWebView.RootComponents>
+            <RootComponent Selector="#app" ComponentType="{x:Type pages:Login}" />
+        </BlazorWebView.RootComponents>
+    </BlazorWebView>
 
-            <Label 
-                Text="Welcome to BuildSmart"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="32"
-                HorizontalOptions="Center" />
-
-            <Entry Placeholder="Email" Text="{Binding Email}" Keyboard="Email" />
-            <Entry Placeholder="Password" Text="{Binding Password}" IsPassword="True" />
-
-            <Button Text="Login" Command="{Binding LoginCommand}" />
-
-            <Button 
-                Text="Sign in with Google"
-                Command="{Binding GoogleLoginCommand}"
-                HorizontalOptions="Center" />
-
-            <Button 
-                Text="Sign in with Apple"
-                Command="{Binding AppleLoginCommand}"
-                HorizontalOptions="Center" />
-
-            <Button 
-                Text="Create an Account"
-                Command="{Binding CreateAccountCommand}"
-                HorizontalOptions="Center" />
-
-            <!-- Temporary button to test Blazor Hybrid setup -->
-            <Button 
-                Text="Test Blazor Page" 
-                Clicked="OnTestBlazorClicked" 
-                Margin="0,20,0,0" 
-                BackgroundColor="Purple" />
-
-        </VerticalStackLayout>
-    </ScrollView>
 </ContentPage>

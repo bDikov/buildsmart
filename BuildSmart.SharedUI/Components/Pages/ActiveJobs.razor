@@ -1,0 +1,286 @@
+@page "/active-jobs"
+@using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.GraphQL
+@using System.ComponentModel
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+@inject ActiveJobsViewModel ViewModel
+@inject NavigationManager NavManager
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="active-jobs-container">
+            <!-- Header -->
+            <div class="header-section">
+                <button class="back-btn" @onclick="GoBack">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <h2 class="page-title">Active Jobs &amp; Payouts</h2>
+                <button class="refresh-btn" @onclick="() => ViewModel.InitializeCommand.ExecuteAsync(null)">
+                    Refresh
+                </button>
+            </div>
+
+            <!-- Content -->
+            @if (ViewModel.IsBusy)
+            {
+                <div class="loading-state">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading active jobs...</p>
+                </div>
+            }
+            else if (ViewModel.ActiveBookings == null || ViewModel.ActiveBookings.Count == 0)
+            {
+                <div class="empty-state">
+                    <p class="empty-title">No Active Jobs</p>
+                    <p class="empty-subtitle">When a homeowner hires you, the jobs will appear here.</p>
+                </div>
+            }
+            else
+            {
+                <div class="jobs-list">
+                    @foreach (var booking in ViewModel.ActiveBookings)
+                    {
+                        <div class="job-card bs-card" @onclick="() => ViewModel.ViewBookingDetailsCommand.ExecuteAsync(booking)">
+                            <div class="job-header">
+                                <div class="client-info">
+                                    <img src="@(string.IsNullOrEmpty(booking.Homeowner?.ProfilePictureUrl) ? "default-avatar.png" : booking.Homeowner.ProfilePictureUrl)" class="client-avatar" alt="Profile Picture" />
+                                    <div class="client-details">
+                                        <div class="client-name">Client: @booking.Homeowner?.FirstName</div>
+                                        <div class="hired-date">Hired On: @booking.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                </div>
+                                <span class="status-badge">@booking.Status</span>
+                            </div>
+                            
+                            <hr class="divider" />
+                            
+                            <div class="financial-brief">
+                                <div class="financial-item">
+                                    <span class="financial-label">Agreed Bid</span>
+                                    <span class="financial-value-agreed">$@(booking.AgreedBidAmount?.Total.ToString("F2") ?? "0.00")</span>
+                                </div>
+                                <div class="financial-item" style="text-align: right;">
+                                    <span class="financial-label">Net Payout</span>
+                                    <span class="financial-value-payout">$@(booking.TotalEscrowAmount?.Total.ToString("F2") ?? "0.00")</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-3">
+            <h4>Rendering Error</h4>
+            <p>@context.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+<style>
+    .active-jobs-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: var(--font-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+    }
+
+    .header-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .back-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .back-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+        font-family: var(--font-heading);
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .refresh-btn {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .refresh-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .loading-state, .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin: 0 0 8px 0;
+    }
+
+    .empty-subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .jobs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .job-card {
+        padding: 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #4CAF50;
+        background-color: var(--bg-card);
+    }
+
+    .job-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .client-info {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .client-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .client-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .client-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+
+    .hired-date {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .status-badge {
+        background-color: #4CAF50;
+        color: white;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 4px;
+    }
+
+    .divider {
+        border: none;
+        border-top: 1px solid #C8E6C9;
+        margin: 12px 0;
+    }
+
+    .financial-brief {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .financial-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .financial-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .financial-value-agreed {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .financial-value-payout {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2E7D32;
+    }
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        await ViewModel.InitializeCommand.ExecuteAsync(null);
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("..");
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

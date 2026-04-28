@@ -1,7 +1,7 @@
 using Xunit;
 using Moq;
-using BuildSmart.Maui.ViewModels;
-using BuildSmart.Maui.GraphQL;
+using BuildSmart.SharedUI.ViewModels;
+using BuildSmart.SharedUI.GraphQL;
 using FluentAssertions;
 using StrawberryShake;
 using System.Collections.Generic;
@@ -14,14 +14,14 @@ namespace BuildSmart.Maui.Tests;
 public class AuctionHubViewModelTests
 {
     private readonly Mock<IBuildSmartApiClient> _mockApiClient;
-    private readonly Mock<BuildSmart.Maui.Services.SignalRService> _mockSignalRService;
+    private readonly Mock<BuildSmart.SharedUI.Services.SignalRService> _mockSignalRService;
     private readonly AuctionHubViewModel _viewModel;
 
     public AuctionHubViewModelTests()
     {
         _mockApiClient = new Mock<IBuildSmartApiClient>();
-        var authServiceMock = new Mock<BuildSmart.Maui.Services.IAuthService>();
-        _mockSignalRService = new Mock<BuildSmart.Maui.Services.SignalRService>(authServiceMock.Object);
+        var authServiceMock = new Mock<BuildSmart.SharedUI.Services.IAuthService>();
+        _mockSignalRService = new Mock<BuildSmart.SharedUI.Services.SignalRService>(authServiceMock.Object);
         _viewModel = new AuctionHubViewModel(_mockApiClient.Object, _mockSignalRService.Object);
     }
 

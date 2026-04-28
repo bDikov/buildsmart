@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:sys="clr-namespace:System;assembly=netstandard"
              x:Class="BuildSmart.Maui.Views.BookingPage"
-             xmlns:viewModels="clr-namespace:BuildSmart.Maui.ViewModels"
+             xmlns:viewModels="clr-namespace:BuildSmart.SharedUI.ViewModels;assembly=BuildSmart.SharedUI"
              x:DataType="viewModels:BookingPageViewModel"
              Title="New Booking">
 

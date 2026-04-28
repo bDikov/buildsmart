@@ -1,4 +1,4 @@
-using BuildSmart.Maui.ViewModels;
+using BuildSmart.SharedUI.ViewModels;
 
 namespace BuildSmart.Maui.Views;
 
@@ -10,3 +10,4 @@ public partial class CheckoutPage : ContentPage
         BindingContext = viewModel;
     }
 }
+

@@ -1,5 +1,5 @@
-using BuildSmart.Maui.GraphQL;
-using BuildSmart.Maui.ViewModels;
+using BuildSmart.SharedUI.GraphQL;
+using BuildSmart.SharedUI.ViewModels;
 using Moq;
 using StrawberryShake;
 using System.Text.Json;
@@ -24,7 +24,9 @@ public class PlaceBidViewModelTests
         public string Title { get; set; } = "Test Task";
         public string? Description { get; set; } = "Description";
         public int SequenceOrder { get; set; } = 1;
-        public IReadOnlyList<IGetJobTasks_AllJobPosts_JobTasks_AcceptanceCriteria>? AcceptanceCriteria { get; set; } = null;
+        public IReadOnlyList<IGetJobTasks_AllJobPosts_JobTasks_AcceptanceCriteria> AcceptanceCriteria { get; set; } = new List<IGetJobTasks_AllJobPosts_JobTasks_AcceptanceCriteria>();
+        public decimal EstimatedPrice { get; set; } = 0;
+        public IReadOnlyList<IGetJobTasks_AllJobPosts_JobTasks_SkuItems> SkuItems { get; set; } = new List<IGetJobTasks_AllJobPosts_JobTasks_SkuItems>();
     }
 
     [Fact]

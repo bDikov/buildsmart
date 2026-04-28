@@ -1,0 +1,44 @@
+@page "/create-account"
+@using BuildSmart.SharedUI.ViewModels
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@inject CreateAccountPageViewModel ViewModel
+
+<Card CssClass="m-4 shadow-sm">
+    <Header>
+        <h2 class="h5 mb-0">Create Account</h2>
+    </Header>
+    <ChildContent>
+        <form @onsubmit="HandleSubmit">
+            <div class="mb-3">
+                <label for="firstName" class="form-label">First Name:</label>
+                <input type="text" class="form-control" id="firstName" @bind="ViewModel.FirstName" />
+            </div>
+
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name:</label>
+                <input type="text" class="form-control" id="lastName" @bind="ViewModel.LastName" />
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" @bind="ViewModel.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <input type="password" class="form-control" id="password" @bind="ViewModel.Password" />
+            </div>
+
+            <PrimaryButton CssClass="btn btn-primary w-100" Type="submit">Create Account</PrimaryButton>
+        </form>
+    </ChildContent>
+</Card>
+
+@code {
+    private async Task HandleSubmit()
+    {
+        await ViewModel.CreateAccountCommand.ExecuteAsync(null);
+    }
+}
+

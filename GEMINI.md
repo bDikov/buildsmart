@@ -75,7 +75,8 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 *   **GraphQL**: The API uses GraphQL for flexible data querying.
 *   **JWT Authentication**: Authentication is handled using JSON Web Tokens.
 *   **Entity Framework Core**: The infrastructure layer uses EF Core for data access.
-*   **.NET MAUI with MVVM**: The client application is built with .NET MAUI and likely follows the MVVM pattern.
+*   **.NET MAUI with Blazor Hybrid**: The client application uses .NET MAUI as a native shell, but **all modern UI development MUST be done in Blazor (`.razor`) using the custom Figma design system**. 
+    *   **CRITICAL:** Refer to `FRONTEND_GUIDELINES.md` for strict CSS variables, component architectures, and Figma-to-Blazor workflows. Do NOT write native XAML views unless strictly necessary for platform shells.
 *   **Testing**: The project has a dedicated test project using xUnit, Moq, and Snapshot testing.
 *   **AI Integration**: The platform uses Google Gemini 1.5 Pro for automated construction scope generation. See `AI_IMPLEMENTATION.md` for technical details.
 

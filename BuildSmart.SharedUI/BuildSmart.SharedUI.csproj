@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="StrawberryShake.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <GraphQL Include="GraphQL\*.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildSmart.Core.Application\BuildSmart.Core.Application.csproj" />
+    <ProjectReference Include="..\BuildSmart.Core.Domain\BuildSmart.Core.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Generated\**\*.cs" ExcludeFromCurrentProject="true" />
+  </ItemGroup>
+
+  <Target Name="CleanStrawberryShake" AfterTargets="Clean">
+    <RemoveDir Directories="Generated" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Markdig" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="13.9.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+  </ItemGroup>
+
+</Project>
