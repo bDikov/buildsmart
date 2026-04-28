@@ -53,8 +53,9 @@ builder.Services.AddSingleton<IFilePicker, WebFilePicker>();
 
 // Web-specific Services
 builder.Services.AddScoped<IAuthService, WebAuthService>();
-builder.Services.AddScoped<INavigationBridge, WebNavigationBridge>();
 builder.Services.AddScoped<IAlertService, WebAlertService>();
+builder.Services.AddScoped<IBlazorNavigationRegistry, BlazorNavigationRegistry>();
+builder.Services.AddScoped<INavigationBridge, WebNavigationBridge>();
 builder.Services.AddScoped<IAppMainThread, WebAppMainThread>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, CircuitContextHandler>();
 

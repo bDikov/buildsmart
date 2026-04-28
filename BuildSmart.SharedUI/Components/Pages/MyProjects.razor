@@ -1,11 +1,12 @@
 @page "/my-projects"
 @using BuildSmart.SharedUI.ViewModels
 @inject MyProjectsViewModel ViewModel
+@inject NavigationManager NavManager
 
 <div class="projects-container">
     <div class="header-section">
         <h2 class="page-title">My Projects</h2>
-        <button class="bs-btn-primary" @onclick="ViewModel.CreateProjectCommand.ExecuteAsync">
+        <button class="bs-btn-primary" @onclick='() => NavManager.NavigateTo("/job-wizard")'>
             Create Project
         </button>
     </div>
@@ -20,7 +21,7 @@
     {
         <div class="empty-state card-light">
             <p>You haven't posted any projects yet.</p>
-            <button class="bs-btn-primary" @onclick="ViewModel.CreateProjectCommand.ExecuteAsync">Create Project</button>
+            <button class="bs-btn-primary" @onclick='() => NavManager.NavigateTo("/job-wizard")'>Create Project</button>
         </div>
     }
     else
@@ -28,7 +29,7 @@
         <div class="projects-list">
             @foreach (var project in ViewModel.Projects)
             {
-                <div class="bs-card project-card" @onclick="() => ViewModel.GoToDetailsCommand.Execute(project)">
+                <div class="bs-card project-card" @onclick="() => HandleProjectClick(project)">
                     <div class="project-header">
                         <h3>@(string.IsNullOrEmpty(project.Title) ? "(No Title)" : project.Title)</h3>
                         <span class="status-badge status-@project.Status.ToString().ToLower()">@project.Status</span>
@@ -254,6 +255,18 @@
         if (ViewModel.Projects.Count == 0)
         {
             await ViewModel.LoadProjectsAsync();
+        }
+    }
+
+    private void HandleProjectClick(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)
+    {
+        if (project.Status == BuildSmart.SharedUI.GraphQL.ProjectStatus.Draft)
+        {
+            ViewModel.GoToDetailsCommand.Execute(project);
+        }
+        else
+        {
+            NavManager.NavigateTo($"/project-detail?projectId={project.Id}");
         }
     }
 }

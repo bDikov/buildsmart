@@ -40,7 +40,7 @@ public partial class MyProjectsViewModel : ObservableObject
 	[RelayCommand]
 	private async Task CreateProjectAsync()
 	{
-		await AppServiceLocator.Navigation.NavigateToAsync("JobWizardPage");
+		await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard");
 	}
 
 	[RelayCommand]
@@ -93,17 +93,14 @@ public partial class MyProjectsViewModel : ObservableObject
 	{
 		if (project.Status == ProjectStatus.Draft)
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("JobWizardPage", new Dictionary<string, object>
+			await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
 			{
-				{ "ProjectId", project.Id }
+				{ "projectId", project.Id }
 			});
 		}
 		else
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("ProjectDetailPage", new Dictionary<string, object>
-			{
-				{ "Project", project }
-			});
+			await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?projectId={project.Id}");
 		}
 	}
 

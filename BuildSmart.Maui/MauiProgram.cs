@@ -47,6 +47,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IAuthService, AuthService>();
 		builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
 		builder.Services.AddSingleton<IFileService, FileService>();
+		builder.Services.AddSingleton<IBlazorNavigationRegistry, BlazorNavigationRegistry>();
 		builder.Services.AddSingleton<INavigationBridge, NavigationBridge>();
 		builder.Services.AddSingleton<IAlertService, AlertService>();
 		builder.Services.AddSingleton<IAppMainThread, AppMainThread>();
@@ -92,14 +93,12 @@ public static class MauiProgram
 		builder.Services.AddTransient<BookingPage>();
 		builder.Services.AddTransient<BookingPageViewModel>();
 
-		builder.Services.AddTransient<JobWizardPage>();
 		builder.Services.AddTransient<JobWizardViewModel>();
 
 		builder.Services.AddTransient<UserProfileViewModel>();
 
 		builder.Services.AddTransient<MyProjectsViewModel>();
 
-		builder.Services.AddTransient<ProjectDetailPage>();
 		builder.Services.AddTransient<ProjectDetailViewModel>();
 
 		builder.Services.AddTransient<ScopeReviewPage>();
@@ -125,7 +124,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<BookingDashboardPage>();
 		builder.Services.AddTransient<BookingDashboardViewModel>();
 
-		builder.Services.AddTransient<ActiveJobsPage>();
 		builder.Services.AddTransient<ActiveJobsViewModel>();
 
 		builder.Services.AddTransient<TradesmanBookingDashboardPage>();
@@ -134,7 +132,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<PlaceBidPage>();
 		builder.Services.AddTransient<PlaceBidViewModel>();
 
-		builder.Services.AddTransient<PassedAuctionsPage>();
 		builder.Services.AddTransient<PassedAuctionsViewModel>();
 
 		// Admin Pages
@@ -162,16 +159,12 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
 		Routing.RegisterRoute(nameof(AdminCategorySkusPage), typeof(AdminCategorySkusPage));
 		Routing.RegisterRoute(nameof(UserEditPage), typeof(UserEditPage));
-		Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
 		Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
 		Routing.RegisterRoute(nameof(GeneratedOfferPage), typeof(GeneratedOfferPage));
 		Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));
 		Routing.RegisterRoute(nameof(TaskBreakdownPage), typeof(TaskBreakdownPage));
 		Routing.RegisterRoute(nameof(BidDetailsPage), typeof(BidDetailsPage));
 		Routing.RegisterRoute(nameof(PlaceBidPage), typeof(PlaceBidPage));
-		Routing.RegisterRoute(nameof(JobWizardPage), typeof(JobWizardPage));
-		Routing.RegisterRoute(nameof(PassedAuctionsPage), typeof(PassedAuctionsPage));
-		Routing.RegisterRoute(nameof(ActiveJobsPage), typeof(ActiveJobsPage));
 		Routing.RegisterRoute(nameof(TradesmanBookingDashboardPage), typeof(TradesmanBookingDashboardPage));
 		Routing.RegisterRoute(nameof(CheckoutPage), typeof(CheckoutPage));
 		Routing.RegisterRoute(nameof(BookingDashboardPage), typeof(BookingDashboardPage));
@@ -187,4 +180,4 @@ public static class MauiProgram
 
 		return app;
 	}
-}
+};

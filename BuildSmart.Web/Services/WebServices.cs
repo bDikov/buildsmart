@@ -142,15 +142,48 @@ public class WebNavigationBridge : INavigationBridge
     {
         var url = route;
         
+        // Map old Page-based routes to new kebab-case routes for backward compatibility
+        if (url.EndsWith("Page"))
+        {
+            var pageName = url.Replace("Page", "");
+            url = pageName switch
+            {
+                "JobWizard" => "/job-wizard",
+                "ProjectDetail" => "/project-detail",
+                "PassedAuctions" => "/passed-auctions",
+                "Notifications" => "/notifications",
+                "ActiveJobs" => "/active-jobs",
+                "TradesmanDetails" => "/tradesman-details",
+                "AuctionHub" => "/auction-hub",
+                "ScopeReview" => "/scope-review",
+                "TaskBreakdown" => "/task-breakdown",
+                "BidDetails" => "/bid-details",
+                "PlaceBid" => "/place-bid",
+                "TradesmanBookingDashboard" => "/tradesman-booking-dashboard",
+                "Checkout" => "/checkout",
+                "BookingDashboard" => "/booking-dashboard",
+                "LoginPage" => "/login",
+                "BlazorHost" => "/",
+                _ => url
+            };
+        }
+
         // Intercept native MAUI shell routes and translate them to Web routes
         if (url == "//BlazorHostPage") url = "/";
         else if (url == "//LoginPage") url = "/login";
         else if (url.StartsWith("//")) url = url.Substring(2);
         
+        // Ensure absolute path if it doesn't look like a full URL or already starting with /
+        if (!url.StartsWith("/") && !url.Contains("://") && url != "..")
+        {
+            url = "/" + url;
+        }
+
         if (parameters != null && parameters.Count > 0)
         {
+            var separator = url.Contains("?") ? "&" : "?";
             var queryString = string.Join("&", parameters.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value?.ToString() ?? string.Empty)}"));
-            url = $"{url}?{queryString}";
+            url = $"{url}{separator}{queryString}";
         }
 
         _navigationManager.NavigateTo(url);

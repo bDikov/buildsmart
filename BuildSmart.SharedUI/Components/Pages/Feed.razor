@@ -39,7 +39,7 @@
                 {
                     <div class="d-flex justify-content-between align-items-center mb-3 px-2">
                         <h2 class="h5 fw-bold mb-0">Available Auctions</h2>
-                        <a href="#" class="text-primary text-decoration-underline" style="font-size: 0.85rem;" @onclick="() => ViewModel.NavigateToPassedAuctionsCommand.Execute(null)" @onclick:preventDefault>
+                        <a href="#" class="text-primary text-decoration-underline" style="font-size: 0.85rem;" @onclick='() => NavManager.NavigateTo("/passed-auctions")' @onclick:preventDefault>
                             Dismissed Jobs
                         </a>
                     </div>
@@ -309,7 +309,7 @@
         }
     }
 
-    private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/TradesmanDetailsPage?TradesmanId={id}");
+    private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-details?TradesmanId={id}");
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {

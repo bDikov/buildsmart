@@ -189,6 +189,31 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         }
 	}
 
+    public async Task LoadProjectAsync(Guid projectId)
+    {
+        if (IsLoading) return;
+        try
+        {
+            await _reloadSemaphore.WaitAsync();
+            IsLoading = true;
+            _lastReloadTime = DateTime.UtcNow;
+
+            var result = await _apiClient.GetProjectById.ExecuteAsync(projectId);
+            if (result.Data?.ProjectById != null)
+            {
+                Project = result.Data.ProjectById;
+                SyncJobPosts();
+                HasLoaded = true;
+            }
+        }
+        catch { /* Silently fail reload */ }
+        finally
+        {
+            IsLoading = false;
+            _reloadSemaphore.Release();
+        }
+    }
+
 	[ObservableProperty]
 	private IProjectDetails? _project;
 
@@ -275,11 +300,11 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
        private async Task EditAnswersAsync(IJobPostDetails job)	{
 		try
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("JobWizardPage", new Dictionary<string, object>
+			await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
 			{
-				{ "ProjectId", job.Project.Id },
-				{ "JobPostId", job.Id },
-				{ "TargetCategoryId", job.ServiceCategory.Id }
+				{ "projectId", job.Project.Id },
+				{ "jobId", job.Id },
+				{ "targetCategoryId", job.ServiceCategory.Id }
 			});
 		}
 		catch (Exception ex)
@@ -293,9 +318,9 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	{
 		try
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("ScopeReviewPage", new Dictionary<string, object>
+			await AppServiceLocator.Navigation.NavigateToAsync("/scope-review", new Dictionary<string, object>
 			{
-				{ "Job", job }
+				{ "job", job }
 			});
 		}
 		catch (Exception ex)
@@ -309,9 +334,9 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	{
 		try
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("TaskBreakdownPage", new Dictionary<string, object>
+			await AppServiceLocator.Navigation.NavigateToAsync("/task-breakdown", new Dictionary<string, object>
 			{
-				{ "Job", job }
+				{ "job", job }
 			});
 		}
 		catch (Exception ex)
@@ -319,6 +344,37 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 			await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
 		}
 	}
+
+    [RelayCommand]
+    private async Task ContinueDraftAsync()
+    {
+        if (Project == null) return;
+        try
+        {
+            await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
+            {
+                { "projectId", Project.Id }
+            });
+        }
+        catch (Exception ex)
+        {
+            await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ViewAuctionHubAsync(IJobPostDetails job)
+    {
+        if (job == null) return;
+        try
+        {
+            await AppServiceLocator.Navigation.NavigateToAsync($"/auction-hub?jobId={job.Id}");
+        }
+        catch (Exception ex)
+        {
+            await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
+        }
+    }
 
     [RelayCommand]
     private async Task ReviewBidAsync(object bidObj)

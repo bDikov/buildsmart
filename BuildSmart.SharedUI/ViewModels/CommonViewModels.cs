@@ -9,6 +9,7 @@ public partial class JobPostViewModel : ObservableObject
 {
     public IJobPostDetails JobPost { get; }
     public ObservableCollection<QuestionViewModel> Questions { get; } = new();
+    public ObservableCollection<QAPair> QAList { get; } = new();
 
     public JobPostViewModel(IJobPostDetails jobPost, Func<QuestionViewModel, Task>? loadMoreRepliesAction = null)
     {
@@ -21,6 +22,12 @@ public partial class JobPostViewModel : ObservableObject
             }
         }
     }
+}
+
+public class QAPair
+{
+    public string Question { get; set; } = "";
+    public string Answer { get; set; } = "";
 }
 
 public partial class QuestionViewModel : ObservableObject

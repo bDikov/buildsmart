@@ -1,0 +1,270 @@
+@page "/passed-auctions"
+@using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.GraphQL
+@using System.ComponentModel
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+@inject PassedAuctionsViewModel ViewModel
+@inject NavigationManager NavManager
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="passed-auctions-container">
+            <!-- Header -->
+            <div class="header-section">
+                <button class="back-btn" @onclick="GoBack">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <h2 class="page-title">Dismissed Jobs</h2>
+                <button class="refresh-btn" @onclick="() => ViewModel.LoadPassedAuctionsCommand.ExecuteAsync(null)">
+                    Refresh
+                </button>
+            </div>
+
+            <!-- Content -->
+            @if (ViewModel.IsLoading)
+            {
+                <div class="loading-state">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading dismissed jobs...</p>
+                </div>
+            }
+            else if (ViewModel.PassedAuctions == null || ViewModel.PassedAuctions.Count == 0)
+            {
+                <div class="empty-state">
+                    <p class="empty-title">No dismissed jobs.</p>
+                    <p class="empty-subtitle">Jobs you click 'Pass' on will appear here.</p>
+                </div>
+            }
+            else
+            {
+                <div class="jobs-list">
+                    @foreach (var auction in ViewModel.PassedAuctions)
+                    {
+                        <div class="job-card bs-card">
+                            <div class="job-card-content" @onclick="() => NavigateToDetails(auction)">
+                                <h3 class="job-title">@auction.Job?.Title</h3>
+                                <p class="job-category">@auction.Job?.ServiceCategory?.Name</p>
+                                <p class="job-location">📍 @auction.Job?.Location</p>
+                            </div>
+                            
+                            <div class="job-actions">
+                                <button class="bs-btn-primary restore-btn" @onclick="() => ViewModel.RestoreAuctionCommand.ExecuteAsync(auction)">
+                                    Restore
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-3">
+            <h4>Rendering Error</h4>
+            <p>@context.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+<style>
+    .passed-auctions-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: var(--font-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+    }
+
+    .header-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .back-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .back-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+        font-family: var(--font-heading);
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .refresh-btn {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .refresh-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .loading-state, .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin: 0 0 8px 0;
+    }
+
+    .empty-subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .jobs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .job-card {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    @@media (min-width: 576px) {
+        .job-card {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+
+    .job-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .job-card-content {
+        flex-grow: 1;
+        cursor: pointer;
+        margin-bottom: 16px;
+    }
+
+    @@media (min-width: 576px) {
+        .job-card-content {
+            margin-bottom: 0;
+            padding-right: 16px;
+        }
+    }
+
+    .job-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        font-family: var(--font-heading);
+    }
+
+    .job-category {
+        color: var(--color-primary);
+        font-size: 14px;
+        font-weight: 500;
+        margin: 0 0 4px 0;
+    }
+
+    .job-location {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .job-actions {
+        flex-shrink: 0;
+    }
+
+    .restore-btn {
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 8px;
+        padding: 8px 24px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .restore-btn:hover {
+        background-color: #45a049;
+    }
+    
+    @@media (min-width: 576px) {
+        .restore-btn {
+            width: auto;
+        }
+    }
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        await ViewModel.LoadPassedAuctionsCommand.ExecuteAsync(null);
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("..");
+    }
+
+    private void NavigateToDetails(IGetPassedAuctions_PassedAuctions auction)
+    {
+        if (auction?.Job != null)
+        {
+            // Note: Update "auction-hub" route based on actual component route
+            NavManager.NavigateTo($"/auction-hub?jobId={auction.Job.Id}");
+        }
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

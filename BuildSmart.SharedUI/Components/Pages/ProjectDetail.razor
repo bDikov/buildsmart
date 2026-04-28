@@ -1,0 +1,284 @@
+@page "/project-detail"
+@using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.GraphQL
+@using System.ComponentModel
+@using Markdig
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+@inject ProjectDetailViewModel ViewModel
+@inject NavigationManager NavManager
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="project-detail-container">
+            @if (!ViewModel.HasLoaded)
+            {
+                <div class="loading-state">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading project details...</p>
+                </div>
+            }
+            else if (ViewModel.Project != null)
+            {
+                <!-- Header -->
+                <div class="header-section">
+                    <button class="back-btn" @onclick="GoBack">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                    <div class="header-content">
+                        <h2 class="page-title">@ViewModel.Project.Title</h2>
+                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@ViewModel.Project.Status</span>
+                    </div>
+                </div>
+
+                <div class="overview-card bs-card mb-4">
+                    <h3 class="section-title text-primary mb-2">Overview</h3>
+                    <p class="project-description">
+                        @(string.IsNullOrEmpty(ViewModel.Project.GeneralSummary) ? ViewModel.Project.Description : ViewModel.Project.GeneralSummary)
+                    </p>
+                    
+                    @if (ViewModel.Project.Status == ProjectStatus.Draft)
+                    {
+                        <div class="mt-3">
+                            <button class="btn btn-warning w-100 text-white fw-bold" @onclick='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")'>
+                                Continue Editing Draft
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                <h3 class="section-title">Jobs</h3>
+
+                <div class="job-posts-list">
+                    @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
+                    {
+                        <p class="text-muted fst-italic">No jobs have been added to this project yet.</p>
+                    }
+                    else
+                    {
+                        @foreach (var jobVm in ViewModel.JobPosts)
+                        {
+                            var job = jobVm.JobPost;
+                            <div class="job-card bs-card">
+                                <div class="job-header">
+                                    <h4 class="job-title">@job.Title</h4>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="job-category">@job.ServiceCategory.Name</span>
+                                        <span class="job-status status-@(job.Status.ToString().ToLower())">@job.Status</span>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(job.GeneratedScope) && job.Status != JobPostStatus.Draft)
+                                {
+                                    <div class="scope-view mt-3 mb-3">
+                                        <div class="scope-text text-muted" style="font-size: 13px;">
+                                            @((MarkupString)Markdig.Markdown.ToHtml(job.GeneratedScope))
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="job-description mt-3 mb-3">@job.Description</p>
+                                }
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex flex-column gap-2 mt-3">
+                                    @if (job.Status == JobPostStatus.Open)
+                                    {
+                                        <button class="btn btn-outline-success w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewTaskBreakdownCommand.ExecuteAsync(job)">
+                                            View Task Breakdown
+                                        </button>
+                                    }
+
+                                    @if (job.Bids != null && job.Bids.Any())
+                                    {
+                                        <button class="btn btn-primary w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
+                                            View Offers (@job.Bids.Count)
+                                        </button>
+                                    }
+                                    else if (job.Status == JobPostStatus.Open)
+                                    {
+                                        <button class="btn btn-outline-primary w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
+                                            View Auction Hub (0 Offers)
+                                        </button>
+                                    }
+                                    
+                                    @if (job.Status == JobPostStatus.Rejected || job.Status == JobPostStatus.WaitingForUserReview)
+                                    {
+                                        <button class="btn btn-warning text-white w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.EditAnswersCommand.ExecuteAsync(job)">Edit Answers</button>
+                                        <button class="btn btn-success w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ReviewScopeCommand.ExecuteAsync(job)">Review AI Scope</button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-3">
+            <h4>Rendering Error</h4>
+            <p>@context.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+<style>
+    .project-detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: var(--font-primary);
+        color: var(--text-primary);
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .header-section {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 15px;
+    }
+
+    .header-content {
+        flex-grow: 1;
+    }
+
+    .back-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+        margin-top: -5px;
+    }
+
+    .back-btn:hover {
+        background-color: var(--bg-card-alt);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        color: var(--text-primary);
+    }
+
+    .project-description {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    .overview-card {
+        padding: 20px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+
+    .status-badge {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-primary);
+    }
+
+    .status-draft { color: gray; }
+    .status-open { color: #4CAF50; }
+    .status-waitingforuserreview { color: orange; }
+    .status-waitingforadminreview { color: #1976D2; }
+    .status-rejected { color: #D32F2F; }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .job-posts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .job-card {
+        padding: 20px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+
+    .job-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 5px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+    .job-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+    }
+
+    .job-category {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .job-status {
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .job-description {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery]
+    public Guid? ProjectId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        if (ProjectId.HasValue)
+        {
+            await ViewModel.LoadProjectAsync(ProjectId.Value);
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("..");
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}
