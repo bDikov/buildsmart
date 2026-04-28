@@ -23,7 +23,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[NotifyPropertyChangedFor(nameof(IsReviewStepVisible))]
 	[NotifyPropertyChangedFor(nameof(CurrentStepTitle))]
 	[NotifyPropertyChangedFor(nameof(NextButtonText))]
+	[NotifyPropertyChangedFor(nameof(TotalSteps))]
+	[NotifyPropertyChangedFor(nameof(CurrentStepNumber))]
+	[NotifyPropertyChangedFor(nameof(ProgressPercentage))]
 	private int _currentStep = 0;
+
+	public int TotalSteps => _wizardSteps.Count;
+	public int CurrentStepNumber => CurrentStep + 1;
+	public double ProgressPercentage => TotalSteps > 0 ? (double)CurrentStepNumber / TotalSteps * 100 : 0;
 
 	public bool IsInfoStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Info;
 	public bool IsCategoryStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.CategorySelection;
@@ -31,6 +38,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	public bool IsReviewStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Review;
 
 	public string CurrentStepTitle => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count ? _wizardSteps[CurrentStep].Title : "";
+
+	public string StepText => $"{CurrentStepNumber} of {TotalSteps} complete";
 
 	public string NextButtonText => (IsEditing && CurrentStep == _wizardSteps.Count - 1) ? "Save & Re-generate" : "Next";
 
@@ -94,11 +103,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	// Legacy property for backward compatibility if needed, but we use _masterAnswerKey now
 	public Dictionary<string, object> WizardAnswers { get; private set; } = new();
 
+	private Task? _loadCategoriesTask;
+
 	public JobWizardViewModel(IBuildSmartApiClient apiClient)
 	{
 		_apiClient = apiClient;
 		InitializeSteps();
-		LoadCategoriesAsync();
+		_loadCategoriesTask = LoadCategoriesAsync();
 	}
 
 	private void InitializeSteps()
@@ -388,7 +399,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private async Task GenerateDynamicSteps()
 	{
+		if (_loadCategoriesTask != null && !_loadCategoriesTask.IsCompleted)
+		{
+			await _loadCategoriesTask;
+		}
+
 		_wizardSteps.Clear();
+		Console.WriteLine($"[JobWizard] Generating Dynamic Steps. AllCategories Count: {_allCategories.Count}");
 
 		if (_targetCategoryId != null)
 		{
@@ -397,7 +414,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (targetCat != null)
 			{
 				var catQuestions = ExtractQuestions(new List<SelectableCategoryViewModel> { targetCat });
-
+				
 				// Fetch the specific JobPost to get AdminQuestions from the JSON field
 				var jobResult = await _apiClient.GetMyProjects.ExecuteAsync();
 				var job = jobResult.Data?.MyProjects?.SelectMany(p => p.JobPosts).FirstOrDefault(j => j.Id == _targetJobPostId);
@@ -460,18 +477,26 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
 
 		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
-		var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+		var selectedCategories = _allCategories.Where(c => !c.Category.IsGlobal && c.IsSelected).ToList();
+
+		Console.WriteLine($"[JobWizard] Global Categories Found: {globalCategories.Count}");
+		Console.WriteLine($"[JobWizard] Selected Categories Found: {selectedCategories.Count}");
 
 		// 1. Global Questions Step
 		var globalQuestions = ExtractQuestions(globalCategories);
 		if (globalQuestions.Any())
 		{
+			Console.WriteLine($"[JobWizard] Adding General Questions Step with {globalQuestions.Count} questions.");
 			_wizardSteps.Add(new WizardStep
 			{
 				Type = WizardStepType.Questions,
 				Title = "General Questions",
 				Questions = globalQuestions
 			});
+		}
+		else
+		{
+			Console.WriteLine("[JobWizard] NO Global questions extracted.");
 		}
 
 		// 2. Specific Category Steps
@@ -494,57 +519,42 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
 		}
+		
+		Console.WriteLine($"[JobWizard] Rebuilt steps. Total steps: {_wizardSteps.Count}");
 	}
 
 	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
-
 	{
 		var list = new List<WizardQuestionViewModel>();
 
 		foreach (var cat in categories)
-
 		{
-			System.Diagnostics.Debug.WriteLine($"Processing Category: {cat.Category.Name}");
-
-			System.Diagnostics.Debug.WriteLine($"TemplateStructure: {cat.Category.TemplateStructure}");
+			Console.WriteLine($"[JobWizard] Processing Category for questions: {cat.Category.Name}");
 
 			if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
-
 			{
 				try
-
 				{
 					var template = JsonNode.Parse(cat.Category.TemplateStructure);
-
 					if (template == null)
-
 					{
-						System.Diagnostics.Debug.WriteLine("Template parsed to NULL");
-
+						Console.WriteLine($"[JobWizard] Template for {cat.Category.Name} parsed to NULL");
 						continue;
 					}
 
 					if (template["questions"] is JsonArray qArray)
-
 					{
-						System.Diagnostics.Debug.WriteLine($"Found {qArray.Count} questions in JSON array.");
-
+						Console.WriteLine($"[JobWizard] Found {qArray.Count} questions in {cat.Category.Name}");
 						foreach (var qNode in qArray)
-
 						{
 							if (qNode is JsonObject qObj)
-
 							{
 								var qType = qObj["type"]?.GetValue<string>() ?? "text";
-
 								var qText = qObj["text"]?.GetValue<string>() ?? "";
-
 								var qId = qObj["id"]?.GetValue<string>() ?? "";
-
 								var qOptions = new List<string>();
 
 								if (qObj["options"] is JsonArray opts)
-
 								{
 									qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
 								}
@@ -552,46 +562,35 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 								if (!string.IsNullOrEmpty(qId)) _questionTextCache[qId] = qText;
 
 								list.Add(new WizardQuestionViewModel
-
 								{
 									Id = qId,
-
 									Text = qText,
-
 									Type = qType,
-
 									CategoryName = cat.Category.Name,
-
 									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
-
 									Options = qOptions,
-
 									Answer = qType == "boolean" ? "False" : ""
 								});
 							}
 						}
 					}
 					else
-
 					{
-						System.Diagnostics.Debug.WriteLine("'questions' array NOT found in template.");
+						Console.WriteLine($"[JobWizard] 'questions' array NOT found in template for {cat.Category.Name}");
 					}
 				}
 				catch (Exception ex)
-
 				{
-					System.Diagnostics.Debug.WriteLine($"Error parsing template: {ex}");
+					Console.WriteLine($"[JobWizard] Error parsing template for {cat.Category.Name}: {ex.Message}");
 				}
 			}
 			else
-
 			{
-				System.Diagnostics.Debug.WriteLine("TemplateStructure is EMPTY or NULL.");
+				Console.WriteLine($"[JobWizard] TemplateStructure for {cat.Category.Name} is EMPTY or NULL.");
 			}
 		}
 
-		System.Diagnostics.Debug.WriteLine($"Total extracted questions: {list.Count}");
-
+		Console.WriteLine($"[JobWizard] Total extracted questions: {list.Count}");
 		return list;
 	}
 

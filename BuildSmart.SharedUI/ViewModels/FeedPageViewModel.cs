@@ -53,7 +53,7 @@ namespace BuildSmart.SharedUI.ViewModels
 		{
 			if (item is IGetTradesmanProfiles_TradesmanProfiles tradesman)
 			{
-				await AppServiceLocator.Navigation.NavigateToAsync($"/tradesman-details?TradesmanId={tradesman.Id}");
+				await AppServiceLocator.Navigation.NavigateToAsync($"/tradesman-profile?TradesmanId={tradesman.Id}");
 			}
 			else if (item is IGetAvailableAuctions_AvailableAuctions auction)
 			{

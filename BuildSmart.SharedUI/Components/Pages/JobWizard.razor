@@ -21,8 +21,8 @@
                 <!-- Progress Bar & Title -->
                 <BuildSmart.SharedUI.Components.ProgressCard 
                     Title="Your progress" 
-                    ProgressPercentage="@CalculateProgress()" 
-                    StepText="@GetStepText()" 
+                    ProgressPercentage="@ViewModel.ProgressPercentage" 
+                    StepText="@ViewModel.StepText" 
                     SubtitleText="@GetSubtitleText()" />
 
                 <!-- Step 0: Basic Info -->
@@ -208,26 +208,6 @@
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
-    }
-
-    private double CalculateProgress()
-    {
-        // Simple logic for progress bar: 4 standard steps (0 to 3) + dynamic
-        // This is a rough estimation since questions are dynamic
-        if (ViewModel.IsInfoStepVisible) return 25;
-        if (ViewModel.IsCategoryStepVisible) return 50;
-        if (ViewModel.IsQuestionStepVisible) return 75;
-        if (ViewModel.IsReviewStepVisible) return 100;
-        return 0;
-    }
-
-    private string GetStepText()
-    {
-        if (ViewModel.IsInfoStepVisible) return "1 of 4 complete";
-        if (ViewModel.IsCategoryStepVisible) return "2 of 4 complete";
-        if (ViewModel.IsQuestionStepVisible) return "3 of 4 complete";
-        if (ViewModel.IsReviewStepVisible) return "4 of 4 complete";
-        return "0 of 4 complete";
     }
 
     private string GetSubtitleText()
