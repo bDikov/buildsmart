@@ -1,8 +1,35 @@
 @inject NavigationManager NavigationManager
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        NavigationManager.NavigateTo("/login");
+        if (firstRender)
+        {
+            // Give JS Interop a moment to become available if this is a fresh reload
+            var token = await AuthService.GetTokenAsync();
+            
+            if (string.IsNullOrEmpty(token))
+            {
+                // Truly unauthenticated, go to login
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                // We actually have a token (we just loaded it via JS Interop after the initial static auth state check)
+                // Tell the app to re-evaluate the auth state so the user is logged in
+                if (AuthStateProvider is BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider mauiAuth)
+                {
+                    mauiAuth.NotifyAuthenticationStateChanged();
+                }
+            }
+        }
     }
 }

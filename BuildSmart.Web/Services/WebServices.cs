@@ -35,11 +35,13 @@ public class CircuitContextHandler : CircuitHandler
 public class WebAuthService : IAuthService
 {
     private readonly IJSRuntime _jsRuntime;
+    private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
     private string? _cachedToken;
 
-    public WebAuthService(IJSRuntime jsRuntime)
+    public WebAuthService(IJSRuntime jsRuntime, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
     {
         _jsRuntime = jsRuntime;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public bool IsAuthenticated => !string.IsNullOrEmpty(_cachedToken);
@@ -47,9 +49,22 @@ public class WebAuthService : IAuthService
     public async Task<string?> GetTokenAsync()
     {
         if (_cachedToken != null) return _cachedToken;
+
+        // 1. Try reading from the incoming HTTP request cookie (avoids JSInterop Exception on initial load)
+        try
+        {
+            var cookieToken = _httpContextAccessor.HttpContext?.Request.Cookies["auth_token"];
+            if (!string.IsNullOrEmpty(cookieToken))
+            {
+                _cachedToken = cookieToken;
+                return _cachedToken;
+            }
+        }
+        catch { /* Context might be disposed or unavailable */ }
+
+        // 2. Try reading from localStorage via JSInterop
         try 
         {
-            // Only execute if not prerendering
             _cachedToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "auth_token");
         }
         catch (InvalidOperationException) { /* Static rendering context */ }
@@ -64,6 +79,8 @@ public class WebAuthService : IAuthService
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
+            // Sync to a cookie so the browser sends it on the very first HTTP request (like a page refresh)
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'auth_token={token}; path=/; max-age=31536000; samesite=strict'");
         }
         catch { /* Ignore prerendering errors */ }
     }
@@ -74,6 +91,7 @@ public class WebAuthService : IAuthService
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "auth_token");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'");
         }
         catch { /* Ignore prerendering errors */ }
     }

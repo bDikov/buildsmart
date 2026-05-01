@@ -115,10 +115,7 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ScopeReview] Failed to lazy load tasks: {ex.Message}");
-            }
+            catch { /* Silently fail on lazy load */ }
             finally
             {
                 IsBusy = false;
@@ -129,12 +126,6 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
             {
                 AddTask();
             }
-            
-            Console.WriteLine($"[ScopeReview] SUCCESS: Job loaded with ID: {jobId}. Tasks loaded: {Tasks.Count}");
-        }
-        else
-        {
-            Console.WriteLine("[ScopeReview] ERROR: Received invalid Job ID.");
         }
     }
 

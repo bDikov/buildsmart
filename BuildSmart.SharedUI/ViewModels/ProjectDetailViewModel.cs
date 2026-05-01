@@ -264,10 +264,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
                         await LoadProjectAsync(projId.Value);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ProjectDetail] Failed to resolve JobId to ProjectId: {ex.Message}");
-                }
+                catch { /* Failed to resolve JobId */ }
             });
         }
 	}

@@ -77,7 +77,6 @@ public partial class NotificationsViewModel : ObservableObject
                     route = $"/tradesman-details?tradesmanId={note.RelatedEntityId.Value}";
                     break;
                 default:
-                    Console.WriteLine($"[Notifications] Unknown entity type for navigation: {note.RelatedEntityType}");
                     break;
             }
 
@@ -86,10 +85,7 @@ public partial class NotificationsViewModel : ObservableObject
                 await BuildSmart.SharedUI.Services.AppServiceLocator.Navigation.NavigateToAsync(route);
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Notifications] Navigation failed: {ex.Message}");
-        }
+        catch { /* Navigation failed */ }
     }
 
     [RelayCommand]

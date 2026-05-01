@@ -44,6 +44,9 @@ builder.Services.AddSignalR(options =>
     options.MaximumReceiveMessageSize = 102400000;
 });
 
+// Add HttpContextAccessor for reading cookies in WebAuthService
+builder.Services.AddHttpContextAccessor();
+
 // Configure SharedUI API Config based on Web
 BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://localhost:7212";
 
@@ -139,6 +142,28 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+// Middleware to parse the raw JWT from the auth_token cookie so ASP.NET Core Endpoint Routing doesn't issue a 302 redirect
+app.Use(async (context, next) =>
+{
+    if (context.Request.Cookies.TryGetValue("auth_token", out var token) && !string.IsNullOrEmpty(token))
+    {
+        try
+        {
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            if (jwt.ValidTo > DateTime.UtcNow)
+            {
+                var roleClaimType = jwt.Claims.FirstOrDefault(c => c.Type == "role" || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Type ?? "role";
+                var identity = new System.Security.Claims.ClaimsIdentity(jwt.Claims, "jwt", "name", roleClaimType);
+                context.User = new System.Security.Claims.ClaimsPrincipal(identity);
+            }
+        }
+        catch { /* Invalid or malformed token */ }
+    }
+    await next();
+});
+
 app.UseAuthorization();
 app.UseAntiforgery();
 
