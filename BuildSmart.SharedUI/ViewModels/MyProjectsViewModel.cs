@@ -95,12 +95,12 @@ public partial class MyProjectsViewModel : ObservableObject
 		{
 			await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
 			{
-				{ "projectId", project.Id }
+				{ "ProjectId", project.Id }
 			});
 		}
 		else
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?projectId={project.Id}");
+			await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?ProjectId={project.Id}");
 		}
 	}
 

@@ -40,6 +40,59 @@ public partial class NotificationsViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task NavigateToNotificationAsync(IGetMyNotifications_MyNotifications note)
+    {
+        // First mark as read
+        await MarkAsReadAsync(note);
+
+        if (!note.RelatedEntityId.HasValue || string.IsNullOrEmpty(note.RelatedEntityType))
+        {
+            return;
+        }
+
+        try
+        {
+            string route = string.Empty;
+            
+            // Map entity types to routes based on application logic
+            switch (note.RelatedEntityType.ToLowerInvariant())
+            {
+                case "project":
+                    route = $"/project-detail?projectId={note.RelatedEntityId.Value}";
+                    break;
+                case "jobpost":
+                case "job":
+                    route = $"/project-detail?jobId={note.RelatedEntityId.Value}";
+                    break;
+                case "bid":
+                    // Assuming we navigate to project details and it handles the bid via API
+                    // Or navigate to a specific bid page if it exists
+                    route = $"/project-detail?bidId={note.RelatedEntityId.Value}";
+                    break;
+                case "booking":
+                    route = $"/booking-detail?bookingId={note.RelatedEntityId.Value}"; // Update if specific route exists
+                    break;
+                case "tradesman":
+                case "user":
+                    route = $"/tradesman-details?tradesmanId={note.RelatedEntityId.Value}";
+                    break;
+                default:
+                    Console.WriteLine($"[Notifications] Unknown entity type for navigation: {note.RelatedEntityType}");
+                    break;
+            }
+
+            if (!string.IsNullOrEmpty(route))
+            {
+                await BuildSmart.SharedUI.Services.AppServiceLocator.Navigation.NavigateToAsync(route);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Notifications] Navigation failed: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     public async Task MarkAsReadAsync(IGetMyNotifications_MyNotifications note)
     {
         if (note.IsRead) return;

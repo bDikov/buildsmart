@@ -5,6 +5,7 @@ query GetMyNotifications {
     message
     isRead
     relatedEntityId
+    relatedEntityType
     createdAt
   }
 }

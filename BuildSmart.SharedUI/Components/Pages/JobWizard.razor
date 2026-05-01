@@ -189,11 +189,28 @@
 </ErrorBoundary>
 
 @code {
+    [SupplyParameterFromQuery] public Guid? ProjectId { get; set; }
+    [SupplyParameterFromQuery] public Guid? JobId { get; set; }
+    [SupplyParameterFromQuery] public Guid? TargetCategoryId { get; set; }
+
     protected override void OnInitialized()
     {
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ViewModel != null)
+        {
+            var queryParams = new Dictionary<string, object>();
+            if (ProjectId.HasValue) queryParams["ProjectId"] = ProjectId.Value;
+            if (JobId.HasValue) queryParams["JobPostId"] = JobId.Value;
+            if (TargetCategoryId.HasValue) queryParams["TargetCategoryId"] = TargetCategoryId.Value;
+            
+            ViewModel.ApplyQueryAttributes(queryParams);
         }
     }
 

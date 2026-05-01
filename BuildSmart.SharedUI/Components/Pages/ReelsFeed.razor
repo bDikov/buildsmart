@@ -3,14 +3,6 @@
 @implements IAsyncDisposable
 
 <div class="reels-page-container">
-    <!-- Back button overlay -->
-    <button class="back-overlay-btn" @onclick="GoBack">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-    </button>
-
     <div id="reels-feed-container" class="reels-feed-container">
         @foreach (var reel in Reels)
         {
@@ -37,20 +29,6 @@
                     <div class="reel-info">
                         <h3 class="reel-title">@reel.Title</h3>
                     </div>
-                    <div class="reel-actions">
-                        <button class="action-btn">
-                            <span class="icon">❤️</span>
-                            <span class="count">12k</span>
-                        </button>
-                        <button class="action-btn">
-                            <span class="icon">💬</span>
-                            <span class="count">304</span>
-                        </button>
-                        <button class="action-btn">
-                            <span class="icon">↗️</span>
-                            <span class="count">Share</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         }
@@ -66,23 +44,6 @@
         height: 100vh;
         background-color: #000;
         z-index: 1000; /* Full screen overlay */
-    }
-
-    .back-overlay-btn {
-        position: absolute;
-        top: 40px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.4);
-        border: none;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        z-index: 1010;
-        cursor: pointer;
     }
 
     .reels-feed-container {

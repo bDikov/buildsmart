@@ -73,17 +73,34 @@
                                     </div>
                                 </div>
 
+                                @{
+                                    bool isExpanded = _expandedJobs.Contains(job.Id);
+                                    string scopeClass = isExpanded ? "scope-view expanded" : "scope-view collapsed";
+                                    string descClass = isExpanded ? "job-description expanded" : "job-description collapsed";
+                                }
+
                                 @if (!string.IsNullOrEmpty(job.GeneratedScope) && job.Status != JobPostStatus.Draft)
                                 {
-                                    <div class="scope-view mt-3 mb-3">
-                                        <div class="scope-text text-muted" style="font-size: 13px;">
+                                    <div class="@scopeClass mt-3 mb-3">
+                                        <div class="scope-text">
                                             @((MarkupString)Markdig.Markdown.ToHtml(job.GeneratedScope))
                                         </div>
                                     </div>
+                                    <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
+                                        @(isExpanded ? "View Less" : "View More")
+                                    </button>
                                 }
                                 else
                                 {
-                                    <p class="job-description mt-3 mb-3">@job.Description</p>
+                                    <div class="@descClass mt-3 mb-3">
+                                        @job.Description
+                                    </div>
+                                    @if (job.Description?.Length > 150)
+                                    {
+                                        <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
+                                            @(isExpanded ? "View Less" : "View More")
+                                        </button>
+                                    }
                                 }
 
                                 <!-- Action Buttons -->
@@ -249,19 +266,60 @@
         font-size: 14px;
         color: var(--text-secondary);
     }
+
+    .scope-view.collapsed, .job-description.collapsed {
+        max-height: 150px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .scope-view.collapsed::after, .job-description.collapsed::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: linear-gradient(transparent, var(--bg-card));
+    }
+
+    .scope-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .scope-text p {
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+    }
 </style>
 
 @code {
     [SupplyParameterFromQuery]
     public Guid? ProjectId { get; set; }
+    
+    [SupplyParameterFromQuery]
+    public Guid? JobId { get; set; }
+
+    private HashSet<Guid> _expandedJobs = new();
+
+    private void ToggleJobExpansion(Guid jobId)
+    {
+        if (_expandedJobs.Contains(jobId))
+            _expandedJobs.Remove(jobId);
+        else
+            _expandedJobs.Add(jobId);
+    }
 
     protected override async Task OnInitializedAsync()
     {
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        if (ProjectId.HasValue)
-        {
-            await ViewModel.LoadProjectAsync(ProjectId.Value);
-        }
+        
+        var query = new Dictionary<string, object>();
+        if (ProjectId.HasValue) query["ProjectId"] = ProjectId.Value;
+        if (JobId.HasValue) query["JobId"] = JobId.Value;
+        
+        ViewModel.ApplyQueryAttributes(query);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -671,7 +671,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						null, "USD", new List<string>(), PreferredSiteVisitDate
 					);
 
-					if (jobResult.Data?.AddJobToProject != null)
+					if (jobResult.Errors.Count > 0)
+					{
+						await AppServiceLocator.Alerts.DisplayAlert("Error", $"AddJob Error: {jobResult.Errors[0].Message}", "OK");
+					}
+					else if (jobResult.Data?.AddJobToProject != null)
 					{
 						_currentJobPostIds[cat.Category.Id] = jobResult.Data.AddJobToProject.Id;
 					}

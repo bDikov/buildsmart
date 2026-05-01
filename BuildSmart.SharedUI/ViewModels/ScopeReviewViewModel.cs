@@ -64,6 +64,8 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private IJobPostDetails? _job;
 
+    private Guid _jobId;
+
     [ObservableProperty]
     private string _generatedScope = string.Empty;
 
@@ -74,44 +76,52 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query.TryGetValue("Job", out var jobObj) && jobObj is IJobPostDetails job)
+        if (query.TryGetValue("JobId", out var jobIdObj) && Guid.TryParse(jobIdObj.ToString(), out var jobId))
         {
-            Job = job;
-            GeneratedScope = job.GeneratedScope ?? string.Empty;
-            
+            _jobId = jobId;
             Tasks.Clear();
+            IsBusy = true;
 
             try
             {
-                var result = await _apiClient.GetJobTasks.ExecuteAsync(job.Id);
+                var result = await _apiClient.GetJobTasks.ExecuteAsync(jobId);
                 var jobPost = result.Data?.AllJobPosts?.FirstOrDefault();
 
-                if (jobPost?.JobTasks != null && jobPost.JobTasks.Any())
+                if (jobPost != null)
                 {
-                    foreach (var task in jobPost.JobTasks.OrderBy(t => t.SequenceOrder))
+                    GeneratedScope = jobPost.GeneratedScope ?? string.Empty;
+
+                    if (jobPost.JobTasks != null && jobPost.JobTasks.Any())
                     {
-                        var vm = new EditableTaskViewModel
+                        foreach (var task in jobPost.JobTasks.OrderBy(t => t.SequenceOrder))
                         {
-                            Title = task.Title,
-                            Description = task.Description ?? string.Empty,
-                            SequenceOrder = task.SequenceOrder
-                        };
-
-                        if (task.AcceptanceCriteria != null)
-                        {
-                            foreach (var criteria in task.AcceptanceCriteria)
+                            var vm = new EditableTaskViewModel
                             {
-                                vm.Criteria.Add(new EditableCriteriaViewModel { Description = criteria.Description });
-                            }
-                        }
+                                Title = task.Title,
+                                Description = task.Description ?? string.Empty,
+                                SequenceOrder = task.SequenceOrder
+                            };
 
-                        Tasks.Add(vm);
+                            if (task.AcceptanceCriteria != null)
+                            {
+                                foreach (var criteria in task.AcceptanceCriteria)
+                                {
+                                    vm.Criteria.Add(new EditableCriteriaViewModel { Description = criteria.Description });
+                                }
+                            }
+
+                            Tasks.Add(vm);
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ScopeReview] Failed to lazy load tasks: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
             }
             
             // If no tasks exist, start fresh with one empty task
@@ -120,11 +130,11 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
                 AddTask();
             }
             
-            Console.WriteLine($"[ScopeReview] SUCCESS: Job loaded with ID: {Job.Id}. Tasks loaded: {Tasks.Count}");
+            Console.WriteLine($"[ScopeReview] SUCCESS: Job loaded with ID: {jobId}. Tasks loaded: {Tasks.Count}");
         }
         else
         {
-            Console.WriteLine("[ScopeReview] ERROR: Received invalid Job object or ID.");
+            Console.WriteLine("[ScopeReview] ERROR: Received invalid Job ID.");
         }
     }
 
@@ -163,7 +173,7 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task ApproveAsync()
     {
-        if (Job == null || Job.Id == Guid.Empty)
+        if (_jobId == Guid.Empty)
         {
             await AppServiceLocator.Alerts.DisplayAlert("Error", "Job data is missing. Please go back and try again.", "OK");
             return;
@@ -199,7 +209,7 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
         try
         {
             IsBusy = true;
-            Console.WriteLine($"[ScopeReview] Sending UpdateJobTasks mutation for Job: {Job.Id}...");
+            Console.WriteLine($"[ScopeReview] Sending UpdateJobTasks mutation for Job: {_jobId}...");
 
             // Map UI models to GraphQL Input
             var taskInputs = Tasks.Select(t => new JobTaskInput
@@ -215,7 +225,7 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
 
             var updateInput = new UpdateJobTasksInput
             {
-                JobPostId = Job.Id,
+                JobPostId = _jobId,
                 Tasks = taskInputs
             };
 
@@ -228,11 +238,7 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
             }
 
             // 2. Navigate to the OfferView instead of approving
-            var navParams = new Dictionary<string, object>
-            {
-                { "Job", Job }
-            };
-            await AppServiceLocator.Navigation.NavigateToAsync("GeneratedOfferPage", navParams);
+            await AppServiceLocator.Navigation.NavigateToAsync($"GeneratedOfferPage?jobId={_jobId}");
         }
         catch (Exception ex)
         {

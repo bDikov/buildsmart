@@ -248,6 +248,28 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
                 });
             }
 		}
+        else if (query.TryGetValue("ProjectId", out var projectIdObj) && Guid.TryParse(projectIdObj.ToString(), out var projectId))
+        {
+            Task.Run(async () => await LoadProjectAsync(projectId));
+        }
+        else if (query.TryGetValue("JobId", out var jobIdObj) && Guid.TryParse(jobIdObj.ToString(), out var jobId))
+        {
+            Task.Run(async () => {
+                try
+                {
+                    var result = await _apiClient.GetProjectIdFromJob.ExecuteAsync(jobId);
+                    var projId = result.Data?.AllJobPosts?.FirstOrDefault()?.Project?.Id;
+                    if (projId.HasValue)
+                    {
+                        await LoadProjectAsync(projId.Value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ProjectDetail] Failed to resolve JobId to ProjectId: {ex.Message}");
+                }
+            });
+        }
 	}
 
     private void SyncJobPosts()
@@ -318,10 +340,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	{
 		try
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("/scope-review", new Dictionary<string, object>
-			{
-				{ "job", job }
-			});
+			await AppServiceLocator.Navigation.NavigateToAsync($"/scope-review?jobId={job.Id}");
 		}
 		catch (Exception ex)
 		{
@@ -334,10 +353,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	{
 		try
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("/task-breakdown", new Dictionary<string, object>
-			{
-				{ "job", job }
-			});
+			await AppServiceLocator.Navigation.NavigateToAsync($"/task-breakdown?jobId={job.Id}");
 		}
 		catch (Exception ex)
 		{

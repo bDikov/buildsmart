@@ -1,70 +1,98 @@
 @page "/my-projects"
 @using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.GraphQL
 @inject MyProjectsViewModel ViewModel
 @inject NavigationManager NavManager
 
 <div class="projects-container">
     <div class="header-section">
-        <h2 class="page-title">My Projects</h2>
+        <div class="title-group">
+            <h1 class="page-title">My Projects</h1>
+            <p class="page-subtitle">Manage your home renovations and track progress.</p>
+        </div>
         <button class="bs-btn-primary" @onclick='() => NavManager.NavigateTo("/job-wizard")'>
-            Create Project
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create New Project
         </button>
     </div>
 
     @if (ViewModel.IsBusy && !ViewModel.Projects.Any())
     {
         <div class="loading-state">
-            <p>Loading projects...</p>
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>Gathering your blueprints...</p>
         </div>
     }
     else if (ViewModel.IsEmpty)
     {
-        <div class="empty-state card-light">
-            <p>You haven't posted any projects yet.</p>
-            <button class="bs-btn-primary" @onclick='() => NavManager.NavigateTo("/job-wizard")'>Create Project</button>
+        <div class="empty-state bs-card">
+            <div class="empty-icon">🏗️</div>
+            <h3>No Projects Yet</h3>
+            <p>Start your renovation journey by creating your first project scope.</p>
+            <button class="bs-btn-primary" @onclick='() => NavManager.NavigateTo("/job-wizard")'>Get Started</button>
         </div>
     }
     else
     {
-        <div class="projects-list">
+        <div class="projects-grid">
             @foreach (var project in ViewModel.Projects)
             {
+                var progress = CalculateProgress(project);
                 <div class="bs-card project-card" @onclick="() => HandleProjectClick(project)">
-                    <div class="project-header">
-                        <h3>@(string.IsNullOrEmpty(project.Title) ? "(No Title)" : project.Title)</h3>
-                        <span class="status-badge status-@project.Status.ToString().ToLower()">@project.Status</span>
-                    </div>
-                    
-                    <p class="project-desc">@(string.IsNullOrEmpty(project.Description) ? "(No Description)" : project.Description)</p>
-                    
-                    <hr class="divider" />
-                    
-                    <div class="jobs-section">
-                        <h4>Jobs:</h4>
-                        @if (project.JobPosts == null || !project.JobPosts.Any())
+                    <div class="card-content">
+                        <div class="project-header">
+                            <div class="title-area">
+                                <h3 class="project-title">@(string.IsNullOrEmpty(project.Title) ? "Untitled Project" : project.Title)</h3>
+                                <div class="project-meta">
+                                    <span class="meta-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                        @(project.JobPosts?.FirstOrDefault()?.Location ?? "Remote")
+                                    </span>
+                                    <span class="meta-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                        @(project.JobPosts?.Count ?? 0) Jobs
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="status-badge-container">
+                                <span class="status-pill status-@project.Status.ToString().ToLower()">
+                                    @FormatStatus(project.Status)
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <p class="project-desc">@(string.IsNullOrEmpty(project.Description) ? "Set your goals and start adding jobs to get bids from pros." : project.Description)</p>
+                        
+                        @if (project.JobPosts != null && project.JobPosts.Any())
                         {
-                            <p class="no-jobs">No specific jobs added.</p>
-                        }
-                        else
-                        {
-                            <div class="jobs-list">
-                                @foreach (var job in project.JobPosts)
+                            <div class="jobs-preview">
+                                @foreach (var job in project.JobPosts.Take(2))
                                 {
-                                    <div class="job-item">
-                                        <div class="job-info">
-                                            <span class="job-category">@(job.ServiceCategory?.Name ?? "Unknown Category")</span>
-                                            <span class="job-title">@job.Title</span>
-                                        </div>
-                                        <span class="job-status">@job.Status</span>
+                                    <div class="job-chip">
+                                        <span class="job-dot status-@job.Status.ToString().ToLower()"></span>
+                                        <span class="job-name">@job.Title</span>
                                     </div>
+                                }
+                                @if (project.JobPosts.Count > 2)
+                                {
+                                    <span class="more-jobs">+@(project.JobPosts.Count - 2) more</span>
                                 }
                             </div>
                         }
                     </div>
 
-                    <div class="project-actions">
-                        <button class="bs-btn-dark btn-sm" @onclick:stopPropagation="true" @onclick="() => ViewModel.DeleteProjectCommand.ExecuteAsync(project)">
-                            Delete
+                    <div class="card-footer">
+                        <div class="progress-container">
+                            <div class="progress-info">
+                                <span class="progress-label">Overall Progress</span>
+                                <span class="progress-percent">@progress%</span>
+                            </div>
+                            <div class="bs-progress-bar">
+                                <div class="progress-fill" style="width: @progress%"></div>
+                            </div>
+                        </div>
+                        <button class="delete-btn" @onclick:stopPropagation="true" @onclick="() => ViewModel.DeleteProjectCommand.ExecuteAsync(project)" title="Delete Project">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
                     </div>
                 </div>
@@ -75,177 +103,253 @@
 
 <style>
     .projects-container {
-        padding: 20px;
-        font-family: var(--font-primary);
-        max-width: 800px;
+        padding: 40px 20px;
+        max-width: 1100px;
         margin: 0 auto;
+        min-height: 100vh;
     }
 
     .header-section {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
+        align-items: flex-end;
+        margin-bottom: 40px;
+        gap: 20px;
     }
 
     .page-title {
-        font-family: var(--font-heading);
-        color: var(--text-primary);
-        font-size: 32px;
+        font-size: 38px;
+        font-weight: 800;
+        margin: 0 0 8px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
         margin: 0;
     }
 
     .loading-state, .empty-state {
-        text-align: center;
-        padding: 50px 20px;
-    }
-
-    .empty-state {
-        padding: 60px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 20px;
+        justify-content: center;
+        text-align: center;
+        padding: 80px 40px;
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 24px;
+    }
+
+    .empty-state h3 {
+        font-size: 24px;
+        margin-bottom: 12px;
     }
 
     .empty-state p {
-        color: var(--text-secondary);
-        font-size: 18px;
-        margin: 0;
+        max-width: 400px;
+        margin-bottom: 30px;
+        color: var(--text-muted);
     }
 
-    .projects-list {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 24px;
+    }
+
+    @@media (max-width: 600px) {
+        .projects-grid {
+            grid-template-columns: 1fr;
+        }
+        .header-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 
     .project-card {
-        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.05);
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        position: relative;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
     }
 
     .project-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-hover);
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        background-color: var(--bg-card-alt);
+    }
+
+    .card-content {
+        padding: 28px;
+        flex-grow: 1;
     }
 
     .project-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
+        gap: 16px;
     }
 
-    .project-header h3 {
-        font-family: var(--font-primary);
-        font-size: 20px;
+    .project-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
         color: var(--text-primary);
-        margin: 0;
-        font-weight: 700;
+        line-height: 1.2;
     }
 
-    .status-badge {
-        font-size: 12px;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 12px;
-        background-color: #e0e0e0;
-        color: #333;
+    .project-meta {
+        display: flex;
+        gap: 16px;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
     }
 
-    .status-draft { background-color: #f1f3f5; color: #6c757d; }
-    .status-open { background-color: #e3f2fd; color: #0d6efd; }
-    .status-inprogress { background-color: #fff3cd; color: #0dcaf0; }
-    .status-completed { background-color: #d1e7dd; color: #198754; }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-pill {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 6px 12px;
+        border-radius: 20px;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .status-active { background: rgba(0, 230, 118, 0.15); color: #00e676; }
+    .status-completed { background: rgba(33, 150, 243, 0.15); color: #2196f3; }
+    .status-draft { background: rgba(158, 158, 158, 0.15); color: #9e9e9e; }
+    .status-underreview { background: rgba(255, 152, 0, 0.15); color: #ff9800; }
 
     .project-desc {
-        color: var(--text-secondary);
         font-size: 14px;
-        margin: 0 0 15px 0;
-        line-height: 1.5;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        line-height: 1.6;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        opacity: 0.8;
     }
 
-    .divider {
-        border: none;
-        height: 1px;
-        background-color: var(--border-color);
-        margin: 15px 0;
-    }
-
-    .jobs-section h4 {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 10px 0;
-    }
-
-    .no-jobs {
-        font-size: 12px;
-        font-style: italic;
-        color: var(--text-secondary);
-        margin: 0;
-    }
-
-    .jobs-list {
+    .jobs-preview {
         display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .job-item {
-        background-color: var(--bg-page);
-        border-radius: 8px;
-        padding: 12px 16px;
-        display: flex;
-        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
         align-items: center;
     }
 
-    .job-info {
+    .job-chip {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .job-category {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    .job-title {
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.05);
+        padding: 6px 12px;
+        border-radius: 8px;
         font-size: 12px;
-        color: var(--text-secondary);
+        font-weight: 600;
+        border: 1px solid rgba(255,255,255,0.05);
     }
 
-    .job-status {
+    .job-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ccc;
+    }
+
+    .job-dot.status-open { background: #00e676; box-shadow: 0 0 8px #00e676; }
+    .job-dot.status-contracted { background: #2196f3; }
+    .job-dot.status-waitingforadminreview { background: #ff9800; }
+
+    .more-jobs {
         font-size: 12px;
-        font-weight: 700;
-        color: #ff9800; /* Orange highlight like in XAML */
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-left: 4px;
     }
 
-    .project-actions {
+    .card-footer {
+        padding: 20px 28px;
+        background: rgba(0,0,0,0.1);
         display: flex;
-        justify-content: flex-end;
-        margin-top: 15px;
+        align-items: center;
+        gap: 20px;
+        border-top: 1px solid rgba(255,255,255,0.03);
     }
 
-    .btn-sm {
-        padding: 8px 16px;
-        font-size: 14px;
-        background-color: #dc3545; /* Red for delete */
-        color: white;
+    .progress-container {
+        flex-grow: 1;
     }
 
-    .btn-sm:hover {
-        background-color: #c82333;
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .progress-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+    }
+
+    .progress-percent {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+
+    .bs-progress-bar {
+        height: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--color-primary), #a855f7);
+        border-radius: 3px;
+        transition: width 1s ease-out;
+    }
+
+    .delete-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-btn:hover {
+        color: #ff5252;
+        background: rgba(255, 82, 82, 0.1);
     }
 </style>
 
@@ -256,6 +360,39 @@
         {
             await ViewModel.LoadProjectsAsync();
         }
+    }
+
+    private int CalculateProgress(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)
+    {
+        if (project.JobPosts == null || !project.JobPosts.Any()) return 0;
+        
+        // Simple heuristic: 
+        // Draft = 10%, Open = 40%, Contracted = 80%, Completed = 100%
+        double total = 0;
+        foreach(var job in project.JobPosts)
+        {
+            switch(job.Status)
+            {
+                case JobPostStatus.Contracted: total += 100; break;
+                case JobPostStatus.BiddingClosed: total += 70; break;
+                case JobPostStatus.Open: total += 40; break;
+                case JobPostStatus.WaitingForAdminReview: total += 30; break;
+                case JobPostStatus.WaitingForUserReview: total += 20; break;
+                case JobPostStatus.Draft: total += 10; break;
+                default: total += 5; break;
+            }
+        }
+        
+        return (int)(total / project.JobPosts.Count);
+    }
+
+    private string FormatStatus(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.UnderReview => "Under Review",
+            _ => status.ToString()
+        };
     }
 
     private void HandleProjectClick(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)

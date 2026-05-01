@@ -495,3 +495,51 @@
    at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[4/30/2026 9:53:01 PM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/30/2026 9:53:03 PM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/30/2026 9:53:13 PM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[4/30/2026 9:53:43 PM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

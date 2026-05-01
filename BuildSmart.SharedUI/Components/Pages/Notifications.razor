@@ -31,7 +31,7 @@
         <div class="notifications-list @(_isClearing ? "clearing" : "")">
             @foreach (var note in ViewModel.Notifications)
             {
-                <div class="ios-notification-card @(note.IsRead ? "read" : "unread")" @onclick="() => ViewModel.MarkAsReadCommand.ExecuteAsync(note)">
+                <div class="ios-notification-card @(note.IsRead ? "read" : "unread")" @onclick="() => ViewModel.NavigateToNotificationCommand.ExecuteAsync(note)">
                     <div class="ios-app-icon">
                         <!-- BuildSmart Logo Icon -->
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
