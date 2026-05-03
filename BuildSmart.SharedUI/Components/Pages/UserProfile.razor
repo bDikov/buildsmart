@@ -20,7 +20,8 @@
 			<!-- The beautiful Profile Card we generated from Figma -->
 			<div class="profile-sidebar">
 			    <ProfileCard ViewModel="ViewModel" OnEditProfileClicked="OpenEditModal" OnMoreClicked="OpenSettingsModal" />
-			</div>		</div>
+			</div>
+		</div>
 
 		<!-- Edit Details Modal -->
 		@if (_showEditModal)
@@ -56,16 +57,6 @@
 							</button>
 						</div>
 					</div>
-				</div>
-			</div>
-		}
-
-		<!-- Tradesman Settings Modal -->
-		@if (_showSettingsModal)
-		{
-			<div class="modal-overlay" @onclick="CloseSettingsModal">
-				<div class="modal-content settings-modal-content" @onclick:stopPropagation="true">
-					<ProfileSettingsMenu />
 				</div>
 			</div>
 		}

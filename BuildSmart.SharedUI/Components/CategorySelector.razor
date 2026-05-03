@@ -1,7 +1,7 @@
 @using BuildSmart.SharedUI.ViewModels
 
 <div class="bs-card category-card">
-    <h3 class="category-header @(HasError ? "text-danger" : "")">Category</h3>
+    <h3 class="category-header @(HasError ? "text-danger" : "")">@Loc["JobWizard_CategoryLabel"]</h3>
     
     <div class="category-list mb-4">
         @if (Categories != null)

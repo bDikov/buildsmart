@@ -103,14 +103,6 @@
                 @Loc["Nav_ToolsHeader"]
             </div>
             
-            <div class="nav-item-dark" style="padding-top: 4px; padding-bottom: 4px;">
-                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                <select class="language-select" value="@_currentLang" @onchange="ChangeLanguage" style="background: transparent; border: none; color: inherit; width: 100%; outline: none; cursor: pointer;">
-                    <option value="en" style="color: black;">English</option>
-                    <option value="bg" style="color: black;">Български</option>
-                </select>
-            </div>
-            
             <a class="nav-item-dark" href="/user-profile" @onclick="CloseSidebar">
                 <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 @Loc["Nav_Settings"]
@@ -496,25 +488,6 @@
         {
             _isLoading = false;
         }
-    }
-
-    private async Task ChangeLanguage(ChangeEventArgs e)
-    {
-        var lang = e.Value?.ToString() ?? "en";
-        
-        try
-        {
-            await ApiClient.UpdateUserLanguage.ExecuteAsync(lang);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[MainLayout] Failed to update language on server: {ex.Message}");
-        }
-
-        var culture = new System.Globalization.CultureInfo(lang);
-        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
-        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
-        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
     }
 
     private void ToggleSidebar()

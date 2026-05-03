@@ -11,7 +11,7 @@
         {
             <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
                 <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden">@Loc["GeneratedOffer_Loading"]</span>
                 </div>
             </div>
         }
@@ -19,19 +19,19 @@
         {
             <div class="container py-4">
                 <div class="mb-4">
-                    <h2 class="h3 fw-bold mb-2" style="color: var(--text-primary);">Your Smart Offer</h2>
-                    <p class="text-muted">Review the detailed breakdown of SKUs and estimated costs for each task.</p>
+                    <h2 class="h3 fw-bold mb-2" style="color: var(--text-primary);">@Loc["GeneratedOffer_Title"]</h2>
+                    <p class="text-muted">@Loc["GeneratedOffer_Subtitle"]</p>
                 </div>
 
                 <div class="p-4 text-center mb-4" style="background-color: var(--bg-card-alt); border: 2px solid var(--color-success); border-radius: 12px;">
                     <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
-                        <span class="fw-bold" style="font-size: 1.2rem; color: var(--text-primary);">Total Offer Value:</span>
+                        <span class="fw-bold" style="font-size: 1.2rem; color: var(--text-primary);">@Loc["GeneratedOffer_TotalValue"]:</span>
                         <span class="fw-bold" style="font-size: 1.5rem; color: var(--color-success);">
                             $@ViewModel.TotalEstimatedPrice.ToString("F2")
                         </span>
                     </div>
                     <button class="btn btn-outline-primary fw-bold" @onclick="ToggleBreakdown">
-                        @(_showBreakdown ? "Hide Task Breakdowns" : "See Tasks Breakdowns")
+                        @(_showBreakdown ? Loc["GeneratedOffer_HideTaskBreakdowns"] : Loc["GeneratedOffer_SeeTasksBreakdowns"])
                     </button>
                 </div>
 
@@ -44,7 +44,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h4 class="h5 fw-bold mb-0" style="color: var(--text-primary);">@task.Title</h4>
                                     <span class="fw-bold" style="color: var(--color-success); font-size: 1.1rem;">
-                                        Total Task Cost: $@task.EstimatedPrice.ToString("F2")
+                                        @string.Format(Loc["GeneratedOffer_TotalTaskCost"], task.EstimatedPrice.ToString("F2"))
                                     </span>
                                 </div>
                                 
@@ -54,7 +54,7 @@
                                 }
 
                                 <hr style="color: #EEEEEE;" />
-                                <h6 class="fw-bold mb-3" style="color: #1565C0;">Billable SKUs & Materials</h6>
+                                <h6 class="fw-bold mb-3" style="color: #1565C0;">@Loc["GeneratedOffer_BillableSKUs"]</h6>
 
                                 @if (task.SkuItems != null && task.SkuItems.Count > 0)
                                 {
@@ -78,7 +78,7 @@
                                 }
                                 else
                                 {
-                                    <p class="text-muted" style="font-size: 0.9rem;">No SKUs mapped for this task.</p>
+                                    <p class="text-muted" style="font-size: 0.9rem;">@Loc["GeneratedOffer_NoSKUs"]</p>
                                 }
                             </div>
                         }
@@ -90,12 +90,12 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <button class="bs-btn-primary w-100 fw-bold" style="height: 50px; border-radius: 10px; background-color: var(--color-success); border-color: var(--color-success);" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitToAdminCommand.Execute(null)">
-                            Submit to Admin
+                            @Loc["GeneratedOffer_SubmitToAdmin"]
                         </button>
                     </div>
                     <div class="col-md-6">
                         <button class="btn btn-secondary w-100 fw-bold" style="height: 50px; border-radius: 10px;" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoBackCommand.Execute(null)">
-                            Edit Tasks
+                            @Loc["GeneratedOffer_EditTasks"]
                         </button>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                 {
                     <div class="d-flex justify-content-center mt-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Processing...</span>
+                            <span class="visually-hidden">@Loc["GeneratedOffer_Processing"]</span>
                         </div>
                     </div>
                 }
@@ -113,7 +113,7 @@
     </ChildContent>
     <ErrorContent>
         <div class="alert alert-danger m-4">
-            An error occurred while rendering the Generated Offer overview. Please try refreshing the page.
+            @Loc["GeneratedOffer_ErrorRendering"]
         </div>
     </ErrorContent>
 </ErrorBoundary>
