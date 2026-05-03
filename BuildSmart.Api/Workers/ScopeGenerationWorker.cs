@@ -133,11 +133,11 @@ public class ScopeGenerationWorker
             var scopeGenerationQueue = scope.ServiceProvider.GetRequiredService<IScopeGenerationQueue>();
             await scopeGenerationQueue.QueuePricingUpdateAsync(jobPostId, CancellationToken.None);
 
-			// 8. Send Real-time Notification
-			await notificationService.SendNotificationAsync(
+			await notificationService.SendLocalizedNotificationAsync(
 				jobPost.Project.HomeownerId,
-				"Scope Ready",
-				$"The AI scope for '{jobPost.Title}' is ready for your review.",
+				"Title_ScopeReady",
+				"Msg_ScopeReady",
+				new object[] { jobPost.Title },
 				jobPost.Id,
 				"JobPost"
 			);
@@ -373,10 +373,11 @@ public class ScopeGenerationWorker
 
             if (jobPost.Project != null)
             {
-			    await notificationService.SendNotificationAsync(
+			    await notificationService.SendLocalizedNotificationAsync(
 				    jobPost.Project.HomeownerId,
-				    "Pricing Updated",
-				    $"The AI has finished calculating task prices for '{jobPost.Title}'.",
+				    "Title_PricingUpdated",
+				    "Msg_PricingUpdated",
+				    new object[] { jobPost.Title },
 				    jobPost.Id,
 				    "JobPost"
 			    );

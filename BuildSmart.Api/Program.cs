@@ -44,6 +44,7 @@ public partial class Program
 		});
 
 		// --- 1. Add services to the container (Dependency Injection) ---
+		builder.Services.AddLocalization();
 
 		// Add DbContext and PostgreSQL Connection
 		builder.Services.AddDbContext<AppDbContext>(options =>

@@ -26,10 +26,11 @@ public class JobsNotificationService : IJobsNotificationService
         // 2. Send notifications to all matching tradesmen
         foreach (var tradesman in matchingTradesmen)
         {
-            await _notificationService.SendNotificationAsync(
+            await _notificationService.SendLocalizedNotificationAsync(
                 tradesman.UserId,
-                "New Job Opportunity",
-                $"A new job matching your skills is available: '{jobPost.Title}'",
+                "Title_NewJobOpportunity",
+                "Msg_NewJobOpportunity",
+                new object[] { jobPost.Title },
                 jobPost.Id,
                 "JobPost",
                 new { route = "AuctionHub", jobId = jobPost.Id }

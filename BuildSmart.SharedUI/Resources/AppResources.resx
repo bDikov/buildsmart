@@ -146,4 +146,43 @@
   <data name="Nav_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="Projects_Subtitle" xml:space="preserve">
+    <value>Manage your home renovations and track progress.</value>
+  </data>
+  <data name="Projects_CreateNew" xml:space="preserve">
+    <value>Create New Project</value>
+  </data>
+  <data name="Projects_Loading" xml:space="preserve">
+    <value>Gathering your blueprints...</value>
+  </data>
+  <data name="Projects_EmptyTitle" xml:space="preserve">
+    <value>No Projects Yet</value>
+  </data>
+  <data name="Projects_EmptySubtitle" xml:space="preserve">
+    <value>Start your renovation journey by creating your first project scope.</value>
+  </data>
+  <data name="Projects_GetStarted" xml:space="preserve">
+    <value>Get Started</value>
+  </data>
+  <data name="Projects_Untitled" xml:space="preserve">
+    <value>Untitled Project</value>
+  </data>
+  <data name="Projects_Remote" xml:space="preserve">
+    <value>Remote</value>
+  </data>
+  <data name="Projects_Jobs" xml:space="preserve">
+    <value>Jobs</value>
+  </data>
+  <data name="Projects_DefaultDesc" xml:space="preserve">
+    <value>Set your goals and start adding jobs to get bids from pros.</value>
+  </data>
+  <data name="Projects_More" xml:space="preserve">
+    <value>more</value>
+  </data>
+  <data name="Projects_Progress" xml:space="preserve">
+    <value>Overall Progress</value>
+  </data>
+  <data name="Projects_Delete" xml:space="preserve">
+    <value>Delete Project</value>
+  </data>
 </root>

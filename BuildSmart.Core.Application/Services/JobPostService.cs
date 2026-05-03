@@ -106,10 +106,11 @@ public class JobPostService : IJobPostService
 			}
 
 			// Notify Homeowner of Approval
-			await _notificationService.SendNotificationAsync(
+			await _notificationService.SendLocalizedNotificationAsync(
 				jobPost.Project.HomeownerId,
-				"Scope Approved",
-				$"Admin has approved the scope for '{jobPost.Title}'. It is now live!",
+				"Title_ScopeApproved",
+				"Msg_ScopeApproved",
+				new object[] { jobPost.Title },
 				jobPost.Id,
 				"JobPost"
 			);
@@ -135,10 +136,11 @@ public class JobPostService : IJobPostService
 			}
 
 			// Notify Homeowner of Rejection
-			await _notificationService.SendNotificationAsync(
+			await _notificationService.SendLocalizedNotificationAsync(
 				jobPost.Project.HomeownerId,
-				"Scope Rejected",
-				$"Admin has requested changes for '{jobPost.Title}'. Please check the feedback.",
+				"Title_ScopeRejected",
+				"Msg_ScopeRejected",
+				new object[] { jobPost.Title },
 				jobPost.Id,
 				"JobPost"
 			);
@@ -477,10 +479,11 @@ public class JobPostService : IJobPostService
 		await _unitOfWork.SaveChangesAsync();
 
 		// Notify Tradesman
-		await _notificationService.SendNotificationAsync(
+		await _notificationService.SendLocalizedNotificationAsync(
 			bid.TradesmanProfile.UserId,
-			"Bid Accepted!",
-			$"Your bid for '{bid.JobPost.Title}' has been accepted. Check your bookings.",
+			"Title_BidAccepted",
+			"Msg_BidAccepted",
+			new object[] { bid.JobPost.Title },
 			booking.Id,
 			"Booking"
 		);
@@ -711,10 +714,11 @@ public class JobPostService : IJobPostService
 			var tradesman = await _unitOfWork.TradesmanProfiles.GetByIdAsync(question.TradesmanProfileId.Value);
 			if (tradesman != null)
 			{
-				await _notificationService.SendNotificationAsync(
+				await _notificationService.SendLocalizedNotificationAsync(
 					tradesman.UserId,
-					"Question Answered",
-					$"Your question has been answered for job '{question.JobPost?.Title ?? "Auction"}'.",
+					"Title_QuestionAnswered",
+					"Msg_QuestionAnswered",
+					new object[] { question.JobPost?.Title ?? "Auction" },
 					question.JobPostId,
 					"AuctionAnswer"
 				);

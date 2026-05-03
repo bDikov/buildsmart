@@ -146,4 +146,43 @@
   <data name="Nav_Settings" xml:space="preserve">
     <value>Настройки</value>
   </data>
-  </root>
+    <data name="Projects_Subtitle" xml:space="preserve">
+    <value>Управлявайте домашните си ремонти и следете напредъка.</value>
+  </data>
+  <data name="Projects_CreateNew" xml:space="preserve">
+    <value>Създай Нов Проект</value>
+  </data>
+  <data name="Projects_Loading" xml:space="preserve">
+    <value>Събиране на вашите чертежи...</value>
+  </data>
+  <data name="Projects_EmptyTitle" xml:space="preserve">
+    <value>Все още няма проекти</value>
+  </data>
+  <data name="Projects_EmptySubtitle" xml:space="preserve">
+    <value>Започнете вашето пътешествие в ремонта, като създадете първия си обхват на проект.</value>
+  </data>
+  <data name="Projects_GetStarted" xml:space="preserve">
+    <value>Започни</value>
+  </data>
+  <data name="Projects_Untitled" xml:space="preserve">
+    <value>Проект без име</value>
+  </data>
+  <data name="Projects_Remote" xml:space="preserve">
+    <value>Отдалечено</value>
+  </data>
+  <data name="Projects_Jobs" xml:space="preserve">
+    <value>Задачи</value>
+  </data>
+  <data name="Projects_DefaultDesc" xml:space="preserve">
+    <value>Задайте целите си и започнете да добавяте задачи, за да получавате оферти от професионалисти.</value>
+  </data>
+  <data name="Projects_More" xml:space="preserve">
+    <value>още</value>
+  </data>
+  <data name="Projects_Progress" xml:space="preserve">
+    <value>Общ напредък</value>
+  </data>
+  <data name="Projects_Delete" xml:space="preserve">
+    <value>Изтрий проект</value>
+  </data>
+</root>

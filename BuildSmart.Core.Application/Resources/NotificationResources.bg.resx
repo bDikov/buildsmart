@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <data name="Title_ScopeApproved" xml:space="preserve"><value>Офертата е Одобрена</value></data>
+  <data name="Msg_ScopeApproved" xml:space="preserve"><value>Администратор одобри офертата за '{0}'. Вече е активна!</value></data>
+  
+  <data name="Title_ScopeRejected" xml:space="preserve"><value>Офертата е Отхвърлена</value></data>
+  <data name="Msg_ScopeRejected" xml:space="preserve"><value>Администратор изисква промени за '{0}'. Моля, проверете обратната връзка.</value></data>
+  
+  <data name="Title_NewJobSubmission" xml:space="preserve"><value>Нова Задача</value></data>
+  <data name="Msg_NewJobSubmission" xml:space="preserve"><value>Нова оферта за '{0}' е готова за преглед.</value></data>
+  
+  <data name="Title_NewBidReceived" xml:space="preserve"><value>Получена е Нова Оферта</value></data>
+  <data name="Msg_NewBidReceived" xml:space="preserve"><value>Майстор е подал оферта за '{0}'.</value></data>
+  
+  <data name="Title_BidAccepted" xml:space="preserve"><value>Офертата е Приета!</value></data>
+  <data name="Msg_BidAccepted" xml:space="preserve"><value>Вашата оферта за '{0}' е приета. Проверете вашите резервации.</value></data>
+  
+  <data name="Title_NewClarification" xml:space="preserve"><value>Ново Уточнение</value></data>
+  <data name="Msg_NewClarification" xml:space="preserve"><value>{0} отговори на обратна връзка за '{1}'.</value></data>
+  
+  <data name="Title_AdminClarification" xml:space="preserve"><value>Уточнение от Администратор</value></data>
+  <data name="Msg_AdminClarification" xml:space="preserve"><value>Администратор е поискал уточнение за '{0}'.</value></data>
+  
+  <data name="Title_NewReply" xml:space="preserve"><value>Нов Отговор</value></data>
+  <data name="Msg_NewReplyFeedback" xml:space="preserve"><value>Някой отговори на вашата обратна връзка за задача '{0}'.</value></data>
+  
+  <data name="Title_ActionRequired" xml:space="preserve"><value>Изисква се Действие</value></data>
+  <data name="Msg_ActionRequired" xml:space="preserve"><value>Администратор е добавил специфичен въпрос за '{0}'. Моля, актуализирайте отговорите си.</value></data>
+  
+  <data name="Title_NewAuctionQuestion" xml:space="preserve"><value>Нов Въпрос за Търг</value></data>
+  <data name="Msg_NewAuctionQuestion" xml:space="preserve"><value>Майстор зададе въпрос относно '{0}'.</value></data>
+  
+  <data name="Title_QuestionAnswered" xml:space="preserve"><value>Въпросът е Отговорен</value></data>
+  <data name="Msg_QuestionAnswered" xml:space="preserve"><value>Вашият въпрос е отговорен за задача '{0}'.</value></data>
+  
+  <data name="Msg_NewReplyComment" xml:space="preserve"><value>Някой отговори на вашия коментар за задача '{0}'.</value></data>
+  <data name="Msg_NewActivity" xml:space="preserve"><value>Нова активност по вашата задача '{0}'.</value></data>
+  
+  <data name="Title_NewJobOpportunity" xml:space="preserve"><value>Нова Възможност за Работа</value></data>
+  <data name="Msg_NewJobOpportunity" xml:space="preserve"><value>Нова задача, съвпадаща с вашите умения, е налична: '{0}'</value></data>
+
+  <data name="Title_ScopeReady" xml:space="preserve"><value>Офертата е Готова</value></data>
+  <data name="Msg_ScopeReady" xml:space="preserve"><value>AI офертата за '{0}' е готова за вашия преглед.</value></data>
+
+  <data name="Title_PricingUpdated" xml:space="preserve"><value>Цените са Актуализирани</value></data>
+  <data name="Msg_PricingUpdated" xml:space="preserve"><value>AI приключи изчисляването на цените за '{0}'.</value></data>
+</root>
