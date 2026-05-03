@@ -104,7 +104,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<ScopeReviewPage>();
 		builder.Services.AddTransient<ScopeReviewViewModel>();
 
-		builder.Services.AddTransient<GeneratedOfferPage>();
 		builder.Services.AddTransient<GeneratedOfferViewModel>();
 
 		builder.Services.AddTransient<NotificationsViewModel>();
@@ -160,7 +159,6 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(AdminCategorySkusPage), typeof(AdminCategorySkusPage));
 		Routing.RegisterRoute(nameof(UserEditPage), typeof(UserEditPage));
 		Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
-		Routing.RegisterRoute(nameof(GeneratedOfferPage), typeof(GeneratedOfferPage));
 		Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));
 		Routing.RegisterRoute(nameof(TaskBreakdownPage), typeof(TaskBreakdownPage));
 		Routing.RegisterRoute(nameof(BidDetailsPage), typeof(BidDetailsPage));
