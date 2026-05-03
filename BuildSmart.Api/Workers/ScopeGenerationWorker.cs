@@ -100,35 +100,6 @@ public class ScopeGenerationWorker
 						UpdatedAt = DateTime.UtcNow
 					};
 
-					if (item.SkuItems != null)
-					{
-						foreach (var skuDto in item.SkuItems)
-						{
-							if (string.IsNullOrWhiteSpace(skuDto.SkuCode)) continue;
-
-							var matchedSku = allowedSkus.FirstOrDefault(s => s.SkuCode.Equals(skuDto.SkuCode, StringComparison.OrdinalIgnoreCase));
-							if (matchedSku == null)
-							{
-								_logger.LogWarning("AI generated an unknown SKU Code: {SkuCode}. Skipping price mapping.", skuDto.SkuCode);
-								continue;
-							}
-
-							var skuEstimatedPrice = matchedSku.BasePrice * skuDto.Quantity;
-							jobTask.EstimatedPrice += skuEstimatedPrice;
-
-							jobTask.SkuItems.Add(new TaskSkuItem
-							{
-								Id = Guid.NewGuid(),
-								JobTaskId = jobTask.Id,
-								ServiceSkuId = matchedSku.Id,
-								Quantity = skuDto.Quantity,
-								EstimatedPrice = skuEstimatedPrice,
-								CreatedAt = DateTime.UtcNow,
-								UpdatedAt = DateTime.UtcNow
-							});
-						}
-					}
-
 					if (item.AcceptanceCriteria != null)
 					{
 						foreach (var criteria in item.AcceptanceCriteria)
@@ -157,6 +128,10 @@ public class ScopeGenerationWorker
 			// 7. Save Changes
 			unitOfWork.JobPosts.Update(jobPost);
 			await unitOfWork.SaveChangesAsync();
+
+            // 7.5 Automatically trigger pricing calculation so the user doesn't have to wait or click anything else
+            var scopeGenerationQueue = scope.ServiceProvider.GetRequiredService<IScopeGenerationQueue>();
+            await scopeGenerationQueue.QueuePricingUpdateAsync(jobPostId, CancellationToken.None);
 
 			// 8. Send Real-time Notification
 			await notificationService.SendNotificationAsync(
@@ -242,5 +217,178 @@ public class ScopeGenerationWorker
 		catch (JsonException) { }
 
 		return contextBuilder.ToString().Trim();
+	}
+
+	[AutomaticRetry(Attempts = 0)]
+	[Queue("ai-queue")]
+	public async Task ProcessPricingAsync(Guid jobPostId)
+	{
+		_logger.LogInformation("Processing Pricing for Job ID: {JobId}", jobPostId);
+        string debugLogFile = @"C:\Users\bonch\source\repos\worker_debug.txt";
+        System.IO.File.AppendAllText(debugLogFile, $"\n\n--- Started ProcessPricingAsync for {jobPostId} at {DateTime.Now} ---\n");
+
+		using var scope = _serviceProvider.CreateScope();
+		var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+		var aiService = scope.ServiceProvider.GetRequiredService<IAiService>();
+		var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+		var jobPost = await unitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId);
+		if (jobPost == null)
+		{
+			_logger.LogWarning("Job Post {JobId} not found.", jobPostId);
+            System.IO.File.AppendAllText(debugLogFile, $"JobPost {jobPostId} not found.\n");
+			return;
+		}
+
+		try
+		{
+            System.IO.File.AppendAllText(debugLogFile, $"Found JobPost with {jobPost.JobTasks.Count} tasks.\n");
+			var allowedSkus = (await unitOfWork.ServiceSkus.GetByCategoryAsync(jobPost.ServiceCategoryId)).ToList();
+            System.IO.File.AppendAllText(debugLogFile, $"Found {allowedSkus.Count} allowed SKUs.\n");
+
+			var retryPolicy = Policy
+				.Handle<Exception>()
+				.WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(10 * retryAttempt),
+					(exception, timeSpan, retryCount, context) =>
+					{
+						_logger.LogWarning(exception, "Gemini API failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
+					});
+
+			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
+			{
+				var timeSinceLastCall = UtcNowProvider() - _lastApiCallTime;
+				if (timeSinceLastCall < TimeSpan.FromSeconds(30))
+				{
+					await DelayTask(TimeSpan.FromSeconds(30) - timeSinceLastCall);
+				}
+				_lastApiCallTime = UtcNowProvider();
+
+                System.IO.File.AppendAllText(debugLogFile, $"Calling AI Service...\n");
+				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus);
+			});
+
+            System.IO.File.AppendAllText(debugLogFile, $"AI Service returned. Tasks count: {aiResponse?.Tasks?.Count ?? 0}\n");
+
+			if (aiResponse.Tasks != null)
+			{
+                using var saveScope = _serviceProvider.CreateScope();
+                var saveUnitOfWork = saveScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var freshJobPost = await saveUnitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId);
+                
+                if (freshJobPost == null) {
+                    System.IO.File.AppendAllText(debugLogFile, $"freshJobPost is null.\n");
+                    return;
+                }
+
+				var aiCalc = await saveUnitOfWork.AiCalculations.GetByProjectAndCategoryAsync(freshJobPost.ProjectId, freshJobPost.ServiceCategoryId);
+				if (aiCalc == null)
+				{
+                    System.IO.File.AppendAllText(debugLogFile, $"Creating new AiCalculation.\n");
+					aiCalc = new AiCalculation
+					{
+						Id = Guid.NewGuid(),
+						ProjectId = freshJobPost.ProjectId,
+						ServiceCategoryId = freshJobPost.ServiceCategoryId,
+						CreatedAt = DateTime.UtcNow,
+						UpdatedAt = DateTime.UtcNow
+					};
+					await saveUnitOfWork.AiCalculations.AddAsync(aiCalc);
+				}
+				else
+				{
+                    System.IO.File.AppendAllText(debugLogFile, $"Updating existing AiCalculation {aiCalc.Id}.\n");
+					saveUnitOfWork.AiCalculations.RemoveTasks(aiCalc.Tasks.ToList());
+					aiCalc.Tasks.Clear();
+					aiCalc.UpdatedAt = DateTime.UtcNow;
+				}
+
+				decimal grandTotal = 0;
+
+				foreach (var aiTask in aiResponse.Tasks)
+				{
+					var matchedTask = freshJobPost.JobTasks.FirstOrDefault(t => t.Id == aiTask.TaskId);
+					if (matchedTask == null) {
+                        System.IO.File.AppendAllText(debugLogFile, $"WARN: Could not match AI TaskId {aiTask.TaskId} with any JobTask.\n");
+                        continue;
+                    }
+
+                    System.IO.File.AppendAllText(debugLogFile, $"Matched JobTask {matchedTask.Id} ('{matchedTask.Title}').\n");
+
+					decimal taskTotal = 0;
+					var calcTask = new AiCalculationTask
+					{
+						Id = Guid.NewGuid(),
+						AiCalculationId = aiCalc.Id,
+						Title = matchedTask.Title,
+						Description = matchedTask.Description,
+						SequenceOrder = matchedTask.SequenceOrder,
+						EstimatedPrice = 0
+					};
+
+					foreach (var c in matchedTask.AcceptanceCriteria)
+					{
+						calcTask.AcceptanceCriteria.Add(new AiCalculationCriteria
+						{
+							Id = Guid.NewGuid(),
+							AiCalculationTaskId = calcTask.Id,
+							Description = c.Description
+						});
+					}
+
+					if (aiTask.SkuItems != null)
+					{
+						foreach (var skuDto in aiTask.SkuItems)
+						{
+							var matchedSku = allowedSkus.FirstOrDefault(s => s.SkuCode.Equals(skuDto.SkuCode, StringComparison.OrdinalIgnoreCase));
+							if (matchedSku == null) {
+                                System.IO.File.AppendAllText(debugLogFile, $"WARN: SKU {skuDto.SkuCode} not found in allowed SKUs.\n");
+                                continue;
+                            }
+
+							var skuEstimatedPrice = matchedSku.BasePrice * skuDto.Quantity;
+							taskTotal += skuEstimatedPrice;
+
+							calcTask.SkuItems.Add(new AiCalculationSkuItem
+							{
+								Id = Guid.NewGuid(),
+								AiCalculationTaskId = calcTask.Id,
+								ServiceSkuId = matchedSku.Id,
+								Quantity = skuDto.Quantity,
+								EstimatedPrice = skuEstimatedPrice
+							});
+                            System.IO.File.AppendAllText(debugLogFile, $"Mapped SKU {matchedSku.SkuCode} x {skuDto.Quantity}.\n");
+						}
+					}
+
+					calcTask.EstimatedPrice = taskTotal;
+					grandTotal += taskTotal;
+					aiCalc.Tasks.Add(calcTask);
+				}
+				
+				aiCalc.TotalEstimatedPrice = grandTotal;
+
+			    await saveUnitOfWork.SaveChangesAsync();
+                System.IO.File.AppendAllText(debugLogFile, $"Successfully saved AiCalculation to DB. Grand Total: {grandTotal}\n");
+            }
+
+            if (jobPost.Project != null)
+            {
+			    await notificationService.SendNotificationAsync(
+				    jobPost.Project.HomeownerId,
+				    "Pricing Updated",
+				    $"The AI has finished calculating task prices for '{jobPost.Title}'.",
+				    jobPost.Id,
+				    "JobPost"
+			    );
+                System.IO.File.AppendAllText(debugLogFile, $"Sent SignalR notification.\n");
+            }
+
+			_logger.LogInformation("Pricing processed successfully for Job {JobId}.", jobPostId);
+		}
+		catch (Exception ex)
+		{
+            System.IO.File.AppendAllText(debugLogFile, $"EXCEPTION: {ex.Message}\n{ex.StackTrace}\n");
+			_logger.LogError(ex, "Failed to process pricing for Job {JobId}.", jobPostId);
+		}
 	}
 }

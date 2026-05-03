@@ -7,17 +7,44 @@ using System.Collections.ObjectModel;
 
 namespace BuildSmart.SharedUI.ViewModels;
 
-public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributable
+public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributable, IDisposable
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly SignalRService _signalRService;
 
-    public GeneratedOfferViewModel(IBuildSmartApiClient apiClient)
+    public GeneratedOfferViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+
+        _signalRService.NotificationReceived += OnNotificationReceived;
+        // Ensure SignalR is connected so we don't miss the message
+        _ = _signalRService.ConnectAsync();
+    }
+
+    private void OnNotificationReceived(string title, string message, object? data)
+    {
+        if (title == "Pricing Updated" && _jobId != Guid.Empty)
+        {
+            AppServiceLocator.MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await LoadOfferDetailsAsync(_jobId);
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_signalRService != null)
+        {
+            _signalRService.NotificationReceived -= OnNotificationReceived;
+        }
     }
 
     [ObservableProperty]
     private IJobPostDetails? _job;
+
+    private Guid _jobId;
 
     [ObservableProperty]
     private decimal _totalEstimatedPrice;
@@ -25,13 +52,19 @@ public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributa
     [ObservableProperty]
     private bool _isBusy;
 
-    public ObservableCollection<IJobTaskDetails> Tasks { get; } = new();
+    public ObservableCollection<IGetAiCalculationByJob_AiCalculationByJob_Tasks> Tasks { get; } = new();
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query.TryGetValue("Job", out var jobObj) && jobObj is IJobPostDetails job)
+        if (query.TryGetValue("JobId", out var jobIdObj) && Guid.TryParse(jobIdObj.ToString(), out var jobId))
+        {
+            _jobId = jobId;
+            await LoadOfferDetailsAsync(jobId);
+        }
+        else if (query.TryGetValue("Job", out var jobObj) && jobObj is IJobPostDetails job)
         {
             Job = job;
+            _jobId = job.Id;
             await LoadOfferDetailsAsync(job.Id);
         }
     }
@@ -41,15 +74,15 @@ public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributa
         try
         {
             IsBusy = true;
-            var result = await _apiClient.GetJobTasks.ExecuteAsync(jobId);
-            var jobPost = result.Data?.AllJobPosts?.FirstOrDefault();
+            var result = await _apiClient.GetAiCalculationByJob.ExecuteAsync(jobId);
+            var aiCalculation = result.Data?.AiCalculationByJob?.FirstOrDefault();
 
             Tasks.Clear();
             decimal total = 0;
 
-            if (jobPost?.JobTasks != null)
+            if (aiCalculation?.Tasks != null)
             {
-                foreach (var task in jobPost.JobTasks.OrderBy(t => t.SequenceOrder))
+                foreach (var task in aiCalculation.Tasks)
                 {
                     Tasks.Add(task);
                     total += task.EstimatedPrice;
@@ -71,12 +104,12 @@ public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     private async Task SubmitToAdminAsync()
     {
-        if (Job == null) return;
+        if (_jobId == Guid.Empty) return;
         
         try
         {
             IsBusy = true;
-            var approveResult = await _apiClient.ApproveJobScope.ExecuteAsync(Job.Id, string.Empty);
+            var approveResult = await _apiClient.ApproveJobScope.ExecuteAsync(_jobId, string.Empty);
 
             if (approveResult.Errors.Count > 0)
             {
@@ -85,7 +118,7 @@ public partial class GeneratedOfferViewModel : ObservableObject, IQueryAttributa
             }
 
             await AppServiceLocator.Alerts.DisplayAlert("Success", "Your offer has been submitted to the Admin for final review.", "OK");
-            await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+            await AppServiceLocator.Navigation.NavigateToAsync("/");
         }
         catch (Exception ex)
         {

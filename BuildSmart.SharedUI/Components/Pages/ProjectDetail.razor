@@ -86,21 +86,38 @@
                                             @((MarkupString)Markdig.Markdown.ToHtml(job.GeneratedScope))
                                         </div>
                                     </div>
-                                    <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
-                                        @(isExpanded ? "View Less" : "View More")
-                                    </button>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
+                                            @(isExpanded ? "View Less" : "View More")
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm fw-bold" style="border-radius: 8px;" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
+                                            See Tasks Breakdowns
+                                        </button>
+                                    </div>
                                 }
                                 else
                                 {
                                     <div class="@descClass mt-3 mb-3">
                                         @job.Description
                                     </div>
-                                    @if (job.Description?.Length > 150)
-                                    {
-                                        <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
-                                            @(isExpanded ? "View Less" : "View More")
-                                        </button>
-                                    }
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        @if (job.Description?.Length > 150)
+                                        {
+                                            <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
+                                                @(isExpanded ? "View Less" : "View More")
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <div></div>
+                                        }
+                                        @if (job.Status != JobPostStatus.Draft)
+                                        {
+                                            <button class="btn btn-outline-primary btn-sm fw-bold" style="border-radius: 8px;" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
+                                                See Tasks Breakdowns
+                                            </button>
+                                        }
+                                    </div>
                                 }
 
                                 <!-- Action Buttons -->

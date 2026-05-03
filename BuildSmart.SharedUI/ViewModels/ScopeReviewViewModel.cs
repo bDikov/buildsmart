@@ -10,6 +10,8 @@ namespace BuildSmart.SharedUI.ViewModels;
 
 public partial class EditableCriteriaViewModel : ObservableObject
 {
+    public Guid? Id { get; set; }
+
     [ObservableProperty]
     private string _description = string.Empty;
 }
@@ -20,6 +22,8 @@ public partial class EditableTaskViewModel : ObservableObject
     {
         Criteria = new ObservableCollection<EditableCriteriaViewModel>();
     }
+
+    public Guid? Id { get; set; }
 
     [ObservableProperty]
     private string _title = string.Empty;
@@ -97,16 +101,22 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
                         {
                             var vm = new EditableTaskViewModel
                             {
+                                Id = task.Id,
                                 Title = task.Title,
                                 Description = task.Description ?? string.Empty,
-                                SequenceOrder = task.SequenceOrder
+                                SequenceOrder = task.SequenceOrder,
+                                EstimatedPrice = task.EstimatedPrice
                             };
 
                             if (task.AcceptanceCriteria != null)
                             {
                                 foreach (var criteria in task.AcceptanceCriteria)
                                 {
-                                    vm.Criteria.Add(new EditableCriteriaViewModel { Description = criteria.Description });
+                                    vm.Criteria.Add(new EditableCriteriaViewModel 
+                                    { 
+                                        Id = criteria.Id,
+                                        Description = criteria.Description 
+                                    });
                                 }
                             }
 
@@ -205,11 +215,13 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
             // Map UI models to GraphQL Input
             var taskInputs = Tasks.Select(t => new JobTaskInput
             {
+                Id = t.Id,
                 Title = t.Title,
                 Description = t.Description ?? string.Empty,
                 SequenceOrder = t.SequenceOrder,
                 Criteria = t.Criteria.Select(c => new TaskAcceptanceCriteriaInput
                 {
+                    Id = c.Id,
                     Description = c.Description
                 }).ToList()
             }).ToList();

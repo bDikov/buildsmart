@@ -7,7 +7,7 @@ namespace BuildSmart.Infrastructure.Services;
 
 public class MockAiService : IAiService
 {
-	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus)
+	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string language = "Bulgarian (Български език)")
 	{
 		// Simulate AI processing delay
 		await Task.Delay(3000);
@@ -45,6 +45,23 @@ public class MockAiService : IAiService
         }
 
 		return new BuildSmart.Core.Application.DTOs.AiScopeBreakdownResponse(sb.ToString(), tasks);
+	}
+
+	public Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus)
+	{
+	    var pricingItems = new List<AiTaskPricingItemDto>();
+
+	    foreach (var task in tasks)
+	    {
+	        var skuItems = new List<AiTaskSkuItemDto>();
+	        if (allowedSkus.Any())
+	        {
+	            skuItems.Add(new AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1));
+	        }
+	        pricingItems.Add(new AiTaskPricingItemDto(task.Id, task.Title, skuItems));
+	    }
+
+	    return Task.FromResult(new AiTaskPricingResponse(pricingItems));
 	}
 
 	public async Task<string> GenerateProjectSummaryAsync(Project project)

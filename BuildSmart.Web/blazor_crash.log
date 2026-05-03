@@ -591,3 +591,1267 @@
    at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyProjectsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 35491
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetProjectByIdQuery.ExecuteAsync(Guid projectId, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 36033
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyProjectsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 35491
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyProjectsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 35491
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/2/2026 11:53:45 PM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetProjectByIdQuery.ExecuteAsync(Guid projectId, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 36033
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:57 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyProjectsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 35491
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetProjectByIdQuery.ExecuteAsync(Guid projectId, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 36033
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyProjectsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 35491
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyProjectsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 35491
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 12:06:58 AM] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 34
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetProjectByIdQuery.ExecuteAsync(Guid projectId, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 36033
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:04 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:06 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:07 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:07 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:16 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:17 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[5/3/2026 4:10:17 AM] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

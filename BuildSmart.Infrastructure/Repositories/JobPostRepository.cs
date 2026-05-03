@@ -22,9 +22,20 @@ public class JobPostRepository : IJobPostRepository
             .FirstOrDefaultAsync(jp => jp.Id == id);
     }
 
+    public async Task<JobPost?> GetByIdAsNoTrackingAsync(Guid id)
+    {
+        return await _context.JobPosts
+            .AsNoTracking()
+            .Include(jp => jp.Project)
+            .Include(jp => jp.ServiceCategory) 
+            .Include(jp => jp.Bids)
+            .FirstOrDefaultAsync(jp => jp.Id == id);
+    }
+
     public async Task<JobPost?> GetByIdWithTasksAsync(Guid id)
     {
         return await _context.JobPosts
+            .Include(jp => jp.Project)
             .Include(jp => jp.JobTasks)
                 .ThenInclude(jt => jt.AcceptanceCriteria)
             .Include(jp => jp.JobTasks)

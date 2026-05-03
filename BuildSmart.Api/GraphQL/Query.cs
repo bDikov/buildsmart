@@ -76,6 +76,23 @@ public class Query
 		return context.Users;
 	}
 
+    [Authorize]
+    [UseProjection]
+    public IQueryable<AiCalculation> GetAiCalculation([Service] AppDbContext context, Guid projectId, Guid categoryId)
+    {
+        return context.AiCalculations.Where(a => a.ProjectId == projectId && a.ServiceCategoryId == categoryId);
+    }
+
+    [Authorize]
+    [UseProjection]
+    public IQueryable<AiCalculation> GetAiCalculationByJob([Service] AppDbContext context, Guid jobId)
+    {
+        var jobPost = context.JobPosts.FirstOrDefault(j => j.Id == jobId);
+        if (jobPost == null) return Enumerable.Empty<AiCalculation>().AsQueryable();
+
+        return context.AiCalculations.Where(a => a.ProjectId == jobPost.ProjectId && a.ServiceCategoryId == jobPost.ServiceCategoryId);
+    }
+
 	[Authorize(Roles = new[] { "Tradesman" })]
 	public async Task<IEnumerable<Auction>> GetAvailableAuctions(
 		ClaimsPrincipal claimsPrincipal,

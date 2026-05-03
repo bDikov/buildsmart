@@ -5,5 +5,6 @@ namespace BuildSmart.Core.Application.Interfaces;
 public interface IScopeGenerationQueue
 {
     ValueTask QueueBackgroundWorkItemAsync(Guid jobPostId, CancellationToken cancellationToken);
+    ValueTask QueuePricingUpdateAsync(Guid jobPostId, CancellationToken cancellationToken);
     ValueTask<Guid> DequeueAsync(CancellationToken cancellationToken);
 }

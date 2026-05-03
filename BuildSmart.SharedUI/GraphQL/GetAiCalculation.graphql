@@ -1,0 +1,29 @@
+query GetAiCalculationByJob($jobId: UUID!) {
+  aiCalculationByJob(jobId: $jobId) {
+    id
+    projectId
+    serviceCategoryId
+    totalEstimatedPrice
+    tasks {
+      id
+      title
+      description
+      estimatedPrice
+      skuItems {
+        id
+        quantity
+        estimatedPrice
+        serviceSku {
+          name
+          skuCode
+          unitType
+          basePrice
+        }
+      }
+      acceptanceCriteria {
+        id
+        description
+      }
+    }
+  }
+}

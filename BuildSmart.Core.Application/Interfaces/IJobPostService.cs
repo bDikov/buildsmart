@@ -5,52 +5,69 @@ namespace BuildSmart.Core.Application.Interfaces;
 
 public interface IJobPostService
 {
-    Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description);
-    
-    Task<JobPost> AddJobToProjectAsync(
-        Guid projectId,
-        Guid categoryId,
-        string title,
-        string jobDetailsJson,
-        string location,
-        Amount? estimatedBudget,
-        List<string> imageUrls,
-        DateTime? preferredSiteVisitDate);    
-    Task SubmitJobForScopeGenerationAsync(Guid jobPostId);
-    
-    Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);
-    
-    Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId);
+	Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description);
 
-    Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
-    Task UpdateJobTasksAsync(Guid jobPostId, IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> tasks);
-            
-            Task SaveDraftAsync(Guid jobPostId, string jobDetailsJson, string? description, string? location, Amount? estimatedBudget);
-            
-            Task SubmitJobPostAsync(Guid jobPostId);
-        
-            Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, string currency, string? comment, DateTime? earliestStartDate, DateTime? latestStartDate, int? estimatedDurationDays, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> bidItems);    
-            Task PassAuctionAsync(Guid tradesmanProfileId, Guid jobPostId);
-    Task<Booking> AcceptBidAsync(Guid bidId);
+	Task<JobPost> AddJobToProjectAsync(
+		Guid projectId,
+		Guid categoryId,
+		string title,
+		string jobDetailsJson,
+		string location,
+		Amount? estimatedBudget,
+		List<string> imageUrls,
+		DateTime? preferredSiteVisitDate);
 
-    Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
-    Task<JobPostFeedback> ReplyToFeedbackAsync(Guid parentFeedbackId, Guid userId, string replyText);
-    Task<JobPostFeedback> ResolveFeedbackAsync(Guid feedbackId);
+	Task SubmitJobForScopeGenerationAsync(Guid jobPostId);
 
-    Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null);
+	Task ApproveJobScopeAsync(Guid jobPostId, string finalScope);
 
-    Task<JobPostQuestion> AskJobQuestionAsync(Guid tradesmanProfileId, Guid jobPostId, string questionText);
-    Task<JobPostQuestion> ReplyToQuestionAsync(Guid parentQuestionId, Guid userId, string replyText);
-    Task<JobPostQuestion> AnswerJobQuestionAsync(Guid questionId, string answerText);
-    Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid userId, string newText);
-    Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer);
-    Task<JobPostFeedback> EditJobFeedbackAsync(Guid feedbackId, Guid userId, string newText);
-    
-    Task<IEnumerable<JobPostQuestion>> GetQuestionRepliesAsync(Guid parentQuestionId, int offset, int limit);
-    Task<int> GetQuestionReplyCountAsync(Guid parentQuestionId);
-    Task<IDictionary<Guid, int>> GetQuestionReplyCountsBatchAsync(IEnumerable<Guid> parentQuestionIds);
-    Task<ILookup<Guid, JobPostQuestion>> GetQuestionsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
-    Task<ILookup<Guid, JobPostFeedback>> GetFeedbacksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
-    Task<ILookup<Guid, Bid>> GetBidsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
-    Task<ILookup<Guid, JobTask>> GetJobTasksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+	Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId);
+
+	Task UpdateJobScopeAsync(Guid jobPostId, string newDetailsJson, string newDescription);
+
+	Task UpdateJobTasksAsync(Guid jobPostId, IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> tasks);
+
+	Task SaveDraftAsync(Guid jobPostId, string jobDetailsJson, string? description, string? location, Amount? estimatedBudget);
+
+	Task SubmitJobPostAsync(Guid jobPostId);
+
+	Task<Bid> SubmitBidAsync(Guid tradesmanProfileId, Guid jobPostId, string currency, string? comment, DateTime? earliestStartDate, DateTime? latestStartDate, int? estimatedDurationDays, IEnumerable<(Guid JobTaskId, decimal PriceSubtotal, string? Comment)> bidItems);
+
+	Task PassAuctionAsync(Guid tradesmanProfileId, Guid jobPostId);
+
+	Task<Booking> AcceptBidAsync(Guid bidId);
+
+	Task<JobPostFeedback> AddFeedbackAsync(Guid jobPostId, Guid authorId, string text);
+
+	Task<JobPostFeedback> ReplyToFeedbackAsync(Guid parentFeedbackId, Guid userId, string replyText);
+
+	Task<JobPostFeedback> ResolveFeedbackAsync(Guid feedbackId);
+
+	Task<bool> AddAdminQuestionAsync(Guid jobPostId, string questionText, string type, bool isRequired, List<string>? options = null);
+
+	Task<JobPostQuestion> AskJobQuestionAsync(Guid tradesmanProfileId, Guid jobPostId, string questionText);
+
+	Task<JobPostQuestion> ReplyToQuestionAsync(Guid parentQuestionId, Guid userId, string replyText);
+
+	Task<JobPostQuestion> AnswerJobQuestionAsync(Guid questionId, string answerText);
+
+	Task<JobPostQuestion> EditJobQuestionAsync(Guid questionId, Guid userId, string newText);
+
+	Task<JobPostQuestion> EditJobAnswerAsync(Guid questionId, Guid homeownerProfileId, string newAnswer);
+
+	Task<JobPostFeedback> EditJobFeedbackAsync(Guid feedbackId, Guid userId, string newText);
+
+	Task<IEnumerable<JobPostQuestion>> GetQuestionRepliesAsync(Guid parentQuestionId, int offset, int limit);
+
+	Task<int> GetQuestionReplyCountAsync(Guid parentQuestionId);
+
+	Task<IDictionary<Guid, int>> GetQuestionReplyCountsBatchAsync(IEnumerable<Guid> parentQuestionIds);
+
+	Task<ILookup<Guid, JobPostQuestion>> GetQuestionsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+
+	Task<ILookup<Guid, JobPostFeedback>> GetFeedbacksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+
+	Task<ILookup<Guid, Bid>> GetBidsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
+
+	Task<ILookup<Guid, JobTask>> GetJobTasksBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds);
 }

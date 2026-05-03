@@ -18,6 +18,12 @@ public class HangfireScopeGenerationQueue : IScopeGenerationQueue
         return ValueTask.CompletedTask;
     }
 
+    public ValueTask QueuePricingUpdateAsync(Guid jobPostId, CancellationToken cancellationToken)
+    {
+        _backgroundJobClient.Enqueue<Workers.ScopeGenerationWorker>(worker => worker.ProcessPricingAsync(jobPostId));
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask<Guid> DequeueAsync(CancellationToken cancellationToken)
     {
         throw new NotSupportedException("Hangfire handles dequeuing automatically.");

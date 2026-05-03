@@ -228,4 +228,42 @@ public class JobPost : BaseEntity
 
 		// Logic to notify bidders would happen in a Domain Event or Service
 	}
+
+    public void UpdateTasks(IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> newTasks)
+    {
+        var inputIds = newTasks.Where(t => t.Id.HasValue).Select(t => t.Id!.Value).ToHashSet();
+        
+        var tasksToDelete = JobTasks.Where(t => !inputIds.Contains(t.Id)).ToList();
+        foreach (var t in tasksToDelete)
+        {
+            JobTasks.Remove(t);
+        }
+
+        foreach (var input in newTasks)
+        {
+            var existing = input.Id.HasValue ? JobTasks.FirstOrDefault(t => t.Id == input.Id.Value) : null;
+            if (existing != null)
+            {
+                existing.UpdateDetails(input.Title, input.Description, input.SequenceOrder);
+                existing.UpdateCriteria(input.Criteria);
+            }
+            else
+            {
+                var newTask = new JobTask
+                {
+                    Id = Guid.NewGuid(),
+                    JobPostId = this.Id,
+                    Title = input.Title,
+                    Description = input.Description,
+                    SequenceOrder = input.SequenceOrder,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    EstimatedPrice = 0
+                };
+                newTask.UpdateCriteria(input.Criteria);
+                JobTasks.Add(newTask);
+            }
+        }
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

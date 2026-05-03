@@ -250,6 +250,20 @@ type Amount {
   total: Decimal!
 }
 
+type AiCalculationTask {
+  aiCalculationId: UUID!
+  aiCalculation: AiCalculation!
+  title: String!
+  description: String!
+  sequenceOrder: Int!
+  estimatedPrice: Decimal!
+  skuItems: [AiCalculationSkuItem!]!
+  acceptanceCriteria: [AiCalculationCriteria!]!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type TaskSkuItem {
   id: UUID!
   jobTaskId: UUID!
@@ -304,6 +318,8 @@ type Query {
   "Gets a specific job post question by ID."
   jobPostQuestionById(id: UUID!): JobPostQuestion
   serviceSkusByCategory(categoryId: UUID!): [ServiceSku!]!
+  aiCalculation(projectId: UUID! categoryId: UUID!): [AiCalculation!]!
+  aiCalculationByJob(jobId: UUID!): [AiCalculation!]!
   passedAuctions: [Auction!]!
   projectById(projectId: UUID!): Project
   allJobPosts(where: JobPostFilterInput order: [JobPostSortInput!]): [JobPost!]!
@@ -320,6 +336,18 @@ enum ApplyPolicy {
   AFTER_RESOLVER
   "The policy is applied in the validation step before the execution."
   VALIDATION
+}
+
+type AiCalculationSkuItem {
+  aiCalculationTaskId: UUID!
+  aiCalculationTask: AiCalculationTask!
+  serviceSkuId: UUID!
+  serviceSku: ServiceSku!
+  quantity: Decimal!
+  estimatedPrice: Decimal!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 input UserSortInput {
@@ -355,6 +383,15 @@ input CertificationFilterInput {
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
+}
+
+type AiCalculationCriteria {
+  aiCalculationTaskId: UUID!
+  aiCalculationTask: AiCalculationTask!
+  description: String!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type JobPostQuestion {
@@ -523,6 +560,16 @@ input TradesmanProfileFilterInput {
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
+}
+
+type AiCalculation {
+  projectId: UUID!
+  serviceCategoryId: UUID!
+  totalEstimatedPrice: Decimal!
+  tasks: [AiCalculationTask!]!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 "Represents a user of the application, who can be a homeowner or a tradesman."
