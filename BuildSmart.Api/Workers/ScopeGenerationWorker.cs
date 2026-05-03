@@ -71,7 +71,7 @@ public class ScopeGenerationWorker
 				}
 				_lastApiCallTime = UtcNowProvider();
 
-				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus);
+				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus, jobPost.Project?.LanguageCode ?? "en");
 			});
 
 			// 4. Clear existing Tasks if any (in case of regeneration)
@@ -264,7 +264,7 @@ public class ScopeGenerationWorker
 				_lastApiCallTime = UtcNowProvider();
 
                 System.IO.File.AppendAllText(debugLogFile, $"Calling AI Service...\n");
-				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus);
+				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, jobPost.Project?.LanguageCode ?? "en");
 			});
 
             System.IO.File.AppendAllText(debugLogFile, $"AI Service returned. Tasks count: {aiResponse?.Tasks?.Count ?? 0}\n");

@@ -9,6 +9,7 @@ query GetCurrentUser {
     bio
     location
     profilePictureUrl
+    preferredLanguage
     tradesmanProfile {
       id
       videoIntroductionUrl

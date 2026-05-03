@@ -8,6 +8,8 @@ public class Project : BaseEntity
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     
+    public string LanguageCode { get; set; } = "en";
+    
     // The Homeowner who owns this project
     public Guid HomeownerId { get; set; }
     public User Homeowner { get; set; } = null!;

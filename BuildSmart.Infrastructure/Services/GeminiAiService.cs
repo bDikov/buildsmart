@@ -23,7 +23,7 @@ public class GeminiAiService : IAiService
         _httpClient = new HttpClient();
     }
 
-    public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string language = "Bulgarian (Български език)")
+    public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "en")
     {
         try
         {
@@ -57,7 +57,7 @@ public class GeminiAiService : IAiService
             prompt.AppendLine("3. NO ASSUMPTIONS: If an answer is missing or ambiguous, do not guess. Instead, add a note: 'Contractor to verify [Specific Detail] on site'.");
             prompt.AppendLine("4. FACTUAL CONSISTENCY: Ensure every task in the SOW can be traced back to a specific user answer or a necessary technical dependency of that answer.");
             prompt.AppendLine("5. NO PRICE CALCULATION: Do not calculate prices or include prices in your response.");
-            prompt.AppendLine($"6. LANGUAGE: ALL OUTPUT MUST BE IN {language.ToUpper()}. This is a strict requirement. The scopeMarkdown, taskTitle, taskDescription, and ALL items in acceptanceCriteria MUST be written in {language}, regardless of the input language.");
+            prompt.AppendLine($"6. LANGUAGE: ALL OUTPUT MUST BE IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'. This is a strict requirement. The scopeMarkdown, taskTitle, taskDescription, and ALL items in acceptanceCriteria MUST be written in {languageCode}, regardless of the input language.");
             prompt.AppendLine();
             prompt.AppendLine("---");
             prompt.AppendLine("USER INPUT DATA:");
@@ -137,7 +137,7 @@ public class GeminiAiService : IAiService
         }
     }
 
-    public async Task<string> GenerateProjectSummaryAsync(Project project)
+    public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en")
     {
         try
         {
@@ -157,7 +157,7 @@ public class GeminiAiService : IAiService
             prompt.AppendLine("2. Identify the optimal sequence of work (which job should happen first, second, etc.).");
             prompt.AppendLine("3. Highlight potential 'Trade Interferences' (e.g., plumbing must be finished before drywall).");
             prompt.AppendLine("4. Use professional Markdown formatting.");
-            prompt.AppendLine("5. Output ONLY the report.");
+            prompt.AppendLine($"5. Output ONLY the report IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
 
             var requestBody = new 
             {
@@ -192,7 +192,7 @@ public class GeminiAiService : IAiService
         }
     }
 
-    public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus)
+    public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string languageCode = "en")
     {
         try
         {
@@ -219,7 +219,7 @@ public class GeminiAiService : IAiService
             prompt.AppendLine("1. SKU MAPPING: Only use SkuCodes from the Allowed SKUs list below. DO NOT HALLUCINATE SKUs.");
             prompt.AppendLine("2. NO EXTRA TASKS: Only return items for the tasks explicitly provided in the USER TASKS list.");
             prompt.AppendLine("3. MATCH EXACTLY: The taskId MUST match the provided task exactly so the system can match them back together.");
-            prompt.AppendLine("4. MULTILINGUAL SUPPORT: The homeowner tasks may be written in a different language (e.g. Bulgarian). You must conceptually translate them and map them to the English Allowed SKUs.");
+            prompt.AppendLine($"4. MULTILINGUAL SUPPORT: The homeowner tasks may be written in a different language. You must conceptually translate them and map them to the English Allowed SKUs, but YOU MUST RESPOND WITH taskTitle IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
             prompt.AppendLine();
             prompt.AppendLine("---");
             prompt.AppendLine("USER TASKS:");

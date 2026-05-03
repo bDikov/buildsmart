@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Табло</value>
+  </data>
+  <data name="Projects_Title" xml:space="preserve">
+    <value>Моите Проекти</value>
+  </data>
+  <data name="Scope_Review_Title" xml:space="preserve">
+    <value>Преглед на Оферта</value>
+  </data>
+  <data name="Login_LoginWith" xml:space="preserve">
+    <value>Вход с</value>
+  </data>
+  <data name="Login_Google" xml:space="preserve">
+    <value>Google</value>
+  </data>
+  <data name="Login_Apple" xml:space="preserve">
+    <value>Apple</value>
+  </data>
+  <data name="Login_Or" xml:space="preserve">
+    <value>или</value>
+  </data>
+  <data name="Login_Email" xml:space="preserve">
+    <value>Имейл</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>Въведете имейл адрес</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Парола</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Въведете вашата парола</value>
+  </data>
+  <data name="Login_LogInButton" xml:space="preserve">
+    <value>Вход</value>
+  </data>
+  <data name="Login_NoAccountPrompt" xml:space="preserve">
+    <value>Нямате акаунт? </value>
+  </data>
+  <data name="Login_SignUp" xml:space="preserve">
+    <value>Регистрация</value>
+  </data>
+  <data name="CreateAccount_Title" xml:space="preserve">
+    <value>Създаване на акаунт</value>
+  </data>
+  <data name="CreateAccount_FirstName" xml:space="preserve">
+    <value>Име:</value>
+  </data>
+  <data name="CreateAccount_LastName" xml:space="preserve">
+    <value>Фамилия:</value>
+  </data>
+  <data name="CreateAccount_Email" xml:space="preserve">
+    <value>Имейл:</value>
+  </data>
+  <data name="CreateAccount_Password" xml:space="preserve">
+    <value>Парола:</value>
+  </data>
+  <data name="CreateAccount_CreateButton" xml:space="preserve">
+    <value>Създай акаунт</value>
+  </data>
+  <data name="Nav_Marketplace" xml:space="preserve">
+    <value>Пазар</value>
+  </data>
+  <data name="Nav_MyProjects" xml:space="preserve">
+    <value>Моите Проекти</value>
+  </data>
+  <data name="Nav_ActiveJobs" xml:space="preserve">
+    <value>Активни Задачи</value>
+  </data>
+  <data name="Nav_ManageHeader" xml:space="preserve">
+    <value>Управление</value>
+  </data>
+  <data name="Nav_Categories" xml:space="preserve">
+    <value>Категории</value>
+  </data>
+  <data name="Nav_Users" xml:space="preserve">
+    <value>Потребители</value>
+  </data>
+  <data name="Nav_JobReviews" xml:space="preserve">
+    <value>Прегледи на Задачи</value>
+  </data>
+  <data name="Nav_ToolsHeader" xml:space="preserve">
+    <value>Инструменти</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  </root>

@@ -8,7 +8,9 @@
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
 @using BuildSmart.SharedUI
 @using BuildSmart.SharedUI.Components
 @using BuildSmart.SharedUI.ViewModels
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @attribute [Authorize]

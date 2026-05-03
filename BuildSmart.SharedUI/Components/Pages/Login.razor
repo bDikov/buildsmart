@@ -7,7 +7,7 @@
 <div class="login-container">
     <div class="login-card bs-card">
         
-        <h2 class="login-title">Log in with</h2>
+        <h2 class="login-title">@Loc["Login_LoginWith"]</h2>
 
         <div class="social-login-container">
             <button class="social-btn bs-btn-dark" @onclick="ViewModel.GoogleLoginCommand.ExecuteAsync">
@@ -17,36 +17,36 @@
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
-                Google
+                @Loc["Login_Google"]
             </button>
             <button class="social-btn bs-btn-dark" @onclick="ViewModel.AppleLoginCommand.ExecuteAsync">
                 <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16.365 7.043c-.808.016-1.921.528-2.529 1.157-.557.575-.989 1.455-.838 2.274.918.069 1.942-.486 2.502-1.127.568-.621.93-1.488.865-2.304zm-1.891 3.238c-.378-.02-1.196-.039-1.996.388-.673.359-1.144.887-1.144.887s-.45-.488-1.104-.848c-.801-.444-1.579-.427-1.85-.407-1.272.091-2.433.738-3.09 1.868-1.332 2.303-.34 5.72 1.002 7.643.652.932 1.433 1.968 2.453 1.928 1.003-.04 1.385-.644 2.585-.644s1.543.644 2.593.624c1.06-.02 1.748-.95 2.39-1.874.743-1.077 1.045-2.115 1.061-2.169-.023-.01-2.029-.778-2.05-3.084-.016-1.931 1.577-2.855 1.65-2.905-.907-1.321-2.316-1.492-2.5-1.507z"/>
                 </svg>
-                Apple
+                @Loc["Login_Apple"]
             </button>
         </div>
 
         <div class="divider">
-            <span>or</span>
+            <span>@Loc["Login_Or"]</span>
         </div>
 
         <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="bs-input login-input" placeholder="Enter email address" @bind="ViewModel.Email" />
+            <label class="form-label">@Loc["Login_Email"]</label>
+            <input type="email" class="bs-input login-input" placeholder="@Loc["Login_EmailPlaceholder"]" @bind="ViewModel.Email" />
         </div>
 
         <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" class="bs-input login-input" placeholder="Enter your password" @bind="ViewModel.Password" />
+            <label class="form-label">@Loc["Login_Password"]</label>
+            <input type="password" class="bs-input login-input" placeholder="@Loc["Login_PasswordPlaceholder"]" @bind="ViewModel.Password" />
         </div>
 
         <button class="bs-btn-primary login-btn" @onclick="ViewModel.LoginCommand.ExecuteAsync">
-            Log In
+            @Loc["Login_LogInButton"]
         </button>
 
         <div class="signup-prompt">
-            <span>Don’t have an account? <a href="#" @onclick="() => ViewModel.CreateAccountCommand.Execute(null)" @onclick:preventDefault>Sign up</a></span>
+            <span>@Loc["Login_NoAccountPrompt"]<a href="#" @onclick="() => ViewModel.CreateAccountCommand.Execute(null)" @onclick:preventDefault>@Loc["Login_SignUp"]</a></span>
         </div>
 
     </div>

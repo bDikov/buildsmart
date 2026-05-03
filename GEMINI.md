@@ -96,6 +96,8 @@ When a schema update is required, **always ask the user** to start the API manua
 
 **ALWAYS RUN BUILD:** When modifying code to fix errors or add features, the agent must **execute `dotnet build`** immediately after the changes to verify them. Do not rely solely on reading previous log files. Active verification is required.
 
+**KILL PROCESSES AFTER BUILD/TEST:** Each time you build or run tests, ensure you kill any processes you have started (like the API or web application) after finishing to avoid file lock issues during subsequent builds.
+
 ## Domain Model Changes
 *   **ServiceCategory**: Added `bool IsGlobal` property to support global questions that apply to all jobs regardless of category.
 *   **JobPost**: Fixed `HomeownerProfileId` mapping in `JobPostService` to prevent FK violations.

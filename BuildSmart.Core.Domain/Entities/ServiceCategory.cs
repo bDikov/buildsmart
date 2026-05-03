@@ -19,4 +19,6 @@ public class ServiceCategory : BaseEntity
     /// Example: { "questions": [ { "id": "q1", "text": "How many rooms?", "type": "number" } ] }
     /// </summary>
     public string TemplateStructure { get; set; } = "{}";
+
+    public ICollection<ServiceCategoryTranslation> Translations { get; set; } = new List<ServiceCategoryTranslation>();
 }

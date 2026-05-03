@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Projects_Title" xml:space="preserve">
+    <value>My Projects</value>
+  </data>
+  <data name="Scope_Review_Title" xml:space="preserve">
+    <value>Scope Review</value>
+  </data>
+  <data name="Login_LoginWith" xml:space="preserve">
+    <value>Log in with</value>
+  </data>
+  <data name="Login_Google" xml:space="preserve">
+    <value>Google</value>
+  </data>
+  <data name="Login_Apple" xml:space="preserve">
+    <value>Apple</value>
+  </data>
+  <data name="Login_Or" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="Login_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>Enter email address</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Enter your password</value>
+  </data>
+  <data name="Login_LogInButton" xml:space="preserve">
+    <value>Log In</value>
+  </data>
+  <data name="Login_NoAccountPrompt" xml:space="preserve">
+    <value>Don’t have an account? </value>
+  </data>
+  <data name="Login_SignUp" xml:space="preserve">
+    <value>Sign up</value>
+  </data>
+  <data name="CreateAccount_Title" xml:space="preserve">
+    <value>Create Account</value>
+  </data>
+  <data name="CreateAccount_FirstName" xml:space="preserve">
+    <value>First Name:</value>
+  </data>
+  <data name="CreateAccount_LastName" xml:space="preserve">
+    <value>Last Name:</value>
+  </data>
+  <data name="CreateAccount_Email" xml:space="preserve">
+    <value>Email:</value>
+  </data>
+  <data name="CreateAccount_Password" xml:space="preserve">
+    <value>Password:</value>
+  </data>
+  <data name="CreateAccount_CreateButton" xml:space="preserve">
+    <value>Create Account</value>
+  </data>
+  <data name="Nav_Marketplace" xml:space="preserve">
+    <value>Marketplace</value>
+  </data>
+  <data name="Nav_MyProjects" xml:space="preserve">
+    <value>My Projects</value>
+  </data>
+  <data name="Nav_ActiveJobs" xml:space="preserve">
+    <value>Active Jobs</value>
+  </data>
+  <data name="Nav_ManageHeader" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="Nav_Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="Nav_Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Nav_JobReviews" xml:space="preserve">
+    <value>Job Reviews</value>
+  </data>
+  <data name="Nav_ToolsHeader" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+</root>

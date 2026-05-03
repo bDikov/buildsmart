@@ -47,6 +47,8 @@ builder.Services.AddSignalR(options =>
 // Add HttpContextAccessor for reading cookies in WebAuthService
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddLocalization();
+
 // Configure SharedUI API Config based on Web
 BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://localhost:7212";
 

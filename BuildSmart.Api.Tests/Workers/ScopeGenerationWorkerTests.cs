@@ -65,7 +65,7 @@ public class ScopeGenerationWorkerTests
 		_mockUnitOfWork.Setup(u => u.JobTasks.GetTasksByJobPostAsync(jobId))
 			.ReturnsAsync(new List<JobTask>());
 
-		_mockAiService.Setup(a => a.GenerateJobScopeAsync(It.IsAny<JobPost>(), It.IsAny<string>(), It.IsAny<List<ServiceSku>>()))
+		_mockAiService.Setup(a => a.GenerateJobScopeAsync(It.IsAny<JobPost>(), It.IsAny<string>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>()))
 			.ReturnsAsync(new AiScopeBreakdownResponse("Scope", new List<AiTaskBreakdownItem>()));
 
 		// Reset last call time and mock delay/time
@@ -85,7 +85,7 @@ public class ScopeGenerationWorkerTests
 
 		// Assert
 		delayCallCount.Should().Be(0, "First call should not trigger any delay");
-		_mockAiService.Verify(a => a.GenerateJobScopeAsync(It.IsAny<JobPost>(), It.IsAny<string>(), It.IsAny<List<ServiceSku>>()), Times.Once);
+		_mockAiService.Verify(a => a.GenerateJobScopeAsync(It.IsAny<JobPost>(), It.IsAny<string>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>()), Times.Once);
 	}
 
 	[Fact]
@@ -104,7 +104,7 @@ public class ScopeGenerationWorkerTests
 		_mockUnitOfWork.Setup(u => u.JobTasks.GetTasksByJobPostAsync(jobId))
 			.ReturnsAsync(new List<JobTask>());
 
-		_mockAiService.Setup(a => a.GenerateJobScopeAsync(It.IsAny<JobPost>(), It.IsAny<string>(), It.IsAny<List<ServiceSku>>()))
+		_mockAiService.Setup(a => a.GenerateJobScopeAsync(It.IsAny<JobPost>(), It.IsAny<string>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>()))
 			.ReturnsAsync(new AiScopeBreakdownResponse("Scope", new List<AiTaskBreakdownItem>()));
 
 		var baseTime = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);

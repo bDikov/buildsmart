@@ -189,6 +189,8 @@ public partial class Program
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
 			.AddType<TradesmanSkillType>() 
 			.AddType<UserType>()
+            .AddType<ServiceCategoryType>()
+            .AddType<ServiceSkuType>()
 			.AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<MilestonePaymentType>()
@@ -254,6 +256,8 @@ public partial class Program
 		app.UseCors(MyAllowSpecificOrigins);
 
 		app.UseRouting();
+
+		app.UseMiddleware<BuildSmart.Api.Middleware.LanguageMiddleware>();
 
 		app.UseHangfireDashboard("/hangfire");
 

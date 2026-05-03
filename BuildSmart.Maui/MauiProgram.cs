@@ -38,6 +38,8 @@ public static class MauiProgram
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
 
+        builder.Services.AddLocalization();
+
 		// Configure StrawberryShake GraphQL Client
 
 		builder.Services.AddSingleton<BuildSmart.SharedUI.MauiMocks.IMediaPicker, BuildSmart.Maui.Services.AppMediaPicker>();

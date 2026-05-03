@@ -14,7 +14,9 @@ public class AppDbContext : DbContext
     public DbSet<HomeownerProfile> HomeownerProfiles { get; set; } = null!;
 	public DbSet<TradesmanSkill> TradesmanSkills { get; set; } = null!;
 	public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
+	public DbSet<ServiceCategoryTranslation> ServiceCategoryTranslations { get; set; } = null!;
 	public DbSet<ServiceSku> ServiceSkus { get; set; } = null!;
+	public DbSet<ServiceSkuTranslation> ServiceSkuTranslations { get; set; } = null!;
 	public DbSet<TradesmanProfile> TradesmanProfiles { get; set; } = null!;
 	public DbSet<Project> Projects { get; set; } = null!;
 	public DbSet<JobPost> JobPosts { get; set; } = null!;

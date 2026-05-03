@@ -6,31 +6,31 @@
 
 <Card CssClass="m-4 shadow-sm">
     <Header>
-        <h2 class="h5 mb-0">Create Account</h2>
+        <h2 class="h5 mb-0">@Loc["CreateAccount_Title"]</h2>
     </Header>
     <ChildContent>
         <form @onsubmit="HandleSubmit">
             <div class="mb-3">
-                <label for="firstName" class="form-label">First Name:</label>
+                <label for="firstName" class="form-label">@Loc["CreateAccount_FirstName"]</label>
                 <input type="text" class="form-control" id="firstName" @bind="ViewModel.FirstName" />
             </div>
 
             <div class="mb-3">
-                <label for="lastName" class="form-label">Last Name:</label>
+                <label for="lastName" class="form-label">@Loc["CreateAccount_LastName"]</label>
                 <input type="text" class="form-control" id="lastName" @bind="ViewModel.LastName" />
             </div>
 
             <div class="mb-3">
-                <label for="email" class="form-label">Email:</label>
+                <label for="email" class="form-label">@Loc["CreateAccount_Email"]</label>
                 <input type="email" class="form-control" id="email" @bind="ViewModel.Email" />
             </div>
 
             <div class="mb-3">
-                <label for="password" class="form-label">Password:</label>
+                <label for="password" class="form-label">@Loc["CreateAccount_Password"]</label>
                 <input type="password" class="form-control" id="password" @bind="ViewModel.Password" />
             </div>
 
-            <PrimaryButton CssClass="btn btn-primary w-100" Type="submit">Create Account</PrimaryButton>
+            <PrimaryButton CssClass="btn btn-primary w-100" Type="submit">@Loc["CreateAccount_CreateButton"]</PrimaryButton>
         </form>
     </ChildContent>
 </Card>
