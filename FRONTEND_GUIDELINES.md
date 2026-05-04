@@ -37,11 +37,13 @@ We use a custom, Fimga-driven CSS design system. **We do not rely on Bootstrap f
 ### Rules of CSS
 1. **The `bs-` Namespace:** All custom utility classes must be prefixed with `bs-` (e.g., `bs-btn-primary`, `bs-card`, `bs-input`, `bs-placeholder`). This prevents Bootstrap from hijacking our styling (e.g., Bootstrap uses `.placeholder` for loading skeletons, which turns text into solid grey boxes!).
 2. **No `!important`:** Do not use `!important` tags. The `bs-` namespace provides enough specificity.
-3. **Global CSS Variables:** Always use the CSS variables defined in `wwwroot/css/app.css`. Never hardcode colors like `#FFFFFF` or `rgb(34, 37, 51)` inside `.razor` files.
-   - Backgrounds: `var(--bg-page)`, `var(--bg-card)`, `var(--bg-card-alt)`
-   - Text: `var(--text-primary)`, `var(--text-secondary)`, `var(--text-muted)`
-   - Accents: `var(--color-primary)`
-   - Fonts: `var(--font-primary)` (Roboto), `var(--font-heading)` (Merriweather), `var(--font-secondary)` (Poppins).
+3. **Global CSS Variables:** Always use the CSS variables defined in `wwwroot/css/app.css`. Never hardcode colors or dimensions inside `.razor` files. Use the variables defined by the **Light Design Guide v2.0**:
+   - **Typography (1-Typeface Rule):** `var(--font-h0)` to `var(--font-h3)`, `var(--font-body-1)`, `var(--font-body-2)`. (Fallback legacy fonts: `var(--font-primary)`, `var(--font-heading)`, `var(--font-secondary)`).
+   - **Elevations (Surfaces):** `var(--elevation-00dp)` to `var(--elevation-24dp)`.
+   - **Backgrounds:** `var(--bg-page)`, `var(--bg-card)`, `var(--bg-card-alt)`.
+   - **Text:** `var(--text-primary)`, `var(--text-secondary)`, `var(--text-muted)`, `var(--text-disabled)`.
+   - **Colors:** `var(--color-primary)`, `var(--color-secondary)`, `var(--color-success)`, `var(--color-warning)`, `var(--color-danger)`, `var(--color-info)`, `var(--color-tertiary)`.
+   - **State Opacities:** `var(--state-disabled)`, `var(--state-hover)`, `var(--state-focus)`, etc.
 4. **Dark Mode is Native:** Dark mode is handled automatically at the root level via `@media (prefers-color-scheme: dark)` in `app.css`. As long as you use `var(--bg-card)` and `var(--text-primary)`, components will seamlessly swap colors without requiring JS logic or duplicate CSS classes.
 
 ### Reusable Classes Available

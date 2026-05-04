@@ -1,23 +1,92 @@
 :root {
-    /* Fonts */
-    --font-primary: 'Roboto', 'Open Sans', 'Segoe UI', Tahoma, sans-serif;
-    --font-heading: 'Merriweather', serif;
-    --font-secondary: 'Poppins', sans-serif;
+    /* ==========================================================================
+       LIGHT DESIGN GUIDE v2.0 TOKENS (VERIFIED FROM FIGMA)
+       ========================================================================== */
 
-    /* Hardcoded Dark Theme Colors */
+    /* Typography (1 Typeface Rule: Lato) */
+    --font-family-base: 'Lato', sans-serif;
+    
+    --font-h0: 300 180px/1.2 var(--font-family-base);
+    --font-h1: 300 68px/1.2 var(--font-family-base);
+    --font-h2: 300 32px/1.3 var(--font-family-base);
+    --font-h3: 600 14px/1.4 var(--font-family-base);
+    --font-h4: 400 34px/1.5 var(--font-family-base);
+    --font-h5: 400 24px/1.5 var(--font-family-base);
+    --font-h6: 400 20px/1.5 var(--font-family-base);
+    --font-body-1: 400 18px/1.5 var(--font-family-base);
+    --font-body-2: 400 24px/1.5 var(--font-family-base);
+
+    --font-primary: var(--font-family-base);
+    --font-heading: var(--font-family-base);
+    --font-secondary: var(--font-family-base);
+
+    /* Elevations (Material 3-Layer Box Shadows) */
+    --elevation-00dp: none;
+    --elevation-01dp: 0px 1px 3px 0px rgba(0, 0, 0, 0.20), 0px 2px 1px 0px rgba(0, 0, 0, 0.12), 0px 1px 1px 0px rgba(0, 0, 0, 0.14);
+    --elevation-02dp: 0px 1px 5px 0px rgba(0, 0, 0, 0.20), 0px 3px 1px 0px rgba(0, 0, 0, 0.12), 0px 2px 2px 0px rgba(0, 0, 0, 0.14);
+    --elevation-03dp: 0px 1px 8px 0px rgba(0, 0, 0, 0.20), 0px 3px 3px 0px rgba(0, 0, 0, 0.12), 0px 3px 4px 0px rgba(0, 0, 0, 0.14);
+    --elevation-04dp: 0px 2px 4px 0px rgba(0, 0, 0, 0.20), 0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 4px 5px 0px rgba(0, 0, 0, 0.14);
+    --elevation-06dp: 0px 3px 5px 0px rgba(0, 0, 0, 0.20), 0px 1px 18px 0px rgba(0, 0, 0, 0.12), 0px 6px 10px 0px rgba(0, 0, 0, 0.14);
+    --elevation-08dp: 0px 5px 5px 0px rgba(0, 0, 0, 0.20), 0px 3px 14px 0px rgba(0, 0, 0, 0.12), 0px 8px 10px 0px rgba(0, 0, 0, 0.14);
+    --elevation-12dp: 0px 7px 8px 0px rgba(0, 0, 0, 0.20), 0px 5px 22px 0px rgba(0, 0, 0, 0.12), 0px 12px 17px 0px rgba(0, 0, 0, 0.14);
+    --elevation-16dp: 0px 8px 10px 0px rgba(0, 0, 0, 0.20), 0px 6px 30px 0px rgba(0, 0, 0, 0.12), 0px 16px 24px 0px rgba(0, 0, 0, 0.14);
+    --elevation-24dp: 0px 11px 15px 0px rgba(0, 0, 0, 0.20), 0px 9px 46px 0px rgba(0, 0, 0, 0.12), 0px 24px 38px 0px rgba(0, 0, 0, 0.14);
+
+    /* State Modifiers (Opacities/Effects) */
+    --state-disabled: 0.38;
+    --state-enabled: 1;
+    --state-focus: 0.12;
+    --state-select: 0.08;
+    --state-hover: 0.04;
+    --state-click: 0.12;
+    --state-drag: 0.16;
+
+    /* Light Theme + Monochromatic Brand */
+    --bg-page: rgb(250, 250, 250);
+    --bg-card: rgb(255, 255, 255);
+    --bg-card-alt: rgb(240, 240, 240);
+    --text-primary: rgba(0, 0, 0, 0.87);
+    --text-secondary: rgba(0, 0, 0, 0.60);
+    --text-muted: rgba(0, 0, 0, 0.38);
+    --text-disabled: rgba(0, 0, 0, var(--state-disabled));
+    --color-primary: rgb(17, 17, 17); /* Primary/C1 from visual slides */
+    --color-primary-hover: rgb(51, 51, 51); /* Primary/C1 700 */
+    --color-secondary: rgb(119, 119, 119); /* Primary/C-1 */
+    --color-success: rgb(16, 185, 129); /* Sleek Emerald Green */
+    --color-warning: rgb(255, 193, 7);
+    --color-danger: rgb(220, 53, 69);
+    --color-info: rgb(23, 162, 184);
+    --color-tertiary: rgb(153, 153, 153);
+    --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    --border-color: rgb(224, 224, 224);
+    --shadow-main: var(--elevation-04dp);
+    --shadow-hover: var(--elevation-08dp);
+}
+
+:root[data-theme='light'] {
+    --bg-page: rgb(239, 239, 239); /* Primary/C1 50 */
+    --bg-card: rgb(255, 255, 255);
+    --bg-card-alt: rgb(245, 245, 245);
+    --text-primary: rgb(0, 0, 0);
+    --text-secondary: rgba(0, 0, 0, 0.70);
+    --text-muted: rgba(0, 0, 0, 0.50);
+    --text-disabled: rgba(0, 0, 0, var(--state-disabled));
+    --color-primary: rgb(17, 17, 17); /* Primary/C1 from visual slides */
+    --color-primary-hover: rgb(51, 51, 51); /* Primary/C1 700 */
+    --border-color: rgb(220, 220, 220);
+}
+
+:root[data-theme='dark'] {
     --bg-page: rgb(27, 29, 40);
     --bg-card: rgb(34, 37, 51);
     --bg-card-alt: rgb(40, 44, 60);
     --text-primary: rgb(255, 255, 255);
     --text-secondary: rgb(229, 229, 229);
     --text-muted: rgb(125, 129, 147);
-    --border-color: rgb(52, 57, 78);
-    --shadow-main: 0px 10px 30px rgba(0,0,0,0.5);
-    --shadow-hover: 0px 15px 35px rgba(0,0,0,0.6);
-    
-    /* Primary Accents */
+    --text-disabled: rgba(255, 255, 255, var(--state-disabled));
     --color-primary: rgb(113, 50, 193);
     --color-primary-hover: rgb(130, 60, 220);
+    --border-color: rgb(52, 57, 78);
 }
 
 /* ==========================================================================
@@ -64,50 +133,57 @@ hr {
 /* ==========================================================================
    GLOBAL DESIGN SYSTEM CLASSES (From Figma)
    ========================================================================== */
+/* Components */
+.bs-card {
+    background-color: var(--bg-card);
+    border-radius: 12px;
+    box-shadow: var(--shadow-main);
+    border: 1px solid var(--border-color);
+}
 
 /* Buttons */
 .bs-btn-primary {
     background-color: var(--color-primary);
-    border-radius: 5px;
+    border-radius: 8px;
     border: none;
-    color: rgb(229, 229, 229); /* Always light text on purple */
-    font-size: 16px;
-    padding: 16px 42px;
+    color: rgb(255, 255, 255); /* Pure white text for maximum contrast */
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    font-family: var(--font-secondary);
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    font-family: var(--font-primary);
+    transition: background-color 0.2s ease, transform 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-weight: 500;
 }
 
 .bs-btn-primary:hover {
     background-color: var(--color-primary-hover);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .bs-btn-dark {
-    background-color: rgb(26, 28, 41); /* Specifically dark regardless of theme */
-    border-radius: 5px;
-    border: none;
-    color: rgb(229, 229, 229);
-    font-size: 16px;
-    padding: 16px 25px;
+    background-color: var(--bg-card-alt);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    font-family: var(--font-secondary);
     cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    font-family: var(--font-primary);
-    font-weight: 500;
+    gap: 8px;
 }
 
 .bs-btn-dark:hover {
-    background-color: rgb(40, 43, 60);
-    transform: translateY(-1px);
+    background-color: var(--border-color);
+    transform: translateY(-2px);
 }
 
 /* Inputs */
@@ -131,15 +207,6 @@ hr {
 
 .bs-input::placeholder {
     color: var(--text-muted);
-}
-
-/* Cards */
-.bs-card {
-    background-color: var(--bg-card);
-    border-radius: 16px;
-    box-shadow: var(--shadow-main);
-    color: var(--text-primary);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Blazor Error UI */

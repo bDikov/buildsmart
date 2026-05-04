@@ -189,7 +189,7 @@
     <value>Зареждане на детайли за проекта...</value>
   </data>
   <data name="ProjectDetail_Overview" xml:space="preserve">
-    <value>Общ преглед</value>
+    <value>Общ Преглед</value>
   </data>
   <data name="ProjectDetail_ContinueDraft" xml:space="preserve">
     <value>Продължи редактирането</value>
@@ -201,16 +201,16 @@
     <value>Все още няма добавени задачи към този проект.</value>
   </data>
   <data name="ProjectDetail_ViewLess" xml:space="preserve">
-    <value>Виж по-малко</value>
+    <value>Виж По-Малко</value>
   </data>
   <data name="ProjectDetail_ViewMore" xml:space="preserve">
-    <value>Виж повече</value>
+    <value>Виж Повече</value>
   </data>
   <data name="ProjectDetail_SeeTasks" xml:space="preserve">
-    <value>Виж разбивка на задачите</value>
+    <value>Виж Разбивка на Задачите</value>
   </data>
   <data name="ProjectDetail_ViewTaskBreakdown" xml:space="preserve">
-    <value>Виж разбивка на задачите</value>
+    <value>Виж Разбивка на Задачите</value>
   </data>
   <data name="ProjectDetail_ViewOffersCount" xml:space="preserve">
     <value>Виж офертите ({0})</value>
@@ -502,5 +502,20 @@
   </data>
   <data name="Feed_RenderingError" xml:space="preserve">
     <value>Грешка при зареждане</value>
+  </data>
+  <data name="Status_Draft" xml:space="preserve">
+    <value>Чернова</value>
+  </data>
+  <data name="Status_Open" xml:space="preserve">
+    <value>Отворен</value>
+  </data>
+  <data name="Status_WaitingForUserReview" xml:space="preserve">
+    <value>Очаква преглед от потребител</value>
+  </data>
+  <data name="Status_WaitingForAdminReview" xml:space="preserve">
+    <value>Очаква преглед от администратор</value>
+  </data>
+  <data name="Status_Rejected" xml:space="preserve">
+    <value>Отхвърлен</value>
   </data>
 </root>

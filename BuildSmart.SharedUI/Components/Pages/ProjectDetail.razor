@@ -32,12 +32,12 @@
                     </button>
                     <div class="header-content">
                         <h2 class="page-title">@ViewModel.Project.Title</h2>
-                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@ViewModel.Project.Status</span>
+                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@Loc[$"Status_{ViewModel.Project.Status}"]</span>
                     </div>
                 </div>
 
                 <div class="overview-card bs-card mb-4">
-                    <h3 class="section-title text-primary mb-2">@Loc["ProjectDetail_Overview"]</h3>
+                    <h3 class="section-title mb-2" style="color: var(--color-primary);">@Loc["ProjectDetail_Overview"]</h3>
                     <p class="project-description">
                         @(string.IsNullOrEmpty(ViewModel.Project.GeneralSummary) ? ViewModel.Project.Description : ViewModel.Project.GeneralSummary)
                     </p>
@@ -45,7 +45,7 @@
                     @if (ViewModel.Project.Status == ProjectStatus.Draft)
                     {
                         <div class="mt-3">
-                            <button class="btn btn-warning w-100 text-white fw-bold" @onclick='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")'>
+                            <button class="bs-btn-primary w-100" @onclick='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")'>
                                 @Loc["ProjectDetail_ContinueDraft"]
                             </button>
                         </div>
@@ -69,7 +69,7 @@
                                     <h4 class="job-title">@job.Title</h4>
                                     <div class="d-flex justify-content-between">
                                         <span class="job-category">@job.ServiceCategory.Name</span>
-                                        <span class="job-status status-@(job.Status.ToString().ToLower())">@job.Status</span>
+                                        <span class="job-status status-@(job.Status.ToString().ToLower())">@Loc[$"Status_{job.Status}"]</span>
                                     </div>
                                 </div>
 
@@ -87,10 +87,10 @@
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
+                                        <button class="bs-btn-dark btn-sm" @onclick="() => ToggleJobExpansion(job.Id)">
                                             @(isExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
                                         </button>
-                                        <button class="btn btn-outline-primary btn-sm fw-bold" style="border-radius: 8px;" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
+                                        <button class="bs-btn-dark btn-sm" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
                                             @Loc["ProjectDetail_SeeTasks"]
                                         </button>
                                     </div>
@@ -103,7 +103,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         @if (job.Description?.Length > 150)
                                         {
-                                            <button class="btn btn-link p-0 text-decoration-none shadow-none fw-bold" @onclick="() => ToggleJobExpansion(job.Id)">
+                                            <button class="bs-btn-dark btn-sm" @onclick="() => ToggleJobExpansion(job.Id)">
                                                 @(isExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
                                             </button>
                                         }
@@ -113,7 +113,7 @@
                                         }
                                         @if (job.Status != JobPostStatus.Draft)
                                         {
-                                            <button class="btn btn-outline-primary btn-sm fw-bold" style="border-radius: 8px;" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
+                                            <button class="bs-btn-dark btn-sm" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
                                                 @Loc["ProjectDetail_SeeTasks"]
                                             </button>
                                         }
@@ -124,28 +124,28 @@
                                 <div class="d-flex flex-column gap-2 mt-3">
                                     @if (job.Status == JobPostStatus.Open)
                                     {
-                                        <button class="btn btn-outline-success w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewTaskBreakdownCommand.ExecuteAsync(job)">
+                                        <button class="bs-btn-dark w-100" @onclick="() => ViewModel.ViewTaskBreakdownCommand.ExecuteAsync(job)">
                                             @Loc["ProjectDetail_ViewTaskBreakdown"]
                                         </button>
                                     }
 
                                     @if (job.Bids != null && job.Bids.Any())
                                     {
-                                        <button class="btn btn-primary w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
+                                        <button class="bs-btn-primary w-100" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
                                             @string.Format(Loc["ProjectDetail_ViewOffersCount"], job.Bids.Count)
                                         </button>
                                     }
                                     else if (job.Status == JobPostStatus.Open)
                                     {
-                                        <button class="btn btn-outline-primary w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
+                                        <button class="bs-btn-dark w-100" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
                                             @Loc["ProjectDetail_ViewAuctionZero"]
                                         </button>
                                     }
                                     
                                     @if (job.Status == JobPostStatus.Rejected || job.Status == JobPostStatus.WaitingForUserReview)
                                     {
-                                        <button class="btn btn-warning text-white w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.EditAnswersCommand.ExecuteAsync(job)">@Loc["ProjectDetail_EditAnswers"]</button>
-                                        <button class="btn btn-success w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ReviewScopeCommand.ExecuteAsync(job)">@Loc["ProjectDetail_ReviewScope"]</button>
+                                        <button class="bs-btn-dark w-100 mb-2" @onclick="() => ViewModel.EditAnswersCommand.ExecuteAsync(job)">@Loc["ProjectDetail_EditAnswers"]</button>
+                                        <button class="bs-btn-primary w-100" @onclick="() => ViewModel.ReviewScopeCommand.ExecuteAsync(job)">@Loc["ProjectDetail_ReviewScope"]</button>
                                     }
                                 </div>
                             </div>
@@ -230,10 +230,10 @@
     }
 
     .status-draft { color: gray; }
-    .status-open { color: #4CAF50; }
-    .status-waitingforuserreview { color: orange; }
-    .status-waitingforadminreview { color: #1976D2; }
-    .status-rejected { color: #D32F2F; }
+    .status-open { color: var(--color-success); }
+    .status-waitingforuserreview { color: var(--color-warning); }
+    .status-waitingforadminreview { color: var(--color-info); }
+    .status-rejected { color: var(--color-danger); }
 
     .section-title {
         font-size: 20px;

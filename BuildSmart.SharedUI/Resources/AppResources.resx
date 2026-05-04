@@ -503,4 +503,19 @@
   <data name="Feed_RenderingError" xml:space="preserve">
     <value>Rendering Error</value>
   </data>
+  <data name="Status_Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Status_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Status_WaitingForUserReview" xml:space="preserve">
+    <value>Waiting for User Review</value>
+  </data>
+  <data name="Status_WaitingForAdminReview" xml:space="preserve">
+    <value>Waiting for Admin Review</value>
+  </data>
+  <data name="Status_Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
 </root>

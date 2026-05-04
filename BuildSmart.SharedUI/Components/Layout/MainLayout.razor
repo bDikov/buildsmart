@@ -2,12 +2,15 @@
 @using BuildSmart.SharedUI.Services
 @using BuildSmart.SharedUI.GraphQL
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject INavigationBridge NavigationBridge
 @inject IAuthService AuthService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavManager
 @inject IBlazorNavigationRegistry NavigationRegistry
 @inject IBuildSmartApiClient ApiClient
+@inject IJSRuntime JSRuntime
 
 <div class="page">
     <!-- Mobile Header -->
@@ -483,6 +486,29 @@
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
+                if (userResult.Data?.CurrentUser != null && !string.IsNullOrEmpty(userResult.Data.CurrentUser.PreferredTheme))
+                {
+                    var theme = userResult.Data.CurrentUser.PreferredTheme;
+                    if (theme != "system")
+                    {
+                        await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore errors during initial theme load
+            }
         }
     }
 

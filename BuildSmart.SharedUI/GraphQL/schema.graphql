@@ -584,6 +584,7 @@ type User {
   location: String
   profilePictureUrl: String
   preferredLanguage: String!
+  preferredTheme: String!
   homeownerProfile: HomeownerProfile
   tradesmanProfile: TradesmanProfile
   isEmailVerified: Boolean!
@@ -1023,6 +1024,7 @@ type Mutation {
   "Restores a previously passed auction for a tradesman."
   restoreAuction(jobId: UUID!): Boolean!
   updateUserLanguage(languageCode: String!): User!
+  updateUserTheme(theme: String!): User!
   updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
   deleteProject(projectId: UUID!): Boolean!
   replyToJobQuestion(parentQuestionId: UUID! replyText: String!): JobPostQuestion!

@@ -20,9 +20,10 @@ public class User : BaseEntity
 	public bool IsEmailVerified { get; set; }
 	public string? EmailVerificationToken { get; set; }
 	public DateTime? EmailVerificationTokenExpires { get; set; }
-    
-	public string PreferredLanguage { get; set; } = "en";
 
-    public virtual HomeownerProfile? HomeownerProfile { get; set; }
+	public string PreferredLanguage { get; set; } = "bg";
+	public string PreferredTheme { get; set; } = "system";
+
+	public virtual HomeownerProfile? HomeownerProfile { get; set; }
 	public virtual TradesmanProfile? TradesmanProfile { get; set; }
 }

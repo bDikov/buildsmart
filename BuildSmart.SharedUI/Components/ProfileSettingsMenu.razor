@@ -3,6 +3,7 @@
 @inject IBuildSmartApiClient ApiClient
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject IJSRuntime JSRuntime
 
 <div class="menu-container">
     <div class="menu-header mb-3 px-3">
@@ -25,7 +26,7 @@
         </select>
     </div>
 
-    <!-- Theme Selector Placeholder -->
+    <!-- Theme Selector -->
     <div class="menu-item-row">
         <div class="d-flex align-items-center gap-3">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -33,7 +34,7 @@
             </svg>
             <span class="fw-bold" style="color: var(--text-primary);">@Loc["Settings_Theme"]</span>
         </div>
-        <select class="bs-input form-select form-select-sm w-auto" style="border-radius: 8px; font-weight: bold; background-color: var(--bg-card-alt);">
+        <select class="bs-input form-select form-select-sm w-auto" style="border-radius: 8px; font-weight: bold; background-color: var(--bg-card-alt);" value="@_currentTheme" @onchange="ChangeTheme">
             <option value="system">@Loc["Settings_SystemDefault"]</option>
             <option value="light">@Loc["Settings_Light"]</option>
             <option value="dark">@Loc["Settings_Dark"]</option>
@@ -104,10 +105,24 @@
 
 @code {
     private string _currentLang = "en";
+    private string _currentTheme = "system";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _currentLang = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        
+        try
+        {
+            var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
+            if (userResult.Data?.CurrentUser != null)
+            {
+                _currentTheme = userResult.Data.CurrentUser.PreferredTheme ?? "system";
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore API fetch errors on init, rely on local defaults
+        }
     }
 
     private async Task ChangeLanguage(ChangeEventArgs e)
@@ -127,5 +142,23 @@
         System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
         System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
         NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+    }
+
+    private async Task ChangeTheme(ChangeEventArgs e)
+    {
+        var theme = e.Value?.ToString() ?? "system";
+        _currentTheme = theme;
+        
+        try
+        {
+            await ApiClient.UpdateUserTheme.ExecuteAsync(theme);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Settings] Failed to update theme on server: {ex.Message}");
+        }
+
+        // Apply the new theme to the root element immediately using JS Interop
+        await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
     }
 }

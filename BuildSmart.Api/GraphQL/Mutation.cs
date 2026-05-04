@@ -260,6 +260,28 @@ public class Mutation
 	}
 
 	[Authorize]
+	public async Task<User> UpdateUserTheme(
+		string theme,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user == null) throw new GraphQLException("User not found.");
+
+		user.PreferredTheme = theme;
+		unitOfWork.Users.Update(user);
+		await unitOfWork.SaveChangesAsync();
+
+		return user;
+	}
+
+	[Authorize]
 	public async Task<User> UpdateUserProfile(
 		Guid userId,
 		string firstName,

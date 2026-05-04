@@ -10,6 +10,7 @@ query GetCurrentUser {
     location
     profilePictureUrl
     preferredLanguage
+    preferredTheme
     tradesmanProfile {
       id
       videoIntroductionUrl
