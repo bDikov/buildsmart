@@ -34,6 +34,8 @@ ViewModels in `MauiProgram.cs` are typically registered as `Transient` (meaning 
 
 We use a custom, Fimga-driven CSS design system. **We do not rely on Bootstrap for component styling** to avoid overriding conflicts, though Bootstrap is present in `index.html` for basic scaffolding.
 
+**Theming & AI Agents:** If tasked with adding a new theme (like Dark Mode) or altering the design system, agents **MUST** read and follow the playbook at `conductor/THEME_IMPLEMENTATION_GUIDE.md`.
+
 ### Rules of CSS
 1. **The `bs-` Namespace:** All custom utility classes must be prefixed with `bs-` (e.g., `bs-btn-primary`, `bs-card`, `bs-input`, `bs-placeholder`). This prevents Bootstrap from hijacking our styling (e.g., Bootstrap uses `.placeholder` for loading skeletons, which turns text into solid grey boxes!).
 2. **No `!important`:** Do not use `!important` tags. The `bs-` namespace provides enough specificity.

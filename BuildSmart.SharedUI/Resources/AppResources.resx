@@ -425,6 +425,9 @@
   <data name="Settings_Dark" xml:space="preserve">
     <value>Dark</value>
   </data>
+  <data name="Settings_Colorful" xml:space="preserve">
+    <value>Colorful</value>
+  </data>
   <data name="Settings_FAQ" xml:space="preserve">
     <value>FAQ &amp; Help</value>
   </data>

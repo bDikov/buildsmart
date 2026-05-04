@@ -425,6 +425,9 @@
   <data name="Settings_Dark" xml:space="preserve">
     <value>Тъмна</value>
   </data>
+  <data name="Settings_Colorful" xml:space="preserve">
+    <value>Цветна</value>
+  </data>
   <data name="Settings_FAQ" xml:space="preserve">
     <value>Често задавани въпроси</value>
   </data>
@@ -517,5 +520,8 @@
   </data>
   <data name="Status_Rejected" xml:space="preserve">
     <value>Отхвърлен</value>
+  </data>
+  <data name="Settings_Colorful" xml:space="preserve">
+    <value>Цветна</value>
   </data>
 </root>

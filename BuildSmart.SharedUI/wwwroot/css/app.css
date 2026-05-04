@@ -89,6 +89,20 @@
     --border-color: rgb(52, 57, 78);
 }
 
+:root[data-theme='colorful'] {
+    --bg-page: rgb(255, 245, 250); /* Very soft blush pink background */
+    --bg-card: rgb(255, 255, 255);
+    --bg-card-alt: rgb(255, 235, 245); /* Soft pink surface */
+    --text-primary: rgb(45, 15, 45); /* Deep eggplant purple for high contrast text */
+    --text-secondary: rgba(45, 15, 45, 0.75);
+    --text-muted: rgba(45, 15, 45, 0.50);
+    --text-disabled: rgba(45, 15, 45, var(--state-disabled));
+    --color-primary: rgb(187, 134, 252); /* Soft Purple from Figma */
+    --color-primary-hover: rgb(160, 95, 230);
+    --color-secondary: rgb(207, 102, 121); /* Soft Red/Pink from Figma */
+    --border-color: rgb(255, 210, 235); /* Light pink borders */
+}
+
 /* ==========================================================================
    BASE HTML OVERRIDES (Applies Figma design universally)
    ========================================================================== */
