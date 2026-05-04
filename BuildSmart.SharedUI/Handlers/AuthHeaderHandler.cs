@@ -31,9 +31,18 @@ public class AuthHeaderHandler : DelegatingHandler
                 var services = asyncLocal.Value;
                 if (services != null)
                 {
-                    if (services.GetService(typeof(IAuthService)) is IAuthService scopedService)
+                    try
                     {
-                        currentAuthService = scopedService;
+                        if (services.GetService(typeof(IAuthService)) is IAuthService scopedService)
+                        {
+                            currentAuthService = scopedService;
+                        }
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // The IServiceProvider (e.g., from an old HTTP request) has been disposed.
+                        // Fall back to the default auth service.
+                        Console.WriteLine("[AuthHeaderHandler] IServiceProvider is disposed. Falling back to root scope.");
                     }
                 }
             }
