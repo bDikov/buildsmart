@@ -431,4 +431,76 @@
   <data name="Settings_Terms" xml:space="preserve">
     <value>Условия за ползване</value>
   </data>
+  <data name="UserProfile_PageTitle" xml:space="preserve">
+    <value>Настройки на профила</value>
+  </data>
+  <data name="UserProfile_Loading" xml:space="preserve">
+    <value>Зареждане на профила...</value>
+  </data>
+  <data name="UserProfile_EditDetails" xml:space="preserve">
+    <value>Редактирай детайли</value>
+  </data>
+  <data name="UserProfile_Email" xml:space="preserve">
+    <value>Имейл</value>
+  </data>
+  <data name="UserProfile_PhoneNumber" xml:space="preserve">
+    <value>Телефон</value>
+  </data>
+  <data name="UserProfile_Location" xml:space="preserve">
+    <value>Локация</value>
+  </data>
+  <data name="UserProfile_SaveChanges" xml:space="preserve">
+    <value>Запази промените</value>
+  </data>
+  <data name="ProfileCard_Tradesman" xml:space="preserve">
+    <value>Майстор</value>
+  </data>
+  <data name="ProfileCard_Homeowner" xml:space="preserve">
+    <value>Собственик</value>
+  </data>
+  <data name="ProfileCard_ChangePicture" xml:space="preserve">
+    <value>Смени снимката</value>
+  </data>
+  <data name="ProfileCard_EditProfile" xml:space="preserve">
+    <value>Редактирай профила</value>
+  </data>
+  <data name="ProfileCard_More" xml:space="preserve">
+    <value>Още</value>
+  </data>
+  <data name="ProfileCard_DefaultName" xml:space="preserve">
+    <value>Име на потребител</value>
+  </data>
+  <data name="Feed_StartNewProject" xml:space="preserve">
+    <value>Започни нов проект</value>
+  </data>
+  <data name="Feed_AvailableAuctions" xml:space="preserve">
+    <value>Налични аукциони</value>
+  </data>
+  <data name="Feed_DismissedJobs" xml:space="preserve">
+    <value>Отхвърлени задачи</value>
+  </data>
+  <data name="Feed_Loading" xml:space="preserve">
+    <value>Зареждане...</value>
+  </data>
+  <data name="Feed_ProfessionalRole" xml:space="preserve">
+    <value>Професионалист</value>
+  </data>
+  <data name="Feed_ViewProfile" xml:space="preserve">
+    <value>Виж профил</value>
+  </data>
+  <data name="Feed_QuestionsCount" xml:space="preserve">
+    <value>{0} въпроси</value>
+  </data>
+  <data name="Feed_Pass" xml:space="preserve">
+    <value>Пропусни</value>
+  </data>
+  <data name="Feed_ViewAndBid" xml:space="preserve">
+    <value>Преглед и оферта</value>
+  </data>
+  <data name="Feed_NA" xml:space="preserve">
+    <value>Н/Д</value>
+  </data>
+  <data name="Feed_RenderingError" xml:space="preserve">
+    <value>Грешка при зареждане</value>
+  </data>
 </root>

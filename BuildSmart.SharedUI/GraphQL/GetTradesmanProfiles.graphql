@@ -1,6 +1,7 @@
 query GetTradesmanProfiles {
   tradesmanProfiles {
     id
+    videoIntroductionUrl
     averageRating
     isVerified
     user {

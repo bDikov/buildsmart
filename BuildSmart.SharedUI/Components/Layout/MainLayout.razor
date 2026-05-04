@@ -53,13 +53,7 @@
             </div>
         </div>
 
-        <div class="sidebar-search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" class="search-input" placeholder="Search" />
-        </div>
+
 
         <div class="nav flex-column sidebar-nav">
             
@@ -99,28 +93,26 @@
                 </a>
             </AuthorizeView>
 
-            <div class="nav-item-header mt-4 mb-2">
-                @Loc["Nav_ToolsHeader"]
-            </div>
-            
-            <a class="nav-item-dark" href="/user-profile" @onclick="CloseSidebar">
-                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                @Loc["Nav_Settings"]
-            </a>
-            
         </div>
 
         <div class="sidebar-account">
-            <div class="account-info">
-                <div class="account-avatar">
-                    <!-- Generic user icon -->
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <a href="/user-profile" class="account-info" @onclick="CloseSidebar" style="text-decoration: none; cursor: pointer;">
+                <div class="account-avatar" style="overflow: hidden;">
+                    @if (!string.IsNullOrEmpty(_userProfilePictureUrl))
+                    {
+                        <img src="@_userProfilePictureUrl" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <!-- Generic user icon -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    }
                 </div>
                 <div class="account-details">
                     <span class="account-name">@(_userName ?? "BuildSmart User")</span>
                     <span class="account-email">@(_userEmail ?? "user@buildsmart.com")</span>
                 </div>
-            </div>
+            </a>
             <button class="logout-btn" @onclick="LogoutAsync" @onclick:preventDefault title="Logout">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </button>
@@ -443,6 +435,7 @@
     private bool _isLoading = true;
     private string? _userName;
     private string? _userEmail;
+    private string? _userProfilePictureUrl;
 
     protected override async Task OnInitializedAsync()
     {
@@ -456,6 +449,7 @@
                 var user = userResult.Data.CurrentUser;
                 _userName = $"{user.FirstName} {user.LastName}";
                 _userEmail = user.Email;
+                _userProfilePictureUrl = user.ProfilePictureUrl;
                 
                 var preferredLang = user.PreferredLanguage;
                 var currentCulture = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
