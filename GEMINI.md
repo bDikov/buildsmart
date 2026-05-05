@@ -138,6 +138,10 @@ When a schema update is required, **always ask the user** to start the API manua
 5. Exclusions
 **Tone**: Technical, Professional, Objective.
 
+### Project Proposals & Offer Documents
+**Format**: Generated dynamically as PDFs matching the "Project Proposal Template (Community)" Figma design.
+**Multilingual & T&C Support**: All generated offer PDFs, including their Terms and Conditions, formatting, and AI-generated pricing breakdowns, must be fully multilingual and dynamic based on the project's selected language code. Hardcoded T&Cs should be extracted and driven by the backend localization engine or passed down appropriately.
+
 ## Manual Migration Commands (Pending)
 
 To support the new feedback system and domain changes, please run:

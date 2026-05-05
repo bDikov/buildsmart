@@ -1,66 +1,51 @@
 using System;
-using System.IO;
-using System.Text.Json.Nodes;
 using Npgsql;
+using System.Collections.Generic;
 
-string connString = "Server=localhost;Port=5432;Database=buildsmart_db;Username=postgres;Password=postgres";
-using var conn = new NpgsqlConnection(connString);
-try 
-{
-    conn.Open();
-    Console.WriteLine("Connected to DB!");
-
-    // 1. Run the SQL script for Questions
-    string sql = File.ReadAllText("../UpdateQuestions.sql");
-    using var cmd = new NpgsqlCommand(sql, conn);
-    int rowsAffected = cmd.ExecuteNonQuery();
-    Console.WriteLine($"Successfully executed SQL for Questions. Rows affected: {rowsAffected}");
-
-    // 2. Parse and Insert SKUs
-    Guid elecCategoryId = Guid.Parse("e69f9926-d576-4515-a438-e80a850af656");
-    
-    // Clean old SKUs just in case
-    using var cmdClean = new NpgsqlCommand("DELETE FROM \"ServiceSkus\" WHERE \"ServiceCategoryId\" = @id AND \"SkuCode\" LIKE 'ELEC-%';", conn);
-    cmdClean.Parameters.AddWithValue("id", elecCategoryId);
-    int cleaned = cmdClean.ExecuteNonQuery();
-    Console.WriteLine($"Cleaned {cleaned} old test SKUs.");
-
-    string skusJson = File.ReadAllText("../Electrical_SKUs_Seed.json");
-    var skusDoc = JsonNode.Parse(skusJson);
-    var skus = skusDoc["skus"].AsArray();
-
-    int skuCount = 0;
-    foreach (var sku in skus)
-    {
-        string rawUnit = sku["unitType"]?.ToString() ?? "";
-        string mappedUnit = rawUnit switch {
-            "m" => "Per Linear Meter",
-            "pcs" => "Per Quantity (Item)",
-            "module" => "Per Quantity (Item)",
-            _ => "Per Quantity (Item)"
-        };
-
-        using var cmdSku = new NpgsqlCommand(
-            "INSERT INTO \"ServiceSkus\" (\"Id\", \"CreatedAt\", \"UpdatedAt\", \"ServiceCategoryId\", \"SkuCode\", \"Name\", \"Description\", \"BasePrice\", \"UnitType\") " +
-            "VALUES (@id, @created, @updated, @catId, @code, @name, @desc, @price, @unitType);", conn);
-
-        cmdSku.Parameters.AddWithValue("id", Guid.NewGuid());
-        cmdSku.Parameters.AddWithValue("created", DateTime.UtcNow);
-        cmdSku.Parameters.AddWithValue("updated", DateTime.UtcNow);
-        cmdSku.Parameters.AddWithValue("catId", elecCategoryId);
-        cmdSku.Parameters.AddWithValue("code", sku["skuCode"]?.ToString());
-        cmdSku.Parameters.AddWithValue("name", sku["name"]?.ToString());
-        cmdSku.Parameters.AddWithValue("desc", sku["description"]?.ToString());
-        cmdSku.Parameters.AddWithValue("price", decimal.Parse(sku["basePrice"]?.ToString() ?? "0"));
-        cmdSku.Parameters.AddWithValue("unitType", mappedUnit);
-
-        skuCount += cmdSku.ExecuteNonQuery();
+class Program {
+    static void Main() {
+        string connString = "Server=localhost;Port=5432;Database=buildsmart_db;Username=postgres;Password=postgres";
+        using var conn = new NpgsqlConnection(connString);
+        conn.Open();
+        
+        var categories = new Dictionary<Guid, string>();
+        using (var cmd = new NpgsqlCommand("SELECT \"Id\", \"Name\" FROM \"ServiceCategories\";", conn))
+        using (var reader = cmd.ExecuteReader()) {
+            while(reader.Read()) {
+                categories.Add(reader.GetGuid(0), reader.GetString(1));
+            }
+        }
+        
+        int updated = 0;
+        foreach(var cat in categories) {
+            string prefix = "UNK";
+            string name = cat.Value.ToLower();
+            if (name.Contains("demolition") || name.Contains("къртене")) prefix = "DEMO";
+            else if (name.Contains("drywall") || name.Contains("сухо")) prefix = "DRYW";
+            else if (name.Contains("painting") || name.Contains("боя")) prefix = "PANT";
+            else if (name.Contains("tiling") || name.Contains("подови") || name.Contains("настилки")) prefix = "TILE";
+            else if (name.Contains("plumbing") || name.Contains("вик")) prefix = "PLMB";
+            else if (name.Contains("electrical") || name.Contains("ел.")) prefix = "ELEC";
+            
+            var skus = new List<Guid>();
+            using (var cmd = new NpgsqlCommand("SELECT \"Id\" FROM \"ServiceSkus\" WHERE \"ServiceCategoryId\" = @catId ORDER BY \"CreatedAt\" ASC;", conn)) {
+                cmd.Parameters.AddWithValue("catId", cat.Key);
+                using var reader = cmd.ExecuteReader();
+                while(reader.Read()) skus.Add(reader.GetGuid(0));
+            }
+            
+            int index = 1;
+            foreach(var skuId in skus) {
+                using (var updateCmd = new NpgsqlCommand("UPDATE \"ServiceSkus\" SET \"SkuCode\" = @code WHERE \"Id\" = @id;", conn)) {
+                    updateCmd.Parameters.AddWithValue("code", $"{prefix}-{index:D3}");
+                    updateCmd.Parameters.AddWithValue("id", skuId);
+                    updateCmd.ExecuteNonQuery();
+                }
+                index++;
+                updated++;
+            }
+        }
+        
+        Console.WriteLine($"Successfully updated {updated} SKU codes to English prefixes.");
     }
-    
-    Console.WriteLine($"Successfully inserted {skuCount} detailed Bulgarian SKUs into the Electrical category!");
-    Console.WriteLine("All seeding operations complete!");
-}
-catch (Exception ex)
-{
-    Console.WriteLine("Database Error: " + ex.Message);
 }

@@ -40,3 +40,25 @@ The API Key is stored in `appsettings.json` under:
 Because the application is configured for a professional/enterprise context:
 - Data sent to the AI is strictly for scope generation.
 - It is recommended to use **Paid Tier / Vertex AI** credentials in production to ensure data is not used for model training.
+
+## SKU Standardization (Line Items)
+To ensure the AI operates with professional, defensible mathematics, all billable tasks are converted into SKUs. 
+
+When creating a new SKU (either via Database Seed or the Admin Portal UI), you **MUST** adhere to the following `SkuCode` nomenclature:
+
+**Format:** `[CATEGORY_PREFIX]-[INCREMENTAL_ID]`
+
+**Approved Prefixes (4 Letters, English):**
+- `DEMO` - Demolition & Waste Disposal (Къртене и Извозване)
+- `DRYW` - Drywall & Plasterboard (Сухо строителство)
+- `PANT` - Painting & Plastering (Бояджийски услуги)
+- `TILE` - Flooring & Tiling (Подови настилки)
+- `PLMB` - Plumbing (ВиК Услуги)
+- `ELEC` - Electrical (Ел. Услуги)
+
+**Examples:**
+- `DEMO-001` : Къртене на фаянс/теракота
+- `ELEC-118` : Монтаж на видеокамера
+
+**Why this matters:**
+Cyrillic characters in SKU codes break GraphQL serialization and frontend rendering. Enforcing this 4-letter English prefix + 3-digit number format guarantees system stability and makes the AI output extremely consistent when logging calculations.

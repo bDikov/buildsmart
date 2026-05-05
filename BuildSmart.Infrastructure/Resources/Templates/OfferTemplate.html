@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333333;
+        }
+
+        /* Print optimizations for multi-page document */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page-break { page-break-after: always; }
+            .no-break { page-break-inside: avoid; }
+        }
+
+        .separator {
+            height: 5px;
+            background-color: #333333;
+            width: 100%;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- PAGE 1: COVER -->
+    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col justify-center page-break">
+        <h1 class="text-8xl font-extrabold text-black mb-12 tracking-tight">hello.</h1>
+        <div class="mb-24">
+            <h2 class="text-5xl font-bold text-gray-900">{{JobTitle}}</h2>
+            <p class="text-2xl text-gray-500 mt-4 uppercase tracking-widest">{{Header_ProjectProposal}}</p>
+        </div>
+        <div class="mt-auto">
+            <p class="text-xl font-bold text-black">{{TradesmanName}}</p>
+            <p class="text-lg text-gray-500">Ref: #{{JobId}}</p>
+        </div>
+    </div>
+
+    <!-- PAGE 2: PROJECT BRIEF -->
+    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col page-break">
+        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_ProjectBrief}}</h2>
+        
+        <div class="mb-16">
+            <h3 class="text-3xl font-bold text-black mb-6">{{Header_Overview}}</h3>
+            <p class="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+                {{ScopeDescription}}
+            </p>
+        </div>
+
+        <div class="mb-auto">
+            <h3 class="text-3xl font-bold text-black mb-6">{{Header_PreparedFor}}</h3>
+            <p class="text-lg text-gray-700 font-semibold">{{ClientName}}</p>
+            <p class="text-lg text-gray-600">{{ClientAddress}}</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-16 pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
+            <p>{{TradesmanName}}</p>
+            <p>{{Date}}</p>
+        </div>
+    </div>
+
+    <!-- PAGE 3: PRICING BREAKDOWN (GROUPED BY CATEGORY) -->
+    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col page-break">
+        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_PricingBreakdown}}</h2>
+        
+        <div class="flex justify-between items-end mb-6">
+            <h3 class="text-3xl font-bold text-black">{{Header_Fees}}</h3>
+            <p class="text-gray-500">{{Label_FeesDescription}}</p>
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="mb-auto">
+            {{#each Categories}}
+            <div class="mb-10 no-break">
+                <!-- Category Header -->
+                <h4 class="text-xl font-bold text-black uppercase tracking-wide mb-4">{{CategoryName}}</h4>
+                
+                <!-- Tasks within Category -->
+                <div class="flex flex-col gap-6 mb-4">
+                    {{#each Tasks}}
+                    <div>
+                        <div class="flex justify-between items-center text-lg text-gray-700 mb-1">
+                            <span class="pr-8">{{Description}}</span>
+                            <span class="font-semibold whitespace-nowrap">{{../../CurrencySymbol}}{{Amount}}</span>
+                        </div>
+                        {{#if AcceptanceCriteria}}
+                        <ul class="list-disc pl-5 text-sm text-gray-500">
+                            {{#each AcceptanceCriteria}}
+                            <li>{{this}}</li>
+                            {{/each}}
+                        </ul>
+                        {{/if}}
+                    </div>
+                    {{/each}}
+                </div>
+                
+                <!-- Category Subtotal -->
+                <div class="flex justify-between items-center text-lg text-gray-900 font-bold pt-3 border-t border-gray-200">
+                    <span>{{SubtotalLabel}}</span>
+                    <span>{{../CurrencySymbol}}{{Subtotal}}</span>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Grand Total -->
+        <div class="flex justify-between items-center text-3xl font-extrabold text-black mb-16 no-break">
+            <span>{{Label_GrandTotal}}</span>
+            <span>${{TotalAmount}}</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-auto pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
+            <p>{{TradesmanName}}</p>
+            <p>{{Date}}</p>
+        </div>
+    </div>
+
+    <!-- PAGE 4: TERMS & CONDITIONS -->
+    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col">
+        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_TC}}</h2>
+        
+        <div class="mb-auto">
+            <h3 class="text-3xl font-bold text-black mb-8">{{Header_Terms}}</h3>
+            <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                {{Terms_Intro}}
+            </p>
+            <ul class="list-decimal pl-6 text-lg text-gray-700 leading-relaxed space-y-4">
+                <li>{{Terms_Point1}}</li>
+                <li>{{Terms_Point2}}</li>
+                <li>{{Terms_Point3}}</li>
+                <li>{{Terms_Point4}}</li>
+                <li>{{Terms_Point5}}</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-16 pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
+            <p>{{TradesmanName}}</p>
+            <p>{{Date}}</p>
+        </div>
+    </div>
+
+</body>
+</html>
