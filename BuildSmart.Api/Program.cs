@@ -185,6 +185,12 @@ public partial class Program
 		// Add GraphQL Services (Hot Chocolate)
 		builder.Services
 			.AddGraphQLServer()
+			.ModifyCostOptions(o => 
+			{
+				o.EnforceCostLimits = false;
+				o.MaxFieldCost = 10000;
+				o.MaxTypeCost = 10000;
+			})
 			.AddUploadType()
 	.AddQueryType<QueryType>()
 	.AddMutationType<MutationType>()
@@ -254,6 +260,9 @@ public partial class Program
 			app.UseSwagger();
 			app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildSmart.Api v1"));
 		}
+
+        // Enable serving static files from wwwroot (like the generated PDFs)
+        app.UseStaticFiles();
 
 		app.UseCors(MyAllowSpecificOrigins);
 

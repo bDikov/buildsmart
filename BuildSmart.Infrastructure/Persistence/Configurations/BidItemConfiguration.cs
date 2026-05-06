@@ -31,6 +31,6 @@ public class BidItemConfiguration : IEntityTypeConfiguration<BidItem>
         builder.HasOne(bi => bi.JobTask)
             .WithMany(jt => jt.BidItems)
             .HasForeignKey(bi => bi.JobTaskId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

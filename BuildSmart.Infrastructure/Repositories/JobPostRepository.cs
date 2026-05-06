@@ -60,4 +60,9 @@ public class JobPostRepository : IJobPostRepository
     {
         _context.JobPosts.Update(jobPost);
     }
+
+    public void Delete(JobPost jobPost)
+    {
+        _context.JobPosts.Remove(jobPost);
+    }
 }

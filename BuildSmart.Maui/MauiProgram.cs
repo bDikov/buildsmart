@@ -150,6 +150,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<UserManagementViewModel>();
 		builder.Services.AddTransient<UserEditPage>();
 		builder.Services.AddTransient<UserEditViewModel>();
+		builder.Services.AddTransient<AdminProjectsViewModel>();
 
 		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(Views.Admin.UserManagementPage), typeof(Views.Admin.UserManagementPage));

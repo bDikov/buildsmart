@@ -367,7 +367,50 @@ public class Mutation
 			throw new GraphQLException(new Error("You do not have permission to delete this project.", "AUTH_NOT_AUTHORIZED"));
 		}
 
+		// Business Rule: Homeowners cannot delete active projects
+		if (!isAdmin && project.Status == Core.Domain.Enums.ProjectStatus.Active)
+		{
+			throw new GraphQLException(new Error("Homeowners cannot delete a project while it is Active.", "PROJECT_IS_ACTIVE"));
+		}
+
 		await unitOfWork.Projects.DeleteAsync(projectId);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+
+	[Authorize]
+	public async Task<bool> DeleteJobPost(
+		Guid jobPostId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var jobPost = await unitOfWork.JobPosts.GetByIdAsync(jobPostId);
+
+		if (jobPost == null)
+		{
+			throw new GraphQLException("Job post not found.");
+		}
+
+		// Security Check: Ensure the user owns the project or is an Admin
+		var isAdmin = claimsPrincipal.IsInRole(UserRoleTypes.Admin.ToString());
+		if (!isAdmin && jobPost.Project.HomeownerId != userId)
+		{
+			throw new GraphQLException(new Error("You do not have permission to delete this job.", "AUTH_NOT_AUTHORIZED"));
+		}
+
+		// Business Rule: Homeowners cannot delete jobs from active projects
+		if (!isAdmin && jobPost.Project.Status == Core.Domain.Enums.ProjectStatus.Active)
+		{
+			throw new GraphQLException(new Error("Homeowners cannot delete a job while its parent project is Active.", "PROJECT_IS_ACTIVE"));
+		}
+
+		unitOfWork.JobPosts.Delete(jobPost);
 		await unitOfWork.SaveChangesAsync();
 		return true;
 	}

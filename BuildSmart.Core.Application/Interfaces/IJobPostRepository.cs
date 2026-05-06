@@ -10,4 +10,5 @@ public interface IJobPostRepository
     Task<IEnumerable<JobPost>> GetJobsByProjectIdAsync(Guid projectId);
     Task AddAsync(JobPost jobPost);
     void Update(JobPost jobPost);
+    void Delete(JobPost jobPost);
 }

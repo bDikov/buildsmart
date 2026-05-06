@@ -131,6 +131,7 @@ builder.Services.AddTransient<AdminCategorySkusViewModel>();
 builder.Services.AddTransient<AdminJobReviewViewModel>();
 builder.Services.AddTransient<UserManagementViewModel>();
 builder.Services.AddTransient<UserEditViewModel>();
+builder.Services.AddTransient<AdminProjectsViewModel>();
 
 var app = builder.Build();
 

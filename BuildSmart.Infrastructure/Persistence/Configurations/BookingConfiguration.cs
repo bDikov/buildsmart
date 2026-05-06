@@ -69,13 +69,13 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasOne(b => b.JobPost)
             .WithMany()
             .HasForeignKey(b => b.JobPostId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Relationship to Bid
         builder.HasOne(b => b.Bid)
             .WithMany()
             .HasForeignKey(b => b.BidId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
 		// Relationship to Review
 		builder.HasOne(b => b.Review)

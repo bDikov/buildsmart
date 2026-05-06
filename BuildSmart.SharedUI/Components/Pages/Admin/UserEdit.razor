@@ -1,0 +1,261 @@
+@page "/user-edit"
+@using BuildSmart.SharedUI.ViewModels.Admin
+@using BuildSmart.SharedUI.GraphQL
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject UserEditViewModel ViewModel
+@inject NavigationManager NavManager
+@inject IBuildSmartApiClient ApiClient
+
+<div class="admin-container">
+    <div class="header-section">
+        <div class="title-group">
+            <h1 class="page-title">Edit User</h1>
+            <p class="page-subtitle">Modify user roles and categories.</p>
+        </div>
+        <button class="bs-btn-secondary" @onclick='() => NavManager.NavigateTo("/user-management")'>
+            Back to Users
+        </button>
+    </div>
+
+    @if (ViewModel.IsBusy && ViewModel.User == null)
+    {
+        <div class="loading-state">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>Loading user...</p>
+        </div>
+    }
+    else if (ViewModel.User == null)
+    {
+        <div class="empty-state bs-card">
+            <h3>User Not Found</h3>
+            <p>The user you are trying to edit does not exist or could not be loaded.</p>
+            <button class="bs-btn-primary" @onclick='() => NavManager.NavigateTo("/user-management")'>Back to Users</button>
+        </div>
+    }
+    else
+    {
+        <div class="bs-card edit-card">
+            <div class="user-header">
+                <div class="user-info">
+                    <span class="email-label">@ViewModel.User.Email</span>
+                    <h2 class="name-label">@ViewModel.User.FirstName @ViewModel.User.LastName</h2>
+                </div>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="form-section">
+                <label class="section-label">System Role</label>
+                <select class="bs-select" @bind="ViewModel.SelectedRole">
+                    @foreach (var role in ViewModel.AllRoles)
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </select>
+                @if (ViewModel.IsTradesmanFieldsVisible)
+                {
+                    <p class="warning-text">Note: Changing to TRADESMAN will create a tradesman profile if one doesn't exist.</p>
+                }
+            </div>
+
+            @if (ViewModel.IsTradesmanFieldsVisible)
+            {
+                <div class="form-section mt-4">
+                    <label class="section-label">Assigned Service Categories</label>
+                    <p class="help-text">Select the categories this tradesman is qualified for:</p>
+                    
+                    <div class="categories-list">
+                        @foreach (var cat in ViewModel.Categories)
+                        {
+                            <div class="category-checkbox">
+                                <label>
+                                    <input type="checkbox" @bind="cat.IsSelected" />
+                                    @cat.Name
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="form-actions mt-4">
+                <button class="bs-btn-primary" @onclick="HandleSaveAsync" disabled="@ViewModel.IsBusy">
+                    @if (ViewModel.IsBusy)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>Save Changes</span>
+                    }
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .admin-container {
+        padding: 40px 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        min-height: 100vh;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 40px;
+        gap: 20px;
+    }
+
+    .page-title {
+        font-size: 38px;
+        font-weight: 800;
+        margin: 0 0 8px 0;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .edit-card {
+        padding: 30px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+
+    .user-header {
+        margin-bottom: 20px;
+    }
+
+    .email-label {
+        color: var(--text-muted);
+        font-size: 14px;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .name-label {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .divider {
+        border: 0;
+        border-top: 1px solid var(--border-color);
+        margin: 20px 0;
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .section-label {
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--text-primary);
+    }
+
+    .bs-select {
+        width: 100%;
+        padding: 12px 16px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 16px;
+        outline: none;
+    }
+
+    .bs-select:focus {
+        border-color: var(--color-primary);
+    }
+
+    .warning-text {
+        color: #ff6b6b;
+        font-size: 13px;
+        margin: 4px 0 0 0;
+    }
+
+    .help-text {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin: 0 0 12px 0;
+    }
+
+    .categories-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background-color: var(--bg-card-alt);
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .category-checkbox label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-primary);
+        font-size: 15px;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .category-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--color-primary);
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(UserId))
+            return;
+
+        ViewModel.IsBusy = true;
+        try
+        {
+            var result = await ApiClient.GetUsers.ExecuteAsync();
+            var user = result.Data?.Users?.FirstOrDefault(u => u.Id == UserId);
+            
+            if (user != null)
+            {
+                var dict = new Dictionary<string, object> { { "User", user } };
+                ViewModel.ApplyQueryAttributes(dict);
+            }
+        }
+        finally
+        {
+            ViewModel.IsBusy = false;
+        }
+    }
+
+    private async Task HandleSaveAsync()
+    {
+        await ViewModel.SaveCommand.ExecuteAsync(null);
+        // The ViewModel tries to use MAUI Navigation to go back.
+        // We can just explicitly navigate back here to be safe if it doesn't work.
+        NavManager.NavigateTo("/user-management");
+    }
+}

@@ -26,7 +26,7 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
         builder.HasOne(b => b.JobPost)
             .WithMany(jp => jp.Bids)
             .HasForeignKey(b => b.JobPostId)
-            .OnDelete(DeleteBehavior.Restrict); // Don't delete bids if job is deleted? Maybe Cascade is better. Sticking to Restrict for safety.
+            .OnDelete(DeleteBehavior.Cascade); // Cascade so deleting a JobPost cleans up its bids
 
         builder.HasOne(b => b.TradesmanProfile)
             .WithMany()

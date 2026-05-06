@@ -22,7 +22,7 @@ public partial class QuestionViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<OptionViewModel> _options = new();
 
-    public bool IsChoiceType => Type?.ToLower() == "choice";
+    public bool IsChoiceType => Type?.ToLower() == "choice" || Type?.ToLower() == "multiselect";
 
     public List<string> AllQuestionTypes => new() { "text", "number", "boolean", "choice" };
 

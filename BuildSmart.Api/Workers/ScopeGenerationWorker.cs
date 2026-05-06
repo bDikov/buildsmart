@@ -27,7 +27,7 @@ public class ScopeGenerationWorker
 		_logger = logger;
 	}
 
-	[AutomaticRetry(Attempts = 0)]
+	[AutomaticRetry(Attempts = 13)]
 	[Queue("ai-queue")]
 	public async Task ProcessJobAsync(Guid jobPostId)
 	{
@@ -56,6 +56,17 @@ public class ScopeGenerationWorker
 			// 2. Fetch Allowed SKUs for this Category
 			var allowedSkus = (await unitOfWork.ServiceSkus.GetByCategoryAsync(jobPost.ServiceCategoryId)).ToList();
 
+			// 2.5 Get Homeowner's Preferred Language
+			string languageCode = "en";
+			if (jobPost.Project != null)
+			{
+				var homeowner = await unitOfWork.Users.GetByIdAsync(jobPost.Project.HomeownerId);
+				if (homeowner != null && !string.IsNullOrWhiteSpace(homeowner.PreferredLanguage))
+				{
+					languageCode = homeowner.PreferredLanguage;
+				}
+			}
+
 			// 3. Generate the Scope and Tasks using AI (with Polly Retry)
 			var retryPolicy = Policy
 				.Handle<Exception>()
@@ -67,14 +78,9 @@ public class ScopeGenerationWorker
 
 			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
 			{
-				var timeSinceLastCall = UtcNowProvider() - _lastApiCallTime;
-				if (timeSinceLastCall < TimeSpan.FromSeconds(30))
-				{
-					await DelayTask(TimeSpan.FromSeconds(30) - timeSinceLastCall);
-				}
 				_lastApiCallTime = UtcNowProvider();
 
-				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus, jobPost.Project?.LanguageCode ?? "en");
+				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus, languageCode);
 			});
 
 			// 4. Clear existing Tasks if any (in case of regeneration)
@@ -209,12 +215,8 @@ public class ScopeGenerationWorker
 					contextBuilder.AppendLine($"A: {ansVal}");
 					contextBuilder.AppendLine();
 				}
-				else
-				{
-					contextBuilder.AppendLine($"Q: {qId}");
-					contextBuilder.AppendLine($"A: {ansVal}");
-					contextBuilder.AppendLine();
-				}
+				// Strict Backend Filtering: If the question ID is not found in the relevant (Global + Specific) categories,
+				// we intentionally IGNORE it. This guarantees the AI never sees answers from other trades (e.g. Electrical answers leaking into Plumbing).
 			}
 		}
 		catch (JsonException) { }
@@ -222,7 +224,7 @@ public class ScopeGenerationWorker
 		return contextBuilder.ToString().Trim();
 	}
 
-	[AutomaticRetry(Attempts = 0)]
+	[AutomaticRetry(Attempts = 3)]
 	[Queue("ai-queue")]
 	public async Task ProcessPricingAsync(Guid jobPostId)
 	{
@@ -249,6 +251,17 @@ public class ScopeGenerationWorker
 			var allowedSkus = (await unitOfWork.ServiceSkus.GetByCategoryAsync(jobPost.ServiceCategoryId)).ToList();
 			System.IO.File.AppendAllText(debugLogFile, $"Found {allowedSkus.Count} allowed SKUs.\n");
 
+			// 2.5 Get Homeowner's Preferred Language
+			string languageCode = "en";
+			if (jobPost.Project != null)
+			{
+				var homeowner = await unitOfWork.Users.GetByIdAsync(jobPost.Project.HomeownerId);
+				if (homeowner != null && !string.IsNullOrWhiteSpace(homeowner.PreferredLanguage))
+				{
+					languageCode = homeowner.PreferredLanguage;
+				}
+			}
+
 			var retryPolicy = Policy
 				.Handle<Exception>()
 				.WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(10 * retryAttempt),
@@ -259,15 +272,10 @@ public class ScopeGenerationWorker
 
 			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
 			{
-				var timeSinceLastCall = UtcNowProvider() - _lastApiCallTime;
-				if (timeSinceLastCall < TimeSpan.FromSeconds(30))
-				{
-					await DelayTask(TimeSpan.FromSeconds(30) - timeSinceLastCall);
-				}
 				_lastApiCallTime = UtcNowProvider();
 
 				System.IO.File.AppendAllText(debugLogFile, $"Calling AI Service...\n");
-				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, jobPost.Project?.LanguageCode ?? "en");
+				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, languageCode);
 			});
 
 			System.IO.File.AppendAllText(debugLogFile, $"AI Service returned. Tasks count: {aiResponse?.Tasks?.Count ?? 0}\n");
@@ -422,6 +430,17 @@ public class ScopeGenerationWorker
 		{
 			System.IO.File.AppendAllText(debugLogFile, $"EXCEPTION: {ex.Message}\n{ex.StackTrace}\n");
 			_logger.LogError(ex, "Failed to process pricing for Job {JobId}.", jobPostId);
+
+			try
+			{
+				jobPost.MarkGenerationFailed(ex.Message);
+				unitOfWork.JobPosts.Update(jobPost);
+				await unitOfWork.SaveChangesAsync();
+			}
+			catch (Exception dbEx)
+			{
+				_logger.LogError(dbEx, "Failed to update JobPost status after pricing failure.");
+			}
 		}
 	}
 
@@ -429,100 +448,109 @@ public class ScopeGenerationWorker
 	{
 		var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
 		var pdfService = serviceProvider.GetRequiredService<IPdfGeneratorService>();
-        var localizer = serviceProvider.GetRequiredService<IStringLocalizer<OfferResources>>();
+		var localizer = serviceProvider.GetRequiredService<IStringLocalizer<OfferResources>>();
 
 		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
 		if (project == null) return;
 
-        // Store original culture and safely switch to project language
-        var originalCulture = CultureInfo.CurrentUICulture;
-        try
-        {
-            try 
-            { 
-                CultureInfo.CurrentUICulture = new CultureInfo(project.LanguageCode ?? "en"); 
-            }
-            catch (CultureNotFoundException) 
-            { 
-                CultureInfo.CurrentUICulture = new CultureInfo("en"); 
-            }
+		// Store original culture and safely switch to project language
+		var originalCulture = CultureInfo.CurrentUICulture;
+		try
+		{
+			try
+			{
+				CultureInfo.CurrentUICulture = new CultureInfo(project.LanguageCode ?? "en");
+			}
+			catch (CultureNotFoundException)
+			{
+				CultureInfo.CurrentUICulture = new CultureInfo("en");
+			}
 
-		    var allCalculations = await unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId);
+			var allCalculations = await unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId);
 
-		    var categoriesData = new List<dynamic>();
-		    decimal grandTotal = 0;
-            
-            string currencySymbol = CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "лв." : "$";
+			var categoriesData = new List<dynamic>();
+			decimal grandTotal = 0;
 
-		    foreach (var calc in allCalculations)
-		    {
-			    var category = await unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
-			    var categoryName = category?.Name ?? "General";
+			string currencySymbol = CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "лв." : "$";
 
-			    grandTotal += calc.TotalEstimatedPrice;
+			foreach (var calc in allCalculations)
+			{
+				var category = await unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
+				var categoryName = category?.Name ?? "General";
 
-			    var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
-			    {
-				    Description = task.Title,
-				    Amount = task.EstimatedPrice.ToString("F2"),
-				    AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => c.Description).ToList() ?? new List<string>()
-			    }).ToList();
+				grandTotal += calc.TotalEstimatedPrice;
 
-			    categoriesData.Add(new
-			    {
-				    CategoryName = categoryName,
-				    Subtotal = calc.TotalEstimatedPrice.ToString("F2"),
-                    SubtotalLabel = string.Format(localizer["Label_Subtotal"].Value, categoryName),
-				    Tasks = tasksForCategory
-			    });
-		    }
+				var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
+				{
+					Description = task.Title,
+					Amount = task.EstimatedPrice.ToString("F2"),
+					AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => c.Description).ToList() ?? new List<string>()
+				}).ToList();
 
-		    var offerData = new
-		    {
-                // Localization Headers
-                Header_ProjectProposal = localizer["Header_ProjectProposal"].Value,
-                Header_Overview = localizer["Header_Overview"].Value,
-                Header_PreparedFor = localizer["Header_PreparedFor"].Value,
-                Header_Fees = localizer["Header_Fees"].Value,
-                Label_FeesDescription = localizer["Label_FeesDescription"].Value,
-                Label_GrandTotal = localizer["Label_GrandTotal"].Value,
-                Header_Terms = localizer["Header_Terms"].Value,
-                
-                Terms_Intro = localizer["Terms_Intro"].Value,
-                Terms_Point1 = localizer["Terms_Point1"].Value,
-                Terms_Point2 = localizer["Terms_Point2"].Value,
-                Terms_Point3 = localizer["Terms_Point3"].Value,
-                Terms_Point4 = localizer["Terms_Point4"].Value,
-                Terms_Point5 = localizer["Terms_Point5"].Value,
-                
-                Footer_Validity = localizer["Footer_Validity"].Value,
-                Label_ProjectBrief = localizer["Label_ProjectBrief"].Value,
-                Label_PricingBreakdown = localizer["Label_PricingBreakdown"].Value,
-                Label_TC = localizer["Label_TC"].Value,
+				categoriesData.Add(new
+				{
+					CategoryName = categoryName,
+					Subtotal = calc.TotalEstimatedPrice.ToString("F2"),
+					SubtotalLabel = string.Format(localizer["Label_Subtotal"].Value, categoryName),
+					Tasks = tasksForCategory
+				});
+			}
 
-                CurrencySymbol = currencySymbol,
+			var offerData = new
+			{
+				// Localization Headers
+				Header_ProjectProposal = localizer["Header_ProjectProposal"].Value,
+				Header_Overview = localizer["Header_Overview"].Value,
+				Header_PreparedFor = localizer["Header_PreparedFor"].Value,
+				Header_Fees = localizer["Header_Fees"].Value,
+				Label_FeesDescription = localizer["Label_FeesDescription"].Value,
+				Label_GrandTotal = localizer["Label_GrandTotal"].Value,
+				Header_Terms = localizer["Header_Terms"].Value,
 
-                // Dynamic Data
-			    JobTitle = project.Title,
-			    JobId = project.Id.ToString().Substring(0, 8),
-			    TradesmanName = localizer["Label_SystemEstimate"].Value,
-			    Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
-			    ClientName = "Homeowner",
-			    ClientAddress = "TBD", // Could pull from HomeownerProfile
-			    ScopeDescription = project.Description,
-			    Categories = categoriesData,
-			    SubtotalAmount = grandTotal.ToString("F2"),
-			    TotalAmount = grandTotal.ToString("F2")
-		    };
+				Terms_Intro = localizer["Terms_Intro"].Value,
+				Terms_Point1 = localizer["Terms_Point1"].Value,
+				Terms_Point2 = localizer["Terms_Point2"].Value,
+				Terms_Point3 = localizer["Terms_Point3"].Value,
+				Terms_Point4 = localizer["Terms_Point4"].Value,
+				Terms_Point5 = localizer["Terms_Point5"].Value,
 
-		    byte[] pdfBytes = await pdfService.GenerateOfferPdfAsync(offerData);
+				Footer_Validity = localizer["Footer_Validity"].Value,
+				Label_ProjectBrief = localizer["Label_ProjectBrief"].Value,
+				Label_PricingBreakdown = localizer["Label_PricingBreakdown"].Value,
+				Label_TC = localizer["Label_TC"].Value,
 
-		    // TODO: Save pdfBytes to MultimediaStorageService
-		    _logger.LogInformation("Master PDF Generated for Project {ProjectId} in Language {Lang}. Size: {Size} bytes", projectId, project.LanguageCode, pdfBytes.Length);
-        }
-        finally
-        {
-            CultureInfo.CurrentUICulture = originalCulture;
-        }
+				CurrencySymbol = currencySymbol,
+
+				// Dynamic Data
+				JobTitle = project.Title,
+				JobId = project.Id.ToString().Substring(0, 8),
+				TradesmanName = localizer["Label_SystemEstimate"].Value,
+				Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
+				ClientName = "Homeowner",
+				ClientAddress = "TBD", // Could pull from HomeownerProfile
+				ScopeDescription = project.Description,
+				Categories = categoriesData,
+				SubtotalAmount = grandTotal.ToString("F2"),
+				TotalAmount = grandTotal.ToString("F2")
+			};
+
+			byte[] pdfBytes = await pdfService.GenerateOfferPdfAsync(offerData);
+
+			// Save pdfBytes directly to wwwroot/offers so the frontend has a predictable URL
+			var env = serviceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+			var webRootPath = System.IO.Path.Combine(env.WebRootPath ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot"), "offers");
+			if (!System.IO.Directory.Exists(webRootPath)) 
+			{
+			System.IO.Directory.CreateDirectory(webRootPath);
+			}
+			var pdfFileName = $"{projectId}_master_offer.pdf";
+			var pdfPath = System.IO.Path.Combine(webRootPath, pdfFileName);
+			await System.IO.File.WriteAllBytesAsync(pdfPath, pdfBytes);
+			_logger.LogInformation("Master PDF Generated for Project {ProjectId} in Language {Lang}. Saved to {Path}. Size: {Size} bytes", projectId, project.LanguageCode, pdfPath, pdfBytes.Length);
+		}
+		finally
+		{
+			CultureInfo.CurrentUICulture = originalCulture;
+		}
 	}
 }

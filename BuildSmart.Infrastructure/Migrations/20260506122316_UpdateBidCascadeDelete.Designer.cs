@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using BuildSmart.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BuildSmart.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506122316_UpdateBidCascadeDelete")]
+    partial class UpdateBidCascadeDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1303,7 +1306,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobTask", "JobTask")
                         .WithMany("BidItems")
                         .HasForeignKey("JobTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Bid");
@@ -1316,7 +1319,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.Bid", "Bid")
                         .WithMany()
                         .HasForeignKey("BidId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BuildSmart.Core.Domain.Entities.User", "Homeowner")
@@ -1328,7 +1331,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
                         .WithMany()
                         .HasForeignKey("JobPostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
@@ -1742,7 +1745,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobTask", "JobTask")
                         .WithMany()
                         .HasForeignKey("JobTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.OwnsOne("BuildSmart.Core.Domain.ValueObjects.Amount", "AmountAllocated", b1 =>

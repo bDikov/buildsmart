@@ -1013,6 +1013,10 @@ type Mutation {
   answerJobQuestion(questionId: UUID! answerText: String!): JobPostQuestion!
   "Allows a homeowner to edit their public answer."
   editJobAnswer(questionId: UUID! newAnswer: String!): JobPostQuestion!
+  "Deletes a project."
+  deleteProject(projectId: UUID!): Boolean!
+  "Deletes a job post."
+  deleteJobPost(jobPostId: UUID!): Boolean!
   deleteAllNotifications: Boolean!
   markNotificationAsRead(notificationId: UUID!): Boolean!
   "Uploads a portfolio entry for a tradesman."
@@ -1026,7 +1030,6 @@ type Mutation {
   updateUserLanguage(languageCode: String!): User!
   updateUserTheme(theme: String!): User!
   updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
-  deleteProject(projectId: UUID!): Boolean!
   replyToJobQuestion(parentQuestionId: UUID! replyText: String!): JobPostQuestion!
   replyToJobFeedback(parentFeedbackId: UUID! text: String!): JobPostFeedback!
   updateCategoryStatus(categoryId: UUID! newStatus: CategoryStatus!): ServiceCategory!
