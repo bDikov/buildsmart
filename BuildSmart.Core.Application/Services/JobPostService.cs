@@ -150,13 +150,14 @@ public class JobPostService : IJobPostService
 		await _unitOfWork.SaveChangesAsync();
 	}
 
-	public async Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description)
+	public async Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description, string? languageCode = null)
 	{
 		var project = new Project
 		{
 			HomeownerId = homeownerId,
 			Title = title,
 			Description = description,
+			LanguageCode = languageCode ?? "en",
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};

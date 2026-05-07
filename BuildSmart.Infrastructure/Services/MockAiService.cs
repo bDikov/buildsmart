@@ -30,38 +30,38 @@ public class MockAiService : IAiService
 		sb.AppendLine();
 		sb.AppendLine($"*(This is a mock AI response generated at {DateTime.UtcNow})*");
 
-        var tasks = new List<BuildSmart.Core.Application.DTOs.AiTaskBreakdownItem>();
-        if (allowedSkus.Any())
-        {
-            tasks.Add(new BuildSmart.Core.Application.DTOs.AiTaskBreakdownItem(
-                "Mock Task 1",
-                "Mock Description",
-                new List<BuildSmart.Core.Application.DTOs.AiTaskSkuItemDto>
-                {
-                    new BuildSmart.Core.Application.DTOs.AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1)
-                },
-                new List<string> { "Criteria 1" }
-            ));
-        }
+		var tasks = new List<BuildSmart.Core.Application.DTOs.AiTaskBreakdownItem>();
+		if (allowedSkus.Count != 0)
+		{
+			tasks.Add(new BuildSmart.Core.Application.DTOs.AiTaskBreakdownItem(
+				"Mock Task 1",
+				"Mock Description",
+				new List<BuildSmart.Core.Application.DTOs.AiTaskSkuItemDto>
+				{
+					new BuildSmart.Core.Application.DTOs.AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1)
+				},
+				["Criteria 1"]
+			));
+		}
 
 		return new BuildSmart.Core.Application.DTOs.AiScopeBreakdownResponse(sb.ToString(), tasks);
 	}
 
 	public Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string languageCode = "en")
 	{
-	    var pricingItems = new List<AiTaskPricingItemDto>();
+		var pricingItems = new List<AiTaskPricingItemDto>();
 
-	    foreach (var task in tasks)
-	    {
-	        var skuItems = new List<AiTaskSkuItemDto>();
-	        if (allowedSkus.Any())
-	        {
-	            skuItems.Add(new AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1));
-	        }
-	        pricingItems.Add(new AiTaskPricingItemDto(task.Id, task.Title, skuItems));
-	    }
+		foreach (var task in tasks)
+		{
+			var skuItems = new List<AiTaskSkuItemDto>();
+			if (allowedSkus.Any())
+			{
+				skuItems.Add(new AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1));
+			}
+			pricingItems.Add(new AiTaskPricingItemDto(task.Id, task.Title, skuItems));
+		}
 
-	    return Task.FromResult(new AiTaskPricingResponse(pricingItems));
+		return Task.FromResult(new AiTaskPricingResponse(pricingItems));
 	}
 
 	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en")

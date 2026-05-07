@@ -67,15 +67,16 @@
   <data name="Label_Subtotal" xml:space="preserve"><value>{0} Subtotal</value></data>
   <data name="Label_GrandTotal" xml:space="preserve"><value>Grand Total</value></data>
   <data name="Header_Terms" xml:space="preserve"><value>Terms &amp; Conditions</value></data>
-  <data name="Terms_Intro" xml:space="preserve"><value>This master estimate covers all selected trade categories. Final quotes from tradesmen may vary.</value></data>
-  <data name="Terms_Point1" xml:space="preserve"><value>Payment of 50% is required upfront via the BuildSmart Escrow system.</value></data>
-  <data name="Terms_Point2" xml:space="preserve"><value>The remaining 50% is due upon project completion and your formal acceptance of the work.</value></data>
-  <data name="Terms_Point3" xml:space="preserve"><value>Any additional work requested outside of this documented scope will require a formal Change Order.</value></data>
-  <data name="Terms_Point4" xml:space="preserve"><value>This proposal is valid for 30 days from the date of issue.</value></data>
-  <data name="Terms_Point5" xml:space="preserve"><value>To proceed, please log into your BuildSmart dashboard and formally accept this bid.</value></data>
-  <data name="Footer_Validity" xml:space="preserve"><value>This proposal is valid for 30 days from the date of issue.</value></data>
+  <data name="Terms_Intro" xml:space="preserve"><value>This document serves as a Non-Binding Indicative Quote, providing a professional roadmap for your project. While these figures are estimates based on your inputs, they establish the expert-level framework for your home transformation.</value></data>
+  <data name="Terms_Point1" xml:space="preserve"><value>A €0.00 price indicates a highly specialized task requiring an on-site professional assessment. This ensures that every unique detail of your project is accurately captured in the final binding offer.</value></data>
+  <data name="Terms_Point2" xml:space="preserve"><value>Transparency is key: these figures represent the skilled labor required for your project. Materials are not included at this stage, providing you with full flexibility to select finishes that match your specific style and budget.</value></data>
+  <data name="Terms_Point3" xml:space="preserve"><value>To proceed, contact Customer Support to transition this indicative quote into a competitive auction. Our elite network of tradesmen will then provide firm, binding bids based on this verified scope.</value></data>
+  <data name="Terms_Point4" xml:space="preserve"><value>Your investment is secure. BuildSmart guarantees that no payments are released to a tradesperson until you have digitally verified and approved the completed milestones.</value></data>
+  <data name="Terms_Point5" xml:space="preserve"><value>We provide a labor re-performance limit guarantee. If workmanship does not meet our professional standards, we will rectify the issue at no additional cost to you, protecting your investment from start to finish.</value></data>
+  <data name="Footer_Validity" xml:space="preserve"><value>This document is a non-binding indicative quote and does not constitute a legal contract. Final pricing is subject to a site visit and the results of the competitive auction process.</value></data>
   <data name="Label_ProjectBrief" xml:space="preserve"><value>01 — PROJECT BRIEF</value></data>
   <data name="Label_PricingBreakdown" xml:space="preserve"><value>02 — PRICING &amp; BREAKDOWN</value></data>
   <data name="Label_TC" xml:space="preserve"><value>03 — T&amp;C</value></data>
   <data name="Label_SystemEstimate" xml:space="preserve"><value>BuildSmart System Estimate</value></data>
+  <data name="Header_Hello" xml:space="preserve"><value>hello.</value></data>
 </root>

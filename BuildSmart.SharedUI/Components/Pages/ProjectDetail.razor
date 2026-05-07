@@ -361,7 +361,7 @@
     {
         if (ViewModel.Project != null)
         {
-            var url = $"https://localhost:7212/offers/{ViewModel.Project.Id}_master_offer.pdf";
+            var url = $"https://localhost:7212/api/offers/{ViewModel.Project.Id}/download";
             NavManager.NavigateTo(url, forceLoad: true);
         }
     }

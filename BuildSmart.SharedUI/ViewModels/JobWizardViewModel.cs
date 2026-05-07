@@ -288,54 +288,104 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[RelayCommand]
 	public async Task GoToNextStep()
 	{
-		if (CurrentStep >= _wizardSteps.Count) return;
+		if (IsBusy || CurrentStep >= _wizardSteps.Count) return;
 
-		var currentStepType = _wizardSteps[CurrentStep].Type;
-
-		if (currentStepType == WizardStepType.Info)
+		try
 		{
-			if (!ValidateInfoStep()) return;
-		}
-		else if (currentStepType == WizardStepType.CategorySelection)
-		{
-			if (!ValidateCategoryStep()) return;
+			IsBusy = true;
+			var currentStepType = _wizardSteps[CurrentStep].Type;
+			var currentStepIndex = CurrentStep;
 
-			await GenerateDynamicSteps();
-			await SaveDraftAsync();
-		}
-		else if (currentStepType == WizardStepType.Questions)
-		{
-			if (!ValidateQuestionsStep()) return;
-
-			// Save current questions to master key
-			foreach (var q in Questions)
+			// 1. Validation & State Capture (Must stay on current page if fails)
+			if (currentStepType == WizardStepType.Info)
 			{
-				if (q.Id != null && !string.IsNullOrEmpty(q.Answer))
-					_masterAnswerKey[q.Id] = q.Answer;
+				if (!ValidateInfoStep()) return;
+			}
+			else if (currentStepType == WizardStepType.CategorySelection)
+			{
+				if (!ValidateCategoryStep()) return;
+				await GenerateDynamicSteps();
+			}
+			else if (currentStepType == WizardStepType.Questions)
+			{
+				if (!ValidateQuestionsStep()) return;
+
+				// Save current questions to master key
+				foreach (var q in Questions)
+				{
+					if (q.Id != null && !string.IsNullOrEmpty(q.Answer))
+						_masterAnswerKey[q.Id] = q.Answer;
+				}
 			}
 
-			await SaveDraftAsync();
-		}
+			// 2. NAVIGATE IMMEDIATELY (UX Optimization)
+			// Move to the next page so the user sees the new questions while we save in the background
+			bool movedNext = false;
+			if (CurrentStep < _wizardSteps.Count - 1)
+			{
+				CurrentStep++;
+				LoadStepData(CurrentStep);
+				movedNext = true;
+			}
 
-		if (CurrentStep < _wizardSteps.Count - 1)
-		{
-			CurrentStep++;
-			LoadStepData(CurrentStep);
+			// 3. BACKGROUND NETWORK CALLS
+			if (currentStepType == WizardStepType.CategorySelection)
+			{
+				await InternalSaveDraftAsync(null, true);
+			}
+			else if (currentStepType == WizardStepType.Questions)
+			{
+				var stepTitle = _wizardSteps[currentStepIndex].Title;
+				if (stepTitle == "General Questions")
+				{
+					await InternalSaveDraftAsync(null, true);
+				}
+				else
+				{
+					var categoryName = stepTitle.Replace(" Questions", "");
+					var cat = SelectableCategories.FirstOrDefault(c => c.Category.Name == categoryName);
+					if (cat != null)
+					{
+						await InternalSaveDraftAsync(cat);
+						
+						// Trigger AI Generation immediately for this category
+						if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
+						{
+							var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+							if (submitResult.Errors.Count > 0)
+							{
+								await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {categoryName}: {submitResult.Errors[0].Message}", "OK");
+							}
+						}
+					}
+					else
+					{
+						await InternalSaveDraftAsync();
+					}
+				}
+			}
+
+			if (!movedNext && IsEditing)
+			{
+				await SaveAndRegenerateAsync();
+			}
 		}
-		else if (IsEditing)
+		catch (Exception ex)
 		{
-			// We are on the last question step and in Edit mode.
-			await SaveAndRegenerateAsync();
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
 		}
 	}
 
 	private async Task SaveAndRegenerateAsync()
 	{
-		if (IsBusy) return;
+		// IsBusy is already true from GoToNextStep
 		try
 		{
-			IsBusy = true;
-			await SaveDraftAsync();
+			await InternalSaveDraftAsync();
 
 			var jobsToRegenerate = _targetJobPostId != null
 				? new List<Guid> { _targetJobPostId.Value }
@@ -352,15 +402,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 
 			await AppServiceLocator.Alerts.DisplayAlert("Success", "Answers updated. AI is re-generating your scope.", "OK");
-			await AppServiceLocator.Navigation.NavigateToAsync(".."); // Go back to Project Details
+			await AppServiceLocator.Navigation.NavigateToAsync(".."); 
 		}
 		catch (Exception ex)
 		{
 			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-		}
-		finally
-		{
-			IsBusy = false;
 		}
 	}
 
@@ -632,77 +678,79 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		return true;
 	}
 
-	public async Task SaveDraftAsync()
+	public async Task SaveDraftAsync(SelectableCategoryViewModel? specificCategory = null, bool projectOnly = false)
 	{
 		if (IsBusy) return;
 		try
 		{
 			IsBusy = true;
-
-			if (_currentProjectId == null)
-			{
-				var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-				if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
-				var userId = userResult.Data.CurrentUser.Id;
-
-				var projectResult = await _apiClient.CreateProject.ExecuteAsync(Guid.Parse(userId), ProjectTitle, ProjectDescription);
-				if (projectResult.Errors.Count > 0)
-				{
-					await AppServiceLocator.Alerts.DisplayAlert("Error", "Failed to create project draft.", "OK");
-					return;
-				}
-				_currentProjectId = projectResult.Data.CreateProject.Id;
-			}
-
-			var selected = SelectableCategories.Where(c => c.IsSelected).ToList();
-
-			var answersJson = JsonSerializer.Serialize(_masterAnswerKey);
-
-			foreach (var cat in selected)
-			{
-				if (!_currentJobPostIds.ContainsKey(cat.Category.Id))
-				{
-					var jobResult = await _apiClient.AddJobToProject.ExecuteAsync(
-						_currentProjectId.Value,
-						cat.Category.Id,
-						cat.Category.Name,
-						answersJson,
-						ProjectLocation,
-						null, "USD", new List<string>(), PreferredSiteVisitDate
-					);
-
-					if (jobResult.Errors.Count > 0)
-					{
-						await AppServiceLocator.Alerts.DisplayAlert("Error", $"AddJob Error: {jobResult.Errors[0].Message}", "OK");
-					}
-					else if (jobResult.Data?.AddJobToProject != null)
-					{
-						_currentJobPostIds[cat.Category.Id] = jobResult.Data.AddJobToProject.Id;
-					}
-				}
-				else
-				{
-					var jobId = _currentJobPostIds[cat.Category.Id];
-					await _apiClient.SaveJobPostDraft.ExecuteAsync(
-						jobId,
-						answersJson,
-						ProjectDescription,
-						ProjectLocation,
-						null, "USD"
-					);
-
-					// If we are in single edit mode, the answers are already part of the JSON
-					// in SaveJobPostDraft call above. No separate mutation is needed.
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Debug.WriteLine($"Auto-save failed: {ex.Message}");
+			await InternalSaveDraftAsync(specificCategory, projectOnly);
 		}
 		finally
 		{
 			IsBusy = false;
+		}
+	}
+
+	private async Task InternalSaveDraftAsync(SelectableCategoryViewModel? specificCategory = null, bool projectOnly = false)
+	{
+		if (_currentProjectId == null)
+		{
+			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
+			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
+			var userId = userResult.Data.CurrentUser.Id;
+
+			var currentLang = System.Globalization.CultureInfo.CurrentUICulture.Name;
+			var projectResult = await _apiClient.CreateProject.ExecuteAsync(Guid.Parse(userId), ProjectTitle, ProjectDescription, currentLang);
+			if (projectResult.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", "Failed to create project draft.", "OK");
+				return;
+			}
+			_currentProjectId = projectResult.Data.CreateProject.Id;
+		}
+
+		if (projectOnly) return;
+
+		var selected = specificCategory != null 
+			? new List<SelectableCategoryViewModel> { specificCategory }
+			: SelectableCategories.Where(c => c.IsSelected).ToList();
+
+		var answersJson = JsonSerializer.Serialize(_masterAnswerKey);
+
+		foreach (var cat in selected)
+		{
+			if (!_currentJobPostIds.ContainsKey(cat.Category.Id))
+			{
+				var jobResult = await _apiClient.AddJobToProject.ExecuteAsync(
+					_currentProjectId.Value,
+					cat.Category.Id,
+					cat.Category.Name,
+					answersJson,
+					ProjectLocation,
+					null, "USD", new List<string>(), PreferredSiteVisitDate
+				);
+
+				if (jobResult.Errors.Count > 0)
+				{
+					await AppServiceLocator.Alerts.DisplayAlert("Error", $"AddJob Error: {jobResult.Errors[0].Message}", "OK");
+				}
+				else if (jobResult.Data?.AddJobToProject != null)
+				{
+					_currentJobPostIds[cat.Category.Id] = jobResult.Data.AddJobToProject.Id;
+				}
+			}
+			else
+			{
+				var jobId = _currentJobPostIds[cat.Category.Id];
+				await _apiClient.SaveJobPostDraft.ExecuteAsync(
+					jobId,
+					answersJson,
+					ProjectDescription,
+					ProjectLocation,
+					null, "USD"
+				);
+			}
 		}
 	}
 
@@ -711,30 +759,22 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		if (IsBusy) return;
 
-		// Ensure everything is saved
-		await SaveDraftAsync();
-
-		if (_currentJobPostIds.Count == 0)
-		{
-			await AppServiceLocator.Alerts.DisplayAlert("Error", "No jobs to submit.", "OK");
-			return;
-		}
-
 		try
 		{
 			IsBusy = true;
-			foreach (var jobId in _currentJobPostIds.Values)
+			// Ensure everything is saved
+			await InternalSaveDraftAsync();
+
+			if (_currentJobPostIds.Count == 0)
 			{
-				var result = await _apiClient.SubmitJobPost.ExecuteAsync(jobId);
-				if (result.Errors.Count > 0)
-				{
-					var msg = string.Join("\n", result.Errors.Select(e => e.Message));
-					await AppServiceLocator.Alerts.DisplayAlert("Submission Failed", msg, "OK");
-					return;
-				}
+				await AppServiceLocator.Alerts.DisplayAlert("Error", "No jobs to submit.", "OK");
+				return;
 			}
 
-			await AppServiceLocator.Alerts.DisplayAlert("Success", "Project submitted for review!", "OK");
+			// Jobs are now individually submitted to the AI when the user clicks 'Next' on their respective question pages.
+			// No need to batch submit them here again.
+
+			await AppServiceLocator.Alerts.DisplayAlert("Success", "Project submitted! AI is generating your scopes.", "OK");
 			await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
 		}
 		catch (Exception ex)

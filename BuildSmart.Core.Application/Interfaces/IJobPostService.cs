@@ -5,7 +5,7 @@ namespace BuildSmart.Core.Application.Interfaces;
 
 public interface IJobPostService
 {
-	Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description);
+	Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description, string? languageCode = null);
 
 	Task<JobPost> AddJobToProjectAsync(
 		Guid projectId,

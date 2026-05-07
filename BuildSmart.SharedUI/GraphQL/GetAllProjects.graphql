@@ -5,6 +5,7 @@ query GetAllProjects($where: ProjectFilterInput, $order: [ProjectSortInput!]) {
     description
     status
     createdAt
+    hasOfferPdf
     homeowner {
       firstName
       lastName

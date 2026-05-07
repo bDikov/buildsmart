@@ -30,7 +30,7 @@
 
     <!-- PAGE 1: COVER -->
     <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col justify-center page-break">
-        <h1 class="text-8xl font-extrabold text-black mb-12 tracking-tight">hello.</h1>
+        <h1 class="text-8xl font-extrabold text-black mb-12 tracking-tight">{{Header_Hello}}</h1>
         <div class="mb-24">
             <h2 class="text-5xl font-bold text-gray-900">{{JobTitle}}</h2>
             <p class="text-2xl text-gray-500 mt-4 uppercase tracking-widest">{{Header_ProjectProposal}}</p>
@@ -144,9 +144,14 @@
         </div>
 
         <!-- Footer -->
-        <div class="mt-16 pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
-            <p>{{TradesmanName}}</p>
-            <p>{{Date}}</p>
+        <div class="mt-auto pt-8 border-t border-gray-200 flex flex-col gap-4">
+            <div class="text-xs text-gray-400 italic text-center">
+                {{Footer_Validity}}
+            </div>
+            <div class="flex justify-between text-sm text-gray-500">
+                <p>{{TradesmanName}}</p>
+                <p>{{Date}}</p>
+            </div>
         </div>
     </div>
 

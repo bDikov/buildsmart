@@ -152,6 +152,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine(humanReadableContext);
 			prompt.AppendLine();
 			prompt.AppendLine("Output ONLY valid JSON. Do not use Markdown blocks like ```json.");
+			prompt.AppendLine("CRITICAL: Ensure all strings are properly escaped, all properties are quoted, and the JSON is strictly valid.");
 
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), useJsonMode: true);
 			responseText = CleanJsonMarkdown(responseText);
@@ -254,6 +255,7 @@ public class GeminiAiService : IAiService
 			}
 			prompt.AppendLine();
 			prompt.AppendLine("Output ONLY valid JSON. Do not use Markdown blocks like ```json.");
+			prompt.AppendLine("CRITICAL: Ensure all strings are properly escaped, all properties are quoted, and the JSON is strictly valid.");
 
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), useJsonMode: true);
 			responseText = CleanJsonMarkdown(responseText);

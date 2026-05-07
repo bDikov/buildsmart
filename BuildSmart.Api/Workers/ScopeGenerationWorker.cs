@@ -15,6 +15,7 @@ public class ScopeGenerationWorker
 	internal static DateTime _lastApiCallTime = DateTime.MinValue;
 	internal static Func<TimeSpan, Task> DelayTask = Task.Delay;
 	internal static Func<DateTime> UtcNowProvider = () => DateTime.UtcNow;
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> _pdfLocks = new();
 
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<ScopeGenerationWorker> _logger;
@@ -27,7 +28,7 @@ public class ScopeGenerationWorker
 		_logger = logger;
 	}
 
-	[AutomaticRetry(Attempts = 13)]
+	[AutomaticRetry(Attempts = 2)]
 	[Queue("ai-queue")]
 	public async Task ProcessJobAsync(Guid jobPostId)
 	{
@@ -70,7 +71,7 @@ public class ScopeGenerationWorker
 			// 3. Generate the Scope and Tasks using AI (with Polly Retry)
 			var retryPolicy = Policy
 				.Handle<Exception>()
-				.WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(10 * retryAttempt),
+				.WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(5 * retryAttempt),
 					(exception, timeSpan, retryCount, context) =>
 					{
 						_logger.LogWarning(exception, "Gemini API failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
@@ -264,7 +265,7 @@ public class ScopeGenerationWorker
 
 			var retryPolicy = Policy
 				.Handle<Exception>()
-				.WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(10 * retryAttempt),
+				.WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(5 * retryAttempt),
 					(exception, timeSpan, retryCount, context) =>
 					{
 						_logger.LogWarning(exception, "Gemini API failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
@@ -385,29 +386,15 @@ public class ScopeGenerationWorker
 				System.IO.File.AppendAllText(debugLogFile, $"Successfully saved AiCalculation to DB. Grand Total: {grandTotal}\n");
 
 				// ==========================================
-				// PDF AGGREGATION LOGIC (The "Last Job Out" Check)
+				// PDF AGGREGATION LOGIC (Incremental Updates)
 				// ==========================================
-				var allJobsInProject = await saveUnitOfWork.JobPosts.GetJobsByProjectIdAsync(freshJobPost.ProjectId);
-				var completedCalculations = await saveUnitOfWork.AiCalculations.GetByProjectAsync(freshJobPost.ProjectId);
-
-				bool isEntireProjectCalculated = allJobsInProject.Count() == completedCalculations.Count();
-
-				if (isEntireProjectCalculated)
+				try
 				{
-					System.IO.File.AppendAllText(debugLogFile, $"All {allJobsInProject.Count()} jobs finished. Generating Master PDF!\n");
-					try
-					{
-						await GenerateMasterProjectPdf(freshJobPost.ProjectId, saveScope.ServiceProvider);
-					}
-					catch (Exception pdfEx)
-					{
-						System.IO.File.AppendAllText(debugLogFile, $"Failed to generate Master PDF: {pdfEx.Message}\n");
-						_logger.LogError(pdfEx, "Failed to generate Master PDF for Project {ProjectId}", freshJobPost.ProjectId);
-					}
+					await GenerateMasterProjectPdf(freshJobPost.ProjectId, saveScope.ServiceProvider);
 				}
-				else
+				catch (Exception pdfEx)
 				{
-					System.IO.File.AppendAllText(debugLogFile, $"Job finished, but waiting on others before generating PDF. ({completedCalculations.Count()}/{allJobsInProject.Count()})\n");
+					_logger.LogError(pdfEx, "Failed to generate Master PDF for Project {ProjectId}", freshJobPost.ProjectId);
 				}
 			}
 
@@ -446,111 +433,130 @@ public class ScopeGenerationWorker
 
 	private async Task GenerateMasterProjectPdf(Guid projectId, IServiceProvider serviceProvider)
 	{
-		var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
-		var pdfService = serviceProvider.GetRequiredService<IPdfGeneratorService>();
-		var localizer = serviceProvider.GetRequiredService<IStringLocalizer<OfferResources>>();
+		var pdfLock = _pdfLocks.GetOrAdd(projectId, _ => new SemaphoreSlim(1, 1));
+		await pdfLock.WaitAsync();
 
-		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
-		if (project == null) return;
-
-		// Store original culture and safely switch to project language
-		var originalCulture = CultureInfo.CurrentUICulture;
 		try
 		{
+			// We MUST create a fresh scope and UoW INSIDE the lock to ensure we load the latest version of the Project entity
+			using var pdfScope = serviceProvider.CreateScope();
+			var unitOfWork = pdfScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+			var pdfService = pdfScope.ServiceProvider.GetRequiredService<IPdfGeneratorService>();
+			var localizer = pdfScope.ServiceProvider.GetRequiredService<IStringLocalizer<OfferResources>>();
+
+			var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+			if (project == null) return;
+
+			// Store original culture and safely switch to project language
+			var originalCulture = CultureInfo.CurrentUICulture;
 			try
 			{
-				CultureInfo.CurrentUICulture = new CultureInfo(project.LanguageCode ?? "en");
-			}
-			catch (CultureNotFoundException)
-			{
-				CultureInfo.CurrentUICulture = new CultureInfo("en");
-			}
-
-			var allCalculations = await unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId);
-
-			var categoriesData = new List<dynamic>();
-			decimal grandTotal = 0;
-
-			string currencySymbol = CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "лв." : "$";
-
-			foreach (var calc in allCalculations)
-			{
-				var category = await unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
-				var categoryName = category?.Name ?? "General";
-
-				grandTotal += calc.TotalEstimatedPrice;
-
-				var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
+				try
 				{
-					Description = task.Title,
-					Amount = task.EstimatedPrice.ToString("F2"),
-					AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => c.Description).ToList() ?? new List<string>()
-				}).ToList();
-
-				categoriesData.Add(new
+					CultureInfo.CurrentUICulture = new CultureInfo(project.LanguageCode ?? "en");
+				}
+				catch (CultureNotFoundException)
 				{
-					CategoryName = categoryName,
-					Subtotal = calc.TotalEstimatedPrice.ToString("F2"),
-					SubtotalLabel = string.Format(localizer["Label_Subtotal"].Value, categoryName),
-					Tasks = tasksForCategory
-				});
+					CultureInfo.CurrentUICulture = new CultureInfo("en");
+				}
+
+				var allCalculations = await unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId);
+
+				var categoriesData = new List<dynamic>();
+				decimal grandTotal = 0;
+
+				string currencySymbol = CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "€" : "$";
+
+				foreach (var calc in allCalculations)
+				{
+					var category = await unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
+					var categoryName = category?.Name ?? "General";
+
+					grandTotal += calc.TotalEstimatedPrice;
+
+					var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
+					{
+						Description = task.Title,
+						Amount = task.EstimatedPrice.ToString("F2"),
+						AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => c.Description).ToList() ?? new List<string>()
+					}).ToList();
+
+					categoriesData.Add(new
+					{
+						CategoryName = categoryName,
+						Subtotal = calc.TotalEstimatedPrice.ToString("F2"),
+						SubtotalLabel = string.Format(localizer["Label_Subtotal"].Value, categoryName),
+						Tasks = tasksForCategory
+					});
+				}
+
+				// Fetch project with Homeowner details
+				var projectWithUser = await unitOfWork.Projects.GetByIdAsync(projectId);
+				if (projectWithUser == null) return;
+				
+				// Ensure Homeowner is loaded (assuming the repository handles or we load it here)
+				var homeowner = await unitOfWork.Users.GetByIdAsync(projectWithUser.HomeownerId);
+				var clientName = homeowner != null ? $"{homeowner.FirstName} {homeowner.LastName}" : "Valued Client";
+				
+				// Location is stored on the JobPosts, not the Project entity
+				var clientAddress = projectWithUser.JobPosts.FirstOrDefault()?.Location ?? homeowner?.Location ?? "TBD";
+
+				var offerData = new
+				{
+					// Localization Headers
+					Header_Hello = localizer["Header_Hello"].Value,
+					Header_ProjectProposal = localizer["Header_ProjectProposal"].Value,
+					Header_Overview = localizer["Header_Overview"].Value,
+					Header_PreparedFor = localizer["Header_PreparedFor"].Value,
+					Header_Fees = localizer["Header_Fees"].Value,
+					Label_FeesDescription = localizer["Label_FeesDescription"].Value,
+					Label_GrandTotal = localizer["Label_GrandTotal"].Value,
+					Header_Terms = localizer["Header_Terms"].Value,
+
+					Terms_Intro = localizer["Terms_Intro"].Value,
+					Terms_Point1 = localizer["Terms_Point1"].Value,
+					Terms_Point2 = localizer["Terms_Point2"].Value,
+					Terms_Point3 = localizer["Terms_Point3"].Value,
+					Terms_Point4 = localizer["Terms_Point4"].Value,
+					Terms_Point5 = localizer["Terms_Point5"].Value,
+
+					Footer_Validity = localizer["Footer_Validity"].Value,
+					Label_ProjectBrief = localizer["Label_ProjectBrief"].Value,
+					Label_PricingBreakdown = localizer["Label_PricingBreakdown"].Value,
+					Label_TC = localizer["Label_TC"].Value,
+
+					CurrencySymbol = currencySymbol,
+
+					// Dynamic Data
+					JobTitle = projectWithUser.Title,
+					JobId = projectWithUser.Id.ToString().Substring(0, 8),
+					TradesmanName = localizer["Label_SystemEstimate"].Value,
+					Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
+					ClientName = clientName,
+					ClientAddress = clientAddress,
+					ScopeDescription = projectWithUser.Description,
+					Categories = categoriesData,
+					SubtotalAmount = grandTotal.ToString("F2"),
+					TotalAmount = grandTotal.ToString("F2")
+				};
+
+				byte[] pdfBytes = await pdfService.GenerateOfferPdfAsync(offerData);
+
+				project.MasterOfferPdf = pdfBytes;
+				project.UpdatedAt = DateTime.UtcNow;
+				unitOfWork.Projects.Update(project);
+				await unitOfWork.SaveChangesAsync();
+
+				_logger.LogInformation("Master PDF Generated for Project {ProjectId} and saved to database. Size: {Size} bytes", projectId, pdfBytes.Length);
 			}
-
-			var offerData = new
+			finally
 			{
-				// Localization Headers
-				Header_ProjectProposal = localizer["Header_ProjectProposal"].Value,
-				Header_Overview = localizer["Header_Overview"].Value,
-				Header_PreparedFor = localizer["Header_PreparedFor"].Value,
-				Header_Fees = localizer["Header_Fees"].Value,
-				Label_FeesDescription = localizer["Label_FeesDescription"].Value,
-				Label_GrandTotal = localizer["Label_GrandTotal"].Value,
-				Header_Terms = localizer["Header_Terms"].Value,
-
-				Terms_Intro = localizer["Terms_Intro"].Value,
-				Terms_Point1 = localizer["Terms_Point1"].Value,
-				Terms_Point2 = localizer["Terms_Point2"].Value,
-				Terms_Point3 = localizer["Terms_Point3"].Value,
-				Terms_Point4 = localizer["Terms_Point4"].Value,
-				Terms_Point5 = localizer["Terms_Point5"].Value,
-
-				Footer_Validity = localizer["Footer_Validity"].Value,
-				Label_ProjectBrief = localizer["Label_ProjectBrief"].Value,
-				Label_PricingBreakdown = localizer["Label_PricingBreakdown"].Value,
-				Label_TC = localizer["Label_TC"].Value,
-
-				CurrencySymbol = currencySymbol,
-
-				// Dynamic Data
-				JobTitle = project.Title,
-				JobId = project.Id.ToString().Substring(0, 8),
-				TradesmanName = localizer["Label_SystemEstimate"].Value,
-				Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
-				ClientName = "Homeowner",
-				ClientAddress = "TBD", // Could pull from HomeownerProfile
-				ScopeDescription = project.Description,
-				Categories = categoriesData,
-				SubtotalAmount = grandTotal.ToString("F2"),
-				TotalAmount = grandTotal.ToString("F2")
-			};
-
-			byte[] pdfBytes = await pdfService.GenerateOfferPdfAsync(offerData);
-
-			// Save pdfBytes directly to wwwroot/offers so the frontend has a predictable URL
-			var env = serviceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
-			var webRootPath = System.IO.Path.Combine(env.WebRootPath ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot"), "offers");
-			if (!System.IO.Directory.Exists(webRootPath)) 
-			{
-			System.IO.Directory.CreateDirectory(webRootPath);
+				CultureInfo.CurrentUICulture = originalCulture;
 			}
-			var pdfFileName = $"{projectId}_master_offer.pdf";
-			var pdfPath = System.IO.Path.Combine(webRootPath, pdfFileName);
-			await System.IO.File.WriteAllBytesAsync(pdfPath, pdfBytes);
-			_logger.LogInformation("Master PDF Generated for Project {ProjectId} in Language {Lang}. Saved to {Path}. Size: {Size} bytes", projectId, project.LanguageCode, pdfPath, pdfBytes.Length);
 		}
 		finally
 		{
-			CultureInfo.CurrentUICulture = originalCulture;
+			pdfLock.Release();
 		}
 	}
 }

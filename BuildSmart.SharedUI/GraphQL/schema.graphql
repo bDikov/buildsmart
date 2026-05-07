@@ -517,6 +517,8 @@ type Project {
   homeowner: User!
   jobPosts: [JobPost!]!
   generalSummary: String
+  masterOfferPdf: [Byte!]
+  hasOfferPdf: Boolean!
   status: ProjectStatus!
   id: UUID!
   createdAt: DateTime!
@@ -980,7 +982,7 @@ type Mutation {
   "Deletes an existing billable SKU."
   deleteServiceSku(id: UUID!): Boolean!
   "Creates a new project for a homeowner."
-  createProject(homeownerId: UUID! title: String! description: String!): Project!
+  createProject(homeownerId: UUID! title: String! description: String! languageCode: String): Project!
   "Adds a sub-job to a project using the Wizard output."
   addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! location: String estimatedSubtotal: Decimal currency: String! imageUrls: [String!]! preferredSiteVisitDate: DateTime): JobPost!
   saveJobPostDraft(jobPostId: UUID! jobDetailsJson: String! description: String location: String estimatedSubtotal: Decimal currency: String!): Boolean!

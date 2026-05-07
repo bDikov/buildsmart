@@ -93,10 +93,7 @@ public partial class MyProjectsViewModel : ObservableObject
 	{
 		if (project.Status == ProjectStatus.Draft)
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
-			{
-				{ "ProjectId", project.Id }
-			});
+			await AppServiceLocator.Navigation.NavigateToAsync($"/job-wizard?ProjectId={project.Id}");
 		}
 		else
 		{

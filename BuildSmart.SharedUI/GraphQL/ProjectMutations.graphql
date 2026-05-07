@@ -1,5 +1,5 @@
-mutation CreateProject($homeownerId: UUID!, $title: String!, $description: String!) {
-    createProject(homeownerId: $homeownerId, title: $title, description: $description) {
+mutation CreateProject($homeownerId: UUID!, $title: String!, $description: String!, $languageCode: String) {
+    createProject(homeownerId: $homeownerId, title: $title, description: $description, languageCode: $languageCode) {
         id
         title
         status

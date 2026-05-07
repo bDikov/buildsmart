@@ -62,20 +62,21 @@
   <data name="Header_ProjectProposal" xml:space="preserve"><value>ОФЕРТА ЗА ПРОЕКТ</value></data>
   <data name="Header_Overview" xml:space="preserve"><value>Преглед</value></data>
   <data name="Header_PreparedFor" xml:space="preserve"><value>Изготвено за</value></data>
-  <data name="Header_Fees" xml:space="preserve"><value>Такси</value></data>
+  <data name="Header_Fees" xml:space="preserve"><value>Услуги</value></data>
   <data name="Label_FeesDescription" xml:space="preserve"><value>Ето разбивка на задачите по категории.</value></data>
   <data name="Label_Subtotal" xml:space="preserve"><value>{0} Междинна сума</value></data>
   <data name="Label_GrandTotal" xml:space="preserve"><value>Обща сума</value></data>
   <data name="Header_Terms" xml:space="preserve"><value>Правила и Условия</value></data>
-  <data name="Terms_Intro" xml:space="preserve"><value>Тази главна оценка обхваща всички избрани търговски категории. Окончателните оферти от майсторите могат да варират.</value></data>
-  <data name="Terms_Point1" xml:space="preserve"><value>Изисква се 50% авансово плащане чрез ескроу системата на BuildSmart.</value></data>
-  <data name="Terms_Point2" xml:space="preserve"><value>Оставащите 50% се дължат при завършване на проекта и вашето официално приемане на работата.</value></data>
-  <data name="Terms_Point3" xml:space="preserve"><value>Всяка допълнителна работа, поискана извън този документиран обхват, ще изисква официална Заявка за промяна.</value></data>
-  <data name="Terms_Point4" xml:space="preserve"><value>Тази оферта е валидна 30 дни от датата на издаване.</value></data>
-  <data name="Terms_Point5" xml:space="preserve"><value>За да продължите, моля, влезте в таблото си за управление на BuildSmart и официално приемете тази оферта.</value></data>
-  <data name="Footer_Validity" xml:space="preserve"><value>Тази оферта е валидна 30 дни от датата на издаване.</value></data>
+  <data name="Terms_Intro" xml:space="preserve"><value>Настоящият документ представлява необвързваща индикативна оферта, която служи като професионален план за Вашия проект. Тези стойности са прогнозни и поставят експертната основа за реализацията на Вашата визия.</value></data>
+  <data name="Terms_Point1" xml:space="preserve"><value>Стойност от 0.00 лв. обозначава тясно специализирана дейност, която изисква професионален оглед на място. Това гарантира, че всеки специфичен детайл ще бъде прецизно оразмерен в крайната обвързваща оферта.</value></data>
+  <data name="Terms_Point2" xml:space="preserve"><value>Прозрачността е наш приоритет: тези суми представляват квалифицирания труд, необходим за Вашия проект. Материалите не са включени, което Ви осигурява пълна свобода при избора на елементи, съобразени с Вашия бюджет.</value></data>
+  <data name="Terms_Point3" xml:space="preserve"><value>При готовност за започване на проекта, моля свържете се с отдел „Обслужване на клиенти“, за да превърнете тази индикативна оферта в активен търг. Нашата елитна мрежа от изпълнители ще предостави крайни, обвързващи предложения.</value></data>
+  <data name="Terms_Point4" xml:space="preserve"><value>Вашите средства са защитени. BuildSmart гарантира, че плащания към изпълнителя се извършват единствено след Вашето изрично потвърждение и верификация на изпълнените етапи.</value></data>
+  <data name="Terms_Point5" xml:space="preserve"><value>BuildSmart предоставя гаранция за повторно изпълнение на труда. При несъответствие с нашите високи стандарти за качество, дейността ще бъде коригирана без допълнителни разходи, гарантирайки пълна защита на Вашата инвестиция.</value></data>
+  <data name="Footer_Validity" xml:space="preserve"><value>Този документ е необвързваща индикативна оферта и не представлява договор за изпълнение. Крайните цени подлежат на уточнение след оглед и приключване на тържна процедура.</value></data>
   <data name="Label_ProjectBrief" xml:space="preserve"><value>01 — ПРОЕКТНА ЗАДАЧА</value></data>
   <data name="Label_PricingBreakdown" xml:space="preserve"><value>02 — ЦЕНИ И РАЗБИВКА</value></data>
   <data name="Label_TC" xml:space="preserve"><value>03 — ОБЩИ УСЛОВИЯ</value></data>
   <data name="Label_SystemEstimate" xml:space="preserve"><value>Системна Оценка на BuildSmart</value></data>
+  <data name="Header_Hello" xml:space="preserve"><value>здравейте.</value></data>
 </root>

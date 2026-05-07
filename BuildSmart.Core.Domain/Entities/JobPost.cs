@@ -129,7 +129,7 @@ public class JobPost : BaseEntity
 	
 	    public void SubmitForScopeGeneration()
 	    {
-	        if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview)
+	        if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview || Status == JobPostStatus.GeneratingScope)
 	        {
 	            Status = JobPostStatus.GeneratingScope;
 	            UpdatedAt = DateTime.UtcNow;
@@ -156,7 +156,7 @@ public class JobPost : BaseEntity
 
     public void MarkGenerationFailed(string error)
     {
-        if (Status == JobPostStatus.GeneratingScope)
+        if (Status == JobPostStatus.GeneratingScope || Status == JobPostStatus.WaitingForUserReview)
         {
             Status = JobPostStatus.Rejected;
             AdminFeedback = $"AI Generation Error: {error}";

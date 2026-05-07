@@ -39,7 +39,7 @@ public class MutationType : ObjectType<Mutation>
             .Description("Deletes an existing billable SKU.")
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(m => m.CreateProject(default!, default!, default!, default!))
+        descriptor.Field(m => m.CreateProject(default!, default!, default!, default!, default!))
             .Description("Creates a new project for a homeowner.")
             .Authorize(roles: new[] { "Homeowner" });
 

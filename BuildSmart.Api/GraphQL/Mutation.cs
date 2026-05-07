@@ -337,9 +337,10 @@ public class Mutation
 		Guid homeownerId,
 		string title,
 		string description,
+		string? languageCode,
 		[Service] IJobPostService jobPostService)
 	{
-		return await jobPostService.CreateProjectAsync(homeownerId, title, description);
+		return await jobPostService.CreateProjectAsync(homeownerId, title, description, languageCode);
 	}
 
 	[Authorize]
