@@ -68,7 +68,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         
         mockSkuRepo.Setup(r => r.GetByCategoryAsync(It.IsAny<Guid>())).ReturnsAsync(new List<ServiceSku>());
 
-        mockAiService.Setup(a => a.CalculateTaskPricesAsync(It.IsAny<List<JobTask>>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>()))
+        mockAiService.Setup(a => a.CalculateTaskPricesAsync(It.IsAny<List<JobTask>>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new AiTaskPricingResponse(new List<AiTaskPricingItemDto>())); // Emulate successful empty tasks
             
         mockPdfService.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>())).ReturnsAsync(new byte[] { 1, 2, 3 });

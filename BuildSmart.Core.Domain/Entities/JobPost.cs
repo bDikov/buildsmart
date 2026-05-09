@@ -105,122 +105,122 @@ public class JobPost : BaseEntity
 		}
 	}
 
-	    public void CloseBidding()
-	    {
-	        if (Status == JobPostStatus.Open)
-	        {
-	            Status = JobPostStatus.BiddingClosed;
-	            UpdatedAt = DateTime.UtcNow;
-	        }
-	    }
-	
-        public void ContractJob()
-        {
-            if (Status == JobPostStatus.Open || Status == JobPostStatus.BiddingClosed)
-            {
-                Status = JobPostStatus.Contracted;
-                UpdatedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Cannot contract job from status {Status}");
-            }
-        }
-	
-	    public void SubmitForScopeGeneration()
-	    {
-	        if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview || Status == JobPostStatus.GeneratingScope)
-	        {
-	            Status = JobPostStatus.GeneratingScope;
-	            UpdatedAt = DateTime.UtcNow;
-	        }
-	        else
-	        {
-	            throw new InvalidOperationException($"Cannot submit for scope generation from status {Status}");
-	        }
-	    }
-	
-	    public void SetGeneratedScope(string scope)
-    {
-        if (Status != JobPostStatus.GeneratingScope)
-        {
-            // If it's not in GeneratingScope, maybe ignore? Or throw?
-            // For robustness, if it's already past this stage, we shouldn't overwrite.
-            throw new InvalidOperationException($"Cannot set generated scope when status is {Status}");
-        }
+	public void CloseBidding()
+	{
+		if (Status == JobPostStatus.Open)
+		{
+			Status = JobPostStatus.BiddingClosed;
+			UpdatedAt = DateTime.UtcNow;
+		}
+	}
 
-        GeneratedScope = scope;
-        Status = JobPostStatus.WaitingForUserReview;
-        UpdatedAt = DateTime.UtcNow;
-    }
+	public void ContractJob()
+	{
+		if (Status == JobPostStatus.Open || Status == JobPostStatus.BiddingClosed)
+		{
+			Status = JobPostStatus.Contracted;
+			UpdatedAt = DateTime.UtcNow;
+		}
+		else
+		{
+			throw new InvalidOperationException($"Cannot contract job from status {Status}");
+		}
+	}
 
-    public void MarkGenerationFailed(string error)
-    {
-        if (Status == JobPostStatus.GeneratingScope || Status == JobPostStatus.WaitingForUserReview)
-        {
-            Status = JobPostStatus.Rejected;
-            AdminFeedback = $"AI Generation Error: {error}";
-            UpdatedAt = DateTime.UtcNow;
-        }
-    }
+	public void SubmitForScopeGeneration()
+	{
+		if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview || Status == JobPostStatus.GeneratingScope)
+		{
+			Status = JobPostStatus.GeneratingScope;
+			UpdatedAt = DateTime.UtcNow;
+		}
+		else
+		{
+			throw new InvalidOperationException($"Cannot submit for scope generation from status {Status}");
+		}
+	}
 
-    public void ApproveScope(string finalScope)
-	    {
-	        if (Status != JobPostStatus.WaitingForUserReview)
-	        {
-	            throw new InvalidOperationException($"Job is not waiting for user review. Current Status: {Status}");
-	        }
-	        
-	        UserEditedScope = finalScope;
-	        Description = finalScope;
-	        Status = JobPostStatus.WaitingForAdminReview;
-	        UpdatedAt = DateTime.UtcNow;
-	    }
-	
-	    public void AdminApproveScope()
-	    {
-	        if (Status != JobPostStatus.WaitingForAdminReview)
-	        {
-	            throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
-	        }
-	        
-	        Status = JobPostStatus.Open;
-	        UpdatedAt = DateTime.UtcNow;
-	    }
-	
-	    	    public void AdminRejectScope(string feedback)
-	    	    {
-	    	        if (Status != JobPostStatus.WaitingForAdminReview)
-	    	        {
-	    	            throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
-	    	        }
-	    	        
-	    	        Status = JobPostStatus.Rejected;
-	    	        AdminFeedback = feedback;
-	    	        UpdatedAt = DateTime.UtcNow;
-	    	    }
-	    
-	    	    	    public void ResubmitAfterClarification()
-	    	    	    {
-	    	    	        if (Status == JobPostStatus.Rejected)
-	    	    	        {
-	    	    	            Status = JobPostStatus.WaitingForAdminReview;
-	    	    	            UpdatedAt = DateTime.UtcNow;
-	    	    	        }
-	    	    	    }
-	    	    
-	    	    	    public void RequestUserReview()
-	    	    	    {
-	    	    	        if (Status == JobPostStatus.WaitingForAdminReview || Status == JobPostStatus.Rejected)
-	    	    	        {
-	    	    	            Status = JobPostStatus.WaitingForUserReview;
-	    	    	            UpdatedAt = DateTime.UtcNow;
-	    	    	        }
-	    	    	    }
-	    	    	
-	    	    	    public void UpdateScope(string newDetails, string newDescription)
-	    	    
-	    	{
+	public void SetGeneratedScope(string scope)
+	{
+		if (Status != JobPostStatus.GeneratingScope)
+		{
+			// If it's not in GeneratingScope, maybe ignore? Or throw?
+			// For robustness, if it's already past this stage, we shouldn't overwrite.
+			throw new InvalidOperationException($"Cannot set generated scope when status is {Status}");
+		}
+
+		GeneratedScope = scope;
+		Status = JobPostStatus.WaitingForUserReview;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void MarkGenerationFailed(string error)
+	{
+		if (Status == JobPostStatus.GeneratingScope || Status == JobPostStatus.WaitingForUserReview)
+		{
+			Status = JobPostStatus.Rejected;
+			AdminFeedback = $"AI Generation Error: {error}";
+			UpdatedAt = DateTime.UtcNow;
+		}
+	}
+
+	public void ApproveScope(string finalScope)
+	{
+		if (Status != JobPostStatus.WaitingForUserReview)
+		{
+			throw new InvalidOperationException($"Job is not waiting for user review. Current Status: {Status}");
+		}
+
+		UserEditedScope = finalScope;
+		Description = finalScope;
+		Status = JobPostStatus.WaitingForAdminReview;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void AdminApproveScope()
+	{
+		if (Status != JobPostStatus.WaitingForAdminReview)
+		{
+			throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
+		}
+
+		Status = JobPostStatus.Open;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void AdminRejectScope(string feedback)
+	{
+		if (Status != JobPostStatus.WaitingForAdminReview)
+		{
+			throw new InvalidOperationException($"Job is not waiting for admin review. Current Status: {Status}");
+		}
+
+		Status = JobPostStatus.Rejected;
+		AdminFeedback = feedback;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void ResubmitAfterClarification()
+	{
+		if (Status == JobPostStatus.Rejected)
+		{
+			Status = JobPostStatus.WaitingForAdminReview;
+			UpdatedAt = DateTime.UtcNow;
+		}
+	}
+
+	public void RequestUserReview()
+	{
+		if (Status == JobPostStatus.WaitingForAdminReview || Status == JobPostStatus.Rejected)
+		{
+			Status = JobPostStatus.WaitingForUserReview;
+			UpdatedAt = DateTime.UtcNow;
+		}
+	}
+
+	public void UpdateScope(string newDetails, string newDescription)
+
+	{
 		JobDetails = newDetails;
 		Description = newDescription;
 		AmendmentCount++; // Increment version
@@ -229,41 +229,41 @@ public class JobPost : BaseEntity
 		// Logic to notify bidders would happen in a Domain Event or Service
 	}
 
-    public void UpdateTasks(IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> newTasks)
-    {
-        var inputIds = newTasks.Where(t => t.Id.HasValue).Select(t => t.Id!.Value).ToHashSet();
-        
-        var tasksToDelete = JobTasks.Where(t => !inputIds.Contains(t.Id)).ToList();
-        foreach (var t in tasksToDelete)
-        {
-            JobTasks.Remove(t);
-        }
+	public void UpdateTasks(IEnumerable<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)> newTasks)
+	{
+		var inputIds = newTasks.Where(t => t.Id.HasValue).Select(t => t.Id!.Value).ToHashSet();
 
-        foreach (var input in newTasks)
-        {
-            var existing = input.Id.HasValue ? JobTasks.FirstOrDefault(t => t.Id == input.Id.Value) : null;
-            if (existing != null)
-            {
-                existing.UpdateDetails(input.Title, input.Description, input.SequenceOrder);
-                existing.UpdateCriteria(input.Criteria);
-            }
-            else
-            {
-                var newTask = new JobTask
-                {
-                    Id = Guid.NewGuid(),
-                    JobPostId = this.Id,
-                    Title = input.Title,
-                    Description = input.Description,
-                    SequenceOrder = input.SequenceOrder,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    EstimatedPrice = 0
-                };
-                newTask.UpdateCriteria(input.Criteria);
-                JobTasks.Add(newTask);
-            }
-        }
-        UpdatedAt = DateTime.UtcNow;
-    }
+		var tasksToDelete = JobTasks.Where(t => !inputIds.Contains(t.Id)).ToList();
+		foreach (var t in tasksToDelete)
+		{
+			JobTasks.Remove(t);
+		}
+
+		foreach (var input in newTasks)
+		{
+			var existing = input.Id.HasValue ? JobTasks.FirstOrDefault(t => t.Id == input.Id.Value) : null;
+			if (existing != null)
+			{
+				existing.UpdateDetails(input.Title, input.Description, input.SequenceOrder);
+				existing.UpdateCriteria(input.Criteria);
+			}
+			else
+			{
+				var newTask = new JobTask
+				{
+					Id = Guid.NewGuid(),
+					JobPostId = this.Id,
+					Title = input.Title,
+					Description = input.Description,
+					SequenceOrder = input.SequenceOrder,
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow,
+					EstimatedPrice = 0
+				};
+				newTask.UpdateCriteria(input.Criteria);
+				JobTasks.Add(newTask);
+			}
+		}
+		UpdatedAt = DateTime.UtcNow;
+	}
 }

@@ -684,6 +684,28 @@ public class Mutation
 		return true;
 	}
 
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> AdminRegenerateOffer(
+		Guid projectId,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] BuildSmart.Core.Application.Interfaces.IScopeGenerationQueue scopeQueue)
+	{
+		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+		if (project == null) throw new GraphQLException("Project not found.");
+
+		foreach (var job in project.JobPosts)
+		{
+			// Reset status to GeneratingScope so UI shows it's loading, and it allows background retry.
+			job.SubmitForScopeGeneration();
+			unitOfWork.JobPosts.Update(job);
+			
+			await scopeQueue.QueuePricingUpdateAsync(job.Id, CancellationToken.None);
+		}
+		await unitOfWork.SaveChangesAsync();
+		
+		return true;
+	}
+
 	[Authorize]
 	public async Task<JobPostFeedback> AddJobFeedback(
 		Guid jobPostId,

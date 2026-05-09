@@ -7,6 +7,7 @@ using Polly;
 using Microsoft.Extensions.Localization;
 using BuildSmart.Core.Application.Resources;
 using System.Globalization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BuildSmart.Api.Workers;
 
@@ -249,6 +250,10 @@ public class ScopeGenerationWorker
 		try
 		{
 			System.IO.File.AppendAllText(debugLogFile, $"Found JobPost with {jobPost.JobTasks.Count} tasks.\n");
+			var allCategories = await unitOfWork.ServiceCategories.GetAllAsync();
+			var relevantCategories = allCategories.Where(c => c.Id == jobPost.ServiceCategoryId || c.IsGlobal).ToList();
+			var humanReadableContext = BuildHumanReadableContext(jobPost.JobDetails, relevantCategories);
+
 			var allowedSkus = (await unitOfWork.ServiceSkus.GetByCategoryAsync(jobPost.ServiceCategoryId)).ToList();
 			System.IO.File.AppendAllText(debugLogFile, $"Found {allowedSkus.Count} allowed SKUs.\n");
 
@@ -276,7 +281,7 @@ public class ScopeGenerationWorker
 				_lastApiCallTime = UtcNowProvider();
 
 				System.IO.File.AppendAllText(debugLogFile, $"Calling AI Service...\n");
-				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, languageCode);
+				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, humanReadableContext, languageCode);
 			});
 
 			System.IO.File.AppendAllText(debugLogFile, $"AI Service returned. Tasks count: {aiResponse?.Tasks?.Count ?? 0}\n");
@@ -294,26 +299,23 @@ public class ScopeGenerationWorker
 				}
 
 				var aiCalc = await saveUnitOfWork.AiCalculations.GetByProjectAndCategoryAsync(freshJobPost.ProjectId, freshJobPost.ServiceCategoryId);
-				if (aiCalc == null)
+				if (aiCalc != null)
 				{
-					System.IO.File.AppendAllText(debugLogFile, $"Creating new AiCalculation.\n");
-					aiCalc = new AiCalculation
-					{
-						Id = Guid.NewGuid(),
-						ProjectId = freshJobPost.ProjectId,
-						ServiceCategoryId = freshJobPost.ServiceCategoryId,
-						CreatedAt = DateTime.UtcNow,
-						UpdatedAt = DateTime.UtcNow
-					};
-					await saveUnitOfWork.AiCalculations.AddAsync(aiCalc);
+					System.IO.File.AppendAllText(debugLogFile, $"Deleting existing AiCalculation {aiCalc.Id} to avoid concurrency tracking issues.\n");
+					saveUnitOfWork.AiCalculations.Delete(aiCalc);
+					await saveUnitOfWork.SaveChangesAsync();
 				}
-				else
+
+				System.IO.File.AppendAllText(debugLogFile, $"Creating new AiCalculation.\n");
+				aiCalc = new AiCalculation
 				{
-					System.IO.File.AppendAllText(debugLogFile, $"Updating existing AiCalculation {aiCalc.Id}.\n");
-					saveUnitOfWork.AiCalculations.RemoveTasks(aiCalc.Tasks.ToList());
-					aiCalc.Tasks.Clear();
-					aiCalc.UpdatedAt = DateTime.UtcNow;
-				}
+					Id = Guid.NewGuid(),
+					ProjectId = freshJobPost.ProjectId,
+					ServiceCategoryId = freshJobPost.ServiceCategoryId,
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				};
+				await saveUnitOfWork.AiCalculations.AddAsync(aiCalc);
 
 				decimal grandTotal = 0;
 
@@ -443,6 +445,7 @@ public class ScopeGenerationWorker
 			var unitOfWork = pdfScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 			var pdfService = pdfScope.ServiceProvider.GetRequiredService<IPdfGeneratorService>();
 			var localizer = pdfScope.ServiceProvider.GetRequiredService<IStringLocalizer<OfferResources>>();
+			var aiService = pdfScope.ServiceProvider.GetRequiredService<IAiService>();
 
 			var project = await unitOfWork.Projects.GetByIdAsync(projectId);
 			if (project == null) return;
@@ -477,14 +480,14 @@ public class ScopeGenerationWorker
 					var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
 					{
 						Description = task.Title,
-						Amount = task.EstimatedPrice.ToString("F2"),
+						Amount = task.EstimatedPrice.ToString("N2"),
 						AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => c.Description).ToList() ?? new List<string>()
 					}).ToList();
 
 					categoriesData.Add(new
 					{
 						CategoryName = categoryName,
-						Subtotal = calc.TotalEstimatedPrice.ToString("F2"),
+						Subtotal = calc.TotalEstimatedPrice.ToString("N2"),
 						SubtotalLabel = string.Format(localizer["Label_Subtotal"].Value, categoryName),
 						Tasks = tasksForCategory
 					});
@@ -493,13 +496,27 @@ public class ScopeGenerationWorker
 				// Fetch project with Homeowner details
 				var projectWithUser = await unitOfWork.Projects.GetByIdAsync(projectId);
 				if (projectWithUser == null) return;
-				
+
 				// Ensure Homeowner is loaded (assuming the repository handles or we load it here)
 				var homeowner = await unitOfWork.Users.GetByIdAsync(projectWithUser.HomeownerId);
 				var clientName = homeowner != null ? $"{homeowner.FirstName} {homeowner.LastName}" : "Valued Client";
-				
+
 				// Location is stored on the JobPosts, not the Project entity
 				var clientAddress = projectWithUser.JobPosts.FirstOrDefault()?.Location ?? homeowner?.Location ?? "TBD";
+
+				var combinedScope = new StringBuilder();
+				foreach (var jp in projectWithUser.JobPosts.Where(j => !string.IsNullOrWhiteSpace(j.GeneratedScope)))
+				{
+					combinedScope.AppendLine($"## {jp.Title}");
+					combinedScope.AppendLine(jp.GeneratedScope);
+					combinedScope.AppendLine();
+				}
+
+				string finalScopeDescription = projectWithUser.Description;
+				if (combinedScope.Length > 0)
+				{
+					finalScopeDescription = await aiService.GenerateExecutiveSummaryAsync(combinedScope.ToString(), projectWithUser.LanguageCode ?? "bg");
+				}
 
 				var offerData = new
 				{
@@ -525,7 +542,7 @@ public class ScopeGenerationWorker
 					Label_PricingBreakdown = localizer["Label_PricingBreakdown"].Value,
 					Label_TC = localizer["Label_TC"].Value,
 
-					CurrencySymbol = currencySymbol,
+					CurrencySymbol = "€",
 
 					// Dynamic Data
 					JobTitle = projectWithUser.Title,
@@ -534,10 +551,10 @@ public class ScopeGenerationWorker
 					Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
 					ClientName = clientName,
 					ClientAddress = clientAddress,
-					ScopeDescription = projectWithUser.Description,
+					ScopeDescription = finalScopeDescription,
 					Categories = categoriesData,
-					SubtotalAmount = grandTotal.ToString("F2"),
-					TotalAmount = grandTotal.ToString("F2")
+					SubtotalAmount = grandTotal.ToString("N2"),
+					TotalAmount = grandTotal.ToString("N2")
 				};
 
 				byte[] pdfBytes = await pdfService.GenerateOfferPdfAsync(offerData);
@@ -548,6 +565,10 @@ public class ScopeGenerationWorker
 				await unitOfWork.SaveChangesAsync();
 
 				_logger.LogInformation("Master PDF Generated for Project {ProjectId} and saved to database. Size: {Size} bytes", projectId, pdfBytes.Length);
+
+				// Broadcast to Admin UI that the PDF is ready
+				var hubContext = pdfScope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<BuildSmart.Api.Hubs.NotificationHub>>();
+				await hubContext.Clients.All.SendAsync("OfferRegenerated", projectId);
 			}
 			finally
 			{

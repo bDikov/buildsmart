@@ -1,4 +1,5 @@
 @page "/admin-offers"
+@using BuildSmart.SharedUI.GraphQL
 @using BuildSmart.SharedUI.ViewModels.Admin
 @inject AdminProjectsViewModel ViewModel
 @inject NavigationManager NavManager
@@ -41,19 +42,17 @@
     }
     else
     {
-        var projectsWithOffers = ViewModel.Projects.Where(p => p.HasOfferPdf).ToList();
-
-        if (projectsWithOffers.Count == 0)
+        if (ViewModel.Projects.Count == 0)
         {
             <div class="empty-state">
-                <h4 class="text-muted">No offers found</h4>
-                <p class="text-muted">There are currently no projects with a generated PDF offer.</p>
+                <h4 class="text-muted">No projects found</h4>
+                <p class="text-muted">There are currently no projects matching your search.</p>
             </div>
         }
         else
         {
             <div class="projects-grid">
-                @foreach (var project in projectsWithOffers)
+                @foreach (var project in ViewModel.Projects)
                 {
                     <div class="bs-card project-card">
                         <div class="d-flex justify-content-between align-items-start">
@@ -72,10 +71,22 @@
                         <p class="project-desc">@project.Description</p>
                         
                         <div class="jobs-list mt-3">
-                            <a class="bs-btn-primary btn-sm" href="/api/offers/@project.Id/download" target="_blank" download>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                Download Master Offer PDF
-                            </a>
+                            @if (project.HasOfferPdf)
+                            {
+                                <a class="bs-btn-primary btn-sm mb-2" href="/api/offers/@project.Id/download" target="_blank" download>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    Download Master Offer PDF
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-danger d-block mb-2" style="font-size: 13px;">No PDF Offer generated yet.</span>
+                            }
+
+                            <button class="bs-btn-secondary btn-sm" @onclick="() => HandleRegenerateOffer(project.Id)" disabled="@IsRegenerating">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M2.5 2v6h6M21.5 22v-6h-6M21.34 15.57a10 10 0 1 0-1.57 6.43l3.5-3.5"/></svg>
+                                @(IsRegenerating ? "Regenerating..." : "Regenerate Offer")
+                            </button>
                         </div>
                     </div>
                 }
@@ -86,6 +97,13 @@
 
 @code {
     private string? ErrorMessage;
+    private bool IsRegenerating = false;
+
+    [Inject]
+    public IBuildSmartApiClient ApiClient { get; set; } = null!;
+
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -120,5 +138,33 @@
     {
         ViewModel.SearchQuery = string.Empty;
         await TriggerSearch();
+    }
+
+    private async Task HandleRegenerateOffer(Guid projectId)
+    {
+        IsRegenerating = true;
+        StateHasChanged();
+        
+        try
+        {
+            var result = await ApiClient.AdminRegenerateOffer.ExecuteAsync(projectId);
+            if (result.Errors?.Count > 0)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error: " + result.Errors[0].Message);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Regeneration started in the background! The page will automatically refresh when the PDF is ready.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error: " + ex.Message);
+        }
+        finally
+        {
+            IsRegenerating = false;
+            StateHasChanged();
+        }
     }
 }

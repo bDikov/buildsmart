@@ -160,7 +160,7 @@ namespace BuildSmart.Api.Tests
 			}
 
 			// 4. PHASE 2: PRICING (Simulating clicking Generate Offer)
-			var aiPricingResponse = await aiService.CalculateTaskPricesAsync(tasks, skus);
+			var aiPricingResponse = await aiService.CalculateTaskPricesAsync(tasks, skus, "dummy context", "en");
 			
 			Assert.NotNull(aiPricingResponse);
 			Assert.NotEmpty(aiPricingResponse.Tasks);

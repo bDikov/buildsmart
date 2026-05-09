@@ -205,13 +205,81 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string languageCode = "en")
+	public async Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en")
+	{
+		try
+		{
+			var prompt = new StringBuilder();
+			prompt.AppendLine("You are a Senior Construction Estimator.");
+			prompt.AppendLine("Below are the detailed scopes of work for several trades involved in a project.");
+			prompt.AppendLine("Your goal is to write a short, professional, and well-descriptive 'Executive Summary' (around 2 to 3 paragraphs) that gives the client a high-level overview of everything that will be done across all trades. Do NOT list items bullet by bullet, but rather summarize the transformation and the main tasks.");
+			prompt.AppendLine();
+			prompt.AppendLine("### DETAILED SCOPES:");
+			prompt.AppendLine(combinedScopes);
+			prompt.AppendLine();
+			prompt.AppendLine($"Output ONLY the executive summary IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
+
+			var responseText = await ExecuteAiPromptAsync(prompt.ToString());
+			return responseText.Trim();
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error generating executive summary with AI");
+			throw;
+		}
+	}
+
+	public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en")
 	{
 		try
 		{
 			var prompt = new StringBuilder();
 			prompt.AppendLine("SYSTEM PROMPT: TASK PRICING & SKU MAPPING");
-			prompt.AppendLine("Role: You are an expert Construction Estimator. Your job is to strictly map homeowner tasks to the Allowed SKUs and determine appropriate quantities.");
+			prompt.AppendLine("Role: You are an expert Construction Estimator and Quantity Surveyor. Your job is to strictly map homeowner tasks to the Allowed SKUs and determine precise quantities based on the project dimensions.");
+			prompt.AppendLine();
+			prompt.AppendLine("Goal: Analyze the 'USER TASKS' and look for matching data in the 'USER Q&A CONTEXT' (sqm, linear meters, counts, etc.) to determine the correct 'quantity' for each SKU. DO NOT default to a quantity of 1 if the Q&A context provides dimensions.");
+			prompt.AppendLine("CRITICAL RULE: You MUST output the EXACT SkuCode provided in the Allowed SKUs list. Do not make up SKUs. If the allowed SKU is named UNK-004, output UNK-004.");
+			prompt.AppendLine();
+			prompt.AppendLine("CONSTRUCTION HEURISTICS (USE THESE TO CALCULATE QUANTITIES):");
+			prompt.AppendLine();
+			prompt.AppendLine("--- ELECTRICAL (ELEC) ---");
+			prompt.AppendLine("- Cable lengths (Any SKU describing 'Полагане на кабел' / 'Cable Laying'): If explicit meters are unknown, calculate Quantity = global_total_sqm * 4.");
+			prompt.AppendLine("- Heavy Cable/Appliance Points: Quantity = 1 per heavy appliance/boiler (or 10 meters of heavy cable per appliance).");
+			prompt.AppendLine("- Chasing/Channeling (Any SKU describing 'Къртене на канал' / 'Chasing'): Calculate Quantity = global_total_sqm * 1.5.");
+			prompt.AppendLine("- Tubes/Corrugated pipes: Calculate Quantity = global_total_sqm * 2.5.");
+			prompt.AppendLine("- Module Count (SKU for 'Подвързване на табло (на модул)'): Quantity = 12 (base) + 1 per heavy appliance + 1 per AC + 3 for RCDs.");
+			prompt.AppendLine("- Outlets/Points (SKUs for 'Изграждане на излазна точка' or 'Монтаж на контакт'): Quantity = User's answer for standard contacts. If missing, Quantity = global_total_sqm / 5.");
+			prompt.AppendLine("- Weak Current (LAN/TV/Security points): Quantity = Sum of LAN/TV + security/smart home points.");
+			prompt.AppendLine("- Deviators: Quantity = User's answer for deviator switches.");
+			prompt.AppendLine();
+			prompt.AppendLine("--- PAINTING & DRYWALL (PANT / DRYW) ---");
+			prompt.AppendLine("- Paint/Primer/Plaster Area: If paint_sqm is provided, use it. Otherwise, calculate walls and ceilings area as: global_total_sqm * 2.5.");
+			prompt.AppendLine("- Painting Quantities (PANT-001, PANT-002, PANT-003, PANT-004): Quantity = Wall & Ceiling Area.");
+			prompt.AppendLine("- Doors/Trim Painting (PANT-005): Quantity = global_room_count * 2 (if paint_trim_doors is true).");
+			prompt.AppendLine("- Q5 Plastering (PANT-006): Quantity = Wall & Ceiling Area (if paint_finish_level is Q5).");
+			prompt.AppendLine("- Drywall Area (DRYW-001, DRYW-002, DRYW-003): If drywall_sqm is provided, use it. Otherwise, use global_total_sqm.");
+			prompt.AppendLine("- Complex Shapes/Arches (DRYW-004): Quantity = drywall_sqm / 2 (if drywall_complexity is true).");
+			prompt.AppendLine();
+			prompt.AppendLine("--- TILING (TILE) ---");
+			prompt.AppendLine("- Tiling Area (TILE-001, TILE-003, TILE-004): If tile_sqm is provided, use it. Otherwise, estimate based on bathroom_count * 20 (for bathrooms) or global_total_sqm / 2 (for generic floors).");
+			prompt.AppendLine("- Skirting/Zokal (TILE-002): Quantity (linear meters) = Area (sqm) / 1.5 (rough estimate for perimeter).");
+			prompt.AppendLine("- Waterproofing (TILE-005): Quantity = Area (sqm) (if tile_waterproofing is true).");
+			prompt.AppendLine("- Epoxy Grout (TILE-006): Quantity = Area (sqm) (if tile_grout is Epoxy).");
+			prompt.AppendLine("- Complex Pattern (TILE-007): Quantity = Area (sqm) (if tile_pattern is Complex).");
+			prompt.AppendLine();
+			prompt.AppendLine("--- MICROCEMENT (MICO) ---");
+			prompt.AppendLine("- Microcement Area (MICO-001, MICO-002): Quantity = mico_sqm. Use MICO-002 for wet rooms/bathrooms, MICO-001 otherwise.");
+			prompt.AppendLine("- Surface Prep (MICO-003): Quantity = mico_sqm (if mico_surface is 'Стари плочки' / 'Old Tiles').");
+			prompt.AppendLine();
+			prompt.AppendLine("--- PLUMBING (PLMB) ---");
+			prompt.AppendLine("- Pipes/Channels (PLMB-001, PLMB-002): Quantity = 1 per object/flat (Flat fee) OR count of bathrooms if specified as per room.");
+			prompt.AppendLine("- Point Installs (PLMB-003, PLMB-004): Quantity = Exact counts from Q&A (e.g., number of toilets, boilers).");
+			prompt.AppendLine("- Relocation/Chasing (PLMB-005): Quantity = plumb_points (if plumb_relocation is true).");
+			prompt.AppendLine();
+			prompt.AppendLine("--- DEMOLITION (DEMO) ---");
+			prompt.AppendLine("- Demolition Area/Volume (DEMO-001, DEMO-002): Quantity = demo_sqm or demo_cubic_m from Q&A.");
+			prompt.AppendLine("- Rubble Disposal (DEMO-003): Quantity = Number of courses/containers. If unknown, Quantity = Area / 10.");
+			prompt.AppendLine("- Wallpaper Removal (DEMO-004): Quantity = paint_sqm (if paint_tasks includes wallpaper removal).");
 			prompt.AppendLine();
 			prompt.AppendLine("Output Format (JSON ONLY):");
 			prompt.AppendLine("You MUST return ONLY a strict JSON object with the following structure:");
@@ -221,21 +289,26 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("      \"taskId\": \"(Exact TaskId GUID from Input)\",");
 			prompt.AppendLine("      \"taskTitle\": \"(Exact Task Title from Input)\",");
 			prompt.AppendLine("      \"skuItems\": [");
-			prompt.AppendLine("         { \"skuCode\": \"SKU_OVEN_LABOR\", \"quantity\": 1 },");
-			prompt.AppendLine("         { \"skuCode\": \"SKU_DISPOSAL\", \"quantity\": 1 }");
+			prompt.AppendLine("         { \"skuCode\": \"SKU_PAINTING_LABOR\", \"quantity\": 230 },");
+			prompt.AppendLine("         { \"skuCode\": \"SKU_SANDING\", \"quantity\": 230 }");
 			prompt.AppendLine("      ]");
 			prompt.AppendLine("    }");
 			prompt.AppendLine("  ]");
 			prompt.AppendLine("}");
 			prompt.AppendLine();
-			prompt.AppendLine("ANTI-HALLUCINATION RULES:");
-			prompt.AppendLine("1. SKU MAPPING: Only use SkuCodes from the Allowed SKUs list below. DO NOT HALLUCINATE SKUs.");
-			prompt.AppendLine("2. NO EXTRA TASKS: Only return items for the tasks explicitly provided in the USER TASKS list.");
-			prompt.AppendLine("3. MATCH EXACTLY: The taskId MUST match the provided task exactly so the system can match them back together.");
-			prompt.AppendLine($"4. MULTILINGUAL SUPPORT: The homeowner tasks may be written in a different language. You must conceptually translate them and map them to the English Allowed SKUs, but YOU MUST RESPOND WITH taskTitle IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
+			prompt.AppendLine("CRITICAL QUANTITY RULES:");
+			prompt.AppendLine("1. EXTRACT DIMENSIONS: If the USER Q&A CONTEXT mentions 'Area: 230 sqm' and the task is 'Painting', the quantity MUST be 230.");
+			prompt.AppendLine("2. NO UNIT PRICES AS TOTALS: Never return a quantity of 1 for items that are clearly area-based or length-based if dimensions are available.");
+			prompt.AppendLine("3. SKU MAPPING: Only use SkuCodes from the Allowed SKUs list below. DO NOT HALLUCINATE SKUs.");
+			prompt.AppendLine("4. MATCH EXACTLY: The taskId MUST match the provided task exactly.");
+			prompt.AppendLine($"5. LANGUAGE: Respond with taskTitle in the language designated by code '{languageCode.ToUpper()}'.");
 			prompt.AppendLine();
 			prompt.AppendLine("---");
-			prompt.AppendLine("USER TASKS:");
+			prompt.AppendLine("USER Q&A CONTEXT (Dimensions and Requirements):");
+			prompt.AppendLine(humanReadableContext);
+			prompt.AppendLine();
+			prompt.AppendLine("---");
+			prompt.AppendLine("USER TASKS TO PRICE:");
 			foreach (var task in tasks)
 			{
 				prompt.AppendLine($"- ID: {task.Id}");
@@ -248,14 +321,13 @@ public class GeminiAiService : IAiService
 			}
 			prompt.AppendLine();
 			prompt.AppendLine("---");
-			prompt.AppendLine("ALLOWED SKUS:");
+			prompt.AppendLine("ALLOWED SKUS (Use these codes):");
 			foreach (var sku in allowedSkus)
 			{
 				prompt.AppendLine($"- {sku.SkuCode}: {sku.Name} (Unit: {sku.UnitType}) - {sku.Description}");
 			}
 			prompt.AppendLine();
 			prompt.AppendLine("Output ONLY valid JSON. Do not use Markdown blocks like ```json.");
-			prompt.AppendLine("CRITICAL: Ensure all strings are properly escaped, all properties are quoted, and the JSON is strictly valid.");
 
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), useJsonMode: true);
 			responseText = CleanJsonMarkdown(responseText);

@@ -170,6 +170,7 @@ fragment ProjectDetails on Project {
   status
   createdAt
   generalSummary
+  hasOfferPdf
   homeowner {
     id
     firstName

@@ -34,8 +34,17 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		_signalRService.NotificationReceived += OnNotificationReceived;
         _signalRService.QuestionUpdated += OnQuestionUpdated;
         _signalRService.NewReplyReceived += OnNewReplyReceived;
+        _signalRService.OfferRegenerated += OnOfferRegenerated;
         _ = DetectRoleAsync();
 	}
+
+    private void OnOfferRegenerated(Guid projectId)
+    {
+        if (Project != null && Project.Id == projectId)
+        {
+            _ = LoadProjectAsync(projectId);
+        }
+    }
 
     private void OnQuestionUpdated(System.Text.Json.JsonElement payload)
     {

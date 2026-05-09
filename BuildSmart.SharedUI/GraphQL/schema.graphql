@@ -3,267 +3,6 @@ schema {
   mutation: Mutation
 }
 
-input HomeownerProfileFilterInput {
-  and: [HomeownerProfileFilterInput!]
-  or: [HomeownerProfileFilterInput!]
-  userId: UuidOperationFilterInput
-  user: UserFilterInput
-  address: StringOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input UserFilterInput {
-  and: [UserFilterInput!]
-  or: [UserFilterInput!]
-  firstName: StringOperationFilterInput
-  lastName: StringOperationFilterInput
-  email: StringOperationFilterInput
-  hashedPassword: StringOperationFilterInput
-  phoneNumber: StringOperationFilterInput
-  role: UserRoleTypesOperationFilterInput
-  bio: StringOperationFilterInput
-  location: StringOperationFilterInput
-  profilePictureUrl: StringOperationFilterInput
-  isEmailVerified: BooleanOperationFilterInput
-  emailVerificationToken: StringOperationFilterInput
-  emailVerificationTokenExpires: DateTimeOperationFilterInput
-  homeownerProfile: HomeownerProfileFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ListFilterInputTypeOfReviewFilterInput {
-  all: ReviewFilterInput
-  none: ReviewFilterInput
-  some: ReviewFilterInput
-  any: Boolean
-}
-
-input UserRoleTypesOperationFilterInput {
-  eq: UserRoleTypes
-  neq: UserRoleTypes
-  in: [UserRoleTypes!]
-  nin: [UserRoleTypes!]
-}
-
-input DecimalOperationFilterInput {
-  eq: Decimal
-  neq: Decimal
-  in: [Decimal]
-  nin: [Decimal]
-  gt: Decimal
-  ngt: Decimal
-  gte: Decimal
-  ngte: Decimal
-  lt: Decimal
-  nlt: Decimal
-  lte: Decimal
-  nlte: Decimal
-}
-
-input ListFilterInputTypeOfMilestonePaymentFilterInput {
-  all: MilestonePaymentFilterInput
-  none: MilestonePaymentFilterInput
-  some: MilestonePaymentFilterInput
-  any: Boolean
-}
-
-input BidFilterInput {
-  and: [BidFilterInput!]
-  or: [BidFilterInput!]
-  jobPostId: UuidOperationFilterInput
-  jobPost: JobPostFilterInput
-  tradesmanProfileId: UuidOperationFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  amount: AmountFilterInput
-  bidItems: ListFilterInputTypeOfBidItemFilterInput
-  earliestStartDate: DateTimeOperationFilterInput
-  latestStartDate: DateTimeOperationFilterInput
-  estimatedDurationDays: IntOperationFilterInput
-  comment: StringOperationFilterInput
-  linkedAmendmentVersion: IntOperationFilterInput
-  isAccepted: BooleanOperationFilterInput
-  acceptedAt: DateTimeOperationFilterInput
-  isRejected: BooleanOperationFilterInput
-  isOutdated: BooleanOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input SkillVerificationStatusOperationFilterInput {
-  eq: SkillVerificationStatus
-  neq: SkillVerificationStatus
-  in: [SkillVerificationStatus!]
-  nin: [SkillVerificationStatus!]
-}
-
-input HomeownerProfileSortInput {
-  userId: SortEnumType
-  user: UserSortInput
-  address: SortEnumType
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
-}
-
-input DateTimeOperationFilterInput {
-  eq: DateTime
-  neq: DateTime
-  in: [DateTime]
-  nin: [DateTime]
-  gt: DateTime
-  ngt: DateTime
-  gte: DateTime
-  ngte: DateTime
-  lt: DateTime
-  nlt: DateTime
-  lte: DateTime
-  nlte: DateTime
-}
-
-input ProjectSortInput {
-  title: SortEnumType
-  description: SortEnumType
-  homeownerId: SortEnumType
-  homeowner: UserSortInput
-  generalSummary: SortEnumType
-  status: SortEnumType
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
-}
-
-input MilestonePaymentFilterInput {
-  and: [MilestonePaymentFilterInput!]
-  or: [MilestonePaymentFilterInput!]
-  bookingId: UuidOperationFilterInput
-  booking: BookingFilterInput
-  jobTaskId: UuidOperationFilterInput
-  jobTask: JobTaskFilterInput
-  amountAllocated: AmountFilterInput
-  status: MilestoneStatusOperationFilterInput
-  stripeTransferId: StringOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-"The `Upload` scalar type represents a file upload."
-scalar Upload
-
-input ServiceCategoryFilterInput {
-  and: [ServiceCategoryFilterInput!]
-  or: [ServiceCategoryFilterInput!]
-  name: StringOperationFilterInput
-  description: StringOperationFilterInput
-  status: CategoryStatusOperationFilterInput
-  isGlobal: BooleanOperationFilterInput
-  templateStructure: StringOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-"Represents a specific task payout milestone linked to a booking."
-type MilestonePayment {
-  id: ID!
-  bookingId: ID!
-  jobTaskId: ID!
-  amountAllocated: Amount
-  status: MilestoneStatus!
-  stripeTransferId: String
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  booking: Booking!
-  jobTask: JobTask!
-}
-
-type ServiceCategory {
-  name: String!
-  description: String
-  status: CategoryStatus!
-  isGlobal: Boolean!
-  templateStructure: String!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"The `Decimal` scalar type represents a decimal floating-point number."
-scalar Decimal
-
-enum BookingStatusTypes {
-  PENDING_DEPOSIT
-  IN_PROGRESS
-  COMPLETED
-  DISPUTED
-  CANCELLED
-}
-
-enum SortEnumType {
-  ASC
-  DESC
-}
-
-input JobTaskFilterInput {
-  and: [JobTaskFilterInput!]
-  or: [JobTaskFilterInput!]
-  jobPostId: UuidOperationFilterInput
-  jobPost: JobPostFilterInput
-  title: StringOperationFilterInput
-  description: StringOperationFilterInput
-  sequenceOrder: IntOperationFilterInput
-  estimatedPrice: DecimalOperationFilterInput
-  skuItems: ListFilterInputTypeOfTaskSkuItemFilterInput
-  acceptanceCriteria: ListFilterInputTypeOfTaskAcceptanceCriteriaFilterInput
-  bidItems: ListFilterInputTypeOfBidItemFilterInput
-  questions: ListFilterInputTypeOfJobPostQuestionFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input FloatOperationFilterInput {
-  eq: Float
-  neq: Float
-  in: [Float]
-  nin: [Float]
-  gt: Float
-  ngt: Float
-  gte: Float
-  ngte: Float
-  lt: Float
-  nlt: Float
-  lte: Float
-  nlte: Float
-}
-
-type Amount {
-  currency: String!
-  subtotal: Decimal!
-  tax: Decimal!
-  total: Decimal!
-}
-
-type AiCalculationTask {
-  aiCalculationId: UUID!
-  aiCalculation: AiCalculation!
-  title: String!
-  description: String!
-  sequenceOrder: Int!
-  estimatedPrice: Decimal!
-  skuItems: [AiCalculationSkuItem!]!
-  acceptanceCriteria: [AiCalculationCriteria!]!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
 type TaskSkuItem {
   id: UUID!
   jobTaskId: UUID!
@@ -274,124 +13,6 @@ type TaskSkuItem {
   updatedAt: DateTime!
   serviceSku: ServiceSku!
   jobTask: JobTask!
-}
-
-type JobPostFeedback {
-  id: ID
-  jobPostId: ID
-  jobPost: JobPost
-  authorId: ID
-  author: User
-  text: String!
-  isResolved: Boolean!
-  isEdited: Boolean!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  parentFeedbackId: ID
-  parentFeedback: JobPostFeedback
-  replies: [JobPostFeedback!]!
-  isEditable: Boolean!
-}
-
-"The root query object."
-type Query {
-  "Gets a queryable list of tradesman profiles."
-  tradesmanProfiles: [TradesmanProfile!]!
-  "Gets the currently authenticated user."
-  currentUser: User
-  "Gets a list of all active service categories."
-  serviceCategories: [ServiceCategory!]!
-  "Gets all service categories, regardless of status. (Admin only)"
-  allServiceCategories: [ServiceCategory!]!
-  "Gets the projects created by the authenticated homeowner."
-  myProjects: [Project!]!
-  jobPostsForReview(where: JobPostFilterInput order: [JobPostSortInput!]): [JobPost!]!
-  projectsForReview(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
-  "Gets a list of all users. (Admin only)"
-  users(where: UserFilterInput order: [UserSortInput!]): [User]
-  "Gets all notifications for the current user."
-  myNotifications: [Notification!]!
-  "Gets all open auctions that match the authenticated tradesman's skills."
-  availableAuctions: [Auction]
-  "Gets a specific auction by Job ID."
-  auctionById(jobId: UUID!): Auction
-  "Gets a specific job post question by ID."
-  jobPostQuestionById(id: UUID!): JobPostQuestion
-  serviceSkusByCategory(categoryId: UUID!): [ServiceSku!]!
-  aiCalculation(projectId: UUID! categoryId: UUID!): [AiCalculation!]!
-  aiCalculationByJob(jobId: UUID!): [AiCalculation!]!
-  passedAuctions: [Auction!]!
-  projectById(projectId: UUID!): Project
-  allJobPosts(where: JobPostFilterInput order: [JobPostSortInput!]): [JobPost!]!
-  bidDetailsById(bidId: UUID!): Bid
-  allProjects(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
-  myActiveBookings(where: BookingFilterInput order: [BookingSortInput!]): [Booking!]!
-}
-
-"Defines when a policy shall be executed."
-enum ApplyPolicy {
-  "Before the resolver was executed."
-  BEFORE_RESOLVER
-  "After the resolver was executed."
-  AFTER_RESOLVER
-  "The policy is applied in the validation step before the execution."
-  VALIDATION
-}
-
-type AiCalculationSkuItem {
-  aiCalculationTaskId: UUID!
-  aiCalculationTask: AiCalculationTask!
-  serviceSkuId: UUID!
-  serviceSku: ServiceSku!
-  quantity: Decimal!
-  estimatedPrice: Decimal!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-input UserSortInput {
-  firstName: SortEnumType
-  lastName: SortEnumType
-  email: SortEnumType
-  hashedPassword: SortEnumType
-  phoneNumber: SortEnumType
-  role: SortEnumType
-  bio: SortEnumType
-  location: SortEnumType
-  profilePictureUrl: SortEnumType
-  isEmailVerified: SortEnumType
-  emailVerificationToken: SortEnumType
-  emailVerificationTokenExpires: SortEnumType
-  homeownerProfile: HomeownerProfileSortInput
-  tradesmanProfile: TradesmanProfileSortInput
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
-}
-
-input CertificationFilterInput {
-  and: [CertificationFilterInput!]
-  or: [CertificationFilterInput!]
-  title: StringOperationFilterInput
-  description: StringOperationFilterInput
-  documentUrl: StringOperationFilterInput
-  issuedAt: DateTimeOperationFilterInput
-  expiresAt: DateTimeOperationFilterInput
-  tradesmanProfileId: UuidOperationFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-type AiCalculationCriteria {
-  aiCalculationTaskId: UUID!
-  aiCalculationTask: AiCalculationTask!
-  description: String!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 type JobPostQuestion {
@@ -420,473 +41,10 @@ type JobPostQuestion {
   updatedAt: DateTime!
 }
 
-input ReviewFilterInput {
-  and: [ReviewFilterInput!]
-  or: [ReviewFilterInput!]
-  rating: IntOperationFilterInput
-  comment: StringOperationFilterInput
-  bookingId: UuidOperationFilterInput
-  booking: BookingFilterInput
-  homeownerId: UuidOperationFilterInput
-  homeowner: UserFilterInput
-  tradesmanProfileId: UuidOperationFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-"Represents a billable SKU item for a specific service category."
-type ServiceSku {
-  id: UUID!
-  serviceCategoryId: UUID!
-  skuCode: String!
-  name: String!
-  description: String
-  basePrice: Decimal!
-  unitType: String!
-  serviceCategory: ServiceCategory!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-input JobPostFeedbackFilterInput {
-  and: [JobPostFeedbackFilterInput!]
-  or: [JobPostFeedbackFilterInput!]
-  jobPostId: UuidOperationFilterInput
-  jobPost: JobPostFilterInput
-  authorId: UuidOperationFilterInput
-  author: UserFilterInput
-  text: StringOperationFilterInput
-  isResolved: BooleanOperationFilterInput
-  isEdited: BooleanOperationFilterInput
-  parentFeedbackId: UuidOperationFilterInput
-  parentFeedback: JobPostFeedbackFilterInput
-  replies: ListFilterInputTypeOfJobPostFeedbackFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ServiceSkuFilterInput {
-  and: [ServiceSkuFilterInput!]
-  or: [ServiceSkuFilterInput!]
-  serviceCategoryId: UuidOperationFilterInput
-  serviceCategory: ServiceCategoryFilterInput
-  skuCode: StringOperationFilterInput
-  name: StringOperationFilterInput
-  description: StringOperationFilterInput
-  basePrice: DecimalOperationFilterInput
-  unitType: StringOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ProjectFilterInput {
-  and: [ProjectFilterInput!]
-  or: [ProjectFilterInput!]
-  title: StringOperationFilterInput
-  description: StringOperationFilterInput
-  homeownerId: UuidOperationFilterInput
-  homeowner: UserFilterInput
-  jobPosts: ListFilterInputTypeOfJobPostFilterInput
-  generalSummary: StringOperationFilterInput
-  status: ProjectStatusOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ListFilterInputTypeOfJobTaskFilterInput {
-  all: JobTaskFilterInput
-  none: JobTaskFilterInput
-  some: JobTaskFilterInput
-  any: Boolean
-}
-
-input BooleanOperationFilterInput {
-  eq: Boolean
-  neq: Boolean
-}
-
-type Project {
-  title: String!
-  description: String!
-  homeownerId: UUID!
-  homeowner: User!
-  jobPosts: [JobPost!]!
-  generalSummary: String
-  masterOfferPdf: [Byte!]
-  hasOfferPdf: Boolean!
-  status: ProjectStatus!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-input TaskSkuItemFilterInput {
-  and: [TaskSkuItemFilterInput!]
-  or: [TaskSkuItemFilterInput!]
-  jobTaskId: UuidOperationFilterInput
-  jobTask: JobTaskFilterInput
-  serviceSkuId: UuidOperationFilterInput
-  serviceSku: ServiceSkuFilterInput
-  quantity: DecimalOperationFilterInput
-  estimatedPrice: DecimalOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ListFilterInputTypeOfChangeOrderFilterInput {
-  all: ChangeOrderFilterInput
-  none: ChangeOrderFilterInput
-  some: ChangeOrderFilterInput
-  any: Boolean
-}
-
-input TradesmanProfileFilterInput {
-  and: [TradesmanProfileFilterInput!]
-  or: [TradesmanProfileFilterInput!]
-  userId: UuidOperationFilterInput
-  user: UserFilterInput
-  averageRating: FloatOperationFilterInput
-  isVerified: BooleanOperationFilterInput
-  videoIntroductionUrl: StringOperationFilterInput
-  skills: ListFilterInputTypeOfTradesmanSkillFilterInput
-  portfolioEntries: ListFilterInputTypeOfPortfolioEntryFilterInput
-  certifications: ListFilterInputTypeOfCertificationFilterInput
-  bookings: ListFilterInputTypeOfBookingFilterInput
-  reviews: ListFilterInputTypeOfReviewFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-type AiCalculation {
-  projectId: UUID!
-  serviceCategoryId: UUID!
-  totalEstimatedPrice: Decimal!
-  tasks: [AiCalculationTask!]!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"Represents a user of the application, who can be a homeowner or a tradesman."
-type User {
-  id: ID!
-  firstName: String!
-  lastName: String!
-  email: String!
-  phoneNumber: String
-  role: UserRoleTypes!
-  bio: String
-  location: String
-  profilePictureUrl: String
-  preferredLanguage: String!
-  preferredTheme: String!
-  homeownerProfile: HomeownerProfile
-  tradesmanProfile: TradesmanProfile
-  isEmailVerified: Boolean!
-  emailVerificationToken: String
-  emailVerificationTokenExpires: DateTime
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-input MilestoneStatusOperationFilterInput {
-  eq: MilestoneStatus
-  neq: MilestoneStatus
-  in: [MilestoneStatus!]
-  nin: [MilestoneStatus!]
-}
-
-"Represents a specific acceptance criterion for a job task."
-type TaskAcceptanceCriteria {
-  id: UUID!
-  jobTaskId: UUID!
-  description: String!
-  jobTask: JobTask!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"Represents a specific task or phase within a job post."
-type JobTask {
-  id: UUID!
-  jobPostId: UUID!
-  title: String!
-  description: String
-  sequenceOrder: Int!
-  estimatedPrice: Decimal!
-  acceptanceCriteria: [TaskAcceptanceCriteria!]!
-  skuItems: [TaskSkuItem!]!
-  bidItems: [BidItem!]!
-  questions: [JobPostQuestion!]!
-  jobPost: JobPost!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-input ListFilterInputTypeOfTradesmanSkillFilterInput {
-  all: TradesmanSkillFilterInput
-  none: TradesmanSkillFilterInput
-  some: TradesmanSkillFilterInput
-  any: Boolean
-}
-
-input JobPostQuestionFilterInput {
-  and: [JobPostQuestionFilterInput!]
-  or: [JobPostQuestionFilterInput!]
-  jobPostId: UuidOperationFilterInput
-  jobPost: JobPostFilterInput
-  jobTaskId: UuidOperationFilterInput
-  jobTask: JobTaskFilterInput
-  tradesmanProfileId: UuidOperationFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  authorId: UuidOperationFilterInput
-  author: UserFilterInput
-  questionText: StringOperationFilterInput
-  isEdited: BooleanOperationFilterInput
-  isAnswerEdited: BooleanOperationFilterInput
-  answerText: StringOperationFilterInput
-  answeredAt: DateTimeOperationFilterInput
-  parentQuestionId: UuidOperationFilterInput
-  parentQuestion: JobPostQuestionFilterInput
-  replies: ListFilterInputTypeOfJobPostQuestionFilterInput
-  isAnswered: BooleanOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ProjectStatusOperationFilterInput {
-  eq: ProjectStatus
-  neq: ProjectStatus
-  in: [ProjectStatus!]
-  nin: [ProjectStatus!]
-}
-
-input ListFilterInputTypeOfJobPostQuestionFilterInput {
-  all: JobPostQuestionFilterInput
-  none: JobPostQuestionFilterInput
-  some: JobPostQuestionFilterInput
-  any: Boolean
-}
-
-input AmountFilterInput {
-  and: [AmountFilterInput!]
-  or: [AmountFilterInput!]
-  currency: StringOperationFilterInput
-  subtotal: DecimalOperationFilterInput
-  tax: DecimalOperationFilterInput
-  total: DecimalOperationFilterInput
-}
-
-type ChangeOrder {
-  bookingId: UUID!
-  booking: Booking!
-  newTotalAmount: Amount!
-  differenceAmount: Amount!
-  reason: String!
-  status: ChangeOrderStatus!
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"Represents the input for submitting a bid against standardized job tasks."
-input SubmitBidInput {
-  tradesmanProfileId: UUID!
-  jobPostId: UUID!
-  currency: String!
-  comment: String
-  earliestStartDate: DateTime
-  latestStartDate: DateTime
-  estimatedDurationDays: Int
-  "The list of prices mapped to specific job tasks."
-  bidItems: [BidItemInput!]!
-}
-
-input StringOperationFilterInput {
-  and: [StringOperationFilterInput!]
-  or: [StringOperationFilterInput!]
-  eq: String
-  neq: String
-  contains: String
-  ncontains: String
-  in: [String]
-  nin: [String]
-  startsWith: String
-  nstartsWith: String
-  endsWith: String
-  nendsWith: String
-}
-
-input ChangeOrderStatusOperationFilterInput {
-  eq: ChangeOrderStatus
-  neq: ChangeOrderStatus
-  in: [ChangeOrderStatus!]
-  nin: [ChangeOrderStatus!]
-}
-
-"Represents a review of a tradesman's service by a homeowner."
-type Review {
-  id: ID!
-  rating: Int!
-  comment: String
-  bookingId: ID!
-  homeownerId: ID!
-  tradesmanProfileId: ID!
-  booking: Booking!
-  homeowner: User!
-  tradesmanProfile: TradesmanProfile!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-enum JobPostStatus {
-  DRAFT
-  GENERATING_SCOPE
-  WAITING_FOR_USER_REVIEW
-  WAITING_FOR_ADMIN_REVIEW
-  UNDER_REVIEW
-  OPEN
-  BIDDING_CLOSED
-  CONTRACTED
-  CANCELLED
-  EXPIRED
-  REJECTED
-}
-
-enum ChangeOrderStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
 "Input for an acceptance criterion."
 input TaskAcceptanceCriteriaInput {
   id: UUID
   description: String!
-}
-
-"Represents a priced item within a bid, mapping to a specific JobTask."
-type BidItem {
-  id: UUID!
-  bidId: UUID!
-  jobTaskId: UUID!
-  "The price proposed for this task."
-  price: Amount
-  comment: String
-  jobTask: JobTask!
-  bid: Bid!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"Represents the specific profile for a homeowner."
-type HomeownerProfile {
-  id: ID!
-  userId: ID!
-  address: String
-  user: User!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
-
-input ListFilterInputTypeOfBidFilterInput {
-  all: BidFilterInput
-  none: BidFilterInput
-  some: BidFilterInput
-  any: Boolean
-}
-
-input BookingSortInput {
-  status: SortEnumType
-  agreedBidAmount: AmountSortInput
-  platformFeeHomeowner: AmountSortInput
-  platformFeeTradesman: AmountSortInput
-  totalEscrowAmount: AmountSortInput
-  isFunded: SortEnumType
-  homeownerId: SortEnumType
-  homeowner: UserSortInput
-  tradesmanProfileId: SortEnumType
-  tradesmanProfile: TradesmanProfileSortInput
-  jobPostId: SortEnumType
-  jobPost: JobPostSortInput
-  bidId: SortEnumType
-  bid: BidSortInput
-  review: ReviewSortInput
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
-}
-
-input BookingStatusTypesOperationFilterInput {
-  eq: BookingStatusTypes
-  neq: BookingStatusTypes
-  in: [BookingStatusTypes!]
-  nin: [BookingStatusTypes!]
-}
-
-input ListFilterInputTypeOfTaskSkuItemFilterInput {
-  all: TaskSkuItemFilterInput
-  none: TaskSkuItemFilterInput
-  some: TaskSkuItemFilterInput
-  any: Boolean
-}
-
-input ListFilterInputTypeOfBidItemFilterInput {
-  all: BidItemFilterInput
-  none: BidItemFilterInput
-  some: BidItemFilterInput
-  any: Boolean
-}
-
-input PortfolioEntryFilterInput {
-  and: [PortfolioEntryFilterInput!]
-  or: [PortfolioEntryFilterInput!]
-  title: StringOperationFilterInput
-  description: StringOperationFilterInput
-  imageUrl: StringOperationFilterInput
-  videoUrl: StringOperationFilterInput
-  tradesmanProfileId: UuidOperationFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input ListStringOperationFilterInput {
-  all: StringOperationFilterInput
-  none: StringOperationFilterInput
-  some: StringOperationFilterInput
-  any: Boolean
-}
-
-enum UserRoleTypes {
-  HOMEOWNER
-  TRADESMAN
-  ADMIN
-}
-
-input JobPostStatusOperationFilterInput {
-  eq: JobPostStatus
-  neq: JobPostStatus
-  in: [JobPostStatus!]
-  nin: [JobPostStatus!]
-}
-
-enum CategoryStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
 }
 
 type JobPost {
@@ -918,6 +76,410 @@ type JobPost {
   updatedAt: DateTime!
 }
 
+"Represents the input for submitting a bid against standardized job tasks."
+input SubmitBidInput {
+  tradesmanProfileId: UUID!
+  jobPostId: UUID!
+  currency: String!
+  comment: String
+  earliestStartDate: DateTime
+  latestStartDate: DateTime
+  estimatedDurationDays: Int
+  "The list of prices mapped to specific job tasks."
+  bidItems: [BidItemInput!]!
+}
+
+input ListFilterInputTypeOfServiceSkuTranslationFilterInput {
+  all: ServiceSkuTranslationFilterInput
+  none: ServiceSkuTranslationFilterInput
+  some: ServiceSkuTranslationFilterInput
+  any: Boolean
+}
+
+"Represents a service category."
+type ServiceCategory {
+  id: UUID!
+  name: String!
+  description: String
+  status: CategoryStatus!
+  isGlobal: Boolean!
+  templateStructure: String!
+  translations: [ServiceCategoryTranslation!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum SkillVerificationStatus {
+  UNVERIFIED
+  PORTFOLIO_VERIFIED
+  COMMUNITY_VERIFIED
+  LICENSE_VERIFIED
+}
+
+input ServiceSkuTranslationFilterInput {
+  and: [ServiceSkuTranslationFilterInput!]
+  or: [ServiceSkuTranslationFilterInput!]
+  skuId: UuidOperationFilterInput
+  sku: ServiceSkuFilterInput
+  languageCode: StringOperationFilterInput
+  name: StringOperationFilterInput
+  description: StringOperationFilterInput
+  unitType: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input MilestoneStatusOperationFilterInput {
+  eq: MilestoneStatus
+  neq: MilestoneStatus
+  in: [MilestoneStatus!]
+  nin: [MilestoneStatus!]
+}
+
+enum CategoryStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+"Represents a specific task or phase within a job post."
+type JobTask {
+  id: UUID!
+  jobPostId: UUID!
+  title: String!
+  description: String
+  sequenceOrder: Int!
+  estimatedPrice: Decimal!
+  acceptanceCriteria: [TaskAcceptanceCriteria!]!
+  skuItems: [TaskSkuItem!]!
+  bidItems: [BidItem!]!
+  questions: [JobPostQuestion!]!
+  jobPost: JobPost!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AiCalculationTask {
+  aiCalculationId: UUID!
+  aiCalculation: AiCalculation!
+  title: String!
+  description: String!
+  sequenceOrder: Int!
+  estimatedPrice: Decimal!
+  skuItems: [AiCalculationSkuItem!]!
+  acceptanceCriteria: [AiCalculationCriteria!]!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input ListFilterInputTypeOfTradesmanSkillFilterInput {
+  all: TradesmanSkillFilterInput
+  none: TradesmanSkillFilterInput
+  some: TradesmanSkillFilterInput
+  any: Boolean
+}
+
+input JobTaskFilterInput {
+  and: [JobTaskFilterInput!]
+  or: [JobTaskFilterInput!]
+  jobPostId: UuidOperationFilterInput
+  jobPost: JobPostFilterInput
+  title: StringOperationFilterInput
+  description: StringOperationFilterInput
+  sequenceOrder: IntOperationFilterInput
+  estimatedPrice: DecimalOperationFilterInput
+  skuItems: ListFilterInputTypeOfTaskSkuItemFilterInput
+  acceptanceCriteria: ListFilterInputTypeOfTaskAcceptanceCriteriaFilterInput
+  bidItems: ListFilterInputTypeOfBidItemFilterInput
+  questions: ListFilterInputTypeOfJobPostQuestionFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input AmountFilterInput {
+  and: [AmountFilterInput!]
+  or: [AmountFilterInput!]
+  currency: StringOperationFilterInput
+  subtotal: DecimalOperationFilterInput
+  tax: DecimalOperationFilterInput
+  total: DecimalOperationFilterInput
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input ListByteOperationFilterInput {
+  all: ByteOperationFilterInput
+  none: ByteOperationFilterInput
+  some: ByteOperationFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfJobPostFilterInput {
+  all: JobPostFilterInput
+  none: JobPostFilterInput
+  some: JobPostFilterInput
+  any: Boolean
+}
+
+input ByteOperationFilterInput {
+  eq: Byte
+  neq: Byte
+  in: [Byte]
+  nin: [Byte]
+  gt: Byte
+  ngt: Byte
+  gte: Byte
+  ngte: Byte
+  lt: Byte
+  nlt: Byte
+  lte: Byte
+  nlte: Byte
+}
+
+"Represents a specific task payout milestone linked to a booking."
+type MilestonePayment {
+  id: ID!
+  bookingId: ID!
+  jobTaskId: ID!
+  amountAllocated: Amount
+  status: MilestoneStatus!
+  stripeTransferId: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  booking: Booking!
+  jobTask: JobTask!
+}
+
+"Input for a specific standardized job task."
+input JobTaskInput {
+  id: UUID
+  title: String!
+  description: String!
+  sequenceOrder: Int!
+  criteria: [TaskAcceptanceCriteriaInput!]!
+}
+
+"Represents the specific profile for a homeowner."
+type HomeownerProfile {
+  id: ID!
+  userId: ID!
+  address: String
+  user: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input DecimalOperationFilterInput {
+  eq: Decimal
+  neq: Decimal
+  in: [Decimal]
+  nin: [Decimal]
+  gt: Decimal
+  ngt: Decimal
+  gte: Decimal
+  ngte: Decimal
+  lt: Decimal
+  nlt: Decimal
+  lte: Decimal
+  nlte: Decimal
+}
+
+input BookingFilterInput {
+  and: [BookingFilterInput!]
+  or: [BookingFilterInput!]
+  status: BookingStatusTypesOperationFilterInput
+  agreedBidAmount: AmountFilterInput
+  platformFeeHomeowner: AmountFilterInput
+  platformFeeTradesman: AmountFilterInput
+  totalEscrowAmount: AmountFilterInput
+  isFunded: BooleanOperationFilterInput
+  homeownerId: UuidOperationFilterInput
+  homeowner: UserFilterInput
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  jobPostId: UuidOperationFilterInput
+  jobPost: JobPostFilterInput
+  bidId: UuidOperationFilterInput
+  bid: BidFilterInput
+  review: ReviewFilterInput
+  milestonePayments: ListFilterInputTypeOfMilestonePaymentFilterInput
+  changeOrders: ListFilterInputTypeOfChangeOrderFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input JobPostStatusOperationFilterInput {
+  eq: JobPostStatus
+  neq: JobPostStatus
+  in: [JobPostStatus!]
+  nin: [JobPostStatus!]
+}
+
+type JobPostFeedback {
+  id: ID
+  jobPostId: ID
+  jobPost: JobPost
+  authorId: ID
+  author: User
+  text: String!
+  isResolved: Boolean!
+  isEdited: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  parentFeedbackId: ID
+  parentFeedback: JobPostFeedback
+  replies: [JobPostFeedback!]!
+  isEditable: Boolean!
+}
+
+"Represents a priced item mapping to a JobTask."
+input BidItemInput {
+  jobTaskId: UUID!
+  priceSubtotal: Decimal!
+  comment: String
+}
+
+input ListFilterInputTypeOfBidFilterInput {
+  all: BidFilterInput
+  none: BidFilterInput
+  some: BidFilterInput
+  any: Boolean
+}
+
+"Represents an active escrow contract between a Homeowner and a Tradesman."
+type Booking {
+  agreedBidAmount: Amount
+  platformFeeHomeowner: Amount
+  platformFeeTradesman: Amount
+  totalEscrowAmount: Amount
+  status: BookingStatusTypes!
+  isFunded: Boolean!
+  homeownerId: UUID!
+  homeowner: User!
+  tradesmanProfileId: UUID!
+  tradesmanProfile: TradesmanProfile!
+  jobPostId: UUID!
+  jobPost: JobPost!
+  bidId: UUID!
+  bid: Bid!
+  review: Review
+  milestonePayments: [MilestonePayment!]!
+  changeOrders: [ChangeOrder!]!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input ListFilterInputTypeOfChangeOrderFilterInput {
+  all: ChangeOrderFilterInput
+  none: ChangeOrderFilterInput
+  some: ChangeOrderFilterInput
+  any: Boolean
+}
+
+input ChangeOrderStatusOperationFilterInput {
+  eq: ChangeOrderStatus
+  neq: ChangeOrderStatus
+  in: [ChangeOrderStatus!]
+  nin: [ChangeOrderStatus!]
+}
+
+"Represents a priced item within a bid, mapping to a specific JobTask."
+type BidItem {
+  id: UUID!
+  bidId: UUID!
+  jobTaskId: UUID!
+  "The price proposed for this task."
+  price: Amount
+  comment: String
+  jobTask: JobTask!
+  bid: Bid!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input CategoryStatusOperationFilterInput {
+  eq: CategoryStatus
+  neq: CategoryStatus
+  in: [CategoryStatus!]
+  nin: [CategoryStatus!]
+}
+
+input ListStringOperationFilterInput {
+  all: StringOperationFilterInput
+  none: StringOperationFilterInput
+  some: StringOperationFilterInput
+  any: Boolean
+}
+
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
+
+type Notification {
+  userId: UUID!
+  user: User!
+  title: String!
+  message: String!
+  isRead: Boolean!
+  relatedEntityId: UUID
+  relatedEntityType: String
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Amount {
+  currency: String!
+  subtotal: Decimal!
+  tax: Decimal!
+  total: Decimal!
+}
+
+input PortfolioEntryFilterInput {
+  and: [PortfolioEntryFilterInput!]
+  or: [PortfolioEntryFilterInput!]
+  title: StringOperationFilterInput
+  description: StringOperationFilterInput
+  imageUrl: StringOperationFilterInput
+  videoUrl: StringOperationFilterInput
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input BidItemFilterInput {
+  and: [BidItemFilterInput!]
+  or: [BidItemFilterInput!]
+  bidId: UuidOperationFilterInput
+  bid: BidFilterInput
+  jobTaskId: UuidOperationFilterInput
+  jobTask: JobTaskFilterInput
+  price: AmountFilterInput
+  comment: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
 input TradesmanProfileSortInput {
   userId: SortEnumType
   user: UserSortInput
@@ -927,6 +489,34 @@ input TradesmanProfileSortInput {
   id: SortEnumType
   createdAt: SortEnumType
   updatedAt: SortEnumType
+}
+
+input AmountSortInput {
+  currency: SortEnumType
+  subtotal: SortEnumType
+  tax: SortEnumType
+  total: SortEnumType
+}
+
+enum ChangeOrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  or: [StringOperationFilterInput!]
+  eq: String
+  neq: String
+  contains: String
+  ncontains: String
+  in: [String]
+  nin: [String]
+  startsWith: String
+  nstartsWith: String
+  endsWith: String
+  nendsWith: String
 }
 
 type Certification {
@@ -942,25 +532,256 @@ type Certification {
   updatedAt: DateTime!
 }
 
-input AmountSortInput {
-  currency: SortEnumType
-  subtotal: SortEnumType
-  tax: SortEnumType
-  total: SortEnumType
+"Represents a proposal submitted by a tradesman for a specific job."
+type Bid {
+  "The overall proposed total amount for the job."
+  amount: Amount
+  isOutdatedVersion(currentJobVersion: Int!): Boolean!
+  jobPostId: UUID!
+  jobPost: JobPost!
+  tradesmanProfileId: UUID!
+  tradesmanProfile: TradesmanProfile!
+  bidItems: [BidItem!]!
+  earliestStartDate: DateTime
+  latestStartDate: DateTime
+  estimatedDurationDays: Int
+  comment: String
+  linkedAmendmentVersion: Int!
+  isAccepted: Boolean!
+  acceptedAt: DateTime
+  isRejected: Boolean!
+  isOutdated: Boolean!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-input ChangeOrderFilterInput {
-  and: [ChangeOrderFilterInput!]
-  or: [ChangeOrderFilterInput!]
-  bookingId: UuidOperationFilterInput
-  booking: BookingFilterInput
-  newTotalAmount: AmountFilterInput
-  differenceAmount: AmountFilterInput
-  reason: StringOperationFilterInput
-  status: ChangeOrderStatusOperationFilterInput
+"Represents a billable SKU item for a specific service category."
+type ServiceSku {
+  id: UUID!
+  serviceCategoryId: UUID!
+  skuCode: String!
+  name: String!
+  description: String
+  basePrice: Decimal!
+  unitType: String!
+  serviceCategory: ServiceCategory!
+  translations: [ServiceSkuTranslation!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input FloatOperationFilterInput {
+  eq: Float
+  neq: Float
+  in: [Float]
+  nin: [Float]
+  gt: Float
+  ngt: Float
+  gte: Float
+  ngte: Float
+  lt: Float
+  nlt: Float
+  lte: Float
+  nlte: Float
+}
+
+input HomeownerProfileSortInput {
+  userId: SortEnumType
+  user: UserSortInput
+  address: SortEnumType
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+}
+
+input ProjectFilterInput {
+  and: [ProjectFilterInput!]
+  or: [ProjectFilterInput!]
+  title: StringOperationFilterInput
+  description: StringOperationFilterInput
+  languageCode: StringOperationFilterInput
+  homeownerId: UuidOperationFilterInput
+  homeowner: UserFilterInput
+  jobPosts: ListFilterInputTypeOfJobPostFilterInput
+  generalSummary: StringOperationFilterInput
+  masterOfferPdf: ListByteOperationFilterInput
+  hasOfferPdf: BooleanOperationFilterInput
+  status: ProjectStatusOperationFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
+}
+
+type AiCalculationSkuItem {
+  aiCalculationTaskId: UUID!
+  aiCalculationTask: AiCalculationTask!
+  serviceSkuId: UUID!
+  serviceSku: ServiceSku!
+  quantity: Decimal!
+  estimatedPrice: Decimal!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input UserFilterInput {
+  and: [UserFilterInput!]
+  or: [UserFilterInput!]
+  firstName: StringOperationFilterInput
+  lastName: StringOperationFilterInput
+  email: StringOperationFilterInput
+  hashedPassword: StringOperationFilterInput
+  phoneNumber: StringOperationFilterInput
+  role: UserRoleTypesOperationFilterInput
+  bio: StringOperationFilterInput
+  location: StringOperationFilterInput
+  profilePictureUrl: StringOperationFilterInput
+  isEmailVerified: BooleanOperationFilterInput
+  emailVerificationToken: StringOperationFilterInput
+  emailVerificationTokenExpires: DateTimeOperationFilterInput
+  preferredLanguage: StringOperationFilterInput
+  preferredTheme: StringOperationFilterInput
+  homeownerProfile: HomeownerProfileFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+"Represents a specific skill or service category offered by a tradesman."
+type TradesmanSkill {
+  id: ID!
+  serviceCategoryId: ID!
+  "The verification level of this skill (Unverified, PortfolioVerified, etc.)"
+  verificationStatus: SkillVerificationStatus!
+  serviceCategory: ServiceCategory!
+  tradesmanProfileId: UUID!
+  tradesmanProfile: TradesmanProfile!
+  yearsOfExperience: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input ListFilterInputTypeOfBookingFilterInput {
+  all: BookingFilterInput
+  none: BookingFilterInput
+  some: BookingFilterInput
+  any: Boolean
+}
+
+input ReviewFilterInput {
+  and: [ReviewFilterInput!]
+  or: [ReviewFilterInput!]
+  rating: IntOperationFilterInput
+  comment: StringOperationFilterInput
+  bookingId: UuidOperationFilterInput
+  booking: BookingFilterInput
+  homeownerId: UuidOperationFilterInput
+  homeowner: UserFilterInput
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input ListFilterInputTypeOfJobPostQuestionFilterInput {
+  all: JobPostQuestionFilterInput
+  none: JobPostQuestionFilterInput
+  some: JobPostQuestionFilterInput
+  any: Boolean
+}
+
+input JobPostQuestionFilterInput {
+  and: [JobPostQuestionFilterInput!]
+  or: [JobPostQuestionFilterInput!]
+  jobPostId: UuidOperationFilterInput
+  jobPost: JobPostFilterInput
+  jobTaskId: UuidOperationFilterInput
+  jobTask: JobTaskFilterInput
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  authorId: UuidOperationFilterInput
+  author: UserFilterInput
+  questionText: StringOperationFilterInput
+  isEdited: BooleanOperationFilterInput
+  isAnswerEdited: BooleanOperationFilterInput
+  answerText: StringOperationFilterInput
+  answeredAt: DateTimeOperationFilterInput
+  parentQuestionId: UuidOperationFilterInput
+  parentQuestion: JobPostQuestionFilterInput
+  replies: ListFilterInputTypeOfJobPostQuestionFilterInput
+  isAnswered: BooleanOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+type Project {
+  title: String!
+  description: String!
+  languageCode: String!
+  homeownerId: UUID!
+  homeowner: User!
+  jobPosts: [JobPost!]!
+  generalSummary: String
+  masterOfferPdf: [Byte!]
+  hasOfferPdf: Boolean!
+  status: ProjectStatus!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input ServiceCategoryTranslationFilterInput {
+  and: [ServiceCategoryTranslationFilterInput!]
+  or: [ServiceCategoryTranslationFilterInput!]
+  categoryId: UuidOperationFilterInput
+  category: ServiceCategoryFilterInput
+  languageCode: StringOperationFilterInput
+  name: StringOperationFilterInput
+  description: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input ServiceCategoryFilterInput {
+  and: [ServiceCategoryFilterInput!]
+  or: [ServiceCategoryFilterInput!]
+  name: StringOperationFilterInput
+  description: StringOperationFilterInput
+  status: CategoryStatusOperationFilterInput
+  isGlobal: BooleanOperationFilterInput
+  templateStructure: StringOperationFilterInput
+  translations: ListFilterInputTypeOfServiceCategoryTranslationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input ServiceCategorySortInput {
+  name: SortEnumType
+  description: SortEnumType
+  status: SortEnumType
+  isGlobal: SortEnumType
+  templateStructure: SortEnumType
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+}
+
+type ServiceSkuTranslation {
+  skuId: UUID!
+  sku: ServiceSku!
+  languageCode: String!
+  name: String!
+  description: String!
+  unitType: String!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 "The root mutation object."
@@ -1000,6 +821,8 @@ type Mutation {
   submitJobForScopeGeneration(jobPostId: UUID!): Boolean!
   approveJobScope(jobPostId: UUID! finalScope: String!): Boolean!
   adminReviewJobScope(jobPostId: UUID! approved: Boolean! feedback: String): Boolean!
+  "Forces the background worker to re-run the pricing and PDF generation for all jobs in a project."
+  adminRegenerateOffer(projectId: UUID!): Boolean!
   addJobFeedback(jobPostId: UUID! text: String!): JobPostFeedback!
   resolveJobFeedback(feedbackId: UUID!): JobPostFeedback!
   addAdminJobQuestion(jobPostId: UUID! questionText: String! type: String! isRequired: Boolean! options: [String!]): Boolean!
@@ -1015,10 +838,6 @@ type Mutation {
   answerJobQuestion(questionId: UUID! answerText: String!): JobPostQuestion!
   "Allows a homeowner to edit their public answer."
   editJobAnswer(questionId: UUID! newAnswer: String!): JobPostQuestion!
-  "Deletes a project."
-  deleteProject(projectId: UUID!): Boolean!
-  "Deletes a job post."
-  deleteJobPost(jobPostId: UUID!): Boolean!
   deleteAllNotifications: Boolean!
   markNotificationAsRead(notificationId: UUID!): Boolean!
   "Uploads a portfolio entry for a tradesman."
@@ -1032,98 +851,102 @@ type Mutation {
   updateUserLanguage(languageCode: String!): User!
   updateUserTheme(theme: String!): User!
   updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
+  deleteProject(projectId: UUID!): Boolean!
+  deleteJobPost(jobPostId: UUID!): Boolean!
   replyToJobQuestion(parentQuestionId: UUID! replyText: String!): JobPostQuestion!
   replyToJobFeedback(parentFeedbackId: UUID! text: String!): JobPostFeedback!
   updateCategoryStatus(categoryId: UUID! newStatus: CategoryStatus!): ServiceCategory!
   saveCategory(id: UUID name: String! description: String isGlobal: Boolean! templateStructure: String! status: CategoryStatus): ServiceCategory!
 }
 
-type PortfolioEntry {
-  id: ID!
-  title: String!
-  imageUrl: String!
-  videoUrl: String
-  description: String
-  tradesmanProfileId: UUID!
-  tradesmanProfile: TradesmanProfile!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+"The root query object."
+type Query {
+  "Gets a queryable list of tradesman profiles."
+  tradesmanProfiles: [TradesmanProfile!]!
+  "Gets the currently authenticated user."
+  currentUser: User
+  "Gets a list of all active service categories."
+  serviceCategories: [ServiceCategory!]!
+  "Gets all service categories, regardless of status. (Admin only)"
+  allServiceCategories: [ServiceCategory!]!
+  "Gets the projects created by the authenticated homeowner."
+  myProjects: [Project!]!
+  jobPostsForReview(where: JobPostFilterInput order: [JobPostSortInput!]): [JobPost!]!
+  projectsForReview(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
+  "Gets a list of all users. (Admin only)"
+  users(where: UserFilterInput order: [UserSortInput!]): [User]
+  "Gets all notifications for the current user."
+  myNotifications: [Notification!]!
+  "Gets all open auctions that match the authenticated tradesman's skills."
+  availableAuctions: [Auction]
+  "Gets a specific auction by Job ID."
+  auctionById(jobId: UUID!): Auction
+  "Gets a specific job post question by ID."
+  jobPostQuestionById(id: UUID!): JobPostQuestion
+  serviceSkusByCategory(categoryId: UUID!): [ServiceSku!]!
+  aiCalculation(projectId: UUID! categoryId: UUID!): [AiCalculation!]!
+  aiCalculationByJob(jobId: UUID!): [AiCalculation!]!
+  passedAuctions: [Auction!]!
+  projectById(projectId: UUID!): Project
+  allJobPosts(where: JobPostFilterInput order: [JobPostSortInput!]): [JobPost!]!
+  bidDetailsById(bidId: UUID!): Bid
+  allProjects(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
+  myActiveBookings(where: BookingFilterInput order: [BookingSortInput!]): [Booking!]!
 }
 
-input ListFilterInputTypeOfJobPostFeedbackFilterInput {
-  all: JobPostFeedbackFilterInput
-  none: JobPostFeedbackFilterInput
-  some: JobPostFeedbackFilterInput
+input ListFilterInputTypeOfJobTaskFilterInput {
+  all: JobTaskFilterInput
+  none: JobTaskFilterInput
+  some: JobTaskFilterInput
   any: Boolean
 }
 
-input ListFilterInputTypeOfCertificationFilterInput {
-  all: CertificationFilterInput
-  none: CertificationFilterInput
-  some: CertificationFilterInput
-  any: Boolean
+"Input for updating the standardized tasks of a job post."
+input UpdateJobTasksInput {
+  jobPostId: UUID!
+  tasks: [JobTaskInput!]!
 }
 
-input ListFilterInputTypeOfBookingFilterInput {
-  all: BookingFilterInput
-  none: BookingFilterInput
-  some: BookingFilterInput
-  any: Boolean
-}
-
-scalar UUID
-
-enum SkillVerificationStatus {
-  UNVERIFIED
-  PORTFOLIO_VERIFIED
-  COMMUNITY_VERIFIED
-  LICENSE_VERIFIED
-}
-
-enum MilestoneStatus {
-  PENDING
-  APPROVED
-  PAID
-  DISPUTED
-}
-
-input BidItemFilterInput {
-  and: [BidItemFilterInput!]
-  or: [BidItemFilterInput!]
-  bidId: UuidOperationFilterInput
-  bid: BidFilterInput
-  jobTaskId: UuidOperationFilterInput
-  jobTask: JobTaskFilterInput
-  price: AmountFilterInput
-  comment: StringOperationFilterInput
+input JobPostFeedbackFilterInput {
+  and: [JobPostFeedbackFilterInput!]
+  or: [JobPostFeedbackFilterInput!]
+  jobPostId: UuidOperationFilterInput
+  jobPost: JobPostFilterInput
+  authorId: UuidOperationFilterInput
+  author: UserFilterInput
+  text: StringOperationFilterInput
+  isResolved: BooleanOperationFilterInput
+  isEdited: BooleanOperationFilterInput
+  parentFeedbackId: UuidOperationFilterInput
+  parentFeedback: JobPostFeedbackFilterInput
+  replies: ListFilterInputTypeOfJobPostFeedbackFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
 }
 
-type Notification {
-  userId: UUID!
-  user: User!
-  title: String!
-  message: String!
-  isRead: Boolean!
-  relatedEntityId: UUID
-  relatedEntityType: String
-  id: UUID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+input ProjectSortInput {
+  title: SortEnumType
+  description: SortEnumType
+  languageCode: SortEnumType
+  homeownerId: SortEnumType
+  homeowner: UserSortInput
+  generalSummary: SortEnumType
+  hasOfferPdf: SortEnumType
+  status: SortEnumType
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
 }
 
-"Represents a specific skill or service category offered by a tradesman."
-type TradesmanSkill {
-  id: ID!
-  serviceCategoryId: ID!
-  "The verification level of this skill (Unverified, PortfolioVerified, etc.)"
-  verificationStatus: SkillVerificationStatus!
-  serviceCategory: ServiceCategory!
-  tradesmanProfileId: UUID!
-  tradesmanProfile: TradesmanProfile!
-  yearsOfExperience: Int!
+type ChangeOrder {
+  bookingId: UUID!
+  booking: Booking!
+  newTotalAmount: Amount!
+  differenceAmount: Amount!
+  reason: String!
+  status: ChangeOrderStatus!
+  id: UUID!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -1142,55 +965,139 @@ input TradesmanSkillFilterInput {
   updatedAt: DateTimeOperationFilterInput
 }
 
-"Input for updating the standardized tasks of a job post."
-input UpdateJobTasksInput {
-  jobPostId: UUID!
-  tasks: [JobTaskInput!]!
+input BidSortInput {
+  jobPostId: SortEnumType
+  jobPost: JobPostSortInput
+  tradesmanProfileId: SortEnumType
+  tradesmanProfile: TradesmanProfileSortInput
+  amount: AmountSortInput
+  earliestStartDate: SortEnumType
+  latestStartDate: SortEnumType
+  estimatedDurationDays: SortEnumType
+  comment: SortEnumType
+  linkedAmendmentVersion: SortEnumType
+  isAccepted: SortEnumType
+  acceptedAt: SortEnumType
+  isRejected: SortEnumType
+  isOutdated: SortEnumType
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
 }
 
-input CategoryStatusOperationFilterInput {
-  eq: CategoryStatus
-  neq: CategoryStatus
-  in: [CategoryStatus!]
-  nin: [CategoryStatus!]
+type ServiceCategoryTranslation {
+  categoryId: UUID!
+  category: ServiceCategory!
+  languageCode: String!
+  name: String!
+  description: String
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-"Represents a priced item mapping to a JobTask."
-input BidItemInput {
-  jobTaskId: UUID!
-  priceSubtotal: Decimal!
-  comment: String
+input ServiceSkuFilterInput {
+  and: [ServiceSkuFilterInput!]
+  or: [ServiceSkuFilterInput!]
+  serviceCategoryId: UuidOperationFilterInput
+  serviceCategory: ServiceCategoryFilterInput
+  skuCode: StringOperationFilterInput
+  name: StringOperationFilterInput
+  description: StringOperationFilterInput
+  basePrice: DecimalOperationFilterInput
+  unitType: StringOperationFilterInput
+  translations: ListFilterInputTypeOfServiceSkuTranslationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
 }
 
-input UuidOperationFilterInput {
-  eq: UUID
-  neq: UUID
-  in: [UUID]
-  nin: [UUID]
-  gt: UUID
-  ngt: UUID
-  gte: UUID
-  ngte: UUID
-  lt: UUID
-  nlt: UUID
-  lte: UUID
-  nlte: UUID
-}
-
-input ListFilterInputTypeOfJobPostFilterInput {
-  all: JobPostFilterInput
-  none: JobPostFilterInput
-  some: JobPostFilterInput
+input ListFilterInputTypeOfJobPostFeedbackFilterInput {
+  all: JobPostFeedbackFilterInput
+  none: JobPostFeedbackFilterInput
+  some: JobPostFeedbackFilterInput
   any: Boolean
 }
 
-"Input for a specific standardized job task."
-input JobTaskInput {
-  id: UUID
-  title: String!
-  description: String!
-  sequenceOrder: Int!
-  criteria: [TaskAcceptanceCriteriaInput!]!
+enum BookingStatusTypes {
+  PENDING_DEPOSIT
+  IN_PROGRESS
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+"The `Byte` scalar type represents non-fractional whole numeric values. Byte can represent values between 0 and 255."
+scalar Byte
+
+input MilestonePaymentFilterInput {
+  and: [MilestonePaymentFilterInput!]
+  or: [MilestonePaymentFilterInput!]
+  bookingId: UuidOperationFilterInput
+  booking: BookingFilterInput
+  jobTaskId: UuidOperationFilterInput
+  jobTask: JobTaskFilterInput
+  amountAllocated: AmountFilterInput
+  status: MilestoneStatusOperationFilterInput
+  stripeTransferId: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+type AiCalculation {
+  projectId: UUID!
+  serviceCategoryId: UUID!
+  totalEstimatedPrice: Decimal!
+  tasks: [AiCalculationTask!]!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input IntOperationFilterInput {
+  eq: Int
+  neq: Int
+  in: [Int]
+  nin: [Int]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
+}
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
+input CertificationFilterInput {
+  and: [CertificationFilterInput!]
+  or: [CertificationFilterInput!]
+  title: StringOperationFilterInput
+  description: StringOperationFilterInput
+  documentUrl: StringOperationFilterInput
+  issuedAt: DateTimeOperationFilterInput
+  expiresAt: DateTimeOperationFilterInput
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input BooleanOperationFilterInput {
+  eq: Boolean
+  neq: Boolean
+}
+
+input ListFilterInputTypeOfMilestonePaymentFilterInput {
+  all: MilestonePaymentFilterInput
+  none: MilestonePaymentFilterInput
+  some: MilestonePaymentFilterInput
+  any: Boolean
 }
 
 "Represents the specific profile for a tradesman, extending the base User entity with role-specific data."
@@ -1213,77 +1120,98 @@ type TradesmanProfile {
   updatedAt: DateTime!
 }
 
-input IntOperationFilterInput {
-  eq: Int
-  neq: Int
-  in: [Int]
-  nin: [Int]
-  gt: Int
-  ngt: Int
-  gte: Int
-  ngte: Int
-  lt: Int
-  nlt: Int
-  lte: Int
-  nlte: Int
+input ListFilterInputTypeOfTaskSkuItemFilterInput {
+  all: TaskSkuItemFilterInput
+  none: TaskSkuItemFilterInput
+  some: TaskSkuItemFilterInput
+  any: Boolean
 }
 
-input BookingFilterInput {
-  and: [BookingFilterInput!]
-  or: [BookingFilterInput!]
-  status: BookingStatusTypesOperationFilterInput
-  agreedBidAmount: AmountFilterInput
-  platformFeeHomeowner: AmountFilterInput
-  platformFeeTradesman: AmountFilterInput
-  totalEscrowAmount: AmountFilterInput
-  isFunded: BooleanOperationFilterInput
-  homeownerId: UuidOperationFilterInput
-  homeowner: UserFilterInput
-  tradesmanProfileId: UuidOperationFilterInput
-  tradesmanProfile: TradesmanProfileFilterInput
-  jobPostId: UuidOperationFilterInput
-  jobPost: JobPostFilterInput
-  bidId: UuidOperationFilterInput
-  bid: BidFilterInput
-  review: ReviewFilterInput
-  milestonePayments: ListFilterInputTypeOfMilestonePaymentFilterInput
-  changeOrders: ListFilterInputTypeOfChangeOrderFilterInput
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+input UserRoleTypesOperationFilterInput {
+  eq: UserRoleTypes
+  neq: UserRoleTypes
+  in: [UserRoleTypes!]
+  nin: [UserRoleTypes!]
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+input TaskSkuItemFilterInput {
+  and: [TaskSkuItemFilterInput!]
+  or: [TaskSkuItemFilterInput!]
+  jobTaskId: UuidOperationFilterInput
+  jobTask: JobTaskFilterInput
+  serviceSkuId: UuidOperationFilterInput
+  serviceSku: ServiceSkuFilterInput
+  quantity: DecimalOperationFilterInput
+  estimatedPrice: DecimalOperationFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
 }
 
-input ServiceCategorySortInput {
-  name: SortEnumType
-  description: SortEnumType
-  status: SortEnumType
-  isGlobal: SortEnumType
-  templateStructure: SortEnumType
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
+input ChangeOrderFilterInput {
+  and: [ChangeOrderFilterInput!]
+  or: [ChangeOrderFilterInput!]
+  bookingId: UuidOperationFilterInput
+  booking: BookingFilterInput
+  newTotalAmount: AmountFilterInput
+  differenceAmount: AmountFilterInput
+  reason: StringOperationFilterInput
+  status: ChangeOrderStatusOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
 }
 
-"Represents a proposal submitted by a tradesman for a specific job."
-type Bid {
-  "The overall proposed total amount for the job."
-  amount: Amount
-  isOutdatedVersion(currentJobVersion: Int!): Boolean!
-  jobPostId: UUID!
-  jobPost: JobPost!
-  tradesmanProfileId: UUID!
-  tradesmanProfile: TradesmanProfile!
-  bidItems: [BidItem!]!
-  earliestStartDate: DateTime
-  latestStartDate: DateTime
-  estimatedDurationDays: Int
-  comment: String
-  linkedAmendmentVersion: Int!
-  isAccepted: Boolean!
-  acceptedAt: DateTime
-  isRejected: Boolean!
-  isOutdated: Boolean!
+input ListFilterInputTypeOfServiceCategoryTranslationFilterInput {
+  all: ServiceCategoryTranslationFilterInput
+  none: ServiceCategoryTranslationFilterInput
+  some: ServiceCategoryTranslationFilterInput
+  any: Boolean
+}
+
+input BookingStatusTypesOperationFilterInput {
+  eq: BookingStatusTypes
+  neq: BookingStatusTypes
+  in: [BookingStatusTypes!]
+  nin: [BookingStatusTypes!]
+}
+
+input ListFilterInputTypeOfPortfolioEntryFilterInput {
+  all: PortfolioEntryFilterInput
+  none: PortfolioEntryFilterInput
+  some: PortfolioEntryFilterInput
+  any: Boolean
+}
+
+enum UserRoleTypes {
+  HOMEOWNER
+  TRADESMAN
+  ADMIN
+}
+
+scalar UUID
+
+"Represents a specific acceptance criterion for a job task."
+type TaskAcceptanceCriteria {
   id: UUID!
+  jobTaskId: UUID!
+  description: String!
+  jobTask: JobTask!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -1296,11 +1224,172 @@ enum ProjectStatus {
   UNDER_REVIEW
 }
 
-input ListFilterInputTypeOfPortfolioEntryFilterInput {
-  all: PortfolioEntryFilterInput
-  none: PortfolioEntryFilterInput
-  some: PortfolioEntryFilterInput
+"Represents a review of a tradesman's service by a homeowner."
+type Review {
+  id: ID!
+  rating: Int!
+  comment: String
+  bookingId: ID!
+  homeownerId: ID!
+  tradesmanProfileId: ID!
+  booking: Booking!
+  homeowner: User!
+  tradesmanProfile: TradesmanProfile!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input ListFilterInputTypeOfCertificationFilterInput {
+  all: CertificationFilterInput
+  none: CertificationFilterInput
+  some: CertificationFilterInput
   any: Boolean
+}
+
+input ListFilterInputTypeOfTaskAcceptanceCriteriaFilterInput {
+  all: TaskAcceptanceCriteriaFilterInput
+  none: TaskAcceptanceCriteriaFilterInput
+  some: TaskAcceptanceCriteriaFilterInput
+  any: Boolean
+}
+
+input ProjectStatusOperationFilterInput {
+  eq: ProjectStatus
+  neq: ProjectStatus
+  in: [ProjectStatus!]
+  nin: [ProjectStatus!]
+}
+
+input ListFilterInputTypeOfReviewFilterInput {
+  all: ReviewFilterInput
+  none: ReviewFilterInput
+  some: ReviewFilterInput
+  any: Boolean
+}
+
+enum MilestoneStatus {
+  PENDING
+  APPROVED
+  PAID
+  DISPUTED
+}
+
+input ReviewSortInput {
+  rating: SortEnumType
+  comment: SortEnumType
+  bookingId: SortEnumType
+  booking: BookingSortInput
+  homeownerId: SortEnumType
+  homeowner: UserSortInput
+  tradesmanProfileId: SortEnumType
+  tradesmanProfile: TradesmanProfileSortInput
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+}
+
+input SkillVerificationStatusOperationFilterInput {
+  eq: SkillVerificationStatus
+  neq: SkillVerificationStatus
+  in: [SkillVerificationStatus!]
+  nin: [SkillVerificationStatus!]
+}
+
+input UuidOperationFilterInput {
+  eq: UUID
+  neq: UUID
+  in: [UUID]
+  nin: [UUID]
+  gt: UUID
+  ngt: UUID
+  gte: UUID
+  ngte: UUID
+  lt: UUID
+  nlt: UUID
+  lte: UUID
+  nlte: UUID
+}
+
+input TradesmanProfileFilterInput {
+  and: [TradesmanProfileFilterInput!]
+  or: [TradesmanProfileFilterInput!]
+  userId: UuidOperationFilterInput
+  user: UserFilterInput
+  averageRating: FloatOperationFilterInput
+  isVerified: BooleanOperationFilterInput
+  videoIntroductionUrl: StringOperationFilterInput
+  skills: ListFilterInputTypeOfTradesmanSkillFilterInput
+  portfolioEntries: ListFilterInputTypeOfPortfolioEntryFilterInput
+  certifications: ListFilterInputTypeOfCertificationFilterInput
+  bookings: ListFilterInputTypeOfBookingFilterInput
+  reviews: ListFilterInputTypeOfReviewFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+"Represents a user of the application, who can be a homeowner or a tradesman."
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phoneNumber: String
+  role: UserRoleTypes!
+  bio: String
+  location: String
+  profilePictureUrl: String
+  homeownerProfile: HomeownerProfile
+  tradesmanProfile: TradesmanProfile
+  isEmailVerified: Boolean!
+  emailVerificationToken: String
+  emailVerificationTokenExpires: DateTime
+  preferredLanguage: String!
+  preferredTheme: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AiCalculationCriteria {
+  aiCalculationTaskId: UUID!
+  aiCalculationTask: AiCalculationTask!
+  description: String!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input HomeownerProfileFilterInput {
+  and: [HomeownerProfileFilterInput!]
+  or: [HomeownerProfileFilterInput!]
+  userId: UuidOperationFilterInput
+  user: UserFilterInput
+  address: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input UserSortInput {
+  firstName: SortEnumType
+  lastName: SortEnumType
+  email: SortEnumType
+  hashedPassword: SortEnumType
+  phoneNumber: SortEnumType
+  role: SortEnumType
+  bio: SortEnumType
+  location: SortEnumType
+  profilePictureUrl: SortEnumType
+  isEmailVerified: SortEnumType
+  emailVerificationToken: SortEnumType
+  emailVerificationTokenExpires: SortEnumType
+  preferredLanguage: SortEnumType
+  preferredTheme: SortEnumType
+  homeownerProfile: HomeownerProfileSortInput
+  tradesmanProfile: TradesmanProfileSortInput
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
 }
 
 input JobPostSortInput {
@@ -1327,6 +1416,50 @@ input JobPostSortInput {
   updatedAt: SortEnumType
 }
 
+input BidFilterInput {
+  and: [BidFilterInput!]
+  or: [BidFilterInput!]
+  jobPostId: UuidOperationFilterInput
+  jobPost: JobPostFilterInput
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  amount: AmountFilterInput
+  bidItems: ListFilterInputTypeOfBidItemFilterInput
+  earliestStartDate: DateTimeOperationFilterInput
+  latestStartDate: DateTimeOperationFilterInput
+  estimatedDurationDays: IntOperationFilterInput
+  comment: StringOperationFilterInput
+  linkedAmendmentVersion: IntOperationFilterInput
+  isAccepted: BooleanOperationFilterInput
+  acceptedAt: DateTimeOperationFilterInput
+  isRejected: BooleanOperationFilterInput
+  isOutdated: BooleanOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input BookingSortInput {
+  status: SortEnumType
+  agreedBidAmount: AmountSortInput
+  platformFeeHomeowner: AmountSortInput
+  platformFeeTradesman: AmountSortInput
+  totalEscrowAmount: AmountSortInput
+  isFunded: SortEnumType
+  homeownerId: SortEnumType
+  homeowner: UserSortInput
+  tradesmanProfileId: SortEnumType
+  tradesmanProfile: TradesmanProfileSortInput
+  jobPostId: SortEnumType
+  jobPost: JobPostSortInput
+  bidId: SortEnumType
+  bid: BidSortInput
+  review: ReviewSortInput
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+}
+
 "Represents a wrapper for a job post during its active bidding phase (Auction)."
 type Auction {
   "The underlying job post information."
@@ -1337,18 +1470,29 @@ type Auction {
   questions: [JobPostQuestion!]!
 }
 
-input ReviewSortInput {
-  rating: SortEnumType
-  comment: SortEnumType
-  bookingId: SortEnumType
-  booking: BookingSortInput
-  homeownerId: SortEnumType
-  homeowner: UserSortInput
-  tradesmanProfileId: SortEnumType
-  tradesmanProfile: TradesmanProfileSortInput
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
+enum JobPostStatus {
+  DRAFT
+  GENERATING_SCOPE
+  WAITING_FOR_USER_REVIEW
+  WAITING_FOR_ADMIN_REVIEW
+  UNDER_REVIEW
+  OPEN
+  BIDDING_CLOSED
+  CONTRACTED
+  CANCELLED
+  EXPIRED
+  REJECTED
+}
+
+input TaskAcceptanceCriteriaFilterInput {
+  and: [TaskAcceptanceCriteriaFilterInput!]
+  or: [TaskAcceptanceCriteriaFilterInput!]
+  jobTaskId: UuidOperationFilterInput
+  jobTask: JobTaskFilterInput
+  description: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
 }
 
 input JobPostFilterInput {
@@ -1382,67 +1526,27 @@ input JobPostFilterInput {
   updatedAt: DateTimeOperationFilterInput
 }
 
-"Represents an active escrow contract between a Homeowner and a Tradesman."
-type Booking {
-  agreedBidAmount: Amount
-  platformFeeHomeowner: Amount
-  platformFeeTradesman: Amount
-  totalEscrowAmount: Amount
-  status: BookingStatusTypes!
-  isFunded: Boolean!
-  homeownerId: UUID!
-  homeowner: User!
+input ListFilterInputTypeOfBidItemFilterInput {
+  all: BidItemFilterInput
+  none: BidItemFilterInput
+  some: BidItemFilterInput
+  any: Boolean
+}
+
+type PortfolioEntry {
+  id: ID!
+  title: String!
+  imageUrl: String!
+  videoUrl: String
+  description: String
   tradesmanProfileId: UUID!
   tradesmanProfile: TradesmanProfile!
-  jobPostId: UUID!
-  jobPost: JobPost!
-  bidId: UUID!
-  bid: Bid!
-  review: Review
-  milestonePayments: [MilestonePayment!]!
-  changeOrders: [ChangeOrder!]!
-  id: UUID!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-input ListFilterInputTypeOfTaskAcceptanceCriteriaFilterInput {
-  all: TaskAcceptanceCriteriaFilterInput
-  none: TaskAcceptanceCriteriaFilterInput
-  some: TaskAcceptanceCriteriaFilterInput
-  any: Boolean
-}
-
-input TaskAcceptanceCriteriaFilterInput {
-  and: [TaskAcceptanceCriteriaFilterInput!]
-  or: [TaskAcceptanceCriteriaFilterInput!]
-  jobTaskId: UuidOperationFilterInput
-  jobTask: JobTaskFilterInput
-  description: StringOperationFilterInput
-  id: UuidOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
-  updatedAt: DateTimeOperationFilterInput
-}
-
-input BidSortInput {
-  jobPostId: SortEnumType
-  jobPost: JobPostSortInput
-  tradesmanProfileId: SortEnumType
-  tradesmanProfile: TradesmanProfileSortInput
-  amount: AmountSortInput
-  earliestStartDate: SortEnumType
-  latestStartDate: SortEnumType
-  estimatedDurationDays: SortEnumType
-  comment: SortEnumType
-  linkedAmendmentVersion: SortEnumType
-  isAccepted: SortEnumType
-  acceptedAt: SortEnumType
-  isRejected: SortEnumType
-  isOutdated: SortEnumType
-  id: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
-}
+"The `Upload` scalar type represents a file upload."
+scalar Upload
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
 directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION

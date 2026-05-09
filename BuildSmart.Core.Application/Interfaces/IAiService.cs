@@ -14,10 +14,15 @@ public interface IAiService
     /// <summary>
     /// Evaluates the user-approved tasks and maps them to allowed SKUs, determining quantities and calculating prices.
     /// </summary>
-    Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string languageCode = "en");
+    Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en");
 
     /// <summary>
     /// Generates a high-level summary for the entire project.
     /// </summary>
     Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en");
+
+    /// <summary>
+    /// Generates a short, professional executive summary based on the combined scopes.
+    /// </summary>
+    Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en");
 }

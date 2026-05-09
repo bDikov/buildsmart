@@ -6,9 +6,10 @@ using BuildSmart.SharedUI.Services;
 
 namespace BuildSmart.SharedUI.ViewModels.Admin;
 
-public partial class AdminProjectsViewModel : ObservableObject
+public partial class AdminProjectsViewModel : ObservableObject, IDisposable
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly SignalRService _signalRService;
 
     [ObservableProperty]
     private bool _isBusy;
@@ -18,9 +19,24 @@ public partial class AdminProjectsViewModel : ObservableObject
 
     public ObservableCollection<IGetAllProjects_AllProjects> Projects { get; } = new();
 
-    public AdminProjectsViewModel(IBuildSmartApiClient apiClient)
+    public AdminProjectsViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+        
+        _signalRService.OfferRegenerated += OnOfferRegenerated;
+        _ = _signalRService.ConnectAsync();
+    }
+
+    private void OnOfferRegenerated(Guid projectId)
+    {
+        // Reload projects when a PDF finishes generating in the background
+        _ = LoadProjectsAsync();
+    }
+
+    public void Dispose()
+    {
+        _signalRService.OfferRegenerated -= OnOfferRegenerated;
     }
 
     [RelayCommand]

@@ -350,13 +350,11 @@
 
     private bool IsMasterOfferReady()
     {
-        if (ViewModel.Project == null || ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
+        if (ViewModel.Project == null)
             return false;
-        
-        // The master PDF is ready when no jobs are in Draft or GeneratingScope status
-        return !ViewModel.JobPosts.Any(j => j.JobPost.Status == JobPostStatus.Draft || j.JobPost.Status == JobPostStatus.GeneratingScope);
-    }
 
+        return ViewModel.Project.HasOfferPdf;
+    }
     private void DownloadMasterOffer()
     {
         if (ViewModel.Project != null)

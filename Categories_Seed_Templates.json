@@ -1,184 +1,113 @@
 {
   "global_category": {
-    "name": "Общи параметри на обекта",
-    "description": "Глобални въпроси, които се добавят към всяка заявка, независимо от избраната категория.",
-    "isGlobal": true,
+    "name": "Global Questions",
     "templateStructure": {
       "questions": [
-        {
-          "id": "global_property_type",
-          "text": "Какъв е типът на имота?",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Апартамент",
-            "Къща / Вила",
-            "Офис / Търговско помещение"
-          ]
-        },
-        {
-          "id": "global_total_sqm",
-          "text": "Каква е общата квадратура (подова площ) на обекта в кв.м.?",
-          "type": "number",
-          "required": true
-        },
-        {
-          "id": "global_ceiling_height",
-          "text": "Каква е височината на таваните? (Влияе върху дължината на вертикалните канали и вложените материали)",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Стандартна (между 2.50м и 2.70м)",
-            "Висока (над 2.70м)"
-          ]
-        },
-        {
-          "id": "global_room_count",
-          "text": "Какъв е общият брой на сухите помещения (спални, хол, кухня, кабинет)?",
-          "type": "number",
-          "required": true
-        },
-        {
-          "id": "global_bathroom_count",
-          "text": "Колко на брой са мокрите помещения (бани и тоалетни)?",
-          "type": "number",
-          "required": true
-        },
-        {
-          "id": "global_current_state",
-          "text": "Какво е текущото състояние на обекта? (Определя трудността и времето за работа)",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Ново строителство (на шпакловка и замазка / БДС)",
-            "Празно жилище за основен ремонт (стари настилки и стени)",
-            "Обзаведено жилище (изисква местене и покриване на мебели)"
-          ]
-        }
+        { "id": "global_property_type", "text": "Какъв е типът на имота?", "type": "choice", "required": true, "options": ["Апартамент", "Къща / Вила", "Офис / Търговско помещение"] },
+        { "id": "global_total_sqm", "text": "Каква е общата квадратура (подова площ) на обекта в кв.м.?", "type": "number", "required": true },
+        { "id": "global_ceiling_height", "text": "Каква е височината на таваните?", "type": "choice", "required": true, "options": ["Стандартна (между 2.50м и 2.70м)", "Висока (над 2.70м)"] },
+        { "id": "global_room_count", "text": "Общ брой сухи помещения (спални, хол, кухня, кабинет)?", "type": "number", "required": true },
+        { "id": "global_bathroom_count", "text": "Колко на брой са мокрите помещения (бани и тоалетни)?", "type": "number", "required": true },
+        { "id": "global_current_state", "text": "Какво е текущото състояние на обекта?", "type": "choice", "required": true, "options": ["Ново строителство (на шпакловка и замазка / БДС)", "Празно жилище за основен ремонт", "Обзаведено жилище (изисква местене и покриване)"] },
+        { "id": "global_logistics", "text": "Има ли осигурен достъп и паркомясто за бус/контейнер, както и работещ асансьор за качване на материали?", "type": "choice", "required": true, "options": ["Да, има лесен достъп и асансьор", "Няма асансьор (качване по стълби)", "Труден достъп/Няма паркинг"] },
+        { "id": "global_protection", "text": "Изисква ли се ежедневно почистване и специално покриване/защита на общите части на сградата?", "type": "boolean", "required": true }
       ]
     }
   },
   "electrical_category": {
-    "name": "Електроинсталации",
-    "description": "Специфични въпроси за изграждане и ремонт на електрически инсталации.",
-    "isGlobal": false,
+    "name": "Електрическа Инсталация",
     "templateStructure": {
       "questions": [
-        {
-          "id": "elec_walls",
-          "text": "От какво са направени стените ви в момента? Има ли гол тухлен зид, панели (чист бетон) или предвиждате да слагате гипсокартон?",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Бетон / Панел (най-трудно за къртене)",
-            "Тухла",
-            "Гипсокартон / Окачен таван",
-            "Смесено"
-          ]
-        },
-        {
-          "id": "elec_floor",
-          "text": "Ще правим ли нова замазка на пода? (Пускането на кабели по пода преди замазка пести много къртене по стените).",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "id": "elec_heavy_appliances",
-          "text": "Избройте какви големи уреди ще имате (напр. индукционен котлон, фурна, съдомиялна, пералня, сушилня). За всеки уред е нужна отделна линия.",
-          "type": "text",
-          "required": true
-        },
-        {
-          "id": "elec_ac_count",
-          "text": "Колко броя климатици ще имате общо в жилището?",
-          "type": "number",
-          "required": true
-        },
-        {
-          "id": "elec_underfloor_heating",
-          "text": "Ще имате ли подово електрическо отопление?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "id": "elec_boiler",
-          "text": "В банята – стандартен бойлер ли ще имате (с водосъдържател) или проточен бойлер (който топли водата на момента)?",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Стандартен бойлер",
-            "Проточен бойлер (изисква специален мощен кръг)",
-            "ТЕЦ / Газ (без електрически бойлер)"
-          ]
-        },
-        {
-          "id": "elec_outlets",
-          "text": "Всяка стая се нуждае от контакти. Стандартно слагаме по 4 двойни контакта на стая (в ъглите). За вашите спални и хол – това достатъчно ли е?",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Стандартно (по 4 на стая) е достатъчно",
-            "Искам повече контакти",
-            "Искам по-малко контакти"
-          ]
-        },
-        {
-          "id": "elec_deviators",
-          "text": "Искате ли 'мързеливи' ключове (девиаторни)? Например: светвате лампата до вратата, лягате си и я гасите от ключ до самото легло.",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "id": "elec_lighting",
-          "text": "Какъв тип ще е основното осветление?",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Само полилеи и плафони",
-            "Лунички и скрито LED осветление (окачен таван)",
-            "Смесено"
-          ]
-        },
-        {
-          "id": "elec_lan_tv_count",
-          "text": "В колко стаи ще имате телевизор и/или бюро за компютър, до които да пуснем директен интернет кабел (LAN/TV)?",
-          "type": "number",
-          "required": true
-        },
-        {
-          "id": "elec_security",
-          "text": "Планирате ли сега или в бъдеще да слагате СОТ (аларма), камери или система за Умен дом?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "id": "elec_panel",
-          "text": "Искате ли главното електрическо табло да бъде скрито (вградено в стената) или може да е външно (открит монтаж)?",
-          "type": "choice",
-          "required": true,
-          "options": [
-            "Скрито / Вградено (изисква изкопаване на ниша)",
-            "Външно / Открит монтаж"
-          ]
-        },
-        {
-          "id": "elec_blinds",
-          "text": "Ще имате ли външни ролетни щори с електрическо задвижване или електрически пердета?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "id": "elec_fans",
-          "text": "Ще има ли вентилатори в баните, които да се включват отделно от осветлението?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "id": "elec_three_phase",
-          "text": "Имате ли налична партида за трифазен ток в имота? (Обикновено е нужно за много мощни проточни бойлери или зарядни за електромобили)",
-          "type": "boolean",
-          "required": true
-        }
+        { "id": "elec_walls", "text": "От какво са направени стените ви в момента?", "type": "choice", "required": true, "options": ["Бетон / Панел", "Тухла", "Гипсокартон", "Смесено"] },
+        { "id": "elec_floor", "text": "Ще правим ли нова замазка на пода?", "type": "boolean", "required": true },
+        { "id": "elec_heavy_appliances", "text": "Колко на брой големи уреди ще имате?", "type": "number", "required": true },
+        { "id": "elec_ac_count", "text": "Колко броя климатици ще имате общо?", "type": "number", "required": true },
+        { "id": "elec_underfloor_heating", "text": "В колко на брой помещения ще имате подово отопление?", "type": "number", "required": true },
+        { "id": "elec_boiler", "text": "В банята – стандартен бойлер ли ще имате?", "type": "choice", "required": true, "options": ["Стандартен", "Проточен", "ТЕЦ/Газ"] },
+        { "id": "elec_outlets", "text": "Колко общо стандартни контакти и ключове желаете?", "type": "number", "required": true },
+        { "id": "elec_deviators", "text": "Колко девиаторни ключа искате?", "type": "number", "required": true },
+        { "id": "elec_lighting", "text": "Какъв тип ще е основното осветление?", "type": "choice", "required": true, "options": ["Само полилеи", "Лунички/LED", "Смесено"] },
+        { "id": "elec_lan_tv_count", "text": "За колко на брой стаи искате интернет кабел (LAN/TV)?", "type": "number", "required": true },
+        { "id": "elec_security", "text": "Колко слаботокови точки (камери, СОТ) ще имате?", "type": "number", "required": true },
+        { "id": "elec_panel", "text": "Главното ел. табло ще бъде скрито или външно?", "type": "choice", "required": true, "options": ["Скрито/Вградено", "Външно/Открито"] },
+        { "id": "elec_blinds", "text": "За колко прозореца ще имате ел. щори?", "type": "number", "required": true },
+        { "id": "elec_fans", "text": "Колко вентилатора за баня ще монтираме?", "type": "number", "required": true },
+        { "id": "elec_three_phase", "text": "Имате ли налична партида за трифазен ток?", "type": "boolean", "required": true }
+      ]
+    }
+  },
+  "plumbing_category": {
+    "name": "ВиК Услуги (Plumbing)",
+    "templateStructure": {
+      "questions": [
+        { "id": "plumb_scope", "text": "Какъв е обхватът на ВиК ремонта?", "type": "multiselect", "required": true, "options": ["Цялостна подмяна водопровод/канал", "Изместване на кухня/баня", "Само монтаж на санитария"] },
+        { "id": "plumb_points", "text": "Колко на брой нови ВиК точки са необходими?", "type": "number", "required": false },
+        { "id": "plumb_builtin", "text": "Ще се монтира ли вградена структура за тоалетна (конзола)?", "type": "boolean", "required": true },
+        { "id": "plumb_concealed", "text": "Тръбите ще бъдат ли скрити в стената (изисква къртене)?", "type": "boolean", "required": true },
+        { "id": "plumb_relocation", "text": "Ще се местят ли съществуващи ВиК точки на друга стена? (изисква промяна на тръбния път)", "type": "boolean", "required": true },
+        { "id": "plumb_subfloor", "text": "Какъв е подът/основата?", "type": "choice", "required": true, "options": ["Бетонна плоча", "Гредоред"] },
+        { "id": "plumb_fixtures_supply", "text": "Кой ще осигури санитарията (смесители, мивки, тоалетни)?", "type": "choice", "required": true, "options": ["Клиентът", "Изпълнителят"] }
+      ]
+    }
+  },
+  "painting_category": {
+    "name": "Бояджийски и шпакловъчни услуги (Painting)",
+    "templateStructure": {
+      "questions": [
+        { "id": "paint_tasks", "text": "Какви дейности са необходими?", "type": "multiselect", "required": true, "options": ["Цялостна шпакловка", "Само боядисване", "Сваляне на тапети"] },
+        { "id": "paint_sqm", "text": "Каква е общата площ на стените и таваните (кв.м.)?", "type": "number", "required": true },
+        { "id": "paint_trim_doors", "text": "Ще се боядисват ли интериорни врати или декоративни первази?", "type": "boolean", "required": true },
+        { "id": "paint_colors", "text": "Колко различни цвята ще се използват?", "type": "choice", "required": true, "options": ["Един цвят", "2-3 цвята (акцентни стени)", "Множество цветове"] },
+        { "id": "paint_finish_level", "text": "Какво е очакваното ниво на завършеност на стените?", "type": "choice", "required": true, "options": ["Стандартно (Q3/Q4)", "Перфектно гладко (Q5 - изисква специална шпакловка)"] }
+      ]
+    }
+  },
+  "demolition_category": {
+    "name": "Къртене и извозване (Demolition)",
+    "templateStructure": {
+      "questions": [
+        { "id": "demo_what", "text": "Какво точно трябва да се кърти?", "type": "multiselect", "required": true, "options": ["Фаянс/теракота", "Бетонни стени", "Тухлени стени", "Подова замазка"] },
+        { "id": "demo_sqm", "text": "Каква е площта (кв.м.) или обемът (куб.м.) за къртене?", "type": "number", "required": true },
+        { "id": "demo_floor", "text": "На кой етаж се намира обектът?", "type": "number", "required": true },
+        { "id": "demo_disposal", "text": "Желаете ли извозване на отпадъците с контейнер?", "type": "boolean", "required": true },
+        { "id": "demo_subfloor", "text": "Къртенето включва ли премахване на съществуващата подова замазка до бетонна плоча?", "type": "boolean", "required": true },
+        { "id": "demo_utilities", "text": "Кой ще спре захранването на ВиК и Ел. инсталациите преди къртенето?", "type": "choice", "required": true, "options": ["Спряни са предварително", "Изпълнителят трябва да ги спре и затапи"] }
+      ]
+    }
+  },
+  "drywall_category": {
+    "name": "Сухо строителство (Drywall)",
+    "templateStructure": {
+      "questions": [
+        { "id": "drywall_type", "text": "Какъв тип сухо строителство е необходимо?", "type": "multiselect", "required": true, "options": ["Окачен таван", "Преградна стена", "Предстенна обшивка (на конструкция)", "Куфари (обличане на тръби)"] },
+        { "id": "drywall_sqm", "text": "Площ за изграждане (кв.м.)?", "type": "number", "required": true },
+        { "id": "drywall_insulation", "text": "Желаете ли поставяне на минерална вата (шумо/топлоизолация)?", "type": "boolean", "required": true },
+        { "id": "drywall_complexity", "text": "Има ли сложни архитектурни форми (овални стени, арки, скрито осветление)?", "type": "boolean", "required": true },
+        { "id": "drywall_wet_room", "text": "Ще се работи ли в мокри помещения (влагоустойчив картон)?", "type": "boolean", "required": true }
+      ]
+    }
+  },
+  "tiling_category": {
+    "name": "Подови и стенни настилки (Tiling)",
+    "templateStructure": {
+      "questions": [
+        { "id": "tile_type", "text": "Какъв тип настилка ще се полага?", "type": "choice", "required": true, "options": ["Стандартни плочки", "Гранитогрес (голям формат)", "Ламинат"] },
+        { "id": "tile_sqm", "text": "Площ за покриване (кв.м.)?", "type": "number", "required": true },
+        { "id": "tile_leveling", "text": "Необходима ли е саморазливна замазка?", "type": "boolean", "required": true },
+        { "id": "tile_pattern", "text": "Ще има ли сложно редене на плочките?", "type": "choice", "required": true, "options": ["Стандартно (право)", "Сложно (Рибена кост, Диагонал)"] },
+        { "id": "tile_waterproofing", "text": "Необходима ли е хидроизолация (за мокри помещения)?", "type": "boolean", "required": true },
+        { "id": "tile_grout", "text": "Какъв тип фугираща смес ще се използва?", "type": "choice", "required": true, "options": ["Стандартна циментова", "Епоксидна фуга"] }
+      ]
+    }
+  },
+  "microcement_category": {
+    "name": "Микроцимент (Microcement)",
+    "templateStructure": {
+      "questions": [
+        { "id": "mico_area", "text": "Къде ще се полага микроциментът?", "type": "multiselect", "required": true, "options": ["Подове", "Стени", "Баня/Мокри помещения", "Мебели/Плотове"] },
+        { "id": "mico_sqm", "text": "Каква е общата площ за покриване (кв.м.)?", "type": "number", "required": true },
+        { "id": "mico_surface", "text": "Каква е текущата основа?", "type": "choice", "required": true, "options": ["Стари плочки", "Нова замазка / Шпакловка", "Гипсокартон", "Дърво / Ламинат"] },
+        { "id": "mico_waterproofing", "text": "Изисква ли се допълнителна хидроизолация преди микроцимента?", "type": "boolean", "required": true }
       ]
     }
   }

@@ -84,6 +84,10 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.AdminReviewJobScope(default!, default!, default!, default!, default!))
             .Authorize(roles: new[] { "Admin" });
 
+        descriptor.Field(m => m.AdminRegenerateOffer(default!, default!, default!))
+            .Description("Forces the background worker to re-run the pricing and PDF generation for all jobs in a project.")
+            .Authorize(roles: new[] { "Admin" });
+
         descriptor.Field(m => m.AddJobFeedback(default!, default!, default!, default!))
             .Authorize();
 

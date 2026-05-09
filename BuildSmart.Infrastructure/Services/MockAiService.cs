@@ -85,4 +85,14 @@ public class MockAiService : IAiService
 
 		return sb.ToString();
 	}
+
+	public Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en")
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en")
+	{
+		return Task.FromResult("This is a mocked executive summary based on combined scopes.");
+	}
 }
