@@ -23,10 +23,10 @@
         { "id": "elec_heavy_appliances", "text": "Колко на брой големи уреди ще имате?", "type": "number", "required": true },
         { "id": "elec_ac_count", "text": "Колко броя климатици ще имате общо?", "type": "number", "required": true },
         { "id": "elec_underfloor_heating", "text": "В колко на брой помещения ще имате подово отопление?", "type": "number", "required": true },
-        { "id": "elec_boiler", "text": "В банята – стандартен бойлер ли ще имате?", "type": "choice", "required": true, "options": ["Стандартен", "Проточен", "ТЕЦ/Газ"] },
+        { "id": "elec_boiler", "text": "В банята – какъв бойлер ще имате?", "type": "multiselect", "required": true, "options": ["Стандартен обемен бойлер (за баня)", "Проточен бойлер (за кухня/мивка)", "Свързване към ТЕЦ / Газ"] },
         { "id": "elec_outlets", "text": "Колко общо стандартни контакти и ключове желаете?", "type": "number", "required": true },
         { "id": "elec_deviators", "text": "Колко девиаторни ключа искате?", "type": "number", "required": true },
-        { "id": "elec_lighting", "text": "Какъв тип ще е основното осветление?", "type": "choice", "required": true, "options": ["Само полилеи", "Лунички/LED", "Смесено"] },
+        { "id": "elec_lighting", "text": "Какъв тип ще е основното осветление?", "type": "multiselect", "required": true, "options": ["Полилеи и плафони (стандартно)", "Вградени лунички / LED спотове", "Скрито LED осветление (ленти в окачен таван)", "Аплици (стенно осветление)"] },
         { "id": "elec_lan_tv_count", "text": "За колко на брой стаи искате интернет кабел (LAN/TV)?", "type": "number", "required": true },
         { "id": "elec_security", "text": "Колко слаботокови точки (камери, СОТ) ще имате?", "type": "number", "required": true },
         { "id": "elec_panel", "text": "Главното ел. табло ще бъде скрито или външно?", "type": "choice", "required": true, "options": ["Скрито/Вградено", "Външно/Открито"] },
@@ -58,7 +58,7 @@
         { "id": "paint_sqm", "text": "Каква е общата площ на стените и таваните (кв.м.)?", "type": "number", "required": true },
         { "id": "paint_trim_doors", "text": "Ще се боядисват ли интериорни врати или декоративни первази?", "type": "boolean", "required": true },
         { "id": "paint_colors", "text": "Колко различни цвята ще се използват?", "type": "choice", "required": true, "options": ["Един цвят", "2-3 цвята (акцентни стени)", "Множество цветове"] },
-        { "id": "paint_finish_level", "text": "Какво е очакваното ниво на завършеност на стените?", "type": "choice", "required": true, "options": ["Стандартно (Q3/Q4)", "Перфектно гладко (Q5 - изисква специална шпакловка)"] }
+        { "id": "paint_finish_level", "text": "Какво е очакваното ниво на завършеност? (💡 Съвет: Q5 'Перфектно гладко' е силно препоръчително, ако ще ползвате тъмни бои или имате силна дневна светлина)", "type": "choice", "required": true, "options": ["Стандартно (Q3/Q4)", "Перфектно гладко (Q5 - изисква специална шпакловка)"] }
       ]
     }
   },
@@ -81,7 +81,7 @@
       "questions": [
         { "id": "drywall_type", "text": "Какъв тип сухо строителство е необходимо?", "type": "multiselect", "required": true, "options": ["Окачен таван", "Преградна стена", "Предстенна обшивка (на конструкция)", "Куфари (обличане на тръби)"] },
         { "id": "drywall_sqm", "text": "Площ за изграждане (кв.м.)?", "type": "number", "required": true },
-        { "id": "drywall_insulation", "text": "Желаете ли поставяне на минерална вата (шумо/топлоизолация)?", "type": "boolean", "required": true },
+        { "id": "drywall_insulation", "text": "Желаете ли поставяне на изолация?", "type": "multiselect", "required": true, "options": ["Топлоизолация (стандартна минерална вата)", "Шумоизолация (специализирана акустична вата и мембрани)", "Не желая изолация"] },
         { "id": "drywall_complexity", "text": "Има ли сложни архитектурни форми (овални стени, арки, скрито осветление)?", "type": "boolean", "required": true },
         { "id": "drywall_wet_room", "text": "Ще се работи ли в мокри помещения (влагоустойчив картон)?", "type": "boolean", "required": true }
       ]
@@ -91,8 +91,11 @@
     "name": "Подови и стенни настилки (Tiling)",
     "templateStructure": {
       "questions": [
-        { "id": "tile_type", "text": "Какъв тип настилка ще се полага?", "type": "choice", "required": true, "options": ["Стандартни плочки", "Гранитогрес (голям формат)", "Ламинат"] },
-        { "id": "tile_sqm", "text": "Площ за покриване (кв.м.)?", "type": "number", "required": true },
+        { "id": "tile_type", "text": "Какъв тип настилки и облицовки ще се полагат?", "type": "multiselect", "required": true, "options": ["Стандартни плочки (баня/тераса)", "Гранитогрес - голям формат (хол/коридор)", "Ламинат или Паркет (спални)", "Облицовка на стени (камък/тухлички)"] },
+        { "id": "tile_sqm_standard", "text": "Ако сте избрали стандартни плочки, каква е площта в кв.м.?", "type": "number", "required": false },
+        { "id": "tile_sqm_large", "text": "Ако сте избрали голям формат гранитогрес, каква е площта в кв.м.?", "type": "number", "required": false },
+        { "id": "tile_sqm_laminate", "text": "Ако сте избрали ламинат/паркет, каква е площта в кв.м.?", "type": "number", "required": false },
+        { "id": "tile_size_pref", "text": "Имате ли предпочитания за размера на плочките (напр. 60х60, 120х60)?", "type": "choice", "required": false, "options": ["Малки / Стандартни (до 60х60)", "Големи (напр. 120х60)", "Изключително големи (над 120см)", "Не съм решил"] },
         { "id": "tile_leveling", "text": "Необходима ли е саморазливна замазка?", "type": "boolean", "required": true },
         { "id": "tile_pattern", "text": "Ще има ли сложно редене на плочките?", "type": "choice", "required": true, "options": ["Стандартно (право)", "Сложно (Рибена кост, Диагонал)"] },
         { "id": "tile_waterproofing", "text": "Необходима ли е хидроизолация (за мокри помещения)?", "type": "boolean", "required": true },

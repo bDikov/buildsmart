@@ -38,12 +38,7 @@ public class AuthHeaderHandler : DelegatingHandler
                             currentAuthService = scopedService;
                         }
                     }
-                    catch (ObjectDisposedException)
-                    {
-                        // The IServiceProvider (e.g., from an old HTTP request) has been disposed.
-                        // Fall back to the default auth service.
-                        Console.WriteLine("[AuthHeaderHandler] IServiceProvider is disposed. Falling back to root scope.");
-                    }
+                    catch (ObjectDisposedException) { }
                 }
             }
         }
@@ -52,7 +47,6 @@ public class AuthHeaderHandler : DelegatingHandler
 
         if (!string.IsNullOrEmpty(token))
         {
-            Console.WriteLine($"[AuthHeaderHandler] Attaching Token: {token.Substring(0, Math.Min(15, token.Length))}...");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
         else

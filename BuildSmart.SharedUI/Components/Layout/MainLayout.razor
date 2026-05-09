@@ -3,6 +3,7 @@
 @using BuildSmart.SharedUI.GraphQL
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.Extensions.Localization
+@using StrawberryShake
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject INavigationBridge NavigationBridge
 @inject IAuthService AuthService
@@ -11,6 +12,7 @@
 @inject IBlazorNavigationRegistry NavigationRegistry
 @inject IBuildSmartApiClient ApiClient
 @inject IJSRuntime JSRuntime
+@inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 
 <div class="page">
     <!-- Mobile Header -->
@@ -538,6 +540,14 @@
 
     private async Task LogoutAsync()
     {
+        // 1. Clear StrawberryShake GraphQL cache
+        try 
+        { 
+            StoreAccessor.OperationStore.Clear(); 
+        } 
+        catch { }
+
+        // 2. Clear Auth Session Token
         await AuthService.ClearTokenAsync();
         
         // Notify the Blazor authentication system that the user is now anonymous
@@ -548,7 +558,6 @@
         
         await BuildSmart.SharedUI.MauiMocks.MainThread.InvokeOnMainThreadAsync(() =>
         {
-            // Logout logic should be abstracted. For now, navigate to root.
             NavigationBridge.NavigateToAsync("//LoginPage");
         });
     }

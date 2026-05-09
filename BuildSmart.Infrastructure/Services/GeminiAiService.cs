@@ -142,6 +142,8 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("4. FACTUAL CONSISTENCY: Ensure every task in the SOW can be traced back to a specific user answer or a necessary technical dependency of that answer.");
 			prompt.AppendLine("5. NO PRICE CALCULATION: Do not calculate prices or include prices in your response.");
 			prompt.AppendLine($"6. LANGUAGE: ALL OUTPUT MUST BE IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'. This is a strict requirement. The scopeMarkdown, taskTitle, taskDescription, and ALL items in acceptanceCriteria MUST be written in {languageCode}, regardless of the input language.");
+			prompt.AppendLine("7. NO GENERIC OVERHEAD TASKS: Do NOT create separate tasks for 'Site Preparation', 'Logistics', 'Daily Cleaning', 'Material Delivery', or 'Final Waste Removal'. These are overhead. Include them as 'acceptanceCriteria' within the actual technical tasks.");
+			prompt.AppendLine("8. NO MICRO-TASKING: Do not split standard services into micro-tasks. For example, 'Metal frame construction' and 'Boarding' should be a single task: 'Build Drywall'. 'Grouting/Spackling' is either included in Drywall or belongs to Painting. Consolidate technical steps into billable units.");
 			prompt.AppendLine();
 			prompt.AppendLine("---");
 			prompt.AppendLine("USER INPUT DATA:");
@@ -242,6 +244,11 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine();
 			prompt.AppendLine("CONSTRUCTION HEURISTICS (USE THESE TO CALCULATE QUANTITIES):");
 			prompt.AppendLine();
+			prompt.AppendLine("--- GENERAL OVERHEAD (GEN) ---");
+			prompt.AppendLine("- Site Prep & Protection & Logistics (Any task describing 'Подготовка', 'Логистика', 'Защита'): Map to GEN-001 with Quantity = 1.");
+			prompt.AppendLine("- Final Cleaning (Any task describing 'Окончателно почистване', 'Финално почистване'): Map to GEN-002 with Quantity = global_total_sqm.");
+			prompt.AppendLine("- Daily Cleaning (Any task describing 'Ежедневно почистване'): Map to GEN-003 with Quantity = 1.");
+			prompt.AppendLine();
 			prompt.AppendLine("--- ELECTRICAL (ELEC) ---");
 			prompt.AppendLine("- Cable lengths (Any SKU describing 'Полагане на кабел' / 'Cable Laying'): If explicit meters are unknown, calculate Quantity = global_total_sqm * 4.");
 			prompt.AppendLine("- Heavy Cable/Appliance Points: Quantity = 1 per heavy appliance/boiler (or 10 meters of heavy cable per appliance).");
@@ -260,9 +267,11 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("- Drywall Area (DRYW-001, DRYW-002, DRYW-003): If drywall_sqm is provided, use it. Otherwise, use global_total_sqm.");
 			prompt.AppendLine("- Complex Shapes/Arches (DRYW-004): Quantity = drywall_sqm / 2 (if drywall_complexity is true).");
 			prompt.AppendLine();
-			prompt.AppendLine("--- TILING (TILE) ---");
-			prompt.AppendLine("- Tiling Area (TILE-001, TILE-003, TILE-004): If tile_sqm is provided, use it. Otherwise, estimate based on bathroom_count * 20 (for bathrooms) or global_total_sqm / 2 (for generic floors).");
-			prompt.AppendLine("- Skirting/Zokal (TILE-002): Quantity (linear meters) = Area (sqm) / 1.5 (rough estimate for perimeter).");
+			prompt.AppendLine("--- TILING & FLOORING (TILE) ---");
+			prompt.AppendLine("- Tiling Area (TILE-001): Quantity = tile_sqm_standard (if provided, else estimate).");
+			prompt.AppendLine("- Large Format Tiling (TILE-003): Quantity = tile_sqm_large (if provided, else estimate).");
+			prompt.AppendLine("- Laminate Flooring (TILE-004): Quantity = tile_sqm_laminate (if provided, else estimate).");
+			prompt.AppendLine("- Skirting/Zokal (TILE-002): Quantity (linear meters) = (tile_sqm_standard + tile_sqm_large + tile_sqm_laminate) / 1.5 (rough estimate for perimeter).");
 			prompt.AppendLine("- Waterproofing (TILE-005): Quantity = Area (sqm) (if tile_waterproofing is true).");
 			prompt.AppendLine("- Epoxy Grout (TILE-006): Quantity = Area (sqm) (if tile_grout is Epoxy).");
 			prompt.AppendLine("- Complex Pattern (TILE-007): Quantity = Area (sqm) (if tile_pattern is Complex).");
