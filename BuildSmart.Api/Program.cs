@@ -94,11 +94,23 @@ public partial class Program
 		builder.Services.AddScoped<IAiService, GeminiAiService>();
 
 		// --- Hangfire Configuration ---
-		builder.Services.AddHangfire(configuration => configuration
-			.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-			.UseSimpleAssemblyNameTypeSerializer()
-			.UseRecommendedSerializerSettings()
-			.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+		builder.Services.AddHangfire(configuration => 
+		{
+			configuration
+				.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+				.UseSimpleAssemblyNameTypeSerializer()
+				.UseRecommendedSerializerSettings();
+
+			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+			if (!string.IsNullOrEmpty(connectionString))
+			{
+				configuration.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString));
+			}
+			else
+			{
+				configuration.UseInMemoryStorage();
+			}
+		});
 
 		builder.Services.AddHangfireServer(options =>
 		{
@@ -217,17 +229,23 @@ public partial class Program
 			.AddProjections()
 			.AddFiltering()
 			.AddSorting()
-			.AddAuthorization()
-			// FIX 2: Use the service provider to get the connection string when needed.
-			.AddPostgresSubscriptions(options =>
+			.AddAuthorization();
+			
+		var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+		if (!string.IsNullOrEmpty(connectionString))
+		{
+			builder.Services.AddGraphQLServer().AddPostgresSubscriptions(options =>
 			{
-				var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 				options.ConnectionFactory = (token) =>
 				{
 					return new ValueTask<NpgsqlConnection>(new NpgsqlConnection(connectionString));
 				};
 			});
+		}
+		else
+		{
+			builder.Services.AddGraphQLServer().AddInMemorySubscriptions();
+		}
 
 		// Add other services like CORS, etc.
 		builder.Services.AddHttpContextAccessor();
@@ -241,7 +259,10 @@ public partial class Program
 			try
 			{
 				var context = services.GetRequiredService<AppDbContext>();
-				context.Database.Migrate(); // Apply any pending migrations
+				if (context.Database.IsRelational())
+				{
+					context.Database.Migrate(); // Apply any pending migrations
+				}
 				await context.SeedAdminUser(); // Seed the admin user
 				await context.SeedHomeownerUser(); // Seed the homeowner user
 				await context.SeedTradesmanUser(); // Seed the painter tradesman
