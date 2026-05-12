@@ -22,12 +22,9 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore BuildSmart.sln
-      working-directory: ./BuildSmart
 
     - name: Run API Tests
       run: dotnet test BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj --no-restore --verbosity normal -c Release
-      working-directory: ./BuildSmart
 
     - name: Run Domain Tests
       run: dotnet test BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj --no-restore --verbosity normal -c Release
-      working-directory: ./BuildSmart
