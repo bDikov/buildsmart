@@ -28,6 +28,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         var mockAiCalcRepo = new Mock<IAiCalculationRepository>();
         var mockUserRepo = new Mock<IUserRepository>();
         var mockSkuRepo = new Mock<IServiceSkuRepository>();
+        var mockCategoryRepo = new Mock<IServiceCategoryRepository>();
         
         var mockAiService = new Mock<IAiService>();
         var mockPdfService = new Mock<IPdfGeneratorService>();
@@ -52,10 +53,12 @@ public class ScopeGenerationWorkerConcurrencyTests
         mockUnitOfWork.Setup(u => u.AiCalculations).Returns(mockAiCalcRepo.Object);
         mockUnitOfWork.Setup(u => u.ServiceSkus).Returns(mockSkuRepo.Object);
         mockUnitOfWork.Setup(u => u.Users).Returns(mockUserRepo.Object);
+        mockUnitOfWork.Setup(u => u.ServiceCategories).Returns(mockCategoryRepo.Object);
         
         mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
         mockJobPostRepo.Setup(r => r.GetJobsByProjectIdAsync(projectId)).ReturnsAsync(allJobs);
         mockUserRepo.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(new User { Id = homeownerId, PreferredLanguage = "en" });
+        mockCategoryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ServiceCategory>());
         
         // Setup getting jobs
         mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPost1.Id)).ReturnsAsync(jobPost1);
