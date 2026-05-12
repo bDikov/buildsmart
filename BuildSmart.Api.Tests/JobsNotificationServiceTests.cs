@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BuildSmart.Api.Services;
 using MockQueryable.Moq;
+using MockQueryable.EntityFrameworkCore;
+using MockQueryable;
 
 namespace BuildSmart.Api.Tests;
 
@@ -57,7 +59,7 @@ public class JobsNotificationServiceTests
 		};
 
 		var tradesmen = new List<TradesmanProfile> { matchingTradesman1, matchingTradesman2, nonMatchingTradesman };
-		var mock = tradesmen.AsQueryable().BuildMock();
+		var mock = tradesmen.BuildMock();
 
 		_unitOfWorkMock.Setup(u => u.TradesmanProfiles.GetQueryable())
 			.Returns(mock);
