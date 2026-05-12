@@ -60,7 +60,7 @@
                 <div class="bs-card category-card" @onclick='() => NavManager.NavigateTo($"/category-detail?id={category.Id}")'>
                     <div class="category-info">
                         <h4 class="category-title">@category.Name</h4>
-                        <span class="status-badge @category.Status.ToString().ToLower()">@category.Status</span>
+                        <span class="status-badge @category.Status.ToString().ToLower()">@Loc[$"Status_{category.Status}"]</span>
                     </div>
                     <div class="category-actions">
                         <button class="bs-btn-secondary toggle-btn" @onclick="() => ViewModel.UpdateStatusCommand.ExecuteAsync(category.Id)" @onclick:stopPropagation="true">

@@ -45,6 +45,19 @@ public class AuthHeaderHandler : DelegatingHandler
 
         var token = await currentAuthService.GetTokenAsync();
 
+        // Fallback to AsyncLocal token if scoped service failed (e.g. disposed scope on background thread)
+        if (string.IsNullOrEmpty(token))
+        {
+            if (circuitContextType != null)
+            {
+                var field = circuitContextType.GetField("CurrentToken");
+                if (field != null && field.GetValue(null) is System.Threading.AsyncLocal<string?> asyncLocalToken)
+                {
+                    token = asyncLocalToken.Value;
+                }
+            }
+        }
+
         if (!string.IsNullOrEmpty(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

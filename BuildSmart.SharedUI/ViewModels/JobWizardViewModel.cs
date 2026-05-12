@@ -427,6 +427,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		// Always refresh questions if it's a question step
 		if (step.Type == WizardStepType.Questions)
 		{
+			foreach (var q in Questions)
+			{
+				q.PropertyChanged -= Question_PropertyChanged;
+			}
+
 			Questions.Clear();
 			foreach (var q in step.Questions)
 			{
@@ -434,12 +439,72 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				{
 					q.Answer = savedAns;
 				}
+				q.PropertyChanged += Question_PropertyChanged;
 				Questions.Add(q);
 			}
+			EvaluateQuestionVisibility();
 		}
 		else if (step.Type == WizardStepType.Review)
 		{
 			RefreshAnswersList();
+		}
+	}
+
+	private void Question_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(WizardQuestionViewModel.Answer) || e.PropertyName == nameof(WizardQuestionViewModel.BoolAnswer))
+		{
+			EvaluateQuestionVisibility();
+		}
+	}
+
+	private void EvaluateQuestionVisibility()
+	{
+		bool anyChanged = false;
+		foreach (var q in Questions)
+		{
+			bool newVisibility = true;
+			if (string.IsNullOrEmpty(q.DependsOn))
+			{
+				newVisibility = true;
+			}
+			else
+			{
+				var parentQuestion = Questions.FirstOrDefault(p => p.Id == q.DependsOn);
+				if (parentQuestion != null)
+				{
+					if (string.IsNullOrEmpty(parentQuestion.Answer))
+					{
+						newVisibility = false;
+					}
+					else if (parentQuestion.IsMultiSelect)
+					{
+						var selectedOptions = parentQuestion.Answer.Split(',').Select(a => a.Trim()).ToList();
+						var targetValues = q.DependsOnValue.Split('|').Select(v => v.Trim()).ToList();
+						newVisibility = selectedOptions.Any(opt => targetValues.Contains(opt));
+					}
+					else
+					{
+						var targetValues = q.DependsOnValue.Split('|').Select(v => v.Trim()).ToList();
+						newVisibility = targetValues.Any(v => parentQuestion.Answer.Contains(v, StringComparison.OrdinalIgnoreCase));
+					}
+				}
+				else
+				{
+					newVisibility = false;
+				}
+			}
+
+			if (q.IsVisible != newVisibility)
+			{
+				q.IsVisible = newVisibility;
+				anyChanged = true;
+			}
+		}
+
+		if (anyChanged)
+		{
+			OnPropertyChanged(nameof(Questions));
 		}
 	}
 

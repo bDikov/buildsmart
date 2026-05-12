@@ -46,6 +46,14 @@ public class ScopeGenerationWorker
 			return;
 		}
 
+		// If the job was previously marked as Rejected due to a crash, reset it for the retry.
+		if (jobPost.Status == JobPostStatus.Rejected)
+		{
+			jobPost.SubmitForScopeGeneration();
+			unitOfWork.JobPosts.Update(jobPost);
+			await unitOfWork.SaveChangesAsync();
+		}
+
 		try
 		{
 			var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
@@ -430,6 +438,8 @@ public class ScopeGenerationWorker
 			{
 				_logger.LogError(dbEx, "Failed to update JobPost status after pricing failure.");
 			}
+
+			throw; // Rethrow to ensure Hangfire registers the failure and triggers a retry
 		}
 	}
 
@@ -569,6 +579,18 @@ public class ScopeGenerationWorker
 				// Broadcast to Admin UI that the PDF is ready
 				var hubContext = pdfScope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<BuildSmart.Api.Hubs.NotificationHub>>();
 				await hubContext.Clients.All.SendAsync("OfferRegenerated", projectId);
+			}
+			finally
+			{
+				CultureInfo.CurrentUICulture = originalCulture;
+			}
+		}
+		finally
+		{
+			pdfLock.Release();
+		}
+	}
+}.SendAsync("OfferRegenerated", projectId);
 			}
 			finally
 			{

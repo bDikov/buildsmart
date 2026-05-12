@@ -524,4 +524,46 @@
   <data name="Settings_Colorful" xml:space="preserve">
     <value>Цветна</value>
   </data>
+  <data name="Notifications_Title" xml:space="preserve">
+    <value>Известия</value>
+  </data>
+  <data name="Notifications_Loading" xml:space="preserve">
+    <value>Зареждане на известия...</value>
+  </data>
+  <data name="Notifications_EmptyTitle" xml:space="preserve">
+    <value>Нямате нови известия.</value>
+  </data>
+  <data name="Notifications_EmptySubtitle" xml:space="preserve">
+    <value>Важните актуализации ще се появяват тук.</value>
+  </data>
+  <data name="Notifications_ClearAll" xml:space="preserve">
+    <value>Изчистване на всички известия</value>
+  </data>
+  <data name="Status_Active" xml:space="preserve">
+    <value>Активен</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>Завършен</value>
+  </data>
+  <data name="Status_Archived" xml:space="preserve">
+    <value>Архивиран</value>
+  </data>
+  <data name="Status_UnderReview" xml:space="preserve">
+    <value>В процес на преглед</value>
+  </data>
+  <data name="Status_GeneratingScope" xml:space="preserve">
+    <value>Генериране на оферта</value>
+  </data>
+  <data name="Status_BiddingClosed" xml:space="preserve">
+    <value>Наддаването е приключило</value>
+  </data>
+  <data name="Status_Contracted" xml:space="preserve">
+    <value>Договорен</value>
+  </data>
+  <data name="Status_Cancelled" xml:space="preserve">
+    <value>Отменен</value>
+  </data>
+  <data name="Status_Expired" xml:space="preserve">
+    <value>Изтекъл</value>
+  </data>
 </root>

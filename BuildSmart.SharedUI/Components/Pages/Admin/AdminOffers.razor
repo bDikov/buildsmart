@@ -64,7 +64,7 @@
                                     @project.Homeowner.FirstName @project.Homeowner.LastName (@project.Homeowner.Email)
                                 </p>
                             </div>
-                            <span class="status-badge @project.Status.ToString().ToLower()">@project.Status</span>
+                            <span class="status-badge @project.Status.ToString().ToLower()">@Loc[$"Status_{project.Status}"]</span>
                         </div>
                         
                         <hr class="divider" />

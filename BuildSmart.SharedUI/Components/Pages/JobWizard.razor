@@ -77,36 +77,62 @@
                         {
                             @foreach (var q in ViewModel.Questions)
                             {
-                                <div class="mb-4">
-                                    <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
-                                    <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: var(--text-primary);">
-                                        @q.Text
-                                        @if (q.IsRequired)
-                                        {
-                                            <span class="text-danger ms-1">*</span>
-                                        }
-                                    </label>
+                                @if (q.IsVisible)
+                                {
+                                    <div class="mb-4">
+                                        <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
+                                        <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: var(--text-primary);">
+                                            @q.Text
+                                            @if (q.IsRequired)
+                                            {
+                                                <span class="text-danger ms-1">*</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(q.HintText))
+                                            {
+                                                <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@q.HintText">(?)</span>
+                                            }
+                                        </label>
 
-                                    @if (q.IsText)
-                                    {
-                                        <input type="text" class="bs-input" placeholder="@Loc["JobWizard_TypeAnswerHere"]" @bind="q.Answer" />
-                                    }
-                                    else if (q.IsChoice && q.Options != null)
-                                    {
-                                        <BuildSmart.SharedUI.Components.BsDropdown 
-                                            TValue="string" 
-                                            Options="q.Options" 
-                                            @bind-Value="q.Answer" 
-                                            Placeholder="@Loc["JobWizard_SelectOption"]" />
-                                    }
-                                    else if (q.IsBoolean)
-                                    {
-                                        <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                            <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                            <label class="form-check-label" for="@($"check_{q.Id}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@Loc["JobWizard_Yes"]</label>
-                                        </div>
-                                    }
-                                </div>
+                                        @if (q.IsText)
+                                        {
+                                            <input type="text" class="bs-input" placeholder="@Loc["JobWizard_TypeAnswerHere"]" @bind="q.Answer" />
+                                        }
+                                        else if (q.IsNumber)
+                                        {
+                                            <input type="number" class="bs-input" placeholder="0" @bind="q.Answer" />
+                                        }
+                                        else if (q.IsChoice && q.Options != null)
+                                        {
+                                            <BuildSmart.SharedUI.Components.BsDropdown 
+                                                TValue="string" 
+                                                Options="q.Options" 
+                                                @bind-Value="q.Answer" 
+                                                Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                        }
+                                        else if (q.IsMultiSelect && q.Options != null)
+                                        {
+                                            <div class="d-flex flex-column gap-2">
+                                                @foreach (var opt in q.Options)
+                                                {
+                                                    <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
+                                                        <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{opt.GetHashCode()}")" 
+                                                               checked="@(q.Answer.Contains(opt))"
+                                                               @onchange="@(e => q.ToggleMultiSelectOption(opt, (bool)(e.Value ?? false)))" 
+                                                               style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
+                                                        <label class="form-check-label" for="@($"check_{q.Id}_{opt.GetHashCode()}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@opt</label>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else if (q.IsBoolean)
+                                        {
+                                            <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
+                                                <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
+                                                <label class="form-check-label" for="@($"check_{q.Id}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@Loc["JobWizard_Yes"]</label>
+                                            </div>
+                                        }
+                                    </div>
+                                }
                             }
                         }
 

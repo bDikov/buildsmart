@@ -388,11 +388,7 @@
 
     private string FormatStatus(ProjectStatus status)
     {
-        return status switch
-        {
-            ProjectStatus.UnderReview => "Under Review",
-            _ => status.ToString()
-        };
+        return Loc[$"Status_{status}"];
     }
 
     private void HandleProjectClick(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)

@@ -353,7 +353,18 @@
         if (ViewModel.Project == null)
             return false;
 
-        return ViewModel.Project.HasOfferPdf;
+        if (!ViewModel.Project.HasOfferPdf)
+            return false;
+
+        if (ViewModel.Project.JobPosts != null && ViewModel.Project.JobPosts.Any(jp => 
+            jp.Status == JobPostStatus.Draft || 
+            jp.Status == JobPostStatus.GeneratingScope || 
+            jp.Status == JobPostStatus.Rejected))
+        {
+            return false;
+        }
+
+        return true;
     }
     private void DownloadMasterOffer()
     {

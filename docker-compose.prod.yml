@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
+      POSTGRES_DB: ${POSTGRES_DB:-buildsmart_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-buildsmart_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: BuildSmart.Api/Dockerfile
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Database=${POSTGRES_DB:-buildsmart_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres_password}
+      - ASPNETCORE_URLS=http://+:8080
+      # Provide valid Gemini API Key on VPS
+      - GeminiAi__ApiKey=${GEMINI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: BuildSmart.Web/Dockerfile
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      # Inform the Web UI where the GraphQL endpoint lives, using the Caddy domain
+      - ApiConfig__BaseUrlOverride=https://${DOMAIN_API:-api.buildsmart.localhost}
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN_WEB=${DOMAIN_WEB:-app.buildsmart.localhost}
+      - DOMAIN_API=${DOMAIN_API:-api.buildsmart.localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

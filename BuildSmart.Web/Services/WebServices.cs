@@ -11,6 +11,7 @@ namespace BuildSmart.Web.Services;
 public static class BlazorCircuitContext
 {
     public static readonly AsyncLocal<IServiceProvider?> CurrentServices = new();
+    public static readonly AsyncLocal<string?> CurrentToken = new();
 }
 
 public class CircuitContextHandler : CircuitHandler
@@ -50,6 +51,7 @@ public class WebAuthService : IAuthService
             if (!string.IsNullOrEmpty(cookieToken))
             {
                 _cachedToken = cookieToken;
+                BlazorCircuitContext.CurrentToken.Value = cookieToken;
             }
         }
         catch { }
@@ -75,6 +77,7 @@ public class WebAuthService : IAuthService
     public async Task SaveTokenAsync(string token)
     {
         _cachedToken = token;
+        BlazorCircuitContext.CurrentToken.Value = token;
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
@@ -87,6 +90,7 @@ public class WebAuthService : IAuthService
     public async Task ClearTokenAsync()
     {
         _cachedToken = null;
+        BlazorCircuitContext.CurrentToken.Value = null;
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "auth_token");

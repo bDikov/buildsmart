@@ -1,0 +1,7 @@
+{$DOMAIN_WEB} {
+	reverse_proxy web:8080
+}
+
+{$DOMAIN_API} {
+	reverse_proxy api:8080
+}

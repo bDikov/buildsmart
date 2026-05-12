@@ -1,5 +1,11 @@
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    var theme = HttpContextAccessor.HttpContext?.Request.Cookies["user_theme"] ?? "system";
+    var themeAttribute = theme != "system" ? $"data-theme=\"{theme}\"" : "";
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" @((MarkupString)themeAttribute)>
 
 <head>
     <meta charset="utf-8" />
