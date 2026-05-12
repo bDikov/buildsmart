@@ -1,5 +1,6 @@
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Domain.Enums;
 using System.Text.Json;
 using System.Text;
 using Hangfire;
@@ -579,18 +580,6 @@ public class ScopeGenerationWorker
 				// Broadcast to Admin UI that the PDF is ready
 				var hubContext = pdfScope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<BuildSmart.Api.Hubs.NotificationHub>>();
 				await hubContext.Clients.All.SendAsync("OfferRegenerated", projectId);
-			}
-			finally
-			{
-				CultureInfo.CurrentUICulture = originalCulture;
-			}
-		}
-		finally
-		{
-			pdfLock.Release();
-		}
-	}
-}.SendAsync("OfferRegenerated", projectId);
 			}
 			finally
 			{

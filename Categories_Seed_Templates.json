@@ -55,7 +55,7 @@
     "name": "Бояджийски и шпакловъчни услуги (Painting)",
     "templateStructure": {
       "questions": [
-        { "id": "paint_tasks", "text": "Какви дейности са необходими?", "type": "multiselect", "required": true, "options": ["Цялостна шпакловка", "Боядисване", "Сваляне на тапети"] },
+        { "id": "paint_tasks", "text": "Какви дейности са необходими?", "type": "multiselect", "required": true, "options": ["Цялостна шпакловка", "Само боядисване", "Сваляне на тапети"] },
         { "id": "paint_sqm", "text": "Каква е общата площ на стените и таваните (кв.м.)?", "type": "number", "required": true },
         { "id": "paint_trim_doors_count", "text": "Колко интериорни врати или декоративни первази (л.м.) ще се боядисват?", "type": "number", "required": true },
         { "id": "paint_colors_count", "text": "Колко различни цвята ще се използват?", "type": "number", "required": true },
