@@ -14,7 +14,9 @@ public class AppDbContext : DbContext
     public DbSet<HomeownerProfile> HomeownerProfiles { get; set; } = null!;
 	public DbSet<TradesmanSkill> TradesmanSkills { get; set; } = null!;
 	public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
+	public DbSet<ServiceCategoryTranslation> ServiceCategoryTranslations { get; set; } = null!;
 	public DbSet<ServiceSku> ServiceSkus { get; set; } = null!;
+	public DbSet<ServiceSkuTranslation> ServiceSkuTranslations { get; set; } = null!;
 	public DbSet<TradesmanProfile> TradesmanProfiles { get; set; } = null!;
 	public DbSet<Project> Projects { get; set; } = null!;
 	public DbSet<JobPost> JobPosts { get; set; } = null!;
@@ -24,6 +26,13 @@ public class AppDbContext : DbContext
 	public DbSet<JobTask> JobTasks { get; set; } = null!;
 	public DbSet<TaskSkuItem> TaskSkuItems { get; set; } = null!;
 	public DbSet<TaskAcceptanceCriteria> TaskAcceptanceCriteria { get; set; } = null!;
+    
+    // AI Calculations
+    public DbSet<AiCalculation> AiCalculations { get; set; } = null!;
+    public DbSet<AiCalculationTask> AiCalculationTasks { get; set; } = null!;
+    public DbSet<AiCalculationSkuItem> AiCalculationSkuItems { get; set; } = null!;
+    public DbSet<AiCalculationCriteria> AiCalculationCriteria { get; set; } = null!;
+
 	public DbSet<BidItem> BidItems { get; set; } = null!;
 	public DbSet<TradesmanAuctionAction> TradesmanAuctionActions { get; set; } = null!;
 	public DbSet<Booking> Bookings { get; set; } = null!;

@@ -17,7 +17,7 @@
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p>Loading project details...</p>
+                    <p>@Loc["ProjectDetail_Loading"]</p>
                 </div>
             }
             else if (ViewModel.Project != null)
@@ -32,32 +32,46 @@
                     </button>
                     <div class="header-content">
                         <h2 class="page-title">@ViewModel.Project.Title</h2>
-                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@ViewModel.Project.Status</span>
+                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@Loc[$"Status_{ViewModel.Project.Status}"]</span>
                     </div>
                 </div>
 
                 <div class="overview-card bs-card mb-4">
-                    <h3 class="section-title text-primary mb-2">Overview</h3>
-                    <p class="project-description">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h3 class="section-title mb-0" style="color: var(--color-primary);">@Loc["ProjectDetail_Overview"]</h3>
+                        
+                        @if (IsMasterOfferReady())
+                        {
+                            <button class="bs-btn-primary" @onclick="DownloadMasterOffer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                @Loc["ProjectDetail_DownloadOffer", "Download Official Offer"]
+                            </button>
+                        }
+                    </div>
+                    <p class="project-description mt-2">
                         @(string.IsNullOrEmpty(ViewModel.Project.GeneralSummary) ? ViewModel.Project.Description : ViewModel.Project.GeneralSummary)
                     </p>
                     
                     @if (ViewModel.Project.Status == ProjectStatus.Draft)
                     {
                         <div class="mt-3">
-                            <button class="btn btn-warning w-100 text-white fw-bold" @onclick='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")'>
-                                Continue Editing Draft
+                            <button class="bs-btn-primary w-100" @onclick='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")'>
+                                @Loc["ProjectDetail_ContinueDraft"]
                             </button>
                         </div>
                     }
                 </div>
 
-                <h3 class="section-title">Jobs</h3>
+                <h3 class="section-title">@Loc["ProjectDetail_JobsTitle"]</h3>
 
                 <div class="job-posts-list">
                     @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
                     {
-                        <p class="text-muted fst-italic">No jobs have been added to this project yet.</p>
+                        <p class="text-muted fst-italic">@Loc["ProjectDetail_NoJobs"]</p>
                     }
                     else
                     {
@@ -69,49 +83,83 @@
                                     <h4 class="job-title">@job.Title</h4>
                                     <div class="d-flex justify-content-between">
                                         <span class="job-category">@job.ServiceCategory.Name</span>
-                                        <span class="job-status status-@(job.Status.ToString().ToLower())">@job.Status</span>
+                                        <span class="job-status status-@(job.Status.ToString().ToLower())">@Loc[$"Status_{job.Status}"]</span>
                                     </div>
                                 </div>
 
+                                @{
+                                    bool isExpanded = _expandedJobs.Contains(job.Id);
+                                    string scopeClass = isExpanded ? "scope-view expanded" : "scope-view collapsed";
+                                    string descClass = isExpanded ? "job-description expanded" : "job-description collapsed";
+                                }
+
                                 @if (!string.IsNullOrEmpty(job.GeneratedScope) && job.Status != JobPostStatus.Draft)
                                 {
-                                    <div class="scope-view mt-3 mb-3">
-                                        <div class="scope-text text-muted" style="font-size: 13px;">
+                                    <div class="@scopeClass mt-3 mb-3">
+                                        <div class="scope-text">
                                             @((MarkupString)Markdig.Markdown.ToHtml(job.GeneratedScope))
                                         </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button class="bs-btn-dark btn-sm" @onclick="() => ToggleJobExpansion(job.Id)">
+                                            @(isExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
+                                        </button>
+                                        <button class="bs-btn-dark btn-sm" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
+                                            @Loc["ProjectDetail_SeeTasks"]
+                                        </button>
                                     </div>
                                 }
                                 else
                                 {
-                                    <p class="job-description mt-3 mb-3">@job.Description</p>
+                                    <div class="@descClass mt-3 mb-3">
+                                        @job.Description
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        @if (job.Description?.Length > 150)
+                                        {
+                                            <button class="bs-btn-dark btn-sm" @onclick="() => ToggleJobExpansion(job.Id)">
+                                                @(isExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <div></div>
+                                        }
+                                        @if (job.Status != JobPostStatus.Draft)
+                                        {
+                                            <button class="bs-btn-dark btn-sm" @onclick='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={job.Id}")'>
+                                                @Loc["ProjectDetail_SeeTasks"]
+                                            </button>
+                                        }
+                                    </div>
                                 }
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex flex-column gap-2 mt-3">
                                     @if (job.Status == JobPostStatus.Open)
                                     {
-                                        <button class="btn btn-outline-success w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewTaskBreakdownCommand.ExecuteAsync(job)">
-                                            View Task Breakdown
+                                        <button class="bs-btn-dark w-100" @onclick="() => ViewModel.ViewTaskBreakdownCommand.ExecuteAsync(job)">
+                                            @Loc["ProjectDetail_ViewTaskBreakdown"]
                                         </button>
                                     }
 
                                     @if (job.Bids != null && job.Bids.Any())
                                     {
-                                        <button class="btn btn-primary w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
-                                            View Offers (@job.Bids.Count)
+                                        <button class="bs-btn-primary w-100" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
+                                            @string.Format(Loc["ProjectDetail_ViewOffersCount"], job.Bids.Count)
                                         </button>
                                     }
                                     else if (job.Status == JobPostStatus.Open)
                                     {
-                                        <button class="btn btn-outline-primary w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
-                                            View Auction Hub (0 Offers)
+                                        <button class="bs-btn-dark w-100" @onclick="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(job)">
+                                            @Loc["ProjectDetail_ViewAuctionZero"]
                                         </button>
                                     }
                                     
                                     @if (job.Status == JobPostStatus.Rejected || job.Status == JobPostStatus.WaitingForUserReview)
                                     {
-                                        <button class="btn btn-warning text-white w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.EditAnswersCommand.ExecuteAsync(job)">Edit Answers</button>
-                                        <button class="btn btn-success w-100 fw-bold" style="border-radius: 10px;" @onclick="() => ViewModel.ReviewScopeCommand.ExecuteAsync(job)">Review AI Scope</button>
+                                        <button class="bs-btn-dark w-100 mb-2" @onclick="() => ViewModel.EditAnswersCommand.ExecuteAsync(job)">@Loc["ProjectDetail_EditAnswers"]</button>
+                                        <button class="bs-btn-primary w-100" @onclick="() => ViewModel.ReviewScopeCommand.ExecuteAsync(job)">@Loc["ProjectDetail_ReviewScope"]</button>
                                     }
                                 </div>
                             </div>
@@ -196,10 +244,10 @@
     }
 
     .status-draft { color: gray; }
-    .status-open { color: #4CAF50; }
-    .status-waitingforuserreview { color: orange; }
-    .status-waitingforadminreview { color: #1976D2; }
-    .status-rejected { color: #D32F2F; }
+    .status-open { color: var(--color-success); }
+    .status-waitingforuserreview { color: var(--color-warning); }
+    .status-waitingforadminreview { color: var(--color-info); }
+    .status-rejected { color: var(--color-danger); }
 
     .section-title {
         font-size: 20px;
@@ -248,20 +296,94 @@
     .job-description {
         font-size: 14px;
         color: var(--text-secondary);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .scope-view.collapsed, .job-description.collapsed {
+        max-height: 150px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .scope-view.collapsed::after, .job-description.collapsed::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: linear-gradient(transparent, var(--bg-card));
+    }
+
+    .scope-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .scope-text p {
+        color: var(--text-secondary);
+        margin-bottom: 10px;
     }
 </style>
 
 @code {
     [SupplyParameterFromQuery]
     public Guid? ProjectId { get; set; }
+    
+    [SupplyParameterFromQuery]
+    public Guid? JobId { get; set; }
+
+    private HashSet<Guid> _expandedJobs = new();
+
+    private void ToggleJobExpansion(Guid jobId)
+    {
+        if (_expandedJobs.Contains(jobId))
+            _expandedJobs.Remove(jobId);
+        else
+            _expandedJobs.Add(jobId);
+    }
+
+    private bool IsMasterOfferReady()
+    {
+        if (ViewModel.Project == null)
+            return false;
+
+        if (!ViewModel.Project.HasOfferPdf)
+            return false;
+
+        if (ViewModel.Project.JobPosts != null && ViewModel.Project.JobPosts.Any(jp => 
+            jp.Status == JobPostStatus.Draft || 
+            jp.Status == JobPostStatus.GeneratingScope || 
+            jp.Status == JobPostStatus.Rejected))
+        {
+            return false;
+        }
+
+        return true;
+    }
+    private void DownloadMasterOffer()
+    {
+        if (ViewModel.Project != null)
+        {
+            var url = $"https://localhost:7212/api/offers/{ViewModel.Project.Id}/download";
+            NavManager.NavigateTo(url, forceLoad: true);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        if (ProjectId.HasValue)
-        {
-            await ViewModel.LoadProjectAsync(ProjectId.Value);
-        }
+        
+        var query = new Dictionary<string, object>();
+        if (ProjectId.HasValue) query["ProjectId"] = ProjectId.Value;
+        if (JobId.HasValue) query["JobId"] = JobId.Value;
+        
+        ViewModel.ApplyQueryAttributes(query);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

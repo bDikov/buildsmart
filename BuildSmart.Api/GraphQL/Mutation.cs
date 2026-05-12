@@ -238,6 +238,50 @@ public class Mutation
 	}
 
 	[Authorize]
+	public async Task<User> UpdateUserLanguage(
+		string languageCode,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user == null) throw new GraphQLException("User not found.");
+
+		user.PreferredLanguage = languageCode;
+		unitOfWork.Users.Update(user);
+		await unitOfWork.SaveChangesAsync();
+
+		return user;
+	}
+
+	[Authorize]
+	public async Task<User> UpdateUserTheme(
+		string theme,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var user = await unitOfWork.Users.GetByIdAsync(userId);
+		if (user == null) throw new GraphQLException("User not found.");
+
+		user.PreferredTheme = theme;
+		unitOfWork.Users.Update(user);
+		await unitOfWork.SaveChangesAsync();
+
+		return user;
+	}
+
+	[Authorize]
 	public async Task<User> UpdateUserProfile(
 		Guid userId,
 		string firstName,
@@ -293,9 +337,10 @@ public class Mutation
 		Guid homeownerId,
 		string title,
 		string description,
+		string? languageCode,
 		[Service] IJobPostService jobPostService)
 	{
-		return await jobPostService.CreateProjectAsync(homeownerId, title, description);
+		return await jobPostService.CreateProjectAsync(homeownerId, title, description, languageCode);
 	}
 
 	[Authorize]
@@ -323,7 +368,50 @@ public class Mutation
 			throw new GraphQLException(new Error("You do not have permission to delete this project.", "AUTH_NOT_AUTHORIZED"));
 		}
 
+		// Business Rule: Homeowners cannot delete active projects
+		if (!isAdmin && project.Status == Core.Domain.Enums.ProjectStatus.Active)
+		{
+			throw new GraphQLException(new Error("Homeowners cannot delete a project while it is Active.", "PROJECT_IS_ACTIVE"));
+		}
+
 		await unitOfWork.Projects.DeleteAsync(projectId);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+
+	[Authorize]
+	public async Task<bool> DeleteJobPost(
+		Guid jobPostId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var jobPost = await unitOfWork.JobPosts.GetByIdAsync(jobPostId);
+
+		if (jobPost == null)
+		{
+			throw new GraphQLException("Job post not found.");
+		}
+
+		// Security Check: Ensure the user owns the project or is an Admin
+		var isAdmin = claimsPrincipal.IsInRole(UserRoleTypes.Admin.ToString());
+		if (!isAdmin && jobPost.Project.HomeownerId != userId)
+		{
+			throw new GraphQLException(new Error("You do not have permission to delete this job.", "AUTH_NOT_AUTHORIZED"));
+		}
+
+		// Business Rule: Homeowners cannot delete jobs from active projects
+		if (!isAdmin && jobPost.Project.Status == Core.Domain.Enums.ProjectStatus.Active)
+		{
+			throw new GraphQLException(new Error("Homeowners cannot delete a job while its parent project is Active.", "PROJECT_IS_ACTIVE"));
+		}
+
+		unitOfWork.JobPosts.Delete(jobPost);
 		await unitOfWork.SaveChangesAsync();
 		return true;
 	}
@@ -593,6 +681,28 @@ public class Mutation
 		Guid? adminId = (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var id)) ? id : null;
 
 		await jobPostService.AdminReviewJobScopeAsync(jobPostId, approved, feedback, adminId);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> AdminRegenerateOffer(
+		Guid projectId,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] BuildSmart.Core.Application.Interfaces.IScopeGenerationQueue scopeQueue)
+	{
+		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+		if (project == null) throw new GraphQLException("Project not found.");
+
+		foreach (var job in project.JobPosts)
+		{
+			// Reset status to GeneratingScope so UI shows it's loading, and it allows background retry.
+			job.SubmitForScopeGeneration();
+			unitOfWork.JobPosts.Update(job);
+			
+			await scopeQueue.QueuePricingUpdateAsync(job.Id, CancellationToken.None);
+		}
+		await unitOfWork.SaveChangesAsync();
+		
 		return true;
 	}
 

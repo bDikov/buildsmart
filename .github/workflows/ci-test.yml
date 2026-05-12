@@ -1,0 +1,36 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore dependencies for API Tests
+      run: dotnet restore BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj
+
+    - name: Restore dependencies for Domain Tests
+      run: dotnet restore BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj
+
+    - name: Run API Tests
+      run: dotnet test BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj --no-restore --verbosity normal -c Release
+
+    - name: Run Domain Tests
+      run: dotnet test BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj --no-restore --verbosity normal -c Release

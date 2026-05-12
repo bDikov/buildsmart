@@ -1,0 +1,6 @@
+mutation UpdateUserLanguage($languageCode: String!) {
+  updateUserLanguage(languageCode: $languageCode) {
+    id
+    preferredLanguage
+  }
+}

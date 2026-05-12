@@ -78,6 +78,6 @@ public class JobPostConfiguration : IEntityTypeConfiguration<JobPost>
         builder.HasMany(jp => jp.Bids)
             .WithOne(b => b.JobPost)
             .HasForeignKey(b => b.JobPostId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

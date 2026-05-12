@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:BuildSmart.Maui"
              x:Class="BuildSmart.Maui.Views.BlazorHostPage"
-             Title="Blazor Host">
+             Shell.NavBarIsVisible="False">
 
     <BlazorWebView HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>

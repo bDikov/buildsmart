@@ -44,6 +44,7 @@ public partial class Program
 		});
 
 		// --- 1. Add services to the container (Dependency Injection) ---
+		builder.Services.AddLocalization();
 
 		// Add DbContext and PostgreSQL Connection
 		builder.Services.AddDbContext<AppDbContext>(options =>
@@ -86,17 +87,30 @@ public partial class Program
 		builder.Services.AddScoped<IAuthService, AuthService>();
 		builder.Services.AddScoped<INotificationService, BuildSmart.Api.Services.NotificationService>();
 		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
+		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
 		builder.Services.AddScoped<IAiService, GeminiAiService>();
 
 		// --- Hangfire Configuration ---
-		builder.Services.AddHangfire(configuration => configuration
-			.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-			.UseSimpleAssemblyNameTypeSerializer()
-			.UseRecommendedSerializerSettings()
-			.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+		builder.Services.AddHangfire(configuration => 
+		{
+			configuration
+				.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+				.UseSimpleAssemblyNameTypeSerializer()
+				.UseRecommendedSerializerSettings();
+
+			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+			if (!string.IsNullOrEmpty(connectionString))
+			{
+				configuration.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString));
+			}
+			else
+			{
+				configuration.UseInMemoryStorage();
+			}
+		});
 
 		builder.Services.AddHangfireServer(options =>
 		{
@@ -183,12 +197,20 @@ public partial class Program
 		// Add GraphQL Services (Hot Chocolate)
 		builder.Services
 			.AddGraphQLServer()
+			.ModifyCostOptions(o => 
+			{
+				o.EnforceCostLimits = false;
+				o.MaxFieldCost = 10000;
+				o.MaxTypeCost = 10000;
+			})
 			.AddUploadType()
 	.AddQueryType<QueryType>()
 	.AddMutationType<MutationType>()
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
 			.AddType<TradesmanSkillType>() 
 			.AddType<UserType>()
+            .AddType<ServiceCategoryType>()
+            .AddType<ServiceSkuType>()
 			.AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<MilestonePaymentType>()
@@ -207,17 +229,23 @@ public partial class Program
 			.AddProjections()
 			.AddFiltering()
 			.AddSorting()
-			.AddAuthorization()
-			// FIX 2: Use the service provider to get the connection string when needed.
-			.AddPostgresSubscriptions(options =>
+			.AddAuthorization();
+			
+		var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+		if (!string.IsNullOrEmpty(connectionString))
+		{
+			builder.Services.AddGraphQLServer().AddPostgresSubscriptions(options =>
 			{
-				var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 				options.ConnectionFactory = (token) =>
 				{
 					return new ValueTask<NpgsqlConnection>(new NpgsqlConnection(connectionString));
 				};
 			});
+		}
+		else
+		{
+			builder.Services.AddGraphQLServer().AddInMemorySubscriptions();
+		}
 
 		// Add other services like CORS, etc.
 		builder.Services.AddHttpContextAccessor();
@@ -231,7 +259,10 @@ public partial class Program
 			try
 			{
 				var context = services.GetRequiredService<AppDbContext>();
-				context.Database.Migrate(); // Apply any pending migrations
+				if (context.Database.IsRelational())
+				{
+					context.Database.Migrate(); // Apply any pending migrations
+				}
 				await context.SeedAdminUser(); // Seed the admin user
 				await context.SeedHomeownerUser(); // Seed the homeowner user
 				await context.SeedTradesmanUser(); // Seed the painter tradesman
@@ -251,9 +282,14 @@ public partial class Program
 			app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildSmart.Api v1"));
 		}
 
+        // Enable serving static files from wwwroot (like the generated PDFs)
+        app.UseStaticFiles();
+
 		app.UseCors(MyAllowSpecificOrigins);
 
 		app.UseRouting();
+
+		app.UseMiddleware<BuildSmart.Api.Middleware.LanguageMiddleware>();
 
 		app.UseHangfireDashboard("/hangfire");
 

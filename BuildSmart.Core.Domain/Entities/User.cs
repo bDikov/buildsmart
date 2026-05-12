@@ -21,6 +21,9 @@ public class User : BaseEntity
 	public string? EmailVerificationToken { get; set; }
 	public DateTime? EmailVerificationTokenExpires { get; set; }
 
-    public virtual HomeownerProfile? HomeownerProfile { get; set; }
+	public string PreferredLanguage { get; set; } = "bg";
+	public string PreferredTheme { get; set; } = "system";
+
+	public virtual HomeownerProfile? HomeownerProfile { get; set; }
 	public virtual TradesmanProfile? TradesmanProfile { get; set; }
 }

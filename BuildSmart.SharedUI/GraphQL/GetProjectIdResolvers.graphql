@@ -1,0 +1,7 @@
+query GetProjectIdFromJob($jobId: UUID!) {
+  allJobPosts(where: { id: { eq: $jobId } }) {
+    project {
+      id
+    }
+  }
+}

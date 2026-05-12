@@ -8,6 +8,8 @@ public class Project : BaseEntity
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     
+    public string LanguageCode { get; set; } = "en";
+    
     // The Homeowner who owns this project
     public Guid HomeownerId { get; set; }
     public User Homeowner { get; set; } = null!;
@@ -20,8 +22,15 @@ public class Project : BaseEntity
     /// </summary>
     public string? GeneralSummary { get; set; }
 
+    /// <summary>
+    /// The generated Master Offer PDF file.
+    /// </summary>
+    public byte[]? MasterOfferPdf { get; set; }
+
+    public bool HasOfferPdf => MasterOfferPdf != null && MasterOfferPdf.Length > 0;
+
     // Overall status of the project
-    public ProjectStatus Status { get; private set; } = ProjectStatus.Active;
+    public ProjectStatus Status { get; private set; } = ProjectStatus.Draft;
 
     public void SubmitForReview()
     {

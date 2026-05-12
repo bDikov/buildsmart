@@ -28,6 +28,14 @@ namespace BuildSmart.SharedUI.Services
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
 
+                // Check if the token has expired
+                if (jwtToken.ValidTo < DateTime.UtcNow)
+                {
+                    Console.WriteLine("[Auth] Token has expired. Clearing session.");
+                    await _authService.ClearTokenAsync();
+                    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                }
+
                 // Specify the role claim type so Blazor's <AuthorizeView Roles="..."> works correctly
                 var roleClaimType = jwtToken.Claims.FirstOrDefault(c => c.Type == "role" || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Type ?? "role";
                 
@@ -36,8 +44,9 @@ namespace BuildSmart.SharedUI.Services
 
                 return new AuthenticationState(user);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[Auth] Error parsing token: {ex.Message}");
                 // If anything fails (e.g. malformed token, secure storage crash), return an anonymous state so Blazor doesn't crash on startup
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }

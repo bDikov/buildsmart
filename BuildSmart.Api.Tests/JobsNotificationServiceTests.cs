@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BuildSmart.Api.Services;
 using MockQueryable.Moq;
+using MockQueryable.EntityFrameworkCore;
+using MockQueryable;
 
 namespace BuildSmart.Api.Tests;
 
@@ -57,7 +59,7 @@ public class JobsNotificationServiceTests
 		};
 
 		var tradesmen = new List<TradesmanProfile> { matchingTradesman1, matchingTradesman2, nonMatchingTradesman };
-		var mock = tradesmen.AsQueryable().BuildMock();
+		var mock = tradesmen.BuildMock();
 
 		_unitOfWorkMock.Setup(u => u.TradesmanProfiles.GetQueryable())
 			.Returns(mock);
@@ -66,26 +68,29 @@ public class JobsNotificationServiceTests
 		await _jobsNotificationService.NotifyTradesmenOfNewJobAsync(jobPost);
 
 		// Assert
-		_notificationServiceMock.Verify(n => n.SendNotificationAsync(
+		_notificationServiceMock.Verify(n => n.SendLocalizedNotificationAsync(
 		    matchingTradesman1.UserId,
-		    "New Job Opportunity",
-		    It.Is<string>(m => m.Contains(jobPost.Title)),
+		    "Title_NewJobOpportunity",
+		    "Msg_NewJobOpportunity",
+		    It.Is<object[]>(args => args != null && args[0].ToString() == jobPost.Title),
 		    jobPost.Id,
 		    "JobPost",
 		    It.IsAny<object>()), Times.Once);
 
-		_notificationServiceMock.Verify(n => n.SendNotificationAsync(
+		_notificationServiceMock.Verify(n => n.SendLocalizedNotificationAsync(
 		    matchingTradesman2.UserId,
-		    "New Job Opportunity",
-		    It.Is<string>(m => m.Contains(jobPost.Title)),
+		    "Title_NewJobOpportunity",
+		    "Msg_NewJobOpportunity",
+		    It.Is<object[]>(args => args != null && args[0].ToString() == jobPost.Title),
 		    jobPost.Id,
 		    "JobPost",
 		    It.IsAny<object>()), Times.Once);
 
-		_notificationServiceMock.Verify(n => n.SendNotificationAsync(
+		_notificationServiceMock.Verify(n => n.SendLocalizedNotificationAsync(
 		    nonMatchingTradesman.UserId,
 		    It.IsAny<string>(),
 		    It.IsAny<string>(),
+		    It.IsAny<object[]?>(),
 		    It.IsAny<Guid?>(),
 		    It.IsAny<string?>(),
 		    It.IsAny<object?>()), Times.Never);	}

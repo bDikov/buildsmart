@@ -1,0 +1,3 @@
+mutation DeleteJobPost($jobPostId: UUID!) {
+  deleteJobPost(jobPostId: $jobPostId)
+}

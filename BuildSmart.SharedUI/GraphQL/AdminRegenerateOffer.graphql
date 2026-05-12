@@ -1,0 +1,3 @@
+mutation AdminRegenerateOffer($projectId: UUID!) {
+  adminRegenerateOffer(projectId: $projectId)
+}

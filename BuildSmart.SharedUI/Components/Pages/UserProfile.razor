@@ -1,17 +1,19 @@
 @page "/user-profile"
 @using BuildSmart.SharedUI.ViewModels
 @using BuildSmart.SharedUI.Components
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject UserProfileViewModel ViewModel
 
 <div class="profile-page-container">
 	<div class="header-section">
-		<h2 class="page-title">Profile Settings</h2>
+		<h2 class="page-title">@Loc["UserProfile_PageTitle"]</h2>
 	</div>
 
 	@if (ViewModel.IsBusy && string.IsNullOrEmpty(ViewModel.FirstName))
 	{
 		<div class="loading-state">
-			<p>Loading profile...</p>
+			<p>@Loc["UserProfile_Loading"]</p>
 		</div>
 	}
 	else
@@ -20,7 +22,8 @@
 			<!-- The beautiful Profile Card we generated from Figma -->
 			<div class="profile-sidebar">
 			    <ProfileCard ViewModel="ViewModel" OnEditProfileClicked="OpenEditModal" OnMoreClicked="OpenSettingsModal" />
-			</div>		</div>
+			</div>
+		</div>
 
 		<!-- Edit Details Modal -->
 		@if (_showEditModal)
@@ -28,7 +31,7 @@
 			<div class="modal-overlay" @onclick="CloseEditModal">
 				<div class="modal-content bs-card" @onclick:stopPropagation="true">
 					<div class="modal-header">
-						<h3>Edit Details</h3>
+						<h3>@Loc["UserProfile_EditDetails"]</h3>
 						<button class="close-btn" @onclick="CloseEditModal">
 							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 								<path d="M18 6L6 18M6 6l12 12" />
@@ -38,21 +41,21 @@
 
 					<div class="modal-body">
 						<div class="form-group">
-							<label>Email</label>
+							<label>@Loc["UserProfile_Email"]</label>
 							<input class="bs-input" type="email" @bind="ViewModel.Email" />
 						</div>
 						<div class="form-group">
-							<label>Phone Number</label>
+							<label>@Loc["UserProfile_PhoneNumber"]</label>
 							<input class="bs-input" type="tel" @bind="ViewModel.PhoneNumber" />
 						</div>
 						<div class="form-group">
-							<label>Location</label>
+							<label>@Loc["UserProfile_Location"]</label>
 							<input class="bs-input" @bind="ViewModel.Location" />
 						</div>
 
 						<div class="modal-actions">
 							<button class="bs-btn-primary w-100" @onclick="SaveAndCloseModal">
-								Save Changes
+								@Loc["UserProfile_SaveChanges"]
 							</button>
 						</div>
 					</div>
@@ -60,7 +63,7 @@
 			</div>
 		}
 
-		<!-- Tradesman Settings Modal -->
+		<!-- Settings Modal -->
 		@if (_showSettingsModal)
 		{
 			<div class="modal-overlay" @onclick="CloseSettingsModal">

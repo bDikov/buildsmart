@@ -14,7 +14,7 @@ namespace BuildSmart.SharedUI.ViewModels.Admin;
 [QueryProperty(nameof(IsGlobalModeAsString), "isGlobalMode")]
 public partial class CategoryDetailViewModel : ObservableObject
 {
-    public static List<string> QuestionTypes => new() { "text", "number", "boolean", "choice" };
+    public static List<string> QuestionTypes => new() { "text", "number", "boolean", "choice", "multiselect" };
 
     private readonly IBuildSmartApiClient _apiClient;
 
@@ -68,7 +68,6 @@ public partial class CategoryDetailViewModel : ObservableObject
         if (Guid.TryParse(idAsString, out Guid result))
         {
             CategoryId = result;
-            LoadCategoryDetailsAsync(result);
         }
         else
         {
@@ -78,100 +77,56 @@ public partial class CategoryDetailViewModel : ObservableObject
 
 
 
-    private async void LoadCategoryDetailsAsync(Guid id)
-
+    public async Task LoadCategoryDetailsAsync(Guid id)
     {
-
         try
-
         {
-
             var result = await _apiClient.GetAllServiceCategories.ExecuteAsync();
-
             if (result.Errors.Count == 0 && result.Data?.AllServiceCategories is not null)
-
             {
-
                 var category = result.Data.AllServiceCategories.FirstOrDefault(c => c.Id == id);
-
                 if (category != null)
-
                 {
-
                     CategoryName = category.Name;
-
                     CategoryDescription = category.Description ?? string.Empty;
-
                     IsGlobal = category.IsGlobal;
-
                     Status = category.Status;
                     
                     // If we are editing a global category, hide the switch so it can't be turned off accidentally
                     if (IsGlobal) IsGlobalSwitchVisible = false;
 
                     if (!string.IsNullOrWhiteSpace(category.TemplateStructure))
-
                     {
-
                         var template = JsonNode.Parse(category.TemplateStructure);
-
                         if (template?["questions"] is JsonArray questionNodes)
-
                         {
-
                             Questions.Clear();
-
                             foreach (var qNode in questionNodes)
-
                             {
-
                                 if (qNode is JsonObject qObj)
-
                                 {
-
-                                                                                                            Questions.Add(new QuestionViewModel
-
-                                                                                                            {
-
-                                                                                                                Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
-
-                                                                                                                Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
-
-                                                                                                                                                        Type = qObj["type"]?.GetValue<string>() ?? "text",
-
-                                                                                                                                                        IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
-
-                                                                                                                                                        Options = qObj["options"] is JsonArray opts 
-
-                                                                                                                                                            ? new ObservableCollection<OptionViewModel>(opts.Select(o => new OptionViewModel(o?.GetValue<string>() ?? string.Empty)))
-
-                                                                                                                                                            : new ObservableCollection<OptionViewModel>()
-
-                                                                                                                                                    });
-
-                                                                                                                                                }
-
-                                                                                                                                            }
-
-                                                                                                                                        }
-
-                                                                                                                                    }
-
-                                                                                                                                }
-
-                                                                                                                            }
-
-                                                                                                                        }
-
-                                                                                                                        catch (Exception ex)
-
-                                                                                                                        {
-
-                                                                                                                            await AppServiceLocator.Alerts.DisplayAlert("Load Error", ex.ToString(), "OK");
-
-                                                                                                                        }
-
-                                                                                                                    }
+                                    Questions.Add(new QuestionViewModel
+                                    {
+                                        Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
+                                        Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
+                                        Type = qObj["type"]?.GetValue<string>() ?? "text",
+                                        IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
+                                        Options = qObj["options"] is JsonArray opts 
+                                            ? new ObservableCollection<OptionViewModel>(opts.Select(o => new OptionViewModel(o?.GetValue<string>() ?? string.Empty)))
+                                            : new ObservableCollection<OptionViewModel>()
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await AppServiceLocator.Alerts.DisplayAlert("Load Error", ex.ToString(), "OK");
+        }
+    }
 
                                                                                                                 
 

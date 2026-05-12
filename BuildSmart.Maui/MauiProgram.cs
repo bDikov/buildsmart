@@ -38,6 +38,8 @@ public static class MauiProgram
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
 
+        builder.Services.AddLocalization();
+
 		// Configure StrawberryShake GraphQL Client
 
 		builder.Services.AddSingleton<BuildSmart.SharedUI.MauiMocks.IMediaPicker, BuildSmart.Maui.Services.AppMediaPicker>();
@@ -104,7 +106,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<ScopeReviewPage>();
 		builder.Services.AddTransient<ScopeReviewViewModel>();
 
-		builder.Services.AddTransient<GeneratedOfferPage>();
 		builder.Services.AddTransient<GeneratedOfferViewModel>();
 
 		builder.Services.AddTransient<NotificationsViewModel>();
@@ -149,6 +150,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<UserManagementViewModel>();
 		builder.Services.AddTransient<UserEditPage>();
 		builder.Services.AddTransient<UserEditViewModel>();
+		builder.Services.AddTransient<AdminProjectsViewModel>();
 
 		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(Views.Admin.UserManagementPage), typeof(Views.Admin.UserManagementPage));
@@ -160,7 +162,6 @@ public static class MauiProgram
 		Routing.RegisterRoute(nameof(AdminCategorySkusPage), typeof(AdminCategorySkusPage));
 		Routing.RegisterRoute(nameof(UserEditPage), typeof(UserEditPage));
 		Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
-		Routing.RegisterRoute(nameof(GeneratedOfferPage), typeof(GeneratedOfferPage));
 		Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));
 		Routing.RegisterRoute(nameof(TaskBreakdownPage), typeof(TaskBreakdownPage));
 		Routing.RegisterRoute(nameof(BidDetailsPage), typeof(BidDetailsPage));

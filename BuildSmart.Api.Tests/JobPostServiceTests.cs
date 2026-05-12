@@ -17,6 +17,7 @@ public class JobPostServiceTests
     private readonly Mock<IScopeGenerationQueue> _mockQueue;
     private readonly Mock<INotificationService> _mockNotification;
     private readonly Mock<IJobsNotificationService> _mockJobsNotification;
+    private readonly Mock<IAiService> _mockAiService;
     private readonly JobPostService _service;
 
     public JobPostServiceTests()
@@ -25,12 +26,14 @@ public class JobPostServiceTests
         _mockQueue = new Mock<IScopeGenerationQueue>();
         _mockNotification = new Mock<INotificationService>();
         _mockJobsNotification = new Mock<IJobsNotificationService>();
+        _mockAiService = new Mock<IAiService>();
 
         _service = new JobPostService(
             _mockUow.Object,
             _mockQueue.Object,
             _mockNotification.Object,
-            _mockJobsNotification.Object
+            _mockJobsNotification.Object,
+            _mockAiService.Object
         );
     }
 
@@ -177,11 +180,12 @@ public class JobPostServiceTests
     {
         // Arrange
         var jobPostId = Guid.NewGuid();
-        var existingTask = new JobTask { Id = Guid.NewGuid(), Title = "Old Task" };
+        var existingTask = new JobTask { Id = Guid.NewGuid(), Title = "Old Task", SkuItems = new List<TaskSkuItem>() };
         var jobPost = new JobPost 
         { 
             Id = jobPostId, 
-            JobTasks = new List<JobTask> { existingTask } 
+            JobTasks = new List<JobTask> { existingTask },
+            ServiceCategoryId = Guid.NewGuid()
         };
 
         var mockJobTaskRepo = new Mock<IJobTaskRepository>();
@@ -190,7 +194,13 @@ public class JobPostServiceTests
         var mockJobPostRepo = new Mock<IJobPostRepository>();
         mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId))
             .ReturnsAsync(jobPost);
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId))
+            .ReturnsAsync(jobPost);
         _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockServiceSkuRepo = new Mock<IServiceSkuRepository>();
+        mockServiceSkuRepo.Setup(r => r.GetByCategoryAsync(It.IsAny<Guid>())).ReturnsAsync(new List<ServiceSku>());
+        _mockUow.Setup(u => u.ServiceSkus).Returns(mockServiceSkuRepo.Object);
 
         var newTasksInput = new List<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)>
         {
@@ -201,15 +211,81 @@ public class JobPostServiceTests
         await _service.UpdateJobTasksAsync(jobPostId, newTasksInput);
 
         // Assert
-        // 1. Verify old tasks were explicitly removed via Delete to prevent concurrency errors
-        mockJobTaskRepo.Verify(r => r.Delete(existingTask), Times.Once);
+        // 1. Verify old tasks were explicitly removed from the collection
+        jobPost.JobTasks.Should().NotContain(t => t.Title == "Old Task");
         
         // 2. Verify new tasks were added
-        mockJobTaskRepo.Verify(r => r.AddAsync(It.Is<JobTask>(t => t.Title == "New Task")), Times.Once);
+        jobPost.JobTasks.Should().Contain(t => t.Title == "New Task");
 
         // 3. Verify JobPost timestamp was updated and changes saved
-        mockJobPostRepo.Verify(r => r.Update(jobPost), Times.Once);
         _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+
+        // 4. Verify Pricing was queued
+        _mockQueue.Verify(q => q.QueuePricingUpdateAsync(jobPostId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateJobTasksAsync_ShouldPreserveEstimatedPriceForExistingTasks()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var existingTaskId = Guid.NewGuid();
+        var originalPrice = 150.50m;
+        
+        var existingTask = new JobTask 
+        { 
+            Id = existingTaskId, 
+            Title = "Old Task",
+            EstimatedPrice = originalPrice,
+            AcceptanceCriteria = new List<TaskAcceptanceCriteria>(),
+            SkuItems = new List<TaskSkuItem>()
+        };
+        
+        var jobPost = new JobPost 
+        { 
+            Id = jobPostId, 
+            JobTasks = new List<JobTask> { existingTask },
+            ServiceCategoryId = Guid.NewGuid()
+        };
+
+        var mockJobTaskRepo = new Mock<IJobTaskRepository>();
+        _mockUow.Setup(u => u.JobTasks).Returns(mockJobTaskRepo.Object);
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId))
+            .ReturnsAsync(jobPost);
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId))
+            .ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockServiceSkuRepo = new Mock<IServiceSkuRepository>();
+        mockServiceSkuRepo.Setup(r => r.GetByCategoryAsync(It.IsAny<Guid>())).ReturnsAsync(new List<ServiceSku>());
+        _mockUow.Setup(u => u.ServiceSkus).Returns(mockServiceSkuRepo.Object);
+
+        // Input provides the existing ID, meaning it's an update, not a replacement
+        var updateTasksInput = new List<(Guid? Id, string Title, string Description, int SequenceOrder, IEnumerable<(Guid? Id, string Description)> Criteria)>
+        {
+            (existingTaskId, "Updated Task Title", "Desc", 1, new List<(Guid? Id, string Description)>())
+        };
+
+        // Act
+        await _service.UpdateJobTasksAsync(jobPostId, updateTasksInput);
+
+        // Assert
+        // 1. Verify old task was NOT deleted
+        jobPost.JobTasks.Should().Contain(t => t.Id == existingTaskId);
+        
+        // 2. Verify task title was updated
+        existingTask.Title.Should().Be("Updated Task Title");
+        
+        // 3. Verify price was preserved (sync update does not touch price, AI worker handles it)
+        existingTask.EstimatedPrice.Should().Be(originalPrice);
+        
+        // 3. Verify JobPost timestamp was updated and changes saved
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+
+        // 4. Verify Pricing was queued
+        _mockQueue.Verify(q => q.QueuePricingUpdateAsync(jobPostId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

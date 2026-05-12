@@ -31,19 +31,35 @@ public class AuthHeaderHandler : DelegatingHandler
                 var services = asyncLocal.Value;
                 if (services != null)
                 {
-                    if (services.GetService(typeof(IAuthService)) is IAuthService scopedService)
+                    try
                     {
-                        currentAuthService = scopedService;
+                        if (services.GetService(typeof(IAuthService)) is IAuthService scopedService)
+                        {
+                            currentAuthService = scopedService;
+                        }
                     }
+                    catch (ObjectDisposedException) { }
                 }
             }
         }
 
         var token = await currentAuthService.GetTokenAsync();
 
+        // Fallback to AsyncLocal token if scoped service failed (e.g. disposed scope on background thread)
+        if (string.IsNullOrEmpty(token))
+        {
+            if (circuitContextType != null)
+            {
+                var field = circuitContextType.GetField("CurrentToken");
+                if (field != null && field.GetValue(null) is System.Threading.AsyncLocal<string?> asyncLocalToken)
+                {
+                    token = asyncLocalToken.Value;
+                }
+            }
+        }
+
         if (!string.IsNullOrEmpty(token))
         {
-            Console.WriteLine($"[AuthHeaderHandler] Attaching Token: {token.Substring(0, Math.Min(15, token.Length))}...");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
         else

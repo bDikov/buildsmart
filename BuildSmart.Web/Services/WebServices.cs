@@ -11,6 +11,7 @@ namespace BuildSmart.Web.Services;
 public static class BlazorCircuitContext
 {
     public static readonly AsyncLocal<IServiceProvider?> CurrentServices = new();
+    public static readonly AsyncLocal<string?> CurrentToken = new();
 }
 
 public class CircuitContextHandler : CircuitHandler
@@ -35,11 +36,25 @@ public class CircuitContextHandler : CircuitHandler
 public class WebAuthService : IAuthService
 {
     private readonly IJSRuntime _jsRuntime;
+    private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
     private string? _cachedToken;
 
-    public WebAuthService(IJSRuntime jsRuntime)
+    public WebAuthService(IJSRuntime jsRuntime, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
     {
         _jsRuntime = jsRuntime;
+        _httpContextAccessor = httpContextAccessor;
+        
+        // EAGERLY capture the token from the HttpContext immediately upon scoped creation (during Prerendering or initial HTTP request)
+        try
+        {
+            var cookieToken = _httpContextAccessor.HttpContext?.Request.Cookies["auth_token"];
+            if (!string.IsNullOrEmpty(cookieToken))
+            {
+                _cachedToken = cookieToken;
+                BlazorCircuitContext.CurrentToken.Value = cookieToken;
+            }
+        }
+        catch { }
     }
 
     public bool IsAuthenticated => !string.IsNullOrEmpty(_cachedToken);
@@ -47,9 +62,10 @@ public class WebAuthService : IAuthService
     public async Task<string?> GetTokenAsync()
     {
         if (_cachedToken != null) return _cachedToken;
+
+        // Try reading from localStorage via JSInterop
         try 
         {
-            // Only execute if not prerendering
             _cachedToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "auth_token");
         }
         catch (InvalidOperationException) { /* Static rendering context */ }
@@ -61,9 +77,12 @@ public class WebAuthService : IAuthService
     public async Task SaveTokenAsync(string token)
     {
         _cachedToken = token;
+        BlazorCircuitContext.CurrentToken.Value = token;
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
+            // Sync to a cookie so the browser sends it on the very first HTTP request (like a page refresh)
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'auth_token={token}; path=/; max-age=31536000; samesite=strict'");
         }
         catch { /* Ignore prerendering errors */ }
     }
@@ -71,9 +90,11 @@ public class WebAuthService : IAuthService
     public async Task ClearTokenAsync()
     {
         _cachedToken = null;
+        BlazorCircuitContext.CurrentToken.Value = null;
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "auth_token");
+            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'");
         }
         catch { /* Ignore prerendering errors */ }
     }
@@ -186,7 +207,8 @@ public class WebNavigationBridge : INavigationBridge
             url = $"{url}{separator}{queryString}";
         }
 
-        _navigationManager.NavigateTo(url);
+        bool forceLoad = url == "/" || url == "/login";
+        _navigationManager.NavigateTo(url, forceLoad);
         return Task.CompletedTask;
     }
 
@@ -204,32 +226,52 @@ public class WebAppMainThread : IAppMainThread
 
     public void BeginInvokeOnMainThread(Action action)
     {
+        var capturedServices = BlazorCircuitContext.CurrentServices.Value;
         if (DispatcherInvoke != null)
         {
             _ = DispatcherInvoke(() => 
             {
-                try { action(); }
+                var original = BlazorCircuitContext.CurrentServices.Value;
+                try 
+                { 
+                    BlazorCircuitContext.CurrentServices.Value = capturedServices;
+                    action(); 
+                }
                 catch (Exception ex) { Console.WriteLine($"Dispatcher error: {ex}"); }
+                finally { BlazorCircuitContext.CurrentServices.Value = original; }
             });
         }
         else
         {
             Task.Run(() => 
             {
-                try { action(); }
+                var original = BlazorCircuitContext.CurrentServices.Value;
+                try 
+                { 
+                    BlazorCircuitContext.CurrentServices.Value = capturedServices;
+                    action(); 
+                }
                 catch (Exception ex) { Console.WriteLine($"Task.Run error: {ex}"); }
+                finally { BlazorCircuitContext.CurrentServices.Value = original; }
             });
         }
     }
 
     public Task InvokeOnMainThreadAsync(Action action)
     {
+        var capturedServices = BlazorCircuitContext.CurrentServices.Value;
         if (DispatcherInvoke != null) 
         {
             return DispatcherInvoke(() => 
             {
-                try { action(); }
+                var original = BlazorCircuitContext.CurrentServices.Value;
+                try 
+                { 
+                    BlazorCircuitContext.CurrentServices.Value = capturedServices;
+                    action(); 
+                }
                 catch (Exception ex) { Console.WriteLine($"Dispatcher error: {ex}"); throw; }
+                finally { BlazorCircuitContext.CurrentServices.Value = original; }
             });
         }
         action();
@@ -238,12 +280,19 @@ public class WebAppMainThread : IAppMainThread
 
     public Task InvokeOnMainThreadAsync(Func<Task> func)
     {
+        var capturedServices = BlazorCircuitContext.CurrentServices.Value;
         if (DispatcherInvokeAsync != null) 
         {
             return DispatcherInvokeAsync(async () => 
             {
-                try { await func(); }
+                var original = BlazorCircuitContext.CurrentServices.Value;
+                try 
+                { 
+                    BlazorCircuitContext.CurrentServices.Value = capturedServices;
+                    await func(); 
+                }
                 catch (Exception ex) { Console.WriteLine($"Dispatcher error: {ex}"); throw; }
+                finally { BlazorCircuitContext.CurrentServices.Value = original; }
             });
         }
         return func();

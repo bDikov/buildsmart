@@ -11,4 +11,7 @@ public interface IJobTaskRepository
     void Update(JobTask entity);
     void Delete(JobTask entity);
     void RemoveRange(IEnumerable<JobTask> entities);
+    
+    void RemoveSkuItems(IEnumerable<TaskSkuItem> skuItems);
+    void RemoveAcceptanceCriteria(IEnumerable<TaskAcceptanceCriteria> criteria);
 }

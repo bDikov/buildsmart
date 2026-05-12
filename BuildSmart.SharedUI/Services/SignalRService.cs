@@ -12,6 +12,7 @@ public class SignalRService : IAsyncDisposable
     public event Action<string, string, object?>? NotificationReceived;
     public event Action<System.Text.Json.JsonElement>? QuestionUpdated;
     public event Action<System.Text.Json.JsonElement>? NewReplyReceived;
+    public event Action<Guid>? OfferRegenerated;
 
     public SignalRService(IAuthService authService)
     {
@@ -59,6 +60,11 @@ public class SignalRService : IAsyncDisposable
         _hubConnection.On<System.Text.Json.JsonElement>("ReceiveNewReply", (payload) =>
         {
             AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => NewReplyReceived?.Invoke(payload));
+        });
+
+        _hubConnection.On<Guid>("OfferRegenerated", (projectId) =>
+        {
+            AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => OfferRegenerated?.Invoke(projectId));
         });
 
         try

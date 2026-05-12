@@ -32,6 +32,10 @@ public partial class TaskBreakdownViewModel : ObservableObject, IQueryAttributab
             Job = job;
             await LoadTasksAsync(job.Id);
         }
+        else if (query.TryGetValue("JobId", out var jobIdObj) && Guid.TryParse(jobIdObj.ToString(), out var jobId))
+        {
+            await LoadTasksAsync(jobId);
+        }
     }
 
     private async Task LoadTasksAsync(Guid jobId)

@@ -39,6 +39,6 @@ public class MilestonePaymentConfiguration : IEntityTypeConfiguration<MilestoneP
         builder.HasOne(mp => mp.JobTask)
             .WithMany()
             .HasForeignKey(mp => mp.JobTaskId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

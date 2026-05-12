@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <data name="Header_ProjectProposal" xml:space="preserve"><value>PROJECT PROPOSAL</value></data>
+  <data name="Header_Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="Header_PreparedFor" xml:space="preserve"><value>Prepared For</value></data>
+  <data name="Header_Fees" xml:space="preserve"><value>Fees</value></data>
+  <data name="Label_FeesDescription" xml:space="preserve"><value>Here's a breakdown of the deliverables by category.</value></data>
+  <data name="Label_Subtotal" xml:space="preserve"><value>{0} Subtotal</value></data>
+  <data name="Label_GrandTotal" xml:space="preserve"><value>Grand Total</value></data>
+  <data name="Header_Terms" xml:space="preserve"><value>Terms &amp; Conditions</value></data>
+  <data name="Terms_Intro" xml:space="preserve"><value>This document serves as a Non-Binding Indicative Quote, providing a professional roadmap for your project. While these figures are estimates based on your inputs, they establish the expert-level framework for your home transformation.</value></data>
+  <data name="Terms_Point1" xml:space="preserve"><value>A €0.00 price indicates a highly specialized task requiring an on-site professional assessment. This ensures that every unique detail of your project is accurately captured in the final binding offer.</value></data>
+  <data name="Terms_Point2" xml:space="preserve"><value>Transparency is key: these figures represent the skilled labor required for your project. Materials are not included at this stage, providing you with full flexibility to select finishes that match your specific style and budget.</value></data>
+  <data name="Terms_Point3" xml:space="preserve"><value>To proceed, contact Customer Support to transition this indicative quote into a competitive auction. Our elite network of tradesmen will then provide firm, binding bids based on this verified scope.</value></data>
+  <data name="Terms_Point4" xml:space="preserve"><value>Your investment is secure. BuildSmart guarantees that no payments are released to a tradesperson until you have digitally verified and approved the completed milestones.</value></data>
+  <data name="Terms_Point5" xml:space="preserve"><value>We provide a labor re-performance limit guarantee. If workmanship does not meet our professional standards, we will rectify the issue at no additional cost to you, protecting your investment from start to finish.</value></data>
+  <data name="Footer_Validity" xml:space="preserve"><value>This document is a non-binding indicative quote and does not constitute a legal contract. Final pricing is subject to a site visit and the results of the competitive auction process.</value></data>
+  <data name="Label_ProjectBrief" xml:space="preserve"><value>01 — PROJECT BRIEF</value></data>
+  <data name="Label_PricingBreakdown" xml:space="preserve"><value>02 — PRICING &amp; BREAKDOWN</value></data>
+  <data name="Label_TC" xml:space="preserve"><value>03 — T&amp;C</value></data>
+  <data name="Label_SystemEstimate" xml:space="preserve"><value>BuildSmart System Estimate</value></data>
+  <data name="Header_Hello" xml:space="preserve"><value>hello.</value></data>
+</root>

@@ -1,0 +1,441 @@
+@page "/category-detail"
+@using BuildSmart.SharedUI.ViewModels.Admin
+@using BuildSmart.SharedUI.GraphQL
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject CategoryDetailViewModel ViewModel
+@inject NavigationManager NavManager
+
+<div class="admin-container">
+    <div class="header-section">
+        <div class="title-group">
+            <h1 class="page-title">@(string.IsNullOrEmpty(ViewModel.CategoryName) ? "New Category" : $"Edit: {ViewModel.CategoryName}")</h1>
+            <p class="page-subtitle">Configure category details and questions.</p>
+        </div>
+        <button class="bs-btn-secondary" @onclick='() => NavManager.NavigateTo("/category-management")'>
+            Back to Categories
+        </button>
+    </div>
+
+    <div class="bs-card edit-card">
+        <div class="form-section">
+            <label class="section-label">Category Name</label>
+            <input type="text" class="bs-input" @bind="ViewModel.CategoryName" placeholder="Enter category name" />
+        </div>
+
+        <div class="form-section mt-3">
+            <label class="section-label">Category Description</label>
+            <textarea class="bs-input" @bind="ViewModel.CategoryDescription" placeholder="Enter category description" rows="3"></textarea>
+        </div>
+
+        @if (ViewModel.IsGlobalSwitchVisible)
+        {
+            <div class="form-section row-layout mt-3">
+                <div>
+                    <label class="section-label mb-0">Is Global Category?</label>
+                    <p class="help-text mb-0">Global categories have questions that appear on ALL job posts.</p>
+                </div>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="globalToggle" @bind="ViewModel.IsGlobal" />
+                    <label for="globalToggle"></label>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-section mt-3">
+                <p class="help-text">Global categories have questions that appear on ALL job posts.</p>
+            </div>
+        }
+
+        <div class="form-section mt-3">
+            <label class="section-label">Status</label>
+            <select class="bs-select" @bind="ViewModel.Status">
+                @foreach (var status in ViewModel.AllStatuses)
+                {
+                    <option value="@status">@status</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="header-section mt-5 mb-3" style="align-items: center;">
+        <h2 class="section-title mb-0">Questions</h2>
+        <button class="bs-btn-secondary" @onclick="() => ViewModel.AddNewQuestionCommand.Execute(null)">
+            + Add Question
+        </button>
+    </div>
+
+    <div class="questions-list">
+        @if (ViewModel.Questions.Count == 0)
+        {
+            <div class="empty-state bs-card">
+                <p>No questions added to this category yet.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var question in ViewModel.Questions)
+            {
+                <div class="bs-card question-card">
+                    <div class="question-header">
+                        <span class="question-badge">Question</span>
+                        <button class="remove-btn" @onclick="() => ViewModel.RemoveQuestionCommand.Execute(question)">
+                            Remove
+                        </button>
+                    </div>
+
+                    <div class="form-section mt-2">
+                        <label class="section-label">Question Text</label>
+                        <input type="text" class="bs-input" @bind="question.Text" placeholder="e.g. Do you have parking?" />
+                    </div>
+
+                    <div class="question-row mt-3">
+                        <div class="form-section flex-grow-1">
+                            <label class="section-label">Type</label>
+                            <select class="bs-select" @bind="question.Type">
+                                @foreach (var type in CategoryDetailViewModel.QuestionTypes)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-section required-section">
+                            <label class="section-label text-center">Required?</label>
+                            <input type="checkbox" class="large-checkbox mx-auto" @bind="question.IsRequired" />
+                        </div>
+                    </div>
+
+                    @if (question.IsChoiceType)
+                    {
+                        <div class="options-section mt-4">
+                            <div class="options-header">
+                                <label class="section-label mb-0">Choice Options</label>
+                                <button class="bs-btn-text text-primary p-0" @onclick="() => question.AddOptionCommand.Execute(null)">
+                                    + Add Option
+                                </button>
+                            </div>
+                            
+                            <div class="options-list mt-2">
+                                @foreach (var option in question.Options)
+                                {
+                                    <div class="option-row">
+                                        <input type="text" class="bs-input flex-grow-1" @bind="option.Value" placeholder="Option Value" />
+                                        <button class="remove-option-btn" @onclick="() => question.RemoveOptionCommand.Execute(option)">
+                                            ✕
+                                        </button>
+                                    </div>
+                                }
+                                @if (question.Options.Count == 0)
+                                {
+                                    <p class="help-text mb-0">No options added yet.</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <div class="bottom-actions mt-5 mb-5">
+        <button class="bs-btn-secondary btn-lg" @onclick="HandleManageSkusAsync">
+            Manage SKUs
+        </button>
+        <button class="bs-btn-primary btn-lg" @onclick="HandleSaveAsync">
+            Save Category
+        </button>
+    </div>
+</div>
+
+<style>
+    .admin-container {
+        padding: 40px 20px;
+        max-width: 900px;
+        margin: 0 auto;
+        min-height: 100vh;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 30px;
+        gap: 20px;
+    }
+
+    .page-title {
+        font-size: 38px;
+        font-weight: 800;
+        margin: 0 0 8px 0;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .edit-card {
+        padding: 30px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .row-layout {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-label {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .help-text {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .bs-input, .bs-select {
+        width: 100%;
+        padding: 12px 16px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .bs-input:focus, .bs-select:focus {
+        border-color: var(--color-primary);
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 26px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-switch label {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        transition: .3s;
+        border-radius: 26px;
+    }
+
+    .toggle-switch label:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: var(--text-muted);
+        transition: .3s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + label {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+    }
+
+    .toggle-switch input:checked + label:before {
+        transform: translateX(24px);
+        background-color: white;
+    }
+
+    .questions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .question-card {
+        padding: 24px;
+        background-color: var(--bg-card);
+        border-left: 4px solid var(--color-primary);
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .question-badge {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--color-primary);
+        background: rgba(81, 43, 212, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .remove-btn {
+        background: transparent;
+        border: none;
+        color: #ff5252;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .remove-btn:hover {
+        background: rgba(255, 82, 82, 0.1);
+    }
+
+    .question-row {
+        display: flex;
+        gap: 15px;
+    }
+
+    .required-section {
+        width: 100px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .large-checkbox {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        accent-color: var(--color-primary);
+    }
+
+    .options-section {
+        background-color: var(--bg-card-alt);
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .options-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .option-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .remove-option-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .remove-option-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ff5252;
+    }
+
+    .bottom-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+
+    .btn-lg {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Id { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? IsGlobalMode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            ViewModel.CategoryIdAsString = Id;
+            if (Guid.TryParse(Id, out var guid))
+            {
+                await ViewModel.LoadCategoryDetailsAsync(guid);
+            }
+        }
+        else if (!string.IsNullOrEmpty(IsGlobalMode))
+        {
+            ViewModel.IsGlobalModeAsString = IsGlobalMode;
+        }
+    }
+
+    private async Task HandleManageSkusAsync()
+    {
+        if (ViewModel.CategoryId == null || ViewModel.CategoryId == Guid.Empty)
+        {
+            // Blazor JS alert fallback
+            Console.WriteLine("Please save the category first before managing SKUs.");
+            return;
+        }
+        NavManager.NavigateTo($"/admin-category-skus?categoryId={ViewModel.CategoryId}");
+    }
+
+    private async Task HandleSaveAsync()
+    {
+        await ViewModel.SaveCategoryCommand.ExecuteAsync(null);
+        NavManager.NavigateTo("/category-management");
+    }
+}

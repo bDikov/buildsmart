@@ -1,0 +1,6 @@
+mutation UpdateUserTheme($theme: String!) {
+  updateUserTheme(theme: $theme) {
+    id
+    preferredTheme
+  }
+}

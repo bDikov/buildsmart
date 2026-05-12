@@ -27,6 +27,9 @@ namespace BuildSmart.SharedUI.ViewModels
 		[ObservableProperty]
 		private bool _isHomeowner = true;
 
+		[ObservableProperty]
+		private bool? _hasProjects;
+
 		public FeedPageViewModel(IBuildSmartApiClient apiClient, IAuthService authService)
 		{
 			_apiClient = apiClient;
@@ -48,12 +51,38 @@ namespace BuildSmart.SharedUI.ViewModels
 			return true;
 		}
 
+		private async Task LoadHomeownerProjectsAsync()
+		{
+			try
+			{
+				var result = await _apiClient.GetMyProjects.ExecuteAsync();
+				if (result.Data?.MyProjects != null && result.Data.MyProjects.Count > 0)
+				{
+					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+					{
+						HasProjects = true;
+					});
+				}
+				else
+				{
+					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+					{
+						HasProjects = false;
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"[FeedPageViewModel] LoadHomeownerProjects Error: {ex}");
+			}
+		}
+
 		[RelayCommand]
 		public async Task NavigateToDetailsAsync(object item)
 		{
 			if (item is IGetTradesmanProfiles_TradesmanProfiles tradesman)
 			{
-				await AppServiceLocator.Navigation.NavigateToAsync($"/tradesman-details?TradesmanId={tradesman.Id}");
+				await AppServiceLocator.Navigation.NavigateToAsync($"/tradesman-profile?TradesmanId={tradesman.Id}");
 			}
 			else if (item is IGetAvailableAuctions_AvailableAuctions auction)
 			{
@@ -97,6 +126,7 @@ namespace BuildSmart.SharedUI.ViewModels
 				}
 				else
 				{
+					await LoadHomeownerProjectsAsync();
 					await LoadTradesmenAsync();
 				}
 			}
@@ -160,8 +190,11 @@ namespace BuildSmart.SharedUI.ViewModels
 						Tradesmen.Clear();
 						foreach (var tradesman in result.Data.TradesmanProfiles)
 						{
-							if (tradesman != null)
+							// Only add tradesmen who have a valid video introduction URL
+							if (tradesman != null && !string.IsNullOrWhiteSpace(tradesman.VideoIntroductionUrl))
+							{
 								Tradesmen.Add(tradesman);
+							}
 						}
 					}
 				});

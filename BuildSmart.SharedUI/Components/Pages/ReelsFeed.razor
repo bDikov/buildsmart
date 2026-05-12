@@ -1,0 +1,216 @@
+@page "/reels"
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="reels-page-container">
+    <div id="reels-feed-container" class="reels-feed-container">
+        @foreach (var reel in Reels)
+        {
+            var isRendered = Math.Abs(Reels.IndexOf(reel) - CurrentIndex) <= 1; // Rule of 3 (prev, current, next)
+
+            <div class="reel-wrapper" id="@reel.Id" data-video-id="@reel.Id">
+                @if (isRendered)
+                {
+                    <video class="reel-video" 
+                           src="@reel.VideoUrl" 
+                           loop 
+                           muted="false" 
+                           playsinline 
+                           preload="auto">
+                    </video>
+                }
+                else
+                {
+                    <div class="video-placeholder"></div>
+                }
+
+                <!-- Overlay UI (e.g., likes, comments, title) -->
+                <div class="reel-overlay">
+                    <div class="reel-info">
+                        <h3 class="reel-title">@reel.Title</h3>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .reels-page-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+        z-index: 1000; /* Full screen overlay */
+    }
+
+    .reels-feed-container {
+        width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        /* Hide scrollbar for clean look */
+        -ms-overflow-style: none;  
+        scrollbar-width: none;  
+    }
+
+    .reels-feed-container::-webkit-scrollbar { 
+        display: none; 
+    }
+
+    .reel-wrapper {
+        width: 100%;
+        height: 100%; /* Important: Must match parent for snap to work */
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        position: relative;
+        background-color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .reel-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .video-placeholder {
+        width: 100%;
+        height: 100%;
+        background-color: #222; /* Mock while unmounted */
+    }
+
+    .reel-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        pointer-events: none; /* Let clicks pass through to video */
+    }
+
+    .reel-info {
+        flex: 1;
+        color: white;
+        margin-right: 20px;
+    }
+
+    .reel-title {
+        font-family: var(--font-primary, sans-serif);
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 10px 0;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .reel-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        pointer-events: auto; /* Re-enable clicks on buttons */
+    }
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+    }
+
+    .action-btn .icon {
+        font-size: 28px;
+        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+    }
+
+    .action-btn .count {
+        font-size: 13px;
+        font-weight: 500;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+</style>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    public class ReelModel
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        public string VideoUrl { get; set; } = "";
+        public string Title { get; set; } = "";
+    }
+
+    private List<ReelModel> Reels = new List<ReelModel>();
+    private int CurrentIndex = 0;
+    private DotNetObjectReference<ReelsFeed>? _objRef;
+    private bool _isJsInitialized = false;
+
+    protected override void OnInitialized()
+    {
+        // Add sample CDN videos
+        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4", Title = "Kitchen remodel project #interiordesign #kitchen" });
+        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4", Title = "Bathroom renovation day 1! 🛁" });
+        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4", Title = "Electrician tips ⚡️ #hometips" });
+        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4", Title = "Custom cabinets install" });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("reelsObserver.initialize", _objRef, "reels-feed-container");
+            _isJsInitialized = true;
+            ObserveAll();
+        }
+        else if (_isJsInitialized)
+        {
+            // Re-observe if elements changed
+            ObserveAll();
+        }
+    }
+
+    private void ObserveAll()
+    {
+        foreach (var reel in Reels)
+        {
+            JSRuntime.InvokeVoidAsync("reelsObserver.observeVideo", reel.Id);
+        }
+    }
+
+    [JSInvokable]
+    public void OnVideoVisible(string videoId)
+    {
+        var newIndex = Reels.FindIndex(r => r.Id == videoId);
+        if (newIndex != -1 && newIndex != CurrentIndex)
+        {
+            CurrentIndex = newIndex;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/tradesman-profile"); // Adjust according to logic
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_isJsInitialized)
+        {
+            await JSRuntime.InvokeVoidAsync("reelsObserver.dispose");
+        }
+        _objRef?.Dispose();
+    }
+}

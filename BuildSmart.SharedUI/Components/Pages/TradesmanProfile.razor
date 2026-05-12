@@ -1,0 +1,265 @@
+@page "/tradesman-profile"
+@using BuildSmart.SharedUI.ViewModels
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@inject TradesmanDetailsViewModel ViewModel
+@using System.ComponentModel
+@implements IDisposable
+
+<div class="profile-container">
+    @if (ViewModel.IsLoading && ViewModel.Tradesman == null)
+    {
+        <div class="loading-state">Loading...</div>
+    }
+    else if (ViewModel.Tradesman == null)
+    {
+        <div class="empty-state">Tradesman not found.</div>
+    }
+    else
+    {
+        <div class="cover-image">
+            <button class="back-btn" @onclick="GoBack">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+        </div>
+
+        <div class="avatar-container">
+            <img src="@(string.IsNullOrEmpty(ViewModel.Tradesman.User.ProfilePictureUrl) ? "dotnet_bot.png" : ViewModel.Tradesman.User.ProfilePictureUrl)" class="avatar-img" />
+        </div>
+
+        <div class="profile-info">
+            <h1 class="profile-name">@ViewModel.Tradesman.User.FirstName</h1>
+            <p class="profile-title">@(ViewModel.Tradesman.Skills.FirstOrDefault()?.ServiceCategory.Name ?? "Interior designer")</p>
+            <div class="profile-location">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <span>@ViewModel.Tradesman.User.Location</span>
+            </div>
+        </div>
+
+        <div class="profile-actions" style="margin-top: 20px;">
+        </div>
+
+        <div class="profile-tabs">
+            <div class="tab active">Photos</div>
+            <div class="tab">Likes</div>
+        </div>
+
+        <div class="photo-grid">
+            @if (ViewModel.Tradesman.PortfolioEntries != null && ViewModel.Tradesman.PortfolioEntries.Any())
+            {
+                @foreach (var entry in ViewModel.Tradesman.PortfolioEntries)
+                {
+                    <div class="photo-item" @onclick="GoToReels">
+                        <img src="@(string.IsNullOrEmpty(entry.ImageUrl) ? "dotnet_bot.png" : entry.ImageUrl)" />
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="photo-item" @onclick="GoToReels"><img src="dotnet_bot.png" /></div>
+                <div class="photo-item" @onclick="GoToReels"><img src="dotnet_bot.png" /></div>
+                <div class="photo-item" @onclick="GoToReels"><img src="dotnet_bot.png" /></div>
+                <div class="photo-item" @onclick="GoToReels"><img src="dotnet_bot.png" /></div>
+                <div class="photo-item" @onclick="GoToReels"><img src="dotnet_bot.png" /></div>
+                <div class="photo-item" @onclick="GoToReels"><img src="dotnet_bot.png" /></div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .profile-container {
+        font-family: var(--font-primary, 'Inter', sans-serif);
+        background-color: var(--bg-page, #ffffff);
+        color: var(--text-primary, #242760);
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding-bottom: 20px;
+    }
+
+    .cover-image {
+        width: 100%;
+        height: 227px;
+        background: #D9D9D9;
+        position: relative;
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 40px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.5);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .avatar-container {
+        width: 155px;
+        height: 155px;
+        border-radius: 50%;
+        border: 2px solid var(--text-primary, #242760);
+        margin: -77px auto 0 auto;
+        position: relative;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-info {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .profile-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 5px 0;
+        color: var(--text-primary, #242760);
+    }
+
+    .profile-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary, #544c4c);
+        margin: 0 0 5px 0;
+    }
+
+    .profile-location {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary, #544c4c);
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .action-btn {
+        height: 35px;
+        border-radius: 11px;
+        font-size: 15px;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+    }
+
+    .edit-btn {
+        background-color: var(--text-primary, #242760);
+        color: white;
+    }
+
+    .profile-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 150px;
+        border-bottom: 1px solid #CBC4C4;
+        padding-bottom: 8px;
+        margin: 0 31px 14px 31px;
+    }
+
+    .tab {
+        font-size: 14px;
+        font-weight: 400;
+        color: #9B9494;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .tab.active {
+        font-weight: 600;
+        color: var(--text-primary, #242760);
+    }
+
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 0 25px;
+    }
+
+    .photo-item {
+        width: 100%;
+        aspect-ratio: 110 / 160;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    .photo-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string TradesmanId { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(TradesmanId) && ViewModel.TradesmanId != TradesmanId)
+        {
+            ViewModel.TradesmanId = TradesmanId;
+            await ViewModel.LoadTradesmanDetailsCommand.ExecuteAsync(null);
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void GoBack()
+    {
+        ViewModel.GoBackCommand.Execute(null);
+    }
+    
+    private void GoToReels()
+    {
+        Navigation.NavigateTo("/reels");
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

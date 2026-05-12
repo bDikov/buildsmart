@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Projects_Title" xml:space="preserve">
+    <value>My Projects</value>
+  </data>
+  <data name="Scope_Review_Title" xml:space="preserve">
+    <value>Scope Review</value>
+  </data>
+  <data name="Login_LoginWith" xml:space="preserve">
+    <value>Log in with</value>
+  </data>
+  <data name="Login_Google" xml:space="preserve">
+    <value>Google</value>
+  </data>
+  <data name="Login_Apple" xml:space="preserve">
+    <value>Apple</value>
+  </data>
+  <data name="Login_Or" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="Login_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>Enter email address</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Enter your password</value>
+  </data>
+  <data name="Login_LogInButton" xml:space="preserve">
+    <value>Log In</value>
+  </data>
+  <data name="Login_NoAccountPrompt" xml:space="preserve">
+    <value>Don’t have an account? </value>
+  </data>
+  <data name="Login_SignUp" xml:space="preserve">
+    <value>Sign up</value>
+  </data>
+  <data name="CreateAccount_Title" xml:space="preserve">
+    <value>Create Account</value>
+  </data>
+  <data name="CreateAccount_FirstName" xml:space="preserve">
+    <value>First Name:</value>
+  </data>
+  <data name="CreateAccount_LastName" xml:space="preserve">
+    <value>Last Name:</value>
+  </data>
+  <data name="CreateAccount_Email" xml:space="preserve">
+    <value>Email:</value>
+  </data>
+  <data name="CreateAccount_Password" xml:space="preserve">
+    <value>Password:</value>
+  </data>
+  <data name="CreateAccount_CreateButton" xml:space="preserve">
+    <value>Create Account</value>
+  </data>
+  <data name="Nav_Marketplace" xml:space="preserve">
+    <value>Marketplace</value>
+  </data>
+  <data name="Nav_MyProjects" xml:space="preserve">
+    <value>My Projects</value>
+  </data>
+  <data name="Nav_ActiveJobs" xml:space="preserve">
+    <value>Active Jobs</value>
+  </data>
+  <data name="Nav_ManageHeader" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="Nav_Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="Nav_Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Nav_JobReviews" xml:space="preserve">
+    <value>Job Reviews</value>
+  </data>
+  <data name="Nav_ToolsHeader" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Projects_Subtitle" xml:space="preserve">
+    <value>Manage your home renovations and track progress.</value>
+  </data>
+  <data name="Projects_CreateNew" xml:space="preserve">
+    <value>Create New Project</value>
+  </data>
+  <data name="Projects_Loading" xml:space="preserve">
+    <value>Gathering your blueprints...</value>
+  </data>
+  <data name="Projects_EmptyTitle" xml:space="preserve">
+    <value>No Projects Yet</value>
+  </data>
+  <data name="Projects_EmptySubtitle" xml:space="preserve">
+    <value>Start your renovation journey by creating your first project scope.</value>
+  </data>
+  <data name="Projects_GetStarted" xml:space="preserve">
+    <value>Get Started</value>
+  </data>
+  <data name="Projects_Untitled" xml:space="preserve">
+    <value>Untitled Project</value>
+  </data>
+  <data name="Projects_Remote" xml:space="preserve">
+    <value>Remote</value>
+  </data>
+  <data name="Projects_Jobs" xml:space="preserve">
+    <value>Jobs</value>
+  </data>
+  <data name="Projects_DefaultDesc" xml:space="preserve">
+    <value>Set your goals and start adding jobs to get bids from pros.</value>
+  </data>
+  <data name="Projects_More" xml:space="preserve">
+    <value>more</value>
+  </data>
+  <data name="Projects_Progress" xml:space="preserve">
+    <value>Overall Progress</value>
+  </data>
+  <data name="Projects_Delete" xml:space="preserve">
+    <value>Delete Project</value>
+  </data>
+  <data name="ProjectDetail_Loading" xml:space="preserve">
+    <value>Loading project details...</value>
+  </data>
+  <data name="ProjectDetail_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="ProjectDetail_ContinueDraft" xml:space="preserve">
+    <value>Continue Editing Draft</value>
+  </data>
+  <data name="ProjectDetail_JobsTitle" xml:space="preserve">
+    <value>Jobs</value>
+  </data>
+  <data name="ProjectDetail_NoJobs" xml:space="preserve">
+    <value>No jobs have been added to this project yet.</value>
+  </data>
+  <data name="ProjectDetail_ViewLess" xml:space="preserve">
+    <value>View Less</value>
+  </data>
+  <data name="ProjectDetail_ViewMore" xml:space="preserve">
+    <value>View More</value>
+  </data>
+  <data name="ProjectDetail_SeeTasks" xml:space="preserve">
+    <value>See Tasks Breakdowns</value>
+  </data>
+  <data name="ProjectDetail_ViewTaskBreakdown" xml:space="preserve">
+    <value>View Task Breakdown</value>
+  </data>
+  <data name="ProjectDetail_ViewOffersCount" xml:space="preserve">
+    <value>View Offers ({0})</value>
+  </data>
+  <data name="ProjectDetail_ViewAuctionZero" xml:space="preserve">
+    <value>View Auction Hub (0 Offers)</value>
+  </data>
+  <data name="ProjectDetail_EditAnswers" xml:space="preserve">
+    <value>Edit Answers</value>
+  </data>
+  <data name="ProjectDetail_ReviewScope" xml:space="preserve">
+    <value>Review AI Scope</value>
+  </data>
+  <data name="AuctionHub_BackToListings" xml:space="preserve">
+    <value>Back to Listings</value>
+  </data>
+  <data name="AuctionHub_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="AuctionHub_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="AuctionHub_StandardizedTasks" xml:space="preserve">
+    <value>Standardized Tasks</value>
+  </data>
+  <data name="AuctionHub_TasksSubtitle" xml:space="preserve">
+    <value>Your bid should cover the following required tasks and criteria:</value>
+  </data>
+  <data name="AuctionHub_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="AuctionHub_NoTasks" xml:space="preserve">
+    <value>No standardized tasks provided.</value>
+  </data>
+  <data name="AuctionHub_AcceptanceCriteria" xml:space="preserve">
+    <value>Acceptance Criteria</value>
+  </data>
+  <data name="AuctionHub_YourSubmittedBid" xml:space="preserve">
+    <value>Your Submitted Bid</value>
+  </data>
+  <data name="AuctionHub_TotalAmount" xml:space="preserve">
+    <value>Total Amount Submitted</value>
+  </data>
+  <data name="AuctionHub_BidStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="AuctionHub_BidAccepted" xml:space="preserve">
+    <value>Accepted!</value>
+  </data>
+  <data name="AuctionHub_BidUnderReview" xml:space="preserve">
+    <value>Under Review</value>
+  </data>
+  <data name="AuctionHub_YourProposal" xml:space="preserve">
+    <value>Your Proposal</value>
+  </data>
+  <data name="AuctionHub_PlaceBid" xml:space="preserve">
+    <value>Place Bid</value>
+  </data>
+  <data name="AuctionHub_PublicQA" xml:space="preserve">
+    <value>Public Q&amp;A</value>
+  </data>
+  <data name="AuctionHub_AskQuestion" xml:space="preserve">
+    <value>Ask a Question</value>
+  </data>
+  <data name="AuctionHub_NoPublicQuestions" xml:space="preserve">
+    <value>No public questions yet.</value>
+  </data>
+  <data name="AuctionHub_QFrom" xml:space="preserve">
+    <value>Q from</value>
+  </data>
+  <data name="AuctionHub_Edited" xml:space="preserve">
+    <value>(EDITED)</value>
+  </data>
+  <data name="AuctionHub_HomeownerAnswer" xml:space="preserve">
+    <value>Homeowner's Answer:</value>
+  </data>
+  <data name="AuctionHub_Reply" xml:space="preserve">
+    <value>Reply</value>
+  </data>
+  <data name="GeneratedOffer_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="GeneratedOffer_Title" xml:space="preserve">
+    <value>Your Smart Offer</value>
+  </data>
+  <data name="GeneratedOffer_Subtitle" xml:space="preserve">
+    <value>Review the detailed breakdown of SKUs and estimated costs for each task.</value>
+  </data>
+  <data name="GeneratedOffer_TotalValue" xml:space="preserve">
+    <value>Total Offer Value</value>
+  </data>
+  <data name="GeneratedOffer_HideTaskBreakdowns" xml:space="preserve">
+    <value>Hide Task Breakdowns</value>
+  </data>
+  <data name="GeneratedOffer_SeeTasksBreakdowns" xml:space="preserve">
+    <value>See Tasks Breakdowns</value>
+  </data>
+  <data name="GeneratedOffer_TotalTaskCost" xml:space="preserve">
+    <value>Total Task Cost: ${0}</value>
+  </data>
+  <data name="GeneratedOffer_BillableSKUs" xml:space="preserve">
+    <value>Billable SKUs &amp; Materials</value>
+  </data>
+  <data name="GeneratedOffer_NoSKUs" xml:space="preserve">
+    <value>No SKUs mapped for this task.</value>
+  </data>
+  <data name="GeneratedOffer_SubmitToAdmin" xml:space="preserve">
+    <value>Submit to Admin</value>
+  </data>
+  <data name="GeneratedOffer_EditTasks" xml:space="preserve">
+    <value>Edit Tasks</value>
+  </data>
+  <data name="GeneratedOffer_Processing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="GeneratedOffer_ErrorRendering" xml:space="preserve">
+    <value>An error occurred while rendering the Generated Offer overview. Please try refreshing the page.</value>
+  </data>
+  <data name="JobWizard_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="JobWizard_YourProgress" xml:space="preserve">
+    <value>Your progress</value>
+  </data>
+  <data name="JobWizard_ProjectTitle" xml:space="preserve">
+    <value>Project Title</value>
+  </data>
+  <data name="JobWizard_ProjectTitlePlaceholder" xml:space="preserve">
+    <value>e.g., Kitchen Remodel</value>
+  </data>
+  <data name="JobWizard_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="JobWizard_LocationPlaceholder" xml:space="preserve">
+    <value>e.g., New York, NY</value>
+  </data>
+  <data name="JobWizard_PreferredSiteVisitDate" xml:space="preserve">
+    <value>Preferred Site Visit Date (Optional)</value>
+  </data>
+  <data name="JobWizard_SelectDate" xml:space="preserve">
+    <value>Select a date</value>
+  </data>
+  <data name="JobWizard_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="JobWizard_DescriptionPlaceholder" xml:space="preserve">
+    <value>Describe your project...</value>
+  </data>
+  <data name="JobWizard_NextSelectCategory" xml:space="preserve">
+    <value>Next: Select Category</value>
+  </data>
+  <data name="JobWizard_TypeAnswerHere" xml:space="preserve">
+    <value>Type your answer here...</value>
+  </data>
+  <data name="JobWizard_SelectOption" xml:space="preserve">
+    <value>-- Select an option --</value>
+  </data>
+  <data name="JobWizard_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="JobWizard_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="JobWizard_ReviewSubmit" xml:space="preserve">
+    <value>Review &amp; Submit</value>
+  </data>
+  <data name="JobWizard_TitleLabel" xml:space="preserve">
+    <value>Title:</value>
+  </data>
+  <data name="JobWizard_SelectedCategoriesLabel" xml:space="preserve">
+    <value>Selected Categories:</value>
+  </data>
+  <data name="JobWizard_JobDetailsLabel" xml:space="preserve">
+    <value>Job Details:</value>
+  </data>
+  <data name="JobWizard_PostProject" xml:space="preserve">
+    <value>Post Project</value>
+  </data>
+  <data name="JobWizard_ErrorRendering" xml:space="preserve">
+    <value>Rendering Error</value>
+  </data>
+  <data name="JobWizard_ReviewSubtitle" xml:space="preserve">
+    <value>Complete all steps to post your project.</value>
+  </data>
+  <data name="JobWizard_StepText" xml:space="preserve">
+    <value>{0} of {1} complete</value>
+  </data>
+  <data name="JobWizard_CategoryLabel" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Save &amp; Re-generate" xml:space="preserve">
+    <value>Save &amp; Re-generate</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_SystemDefault" xml:space="preserve">
+    <value>System Default</value>
+  </data>
+  <data name="Settings_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_Colorful" xml:space="preserve">
+    <value>Colorful</value>
+  </data>
+  <data name="Settings_FAQ" xml:space="preserve">
+    <value>FAQ &amp; Help</value>
+  </data>
+  <data name="Settings_Terms" xml:space="preserve">
+    <value>Terms &amp; Conditions</value>
+  </data>
+  <data name="UserProfile_PageTitle" xml:space="preserve">
+    <value>Profile Settings</value>
+  </data>
+  <data name="UserProfile_Loading" xml:space="preserve">
+    <value>Loading profile...</value>
+  </data>
+  <data name="UserProfile_EditDetails" xml:space="preserve">
+    <value>Edit Details</value>
+  </data>
+  <data name="UserProfile_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="UserProfile_PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="UserProfile_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="UserProfile_SaveChanges" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="ProfileCard_Tradesman" xml:space="preserve">
+    <value>Tradesman</value>
+  </data>
+  <data name="ProfileCard_Homeowner" xml:space="preserve">
+    <value>Homeowner</value>
+  </data>
+  <data name="ProfileCard_ChangePicture" xml:space="preserve">
+    <value>Change Picture</value>
+  </data>
+  <data name="ProfileCard_EditProfile" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="ProfileCard_More" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="ProfileCard_DefaultName" xml:space="preserve">
+    <value>User Name</value>
+  </data>
+  <data name="Feed_StartNewProject" xml:space="preserve">
+    <value>Start New Project</value>
+  </data>
+  <data name="Feed_AvailableAuctions" xml:space="preserve">
+    <value>Available Auctions</value>
+  </data>
+  <data name="Feed_DismissedJobs" xml:space="preserve">
+    <value>Dismissed Jobs</value>
+  </data>
+  <data name="Feed_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Feed_ProfessionalRole" xml:space="preserve">
+    <value>Professional</value>
+  </data>
+  <data name="Feed_ViewProfile" xml:space="preserve">
+    <value>View Profile</value>
+  </data>
+  <data name="Feed_QuestionsCount" xml:space="preserve">
+    <value>{0} questions</value>
+  </data>
+  <data name="Feed_Pass" xml:space="preserve">
+    <value>Pass</value>
+  </data>
+  <data name="Feed_ViewAndBid" xml:space="preserve">
+    <value>View &amp; Bid</value>
+  </data>
+  <data name="Feed_NA" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+  <data name="Feed_RenderingError" xml:space="preserve">
+    <value>Rendering Error</value>
+  </data>
+  <data name="Status_Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Status_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Status_WaitingForUserReview" xml:space="preserve">
+    <value>Waiting for User Review</value>
+  </data>
+  <data name="Status_WaitingForAdminReview" xml:space="preserve">
+    <value>Waiting for Admin Review</value>
+  </data>
+  <data name="Status_Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="Notifications_Title" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Notifications_Loading" xml:space="preserve">
+    <value>Loading notifications...</value>
+  </data>
+  <data name="Notifications_EmptyTitle" xml:space="preserve">
+    <value>No notifications yet.</value>
+  </data>
+  <data name="Notifications_EmptySubtitle" xml:space="preserve">
+    <value>Important updates will appear here.</value>
+  </data>
+  <data name="Notifications_ClearAll" xml:space="preserve">
+    <value>Clear All Notifications</value>
+  </data>
+  <data name="Status_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Status_Archived" xml:space="preserve">
+    <value>Archived</value>
+  </data>
+  <data name="Status_UnderReview" xml:space="preserve">
+    <value>Under Review</value>
+  </data>
+  <data name="Status_GeneratingScope" xml:space="preserve">
+    <value>Generating Scope</value>
+  </data>
+  <data name="Status_BiddingClosed" xml:space="preserve">
+    <value>Bidding Closed</value>
+  </data>
+  <data name="Status_Contracted" xml:space="preserve">
+    <value>Contracted</value>
+  </data>
+  <data name="Status_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="Status_Expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+</root>

@@ -1,0 +1,44 @@
+name: Deploy Backend & Database
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Copy repository contents via scp
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        source: "."
+        target: "/opt/buildsmart"
+        
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          cd /opt/buildsmart
+          
+          # Create an environment file from GitHub Secrets to be used by docker-compose
+          echo "POSTGRES_USER=${{ secrets.DB_USER }}" > .env
+          echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.DB_NAME }}" >> .env
+          echo "DOMAIN_WEB=${{ secrets.DOMAIN_WEB }}" >> .env
+          echo "DOMAIN_API=${{ secrets.DOMAIN_API }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          
+          docker-compose -f docker-compose.prod.yml down
+          docker-compose -f docker-compose.prod.yml build
+          docker-compose -f docker-compose.prod.yml up -d

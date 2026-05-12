@@ -1,0 +1,163 @@
+@page "/GeneratedOfferPage"
+@using BuildSmart.SharedUI.ViewModels
+@using System.ComponentModel
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
+@inject GeneratedOfferViewModel ViewModel
+
+<ErrorBoundary>
+    <ChildContent>
+        @if (ViewModel == null || ViewModel.Job == null && ViewModel.IsBusy)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">@Loc["GeneratedOffer_Loading"]</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="container py-4">
+                <div class="mb-4">
+                    <h2 class="h3 fw-bold mb-2" style="color: var(--text-primary);">@Loc["GeneratedOffer_Title"]</h2>
+                    <p class="text-muted">@Loc["GeneratedOffer_Subtitle"]</p>
+                </div>
+
+                <div class="p-4 text-center mb-4" style="background-color: var(--bg-card-alt); border: 2px solid var(--color-success); border-radius: 12px;">
+                    <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
+                        <span class="fw-bold" style="font-size: 1.2rem; color: var(--text-primary);">@Loc["GeneratedOffer_TotalValue"]:</span>
+                        <span class="fw-bold" style="font-size: 1.5rem; color: var(--color-success);">
+                            $@ViewModel.TotalEstimatedPrice.ToString("F2")
+                        </span>
+                    </div>
+                    <button class="btn btn-outline-primary fw-bold" @onclick="ToggleBreakdown">
+                        @(_showBreakdown ? Loc["GeneratedOffer_HideTaskBreakdowns"] : Loc["GeneratedOffer_SeeTasksBreakdowns"])
+                    </button>
+                </div>
+
+                @if (_showBreakdown && ViewModel.Tasks != null)
+                {
+                    <div class="d-flex flex-column gap-4 mb-4">
+                        @foreach (var task in ViewModel.Tasks)
+                        {
+                            <div class="bs-card p-4" style="border-radius: 12px; border-left: 4px solid var(--color-success); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="h5 fw-bold mb-0" style="color: var(--text-primary);">@task.Title</h4>
+                                    <span class="fw-bold" style="color: var(--color-success); font-size: 1.1rem;">
+                                        @string.Format(Loc["GeneratedOffer_TotalTaskCost"], task.EstimatedPrice.ToString("F2"))
+                                    </span>
+                                </div>
+                                
+                                @if (!string.IsNullOrEmpty(task.Description))
+                                {
+                                    <p class="text-muted mb-4" style="font-size: 0.95rem;">@task.Description</p>
+                                }
+
+                                <hr style="color: #EEEEEE;" />
+                                <h6 class="fw-bold mb-3" style="color: #1565C0;">@Loc["GeneratedOffer_BillableSKUs"]</h6>
+
+                                @if (task.SkuItems != null && task.SkuItems.Count > 0)
+                                {
+                                    <div class="d-flex flex-column gap-3">
+                                        @foreach (var sku in task.SkuItems)
+                                        {
+                                            <div class="d-flex justify-content-between align-items-center bg-light p-3" style="border-radius: 8px;">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <span class="fw-bold" style="color: var(--text-primary);">@(sku.Quantity)x</span>
+                                                    <div>
+                                                        <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem;">@sku.ServiceSku.Name</div>
+                                                        <div class="text-muted" style="font-size: 0.8rem;">@sku.ServiceSku.SkuCode</div>
+                                                    </div>
+                                                </div>
+                                                <span class="fw-bold" style="color: var(--color-success);">
+                                                    $@sku.EstimatedPrice.ToString("F2")
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted" style="font-size: 0.9rem;">@Loc["GeneratedOffer_NoSKUs"]</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                <hr style="color: #E0E0E0; margin: 2rem 0;" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <button class="bs-btn-primary w-100 fw-bold" style="height: 50px; border-radius: 10px; background-color: var(--color-success); border-color: var(--color-success);" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitToAdminCommand.Execute(null)">
+                            @Loc["GeneratedOffer_SubmitToAdmin"]
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary w-100 fw-bold" style="height: 50px; border-radius: 10px;" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoBackCommand.Execute(null)">
+                            @Loc["GeneratedOffer_EditTasks"]
+                        </button>
+                    </div>
+                </div>
+
+                @if (ViewModel.IsBusy)
+                {
+                    <div class="d-flex justify-content-center mt-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">@Loc["GeneratedOffer_Processing"]</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-danger m-4">
+            @Loc["GeneratedOffer_ErrorRendering"]
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [SupplyParameterFromQuery(Name = "jobId")]
+    public Guid? JobId { get; set; }
+
+    private bool _showBreakdown = false;
+
+    private void ToggleBreakdown()
+    {
+        _showBreakdown = !_showBreakdown;
+    }
+
+    protected override void OnInitialized()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ViewModel != null)
+        {
+            var queryParams = new Dictionary<string, object>();
+            if (JobId.HasValue) queryParams["JobId"] = JobId.Value;
+            
+            ViewModel.ApplyQueryAttributes(queryParams);
+        }
+    }
+
+    private async void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}

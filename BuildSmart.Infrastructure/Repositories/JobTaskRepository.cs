@@ -49,4 +49,14 @@ public class JobTaskRepository : IJobTaskRepository
     {
         _context.JobTasks.RemoveRange(entities);
     }
+
+    public void RemoveSkuItems(IEnumerable<TaskSkuItem> skuItems)
+    {
+        _context.TaskSkuItems.RemoveRange(skuItems);
+    }
+
+    public void RemoveAcceptanceCriteria(IEnumerable<TaskAcceptanceCriteria> criteria)
+    {
+        _context.TaskAcceptanceCriteria.RemoveRange(criteria);
+    }
 }

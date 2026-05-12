@@ -1,0 +1,15 @@
+query GetAllProjects($where: ProjectFilterInput, $order: [ProjectSortInput!]) {
+  allProjects(where: $where, order: $order) {
+    id
+    title
+    description
+    status
+    createdAt
+    hasOfferPdf
+    homeowner {
+      firstName
+      lastName
+      email
+    }
+  }
+}

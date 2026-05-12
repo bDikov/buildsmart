@@ -12,4 +12,6 @@ public class ServiceSku : BaseEntity
     public string Description { get; set; } = string.Empty;
     public decimal BasePrice { get; set; }
     public string UnitType { get; set; } = "Flat"; // e.g., Flat, Hourly, SqFt
+    
+    public ICollection<ServiceSkuTranslation> Translations { get; set; } = new List<ServiceSkuTranslation>();
 }

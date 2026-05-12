@@ -23,6 +23,133 @@ namespace BuildSmart.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ServiceCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalEstimatedPrice")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "ServiceCategoryId")
+                        .IsUnique();
+
+                    b.ToTable("AiCalculations", (string)null);
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationCriteria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AiCalculationTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AiCalculationTaskId");
+
+                    b.ToTable("AiCalculationCriteria", (string)null);
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationSkuItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AiCalculationTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("EstimatedPrice")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("ServiceSkuId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AiCalculationTaskId");
+
+                    b.HasIndex("ServiceSkuId");
+
+                    b.ToTable("AiCalculationSkuItems", (string)null);
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AiCalculationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<decimal>("EstimatedPrice")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("SequenceOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AiCalculationId");
+
+                    b.ToTable("AiCalculationTasks", (string)null);
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Bid", b =>
                 {
                     b.Property<Guid>("Id")
@@ -662,6 +789,13 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<Guid>("HomeownerId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("MasterOfferPdf")
+                        .HasColumnType("bytea");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -761,6 +895,39 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("ServiceCategories", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceCategoryTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("ServiceCategoryTranslations");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
                 {
                     b.Property<Guid>("Id")
@@ -800,6 +967,44 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasIndex("ServiceCategoryId");
 
                     b.ToTable("ServiceSkus");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSkuTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UnitType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SkuId");
+
+                    b.ToTable("ServiceSkuTranslations");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskAcceptanceCriteria", b =>
@@ -972,6 +1177,14 @@ namespace BuildSmart.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("PreferredLanguage")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PreferredTheme")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("ProfilePictureUrl")
                         .HasColumnType("text");
 
@@ -989,12 +1202,53 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationCriteria", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.AiCalculationTask", "AiCalculationTask")
+                        .WithMany("AcceptanceCriteria")
+                        .HasForeignKey("AiCalculationTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AiCalculationTask");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationSkuItem", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.AiCalculationTask", "AiCalculationTask")
+                        .WithMany("SkuItems")
+                        .HasForeignKey("AiCalculationTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceSku", "ServiceSku")
+                        .WithMany()
+                        .HasForeignKey("ServiceSkuId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AiCalculationTask");
+
+                    b.Navigation("ServiceSku");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationTask", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.AiCalculation", "AiCalculation")
+                        .WithMany("Tasks")
+                        .HasForeignKey("AiCalculationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AiCalculation");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Bid", b =>
                 {
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
                         .WithMany("Bids")
                         .HasForeignKey("JobPostId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
@@ -1052,7 +1306,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobTask", "JobTask")
                         .WithMany("BidItems")
                         .HasForeignKey("JobTaskId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Bid");
@@ -1065,7 +1319,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.Bid", "Bid")
                         .WithMany()
                         .HasForeignKey("BidId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BuildSmart.Core.Domain.Entities.User", "Homeowner")
@@ -1077,7 +1331,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobPost", "JobPost")
                         .WithMany()
                         .HasForeignKey("JobPostId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
@@ -1491,7 +1745,7 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.HasOne("BuildSmart.Core.Domain.Entities.JobTask", "JobTask")
                         .WithMany()
                         .HasForeignKey("JobTaskId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.OwnsOne("BuildSmart.Core.Domain.ValueObjects.Amount", "AmountAllocated", b1 =>
@@ -1592,6 +1846,17 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("TradesmanProfile");
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceCategoryTranslation", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceCategory", "Category")
+                        .WithMany("Translations")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
                 {
                     b.HasOne("BuildSmart.Core.Domain.Entities.ServiceCategory", "ServiceCategory")
@@ -1601,6 +1866,17 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("ServiceCategory");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSkuTranslation", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceSku", "Sku")
+                        .WithMany("Translations")
+                        .HasForeignKey("SkuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sku");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskAcceptanceCriteria", b =>
@@ -1663,6 +1939,18 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculation", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.AiCalculationTask", b =>
+                {
+                    b.Navigation("AcceptanceCriteria");
+
+                    b.Navigation("SkuItems");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Bid", b =>
                 {
                     b.Navigation("BidItems");
@@ -1712,6 +2000,16 @@ namespace BuildSmart.Infrastructure.Migrations
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Project", b =>
                 {
                     b.Navigation("JobPosts");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceCategory", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
+                {
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanProfile", b =>
