@@ -23,11 +23,11 @@ jobs:
       with:
         dotnet-version: '9.0.x'
 
-    - name: Restore workloads
-      run: dotnet workload restore BuildSmart.sln
+    - name: Restore dependencies for API Tests
+      run: dotnet restore BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj
 
-    - name: Restore dependencies
-      run: dotnet restore BuildSmart.sln
+    - name: Restore dependencies for Domain Tests
+      run: dotnet restore BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj
 
     - name: Run API Tests
       run: dotnet test BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj --no-restore --verbosity normal -c Release
