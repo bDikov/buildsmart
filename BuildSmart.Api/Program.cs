@@ -278,9 +278,11 @@ public partial class Program
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseDeveloperExceptionPage();
-			app.UseSwagger();
-			app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildSmart.Api v1"));
 		}
+		
+		// Enable Swagger in all environments for access via Caddy proxy
+		app.UseSwagger();
+		app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildSmart.Api v1"));
 
         // Enable serving static files from wwwroot (like the generated PDFs)
         app.UseStaticFiles();
