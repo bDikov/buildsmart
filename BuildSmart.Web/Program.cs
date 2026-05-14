@@ -50,7 +50,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLocalization();
 
 // Configure SharedUI API Config based on Web
-BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://localhost:7212";
+var apiUrl = builder.Configuration["ApiConfig:BaseUrlOverride"] ?? builder.Configuration["ApiConfig:BaseUrl"];
+BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = !string.IsNullOrEmpty(apiUrl) ? apiUrl : "https://localhost:7212";
 
 // Web-specific mocks
 builder.Services.AddSingleton<IMediaPicker, WebMediaPicker>();

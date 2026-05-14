@@ -15,6 +15,7 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		// Configure SharedUI API Config based on MAUI platform
+#if DEBUG
 		if (Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android)
 		{
 			BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://10.0.2.2:7212";
@@ -23,6 +24,9 @@ public static class MauiProgram
 		{
 			BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://localhost:7212";
 		}
+#else
+		BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = "https://buildsmart.bg";
+#endif
 
 		var builder = MauiApp.CreateBuilder();
 		builder
