@@ -40,6 +40,6 @@ jobs:
           echo "DOMAIN_WEB=${{ secrets.DOMAIN_WEB }}" >> .env
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
           
-          docker-compose -f docker-compose.prod.yml down
-          docker-compose -f docker-compose.prod.yml build
-          docker-compose -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml build
+          docker compose -f docker-compose.prod.yml up -d
