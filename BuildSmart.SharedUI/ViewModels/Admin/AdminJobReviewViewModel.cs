@@ -343,7 +343,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private async Task RejectJobAsync(IGetMyProjects_MyProjects_JobPosts? job)
+	private async Task RejectJobAsync(IJobPostDetails? job)
 	{
 		if (job == null) return;
 		string feedback = await AppServiceLocator.Alerts.DisplayPromptAsync("Reject Job", "Please provide a reason for rejection:", "Reject", "Cancel", "Reason...");
