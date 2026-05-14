@@ -55,6 +55,17 @@ fragment QuestionReplyDetails on JobPostQuestion {
   }
 }
 
+fragment QuestionTradesmanProfileDetails on TradesmanProfile {
+  id
+  user {
+    ... UserDetails
+  }
+}
+
+fragment QuestionAuthorDetails on User {
+  ... UserDetails
+}
+
 fragment QuestionDetails on JobPostQuestion {
   id
   jobPostId
@@ -72,13 +83,10 @@ fragment QuestionDetails on JobPostQuestion {
   updatedAt
   replyCount
   tradesmanProfile {
-    id
-    user {
-      ... UserDetails
-    }
+    ... QuestionTradesmanProfileDetails
   }
   author {
-    ... UserDetails
+    ... QuestionAuthorDetails
   }
 }
 
