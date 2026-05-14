@@ -3,6 +3,7 @@ WORKDIR /app
 EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+ENV DOTNET_ROLL_FORWARD=Major
 WORKDIR /src
 
 # Copy csproj files for restore
