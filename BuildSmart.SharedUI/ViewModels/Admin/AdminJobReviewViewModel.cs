@@ -200,7 +200,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private async Task ViewJobDetails(IGetProjectsForReview_ProjectsForReview_JobPosts? job)
+	private async Task ViewJobDetails(IJobPostDetails? job)
 	{
 		SelectedJob = job;
 		CurrentJobDetails.Clear();
