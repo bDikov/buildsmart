@@ -98,8 +98,8 @@ public partial class AuctionHubViewModel : ObservableObject
 		public DateTimeOffset CreatedAt => _original.CreatedAt;
 		public DateTimeOffset UpdatedAt => _payload.TryGetProperty("updatedAt", out var p) && p.TryGetDateTimeOffset(out var dt) ? dt : _original.UpdatedAt;
 		public int ReplyCount => _original.ReplyCount;
-		public IGetMyProjects_MyProjects_JobPosts_Questions_TradesmanProfile? TradesmanProfile => (IGetMyProjects_MyProjects_JobPosts_Questions_TradesmanProfile?)_original.TradesmanProfile;
-		public IGetMyProjects_MyProjects_JobPosts_Questions_Author? Author => (IGetMyProjects_MyProjects_JobPosts_Questions_Author?)_original.Author;
+		public IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_TradesmanProfile? TradesmanProfile => (IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_TradesmanProfile?)_original.TradesmanProfile;
+		public IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_Author? Author => (IGetProjectsForReview_ProjectsForReview_JobPosts_Questions_Author?)_original.Author;
 	}
 
 	private class ReplyWrapper : IQuestionReplyDetails

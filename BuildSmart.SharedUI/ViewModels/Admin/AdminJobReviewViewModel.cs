@@ -64,7 +64,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
 	private bool _isEmpty;
 
 	[ObservableProperty]
-	private IGetProjectsForReview_ProjectsForReview_JobPosts? _selectedJob;
+	private IJobPostDetails? _selectedJob;
 
 	[ObservableProperty]
 	private bool _isDetailsVisible;
@@ -333,7 +333,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private async Task ApproveJobAsync(IGetProjectsForReview_ProjectsForReview_JobPosts? job)
+	private async Task ApproveJobAsync(IJobPostDetails? job)
 	{
 		if (job == null) return;
 		bool confirm = await AppServiceLocator.Alerts.DisplayAlert("Confirm", $"Approve scope for '{job.Title}'?", "Yes", "No");
@@ -343,7 +343,7 @@ public partial class AdminJobReviewViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private async Task RejectJobAsync(IGetProjectsForReview_ProjectsForReview_JobPosts? job)
+	private async Task RejectJobAsync(IGetMyProjects_MyProjects_JobPosts? job)
 	{
 		if (job == null) return;
 		string feedback = await AppServiceLocator.Alerts.DisplayPromptAsync("Reject Job", "Please provide a reason for rejection:", "Reject", "Cancel", "Reason...");
