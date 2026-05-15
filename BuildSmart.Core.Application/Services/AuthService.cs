@@ -188,6 +188,7 @@ public class AuthService : IAuthService
 				FirstName = firstName,
 				LastName = lastName,
 				Email = email,
+				HashedPassword = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()), // Satisfy the NOT NULL DB constraint for OAuth users
 				ProfilePictureUrl = profilePictureUrl,
 				Role = UserRoleTypes.Homeowner, // Default role
 				IsEmailVerified = true, // Email is verified by the external provider

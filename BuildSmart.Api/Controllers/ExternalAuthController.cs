@@ -37,38 +37,45 @@ namespace BuildSmart.Api.Controllers
         [HttpGet("signin")]
         public async Task<IActionResult> Signin(string returnUrl = "buildsmart://auth")
         {
-            // CRITICAL: We MUST authenticate against "ExternalCookie", not the default JWT scheme!
-            var result = await HttpContext.AuthenticateAsync("ExternalCookie");
-            if (result?.Succeeded != true)
+            try
             {
-                return BadRequest($"External authentication failed. Result: {result?.Failure?.Message ?? "No Principal"}");
-            }
+                // CRITICAL: We MUST authenticate against "ExternalCookie", not the default JWT scheme!
+                var result = await HttpContext.AuthenticateAsync("ExternalCookie");
+                if (result?.Succeeded != true)
+                {
+                    return BadRequest($"External authentication failed. Result: {result?.Failure?.Message ?? "No Principal"}");
+                }
 
-            var principal = result.Principal;
-            if (principal == null)
+                var principal = result.Principal;
+                if (principal == null)
+                {
+                    return BadRequest("External authentication failed (Principal is null).");
+                }
+
+                var email = principal.FindFirstValue(ClaimTypes.Email);
+                if (email == null)
+                {
+                    return BadRequest("Email not found in external authentication provider.");
+                }
+
+                var name = principal.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
+                
+                // Extract the profile picture URL from the "picture" or "image" claim
+                var picture = principal.FindFirstValue("picture") ?? principal.FindFirstValue("image");
+
+                // Find or create user and generate JWT
+                var token = await _authService.GenerateJwtTokenForExternalLogin(email, name, picture);
+
+                // Clean up the temporary cookie
+                await HttpContext.SignOutAsync("ExternalCookie");
+
+                // Redirect back to the MAUI or Blazor Web App with the token
+                return Redirect($"{returnUrl}?token={token}");
+            }
+            catch (Exception ex)
             {
-                return BadRequest("External authentication failed (Principal is null).");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}");
             }
-
-            var email = principal.FindFirstValue(ClaimTypes.Email);
-            if (email == null)
-            {
-                return BadRequest("Email not found in external authentication provider.");
-            }
-
-            var name = principal.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
-            
-            // Extract the profile picture URL from the "picture" or "image" claim
-            var picture = principal.FindFirstValue("picture") ?? principal.FindFirstValue("image");
-
-            // Find or create user and generate JWT
-            var token = await _authService.GenerateJwtTokenForExternalLogin(email, name, picture);
-
-            // Clean up the temporary cookie
-            await HttpContext.SignOutAsync("ExternalCookie");
-
-            // Redirect back to the MAUI or Blazor Web App with the token
-            return Redirect($"{returnUrl}?token={token}");
         }
     }
 }
