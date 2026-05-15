@@ -109,6 +109,8 @@ jobs:
             echo "POSTGRES_DB=${{ secrets.DB_NAME }}" >> .env
             echo "DOMAIN_WEB=${{ secrets.DOMAIN_WEB }}" >> .env
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
             
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build
