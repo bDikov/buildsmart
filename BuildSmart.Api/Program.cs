@@ -127,7 +127,17 @@ public partial class Program
 		});
 
 		// --- JWT Authentication Setup ---
-		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+		builder.Services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultSignInScheme = "ExternalCookie";
+		})
+		.AddCookie("ExternalCookie", options =>
+		{
+			options.Cookie.Name = "ExternalCookie";
+			options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+		})
 		.AddJwtBearer(options =>
 		{
 			options.TokenValidationParameters = new TokenValidationParameters
@@ -144,8 +154,10 @@ public partial class Program
 		})
 		.AddGoogle(options =>
 		{
-			options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-			options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+			options.SignInScheme = "ExternalCookie";
+			options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "YOUR_CLIENT_ID";
+			options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "YOUR_CLIENT_SECRET";
+			options.ClaimActions.MapJsonKey("picture", "picture", "url");
 		});
 		// .AddApple(options =>
 		// {

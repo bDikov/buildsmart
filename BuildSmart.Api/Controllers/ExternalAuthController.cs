@@ -21,32 +21,33 @@ namespace BuildSmart.Api.Controllers
         }
 
         [HttpGet("google-login")]
-        public IActionResult GoogleLogin()
+        public IActionResult GoogleLogin(string returnUrl = "buildsmart://auth")
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("Signin") };
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("Signin", new { returnUrl }) };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
         [HttpGet("apple-login")]
-        public IActionResult AppleLogin()
+        public IActionResult AppleLogin(string returnUrl = "buildsmart://auth")
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("Signin") };
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("Signin", new { returnUrl }) };
             return Challenge(properties, AppleAuthenticationDefaults.AuthenticationScheme);
         }
 
         [HttpGet("signin")]
-        public async Task<IActionResult> Signin()
+        public async Task<IActionResult> Signin(string returnUrl = "buildsmart://auth")
         {
-            var result = await HttpContext.AuthenticateAsync();
+            // CRITICAL: We MUST authenticate against "ExternalCookie", not the default JWT scheme!
+            var result = await HttpContext.AuthenticateAsync("ExternalCookie");
             if (result?.Succeeded != true)
             {
-                return BadRequest("External authentication failed.");
+                return BadRequest($"External authentication failed. Result: {result?.Failure?.Message ?? "No Principal"}");
             }
 
             var principal = result.Principal;
             if (principal == null)
             {
-                return BadRequest("External authentication failed.");
+                return BadRequest("External authentication failed (Principal is null).");
             }
 
             var email = principal.FindFirstValue(ClaimTypes.Email);
@@ -56,12 +57,18 @@ namespace BuildSmart.Api.Controllers
             }
 
             var name = principal.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
+            
+            // Extract the profile picture URL from the "picture" or "image" claim
+            var picture = principal.FindFirstValue("picture") ?? principal.FindFirstValue("image");
 
-            // At this point, you would typically find or create a user in your database
-            // and generate a JWT token for them.
-            var token = await _authService.GenerateJwtTokenForExternalLogin(email, name);
+            // Find or create user and generate JWT
+            var token = await _authService.GenerateJwtTokenForExternalLogin(email, name, picture);
 
-            return Ok(new { Token = token });
+            // Clean up the temporary cookie
+            await HttpContext.SignOutAsync("ExternalCookie");
+
+            // Redirect back to the MAUI or Blazor Web App with the token
+            return Redirect($"{returnUrl}?token={token}");
         }
     }
 }

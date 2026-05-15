@@ -95,15 +95,15 @@ namespace BuildSmart.SharedUI.ViewModels
 		{
 			try
 			{
-				var authResult = await WebAuthenticator.Default.AuthenticateAsync(
-					new Uri($"{ApiConfig.GetBaseUrl()}/api/externalauth/google-login"),
-					new Uri("buildsmart://"));
+				var token = await _authService.AuthenticateWithGoogleAsync();
 
-				if (authResult != null)
+				if (!string.IsNullOrEmpty(token))
 				{
-					// You can now access the token from authResult.AccessToken
-					// Store the token securely
-					// Application navigation removed for shared UI
+					await _authService.SaveTokenAsync(token);
+
+                    var authStateProvider = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+                    authStateProvider?.NotifyAuthenticationStateChanged();
+
                     await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
 				}
 			}
@@ -122,15 +122,15 @@ namespace BuildSmart.SharedUI.ViewModels
 		{
 			try
 			{
-				var authResult = await WebAuthenticator.Default.AuthenticateAsync(
-					new Uri($"{ApiConfig.GetBaseUrl()}/api/externalauth/apple-login"),
-					new Uri("buildsmart://"));
+				var token = await _authService.AuthenticateWithAppleAsync();
 
-				if (authResult != null)
+				if (!string.IsNullOrEmpty(token))
 				{
-					// You can now access the token from authResult.AccessToken
-					// Store the token securely
-					// Application navigation removed for shared UI
+					await _authService.SaveTokenAsync(token);
+
+                    var authStateProvider = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+                    authStateProvider?.NotifyAuthenticationStateChanged();
+
                     await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
 				}
 			}

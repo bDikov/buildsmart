@@ -145,6 +145,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+var supportedCultures = new[] { "en", "bg" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
 app.UseAuthentication();
 
 // Middleware to parse the raw JWT from the auth_token cookie so ASP.NET Core Endpoint Routing doesn't issue a 302 redirect

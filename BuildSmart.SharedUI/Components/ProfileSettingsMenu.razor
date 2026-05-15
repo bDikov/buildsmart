@@ -139,6 +139,9 @@
             Console.WriteLine($"[Settings] Failed to update language on server: {ex.Message}");
         }
 
+        var cookieValue = $"c={lang}|uic={lang}";
+        await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
+
         var culture = new System.Globalization.CultureInfo(lang);
         System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
         System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
@@ -161,5 +164,7 @@
 
         // Apply the new theme to the root element immediately using JS Interop
         await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
+        
+        await JSRuntime.InvokeVoidAsync("setCookie", "user_theme", theme, 365);
     }
 }

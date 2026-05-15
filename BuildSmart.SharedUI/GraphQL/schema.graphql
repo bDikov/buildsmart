@@ -791,7 +791,7 @@ type Mutation {
   "Authenticates a user and returns a JWT."
   login(email: String! password: String!): String!
   "Creates a new user in the system."
-  registerUser(firstName: String! lastName: String! email: String! password: String!): User!
+  registerUser(firstName: String! lastName: String! email: String! password: String! phoneNumber: String): User!
   "Submits a review and updates the tradesman's average rating."
   submitReview(bookingId: UUID! homeownerId: UUID! rating: Int! comment: String!): Review!
   "Creates a new service category with a smart blueprint template."

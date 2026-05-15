@@ -1,8 +1,9 @@
-mutation RegisterUser($firstName: String!, $lastName: String!, $email: String!, $password: String!) {
-  registerUser(firstName: $firstName, lastName: $lastName, email: $email, password: $password) {
+mutation RegisterUser($firstName: String!, $lastName: String!, $email: String!, $password: String!, $phoneNumber: String) {
+  registerUser(firstName: $firstName, lastName: $lastName, email: $email, password: $password, phoneNumber: $phoneNumber) {
     id
     firstName
     lastName
     email
+    phoneNumber
   }
 }

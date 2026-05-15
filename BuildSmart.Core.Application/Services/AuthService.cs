@@ -21,27 +21,34 @@ public class AuthService : IAuthService
 		_configuration = configuration;
 	}
 
-	public async Task<User> RegisterUserAsync(string firstName, string lastName, string email, string password)
+	public async Task<User> RegisterUserAsync(string firstName, string lastName, string email, string password, string? phoneNumber = null)
 	{
-		// 1. Check if user exists
+		// 1. Validate inputs
+		if (string.IsNullOrWhiteSpace(password))
+		{
+			throw new Exception("Password is required for standard registration.");
+		}
+
+		// 2. Check if user exists
 		var existingUser = await _unitOfWork.Users.GetByEmailAsync(email);
 		if (existingUser != null)
 		{
 			throw new Exception("User with this email already exists.");
 		}
 
-		// 2. Hash password
+		// 3. Hash password
 		var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
-		// 3. Generate verification token
+		// 4. Generate verification token
 		var verificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
 
-		// 4. Create user
+		// 5. Create user
 		var user = new User
 		{
 			FirstName = firstName,
 			LastName = lastName,
 			Email = email,
+			PhoneNumber = phoneNumber,
 			HashedPassword = hashedPassword,
 			Role = UserRoleTypes.Homeowner, // Default role
 			IsEmailVerified = false,
@@ -166,7 +173,7 @@ public class AuthService : IAuthService
 		return true;
 	}
 
-	public async Task<string> GenerateJwtTokenForExternalLogin(string email, string name)
+	public async Task<string> GenerateJwtTokenForExternalLogin(string email, string name, string? profilePictureUrl = null)
 	{
 		var user = await _unitOfWork.Users.GetByEmailAsync(email);
 
@@ -181,6 +188,7 @@ public class AuthService : IAuthService
 				FirstName = firstName,
 				LastName = lastName,
 				Email = email,
+				ProfilePictureUrl = profilePictureUrl,
 				Role = UserRoleTypes.Homeowner, // Default role
 				IsEmailVerified = true, // Email is verified by the external provider
 			};
@@ -192,6 +200,13 @@ public class AuthService : IAuthService
 			};
 
 			await _unitOfWork.Users.AddAsync(user);
+			await _unitOfWork.SaveChangesAsync();
+		}
+		else if (string.IsNullOrEmpty(user.ProfilePictureUrl) && !string.IsNullOrEmpty(profilePictureUrl))
+		{
+			// Update the user's profile picture if they don't have one
+			user.ProfilePictureUrl = profilePictureUrl;
+			_unitOfWork.Users.Update(user);
 			await _unitOfWork.SaveChangesAsync();
 		}
 

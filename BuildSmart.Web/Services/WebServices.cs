@@ -37,12 +37,14 @@ public class WebAuthService : IAuthService
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
+    private readonly NavigationManager _navigationManager;
     private string? _cachedToken;
 
-    public WebAuthService(IJSRuntime jsRuntime, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
+    public WebAuthService(IJSRuntime jsRuntime, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, NavigationManager navigationManager)
     {
         _jsRuntime = jsRuntime;
         _httpContextAccessor = httpContextAccessor;
+        _navigationManager = navigationManager;
         
         // EAGERLY capture the token from the HttpContext immediately upon scoped creation (during Prerendering or initial HTTP request)
         try
@@ -81,8 +83,7 @@ public class WebAuthService : IAuthService
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
-            // Sync to a cookie so the browser sends it on the very first HTTP request (like a page refresh)
-            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'auth_token={token}; path=/; max-age=31536000; samesite=strict'");
+            await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", token, 365);
         }
         catch { /* Ignore prerendering errors */ }
     }
@@ -94,7 +95,7 @@ public class WebAuthService : IAuthService
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "auth_token");
-            await _jsRuntime.InvokeVoidAsync("eval", $"document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'");
+            await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", "", -1);
         }
         catch { /* Ignore prerendering errors */ }
     }
@@ -120,6 +121,22 @@ public class WebAuthService : IAuthService
             c.Type == "sub")?.Value;
         if (Guid.TryParse(userIdStr, out var userId)) return userId;
         return null;
+    }
+
+    public Task<string?> AuthenticateWithGoogleAsync()
+    {
+        // Navigate the whole window to the API external auth endpoint. 
+        // We set returnUrl to the absolute URL of the Blazor Web App so the API redirects back here instead of to itself.
+        var returnUrl = _navigationManager.ToAbsoluteUri("/login").ToString();
+        _navigationManager.NavigateTo($"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/externalauth/google-login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+        return Task.FromResult<string?>(null);
+    }
+
+    public Task<string?> AuthenticateWithAppleAsync()
+    {
+        var returnUrl = _navigationManager.ToAbsoluteUri("/login").ToString();
+        _navigationManager.NavigateTo($"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/externalauth/apple-login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+        return Task.FromResult<string?>(null);
     }
 }
 
@@ -169,6 +186,7 @@ public class WebNavigationBridge : INavigationBridge
             var pageName = url.Replace("Page", "");
             url = pageName switch
             {
+                "CreateAccount" => "/create-account",
                 "JobWizard" => "/job-wizard",
                 "ProjectDetail" => "/project-detail",
                 "PassedAuctions" => "/passed-auctions",
@@ -207,7 +225,8 @@ public class WebNavigationBridge : INavigationBridge
             url = $"{url}{separator}{queryString}";
         }
 
-        bool forceLoad = url == "/" || url == "/login";
+        // Only force load the root to reset app state. Force loading /login clears JS state during logout.
+        bool forceLoad = url == "/";
         _navigationManager.NavigateTo(url, forceLoad);
         return Task.CompletedTask;
     }

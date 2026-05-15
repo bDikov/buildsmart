@@ -16,7 +16,7 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.Login(default!, default!, default!, default!))
             .Description("Authenticates a user and returns a JWT."); // No authorization
 
-        descriptor.Field(m => m.RegisterUser(default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.RegisterUser(default!, default!, default!, default!, default!, default!))
             .Description("Creates a new user in the system."); // No authorization
 
         descriptor.Field(m => m.SubmitReview(default!, default!, default!, default!, default!))

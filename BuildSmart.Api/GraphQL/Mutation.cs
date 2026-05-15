@@ -232,9 +232,10 @@ public class Mutation
 		string lastName,
 		string email,
 		string password,
+		string? phoneNumber,
 		[Service] IAuthService authService)
 	{
-		return await authService.RegisterUserAsync(firstName, lastName, email, password);
+		return await authService.RegisterUserAsync(firstName, lastName, email, password, phoneNumber);
 	}
 
 	[Authorize]

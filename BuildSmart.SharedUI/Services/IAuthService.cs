@@ -10,4 +10,6 @@ public interface IAuthService
     bool IsAuthenticated { get; }
     string? GetUserRoleFromToken(string? token);
     Guid? GetUserIdFromToken(string? token);
+    Task<string?> AuthenticateWithGoogleAsync();
+    Task<string?> AuthenticateWithAppleAsync();
 }

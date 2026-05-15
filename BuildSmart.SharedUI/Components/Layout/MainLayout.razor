@@ -471,17 +471,13 @@
                 
                 if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture)
                 {
-                    var culture = new System.Globalization.CultureInfo(preferredLang);
-                    System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
-                    System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+                    // We defer the force reload to OnAfterRenderAsync where we can safely set the cookie via JSInterop
                     _currentLang = preferredLang;
-                    
-                    // We force reload the page to apply localization strings globally
-                    NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
-                    return;
                 }
-                
-                _currentLang = !string.IsNullOrEmpty(preferredLang) ? preferredLang : currentCulture;
+                else
+                {
+                    _currentLang = currentCulture;
+                }
             }
             else
             {
@@ -513,6 +509,8 @@
                     {
                         await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
                     }
+                    
+                    await JSRuntime.InvokeVoidAsync("setCookie", "user_theme", theme, 365);
                 }
             }
             catch (Exception)
