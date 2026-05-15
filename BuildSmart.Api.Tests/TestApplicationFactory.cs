@@ -34,7 +34,12 @@ namespace BuildSmart.Api.Tests
                 });
 
                 // We want to override the default authentication scheme with our test scheme.
-                services.AddAuthentication(TestAuthHandler.SchemeName)
+                services.AddAuthentication(options => 
+                {
+                    options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                    options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+                    options.DefaultScheme = TestAuthHandler.SchemeName;
+                })
                     .AddScheme<TestAuthHandlerOptions, TestAuthHandler>(TestAuthHandler.SchemeName, options => { });
             });
         }
