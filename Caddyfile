@@ -6,6 +6,7 @@
 	reverse_proxy /api* api:8080
 	reverse_proxy /pdfs* api:8080
 	reverse_proxy /images* api:8080
+	reverse_proxy /signin-google* api:8080
 
 	reverse_proxy * web:8080
 }

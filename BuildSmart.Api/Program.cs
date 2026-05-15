@@ -172,6 +172,15 @@ public partial class Program
 			options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
 		});
 
+		// Configure Forwarded Headers for reverse proxy (Caddy/Docker)
+		builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
+		{
+			options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+			// Clear known networks/proxies to trust all proxies (typical in Docker setups where the proxy IP varies)
+			options.KnownNetworks.Clear();
+			options.KnownProxies.Clear();
+		});
+
 		builder.Services.AddControllers();
 		builder.Services.AddSignalR();
 		builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // Added CustomUserIdProvider
@@ -288,6 +297,8 @@ public partial class Program
 		}
 
 		// --- 2. Configure the HTTP request pipeline ---
+		app.UseForwardedHeaders();
+
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseDeveloperExceptionPage();
