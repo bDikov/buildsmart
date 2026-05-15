@@ -157,6 +157,7 @@ public partial class Program
 			options.SignInScheme = "ExternalCookie";
 			options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "YOUR_CLIENT_ID";
 			options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "YOUR_CLIENT_SECRET";
+			options.CallbackPath = "/api/externalauth/signin-google";
 			options.ClaimActions.MapJsonKey("picture", "picture", "url");
 		});
 		// .AddApple(options =>
@@ -175,7 +176,8 @@ public partial class Program
 		// Configure Forwarded Headers for reverse proxy (Caddy/Docker)
 		builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
 		{
-			options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+			options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All;
+			options.ForwardLimit = null; // Important: Allow any number of proxies
 			// Clear known networks/proxies to trust all proxies (typical in Docker setups where the proxy IP varies)
 			options.KnownNetworks.Clear();
 			options.KnownProxies.Clear();
