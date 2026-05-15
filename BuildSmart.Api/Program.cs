@@ -17,6 +17,7 @@ using Npgsql;
 using System.Text;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using AspNet.Security.OAuth.Apple;
 using Hangfire;
