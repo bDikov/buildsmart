@@ -113,18 +113,21 @@ public partial class NotificationsViewModel : ObservableObject
     {
         try
         {
-            IsBusy = true;
+            bool isFirstLoad = Notifications.Count == 0;
+            if (isFirstLoad) IsBusy = true;
+            
             var result = await _apiClient.GetMyNotifications.ExecuteAsync();
 
             if (result.Errors.Count > 0) return;
 
-            Notifications.Clear();
             if (result.Data?.MyNotifications != null)
             {
-                foreach (var note in result.Data.MyNotifications.OrderByDescending(n => n.CreatedAt))
-                {
-                    Notifications.Add(note);
-                }
+                var newNotes = result.Data.MyNotifications.OrderByDescending(n => n.CreatedAt).ToList();
+                Notifications = new ObservableCollection<IGetMyNotifications_MyNotifications>(newNotes);
+            }
+            else 
+            {
+                Notifications = new ObservableCollection<IGetMyNotifications_MyNotifications>();
             }
         }
         catch { /* Silently fail */ }

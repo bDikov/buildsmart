@@ -51,16 +51,27 @@ namespace BuildSmart.Infrastructure.Services
 				string populatedHtml = template(offerData);
 
 				// 3. Setup PuppeteerSharp
-				_logger.LogInformation("Downloading Chromium for PDF Generation...");
-				var fetcher = new BrowserFetcher();
-				await fetcher.DownloadAsync();
-
 				_logger.LogInformation("Launching Headless Chrome...");
-				using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+				
+				var launchOptions = new LaunchOptions
 				{
 					Headless = true,
-					Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } // important for running inside Docker
-				});
+					Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu" }
+				};
+
+				// If running in Docker (Linux), use the system-installed Chromium
+				if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+				{
+					launchOptions.ExecutablePath = "/usr/bin/chromium";
+				}
+				else
+				{
+					_logger.LogInformation("Downloading Chromium for local Windows/macOS PDF Generation...");
+					var fetcher = new BrowserFetcher();
+					await fetcher.DownloadAsync();
+				}
+
+				using var browser = await Puppeteer.LaunchAsync(launchOptions);
 
 				using var page = await browser.NewPageAsync();
 

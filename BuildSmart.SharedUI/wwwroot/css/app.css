@@ -248,37 +248,6 @@ hr {
    WIZARD ANIMATIONS & UI
    ========================================================================== */
 
-/* Sliding animations */
-.slide-enter-right {
-    animation: slideInRight 0.3s forwards ease-out;
-}
-.slide-exit-left {
-    animation: slideOutLeft 0.3s forwards ease-out;
-}
-.slide-enter-left {
-    animation: slideInLeft 0.3s forwards ease-out;
-}
-.slide-exit-right {
-    animation: slideOutRight 0.3s forwards ease-out;
-}
-
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOutLeft {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(-100%); opacity: 0; }
-}
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOutRight {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
-
 /* Floating Back Button */
 .bs-btn-floating-back {
     position: fixed;
@@ -328,12 +297,20 @@ hr {
 .swipe-hint-overlay {
     position: absolute;
     top: 50%;
-    right: 10%;
     transform: translateY(-50%);
     width: 150px;
     height: 150px;
     pointer-events: none;
     z-index: 40;
     opacity: 0.8;
+}
+
+.swipe-hint-right {
+    right: 10%;
+}
+
+.swipe-hint-left {
+    left: 10%;
+    transform: translateY(-50%) scaleX(-1);
 }
 

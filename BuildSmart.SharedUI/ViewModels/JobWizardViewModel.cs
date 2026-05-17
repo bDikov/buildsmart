@@ -15,6 +15,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	// --- Steps & Visibility ---
 	private List<WizardStep> _wizardSteps = new();
+	public IReadOnlyList<WizardStep> WizardSteps => _wizardSteps;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(IsInfoStepVisible))]
@@ -316,6 +317,16 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 	}
 
+	public bool ValidateCurrentStep()
+	{
+		if (CurrentStep >= _wizardSteps.Count) return false;
+		var currentStepType = _wizardSteps[CurrentStep].Type;
+		if (currentStepType == WizardStepType.Info) return ValidateInfoStep();
+		if (currentStepType == WizardStepType.CategorySelection) return ValidateCategoryStep();
+		if (currentStepType == WizardStepType.Questions) return ValidateQuestionsStep();
+		return true;
+	}
+
 	[RelayCommand]
 	public async Task GoToNextStep()
 	{
@@ -328,19 +339,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			var currentStepIndex = CurrentStep;
 
 			// 1. Validation & State Capture (Must stay on current page if fails)
-			if (currentStepType == WizardStepType.Info)
+			if (!ValidateCurrentStep()) return;
+
+			if (currentStepType == WizardStepType.CategorySelection)
 			{
-				if (!ValidateInfoStep()) return;
-			}
-			else if (currentStepType == WizardStepType.CategorySelection)
-			{
-				if (!ValidateCategoryStep()) return;
 				await GenerateDynamicSteps();
 			}
 			else if (currentStepType == WizardStepType.Questions)
 			{
-				if (!ValidateQuestionsStep()) return;
-
 				// Save current questions to master key
 				foreach (var q in Questions)
 				{
