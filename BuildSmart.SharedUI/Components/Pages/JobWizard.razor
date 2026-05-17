@@ -1,6 +1,7 @@
 @page "/job-wizard"
 @using BuildSmart.SharedUI.ViewModels
 @using System.ComponentModel
+@using Microsoft.AspNetCore.Components.Web
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
 @implements IDisposable
 @inject JobWizardViewModel ViewModel
@@ -17,7 +18,7 @@
         }
         else
         {
-            <div class="container py-4">
+            <div class="container py-4" style="overflow-x: hidden; position: relative; min-height: 80vh;" @ontouchstart="HandleTouchStart" @ontouchend="HandleTouchEnd">
                 <!-- Progress Bar & Title -->
                 <BuildSmart.SharedUI.Components.ProgressCard 
                     Title="@Loc["JobWizard_YourProgress"]" 
@@ -25,184 +26,205 @@
                     StepText="@string.Format(Loc["JobWizard_StepText"], ViewModel.CurrentStepNumber, ViewModel.TotalSteps)" 
                     SubtitleText="@GetSubtitleText()" />
 
-                <!-- Step 0: Basic Info -->
-                @if (ViewModel.IsInfoStepVisible)
+                <!-- Swipe Hint Lottie -->
+                @if (!_hasUserSwiped && ViewModel.CurrentStepNumber == 1)
                 {
-                    <div class="bs-card p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold @(ViewModel.TitleHasError ? "text-danger" : "text-secondary")" style="color: var(--text-secondary);">@Loc["JobWizard_ProjectTitle"]</label>
-                            <input type="text" class="bs-input" placeholder="@Loc["JobWizard_ProjectTitlePlaceholder"]" @bind="ViewModel.ProjectTitle" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold @(ViewModel.LocationHasError ? "text-danger" : "text-secondary")" style="color: var(--text-secondary);">@Loc["JobWizard_Location"]</label>
-                            <input type="text" class="bs-input" placeholder="@Loc["JobWizard_LocationPlaceholder"]" @bind="ViewModel.ProjectLocation" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: var(--text-muted);">@Loc["JobWizard_PreferredSiteVisitDate"]</label>
-                            <BuildSmart.SharedUI.Components.BsCalendar 
-                                @bind-Value="ViewModel.PreferredSiteVisitDate" 
-                                MinDate="DateTime.Today" 
-                                Placeholder="@Loc["JobWizard_SelectDate"]" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold @(ViewModel.DescriptionHasError ? "text-danger" : "text-secondary")" style="color: var(--text-secondary);">@Loc["JobWizard_Description"]</label>
-                            <textarea class="bs-input" rows="4" placeholder="@Loc["JobWizard_DescriptionPlaceholder"]" @bind="ViewModel.ProjectDescription"></textarea>
-                        </div>
-
-                        <button class="bs-btn-primary mt-3 w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToNextStepCommand.Execute(null)">
-                            @Loc["JobWizard_NextSelectCategory"]
-                        </button>
+                    <div class="swipe-hint-overlay">
+                        <!-- Public Lottie Swipe Left Animation -->
+                        <lottie-player src="https://lottie.host/809fccbe-d886-4f49-9f79-e58f000b9573/1G0eRIn1R3.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
                     </div>
                 }
 
-                <!-- Step 1: Category Selection -->
-                @if (ViewModel.IsCategoryStepVisible)
-                {
-                    <BuildSmart.SharedUI.Components.CategorySelector 
-                        Categories="ViewModel.SelectableCategories" 
-                        HasError="ViewModel.CategorySelectionHasError"
-                        IsBusy="ViewModel.IsBusy"
-                        NextButtonText="@Loc[ViewModel.NextButtonText]"
-                        OnNextClicked="() => ViewModel.GoToNextStepCommand.Execute(null)" />
-                }
+                <div class="@_transitionClass" style="width: 100%;">
+                    <!-- Step 0: Basic Info -->
+                    @if (ViewModel.IsInfoStepVisible)
+                    {
+                        <div class="bs-card p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold @(ViewModel.TitleHasError ? "text-danger" : "text-secondary")" style="color: var(--text-secondary);">@Loc["JobWizard_ProjectTitle"]</label>
+                                <input type="text" class="bs-input" placeholder="@Loc["JobWizard_ProjectTitlePlaceholder"]" @bind="ViewModel.ProjectTitle" />
+                            </div>
 
-                <!-- Dynamic Questions Step -->
-                @if (ViewModel.IsQuestionStepVisible)
-                {
-                    <div class="bs-card p-4">
-                        @if (ViewModel.Questions != null)
-                        {
-                            @foreach (var q in ViewModel.Questions)
-                            {
-                                @if (q.IsVisible)
-                                {
-                                    <div class="mb-4">
-                                        <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
-                                        <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: var(--text-primary);">
-                                            @q.Text
-                                            @if (q.IsRequired)
-                                            {
-                                                <span class="text-danger ms-1">*</span>
-                                            }
-                                            @if (!string.IsNullOrWhiteSpace(q.HintText))
-                                            {
-                                                <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@q.HintText">(?)</span>
-                                            }
-                                        </label>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold @(ViewModel.LocationHasError ? "text-danger" : "text-secondary")" style="color: var(--text-secondary);">@Loc["JobWizard_Location"]</label>
+                                <input type="text" class="bs-input" placeholder="@Loc["JobWizard_LocationPlaceholder"]" @bind="ViewModel.ProjectLocation" />
+                            </div>
 
-                                        @if (q.IsText)
-                                        {
-                                            <input type="text" class="bs-input" placeholder="@Loc["JobWizard_TypeAnswerHere"]" @bind="q.Answer" />
-                                        }
-                                        else if (q.IsNumber)
-                                        {
-                                            <input type="number" class="bs-input" placeholder="0" @bind="q.Answer" />
-                                        }
-                                        else if (q.IsChoice && q.Options != null)
-                                        {
-                                            <BuildSmart.SharedUI.Components.BsDropdown 
-                                                TValue="string" 
-                                                Options="q.Options" 
-                                                @bind-Value="q.Answer" 
-                                                Placeholder="@Loc["JobWizard_SelectOption"]" />
-                                        }
-                                        else if (q.IsMultiSelect && q.Options != null)
-                                        {
-                                            <div class="d-flex flex-column gap-2">
-                                                @foreach (var opt in q.Options)
-                                                {
-                                                    <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                        <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{opt.GetHashCode()}")" 
-                                                               checked="@(q.Answer.Contains(opt))"
-                                                               @onchange="@(e => q.ToggleMultiSelectOption(opt, (bool)(e.Value ?? false)))" 
-                                                               style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                        <label class="form-check-label" for="@($"check_{q.Id}_{opt.GetHashCode()}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@opt</label>
-                                                    </div>
-                                                }
-                                            </div>
-                                        }
-                                        else if (q.IsBoolean)
-                                        {
-                                            <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                <label class="form-check-label" for="@($"check_{q.Id}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@Loc["JobWizard_Yes"]</label>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            }
-                        }
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: var(--text-muted);">@Loc["JobWizard_PreferredSiteVisitDate"]</label>
+                                <BuildSmart.SharedUI.Components.BsCalendar 
+                                    @bind-Value="ViewModel.PreferredSiteVisitDate" 
+                                    MinDate="DateTime.Today" 
+                                    Placeholder="@Loc["JobWizard_SelectDate"]" />
+                            </div>
 
-                        <div class="d-flex flex-column gap-3 mt-4">
-                            <button class="bs-btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToNextStepCommand.Execute(null)">
-                                @Loc[ViewModel.NextButtonText]
+                            <div class="mb-3">
+                                <label class="form-label fw-bold @(ViewModel.DescriptionHasError ? "text-danger" : "text-secondary")" style="color: var(--text-secondary);">@Loc["JobWizard_Description"]</label>
+                                <textarea class="bs-input" rows="4" placeholder="@Loc["JobWizard_DescriptionPlaceholder"]" @bind="ViewModel.ProjectDescription"></textarea>
+                            </div>
+
+                            <button class="bs-btn-primary mt-3 w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="HandleNextClick">
+                                @Loc["JobWizard_NextSelectCategory"]
                             </button>
-                            
-                            @if (!ViewModel.IsEditing)
+                        </div>
+                    }
+
+                    <!-- Step 1: Category Selection -->
+                    @if (ViewModel.IsCategoryStepVisible)
+                    {
+                        <BuildSmart.SharedUI.Components.CategorySelector 
+                            Categories="ViewModel.SelectableCategories" 
+                            HasError="ViewModel.CategorySelectionHasError"
+                            IsBusy="ViewModel.IsBusy"
+                            NextButtonText="@Loc[ViewModel.NextButtonText]"
+                            OnNextClicked="HandleNextClick" />
+                    }
+
+                    <!-- Dynamic Questions Step -->
+                    @if (ViewModel.IsQuestionStepVisible)
+                    {
+                        <div class="bs-card p-4">
+                            @if (ViewModel.Questions != null)
                             {
-                                <button class="bs-btn-dark w-100 fw-bold" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary);" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToPreviousStepCommand.Execute(null)">
-                                    @Loc["JobWizard_Back"]
-                                </button>
-                            }
-                        </div>
-                    </div>
-                }
-
-                <!-- Review Step -->
-                @if (ViewModel.IsReviewStepVisible)
-                {
-                    <div class="bs-card p-4">
-                        <h3 class="h4 fw-bold mb-4" style="font-family: var(--font-heading); color: var(--text-primary);">@Loc["JobWizard_ReviewSubmit"]</h3>
-                        
-                        <div class="mb-3">
-                            <span class="fw-bold" style="color: var(--text-secondary);">@Loc["JobWizard_TitleLabel"]</span>
-                            <div style="font-size: 1.1rem; margin-top: 5px; color: var(--text-primary);">@ViewModel.ProjectTitle</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <span class="fw-bold" style="color: var(--text-secondary);">@Loc["JobWizard_SelectedCategoriesLabel"]</span>
-                            <ul class="list-unstyled mb-0 mt-2" style="padding-left: 15px; color: var(--text-primary);">
-                                @if (ViewModel.SelectableCategories != null)
+                                @foreach (var q in ViewModel.Questions)
                                 {
-                                    @foreach (var cat in ViewModel.SelectableCategories.Where(c => c.IsSelected))
+                                    @if (q.IsVisible)
                                     {
-                                        <li style="margin-bottom: 5px;">&bull; @cat.Category?.Name</li>
-                                    }
-                                }
-                            </ul>
-                        </div>
+                                        <div class="mb-4">
+                                            <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
+                                            <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: var(--text-primary);">
+                                                @q.Text
+                                                @if (q.IsRequired)
+                                                {
+                                                    <span class="text-danger ms-1">*</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(q.HintText))
+                                                {
+                                                    <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@q.HintText">(?)</span>
+                                                }
+                                            </label>
 
-                        <div class="mb-3 mt-4">
-                            <span class="fw-bold" style="color: var(--text-secondary);">@Loc["JobWizard_JobDetailsLabel"]</span>
-                            <div class="p-3 rounded mt-2" style="background-color: var(--bg-card-alt); max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color);">
-                                @if (ViewModel.AnswersList != null)
-                                {
-                                    @foreach (var ans in ViewModel.AnswersList)
-                                    {
-                                        <div class="mb-3">
-                                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2px;">@ans.Key</div>
-                                            <div class="fw-bold" style="font-size: 0.95rem; color: var(--text-primary);">@ans.Value</div>
+                                            @if (q.IsText)
+                                            {
+                                                <input type="text" class="bs-input" placeholder="@Loc["JobWizard_TypeAnswerHere"]" @bind="q.Answer" />
+                                            }
+                                            else if (q.IsNumber)
+                                            {
+                                                <input type="number" class="bs-input" placeholder="0" @bind="q.Answer" />
+                                            }
+                                            else if (q.IsChoice && q.Options != null)
+                                            {
+                                                <BuildSmart.SharedUI.Components.BsDropdown 
+                                                    TValue="string" 
+                                                    Options="q.Options" 
+                                                    @bind-Value="q.Answer" 
+                                                    Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                            }
+                                            else if (q.IsMultiSelect && q.Options != null)
+                                            {
+                                                <div class="d-flex flex-column gap-2">
+                                                    @foreach (var opt in q.Options)
+                                                    {
+                                                        <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
+                                                            <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{opt.GetHashCode()}")" 
+                                                                   checked="@(q.Answer.Contains(opt))"
+                                                                   @onchange="@(e => q.ToggleMultiSelectOption(opt, (bool)(e.Value ?? false)))" 
+                                                                   style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
+                                                            <label class="form-check-label" for="@($"check_{q.Id}_{opt.GetHashCode()}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@opt</label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            else if (q.IsBoolean)
+                                            {
+                                                <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
+                                                    <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
+                                                    <label class="form-check-label" for="@($"check_{q.Id}")" style="cursor: pointer; padding-top: 2px; color: var(--text-secondary);">@Loc["JobWizard_Yes"]</label>
+                                                </div>
+                                            }
                                         </div>
                                     }
                                 }
+                            }
+
+                            <div class="d-flex flex-column gap-3 mt-4">
+                                <button class="bs-btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="HandleNextClick">
+                                    @Loc[ViewModel.NextButtonText]
+                                </button>
+                                
+                                @if (!ViewModel.IsEditing)
+                                {
+                                    <button class="bs-btn-dark w-100 fw-bold" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary);" disabled="@ViewModel.IsBusy" @onclick="HandlePreviousClick">
+                                        @Loc["JobWizard_Back"]
+                                    </button>
+                                }
                             </div>
                         </div>
+                    }
 
-                        <div class="d-flex flex-column gap-3 mt-4">
-                            <button class="bs-btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitProjectCommand.Execute(null)">
-                                @Loc["JobWizard_PostProject"]
-                            </button>
+                    <!-- Review Step -->
+                    @if (ViewModel.IsReviewStepVisible)
+                    {
+                        <div class="bs-card p-4">
+                            <h3 class="h4 fw-bold mb-4" style="font-family: var(--font-heading); color: var(--text-primary);">@Loc["JobWizard_ReviewSubmit"]</h3>
                             
-                            <button class="bs-btn-dark w-100 fw-bold" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary);" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoToPreviousStepCommand.Execute(null)">
-                                @Loc["JobWizard_Back"]
-                            </button>
+                            <div class="mb-3">
+                                <span class="fw-bold" style="color: var(--text-secondary);">@Loc["JobWizard_TitleLabel"]</span>
+                                <div style="font-size: 1.1rem; margin-top: 5px; color: var(--text-primary);">@ViewModel.ProjectTitle</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="fw-bold" style="color: var(--text-secondary);">@Loc["JobWizard_SelectedCategoriesLabel"]</span>
+                                <ul class="list-unstyled mb-0 mt-2" style="padding-left: 15px; color: var(--text-primary);">
+                                    @if (ViewModel.SelectableCategories != null)
+                                    {
+                                        @foreach (var cat in ViewModel.SelectableCategories.Where(c => c.IsSelected))
+                                        {
+                                            <li style="margin-bottom: 5px;">&bull; @cat.Category?.Name</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+
+                            <div class="mb-3 mt-4">
+                                <span class="fw-bold" style="color: var(--text-secondary);">@Loc["JobWizard_JobDetailsLabel"]</span>
+                                <div class="p-3 rounded mt-2" style="background-color: var(--bg-card-alt); max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color);">
+                                    @if (ViewModel.AnswersList != null)
+                                    {
+                                        @foreach (var ans in ViewModel.AnswersList)
+                                        {
+                                            <div class="mb-3">
+                                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2px;">@ans.Key</div>
+                                                <div class="fw-bold" style="font-size: 0.95rem; color: var(--text-primary);">@ans.Value</div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column gap-3 mt-4">
+                                <button class="bs-btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitProjectCommand.Execute(null)">
+                                    @Loc["JobWizard_PostProject"]
+                                </button>
+                                
+                                <button class="bs-btn-dark w-100 fw-bold" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary);" disabled="@ViewModel.IsBusy" @onclick="HandlePreviousClick">
+                                    @Loc["JobWizard_Back"]
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
+
+            <!-- Floating Back Button -->
+            @if (ViewModel.CurrentStepNumber > 1)
+            {
+                <button class="bs-btn-floating-back" @onclick="HandlePreviousClick" aria-label="Go Back">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+            }
         }
     </ChildContent>
     <ErrorContent>
@@ -219,10 +241,16 @@
     [SupplyParameterFromQuery] public Guid? JobId { get; set; }
     [SupplyParameterFromQuery] public Guid? TargetCategoryId { get; set; }
 
+    private int _previousStepNumber;
+    private string _transitionClass = "";
+    private double? _touchStartX;
+    private bool _hasUserSwiped = false;
+
     protected override void OnInitialized()
     {
         if (ViewModel != null)
         {
+            _previousStepNumber = ViewModel.CurrentStepNumber;
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         }
     }
@@ -242,7 +270,78 @@
 
     private async void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        await InvokeAsync(StateHasChanged);
+        if (e.PropertyName == nameof(ViewModel.CurrentStepNumber))
+        {
+            if (ViewModel.CurrentStepNumber > _previousStepNumber)
+            {
+                _transitionClass = "slide-enter-right";
+            }
+            else if (ViewModel.CurrentStepNumber < _previousStepNumber)
+            {
+                _transitionClass = "slide-enter-left";
+            }
+            _previousStepNumber = ViewModel.CurrentStepNumber;
+            
+            // Force re-render to apply transition
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void HandleTouchStart(TouchEventArgs e)
+    {
+        _touchStartX = e.Touches.FirstOrDefault()?.ClientX;
+    }
+
+    private void HandleTouchEnd(TouchEventArgs e)
+    {
+        if (!_touchStartX.HasValue) return;
+
+        var touchEndX = e.ChangedTouches.FirstOrDefault()?.ClientX;
+        if (touchEndX.HasValue)
+        {
+            var deltaX = touchEndX.Value - _touchStartX.Value;
+            
+            if (deltaX < -50) // Swiped left -> Next
+            {
+                _hasUserSwiped = true;
+                if (ViewModel.GoToNextStepCommand.CanExecute(null))
+                {
+                    ViewModel.GoToNextStepCommand.Execute(null);
+                }
+            }
+            else if (deltaX > 50) // Swiped right -> Previous
+            {
+                _hasUserSwiped = true;
+                if (ViewModel.GoToPreviousStepCommand.CanExecute(null))
+                {
+                    ViewModel.GoToPreviousStepCommand.Execute(null);
+                }
+            }
+        }
+        
+        _touchStartX = null;
+    }
+
+    private void HandleNextClick()
+    {
+        _hasUserSwiped = true; // Hide hint if they manually click next
+        if (ViewModel.GoToNextStepCommand.CanExecute(null))
+        {
+            ViewModel.GoToNextStepCommand.Execute(null);
+        }
+    }
+
+    private void HandlePreviousClick()
+    {
+        _hasUserSwiped = true; // Hide hint if they manually click back
+        if (ViewModel.GoToPreviousStepCommand.CanExecute(null))
+        {
+            ViewModel.GoToPreviousStepCommand.Execute(null);
+        }
     }
 
     public void Dispose()
@@ -256,11 +355,6 @@
     private string GetSubtitleText()
     {
         if (ViewModel.IsReviewStepVisible) return Loc["JobWizard_ReviewSubtitle"];
-        // In reality, you'd want to also map ViewModel.CurrentStepTitle using @Loc in the ViewModel
-        // but for now we return it directly.
         return ViewModel.CurrentStepTitle;
     }
 }
-
-
-

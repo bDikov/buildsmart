@@ -30,7 +30,38 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	public int TotalSteps => _wizardSteps.Count;
 	public int CurrentStepNumber => CurrentStep + 1;
-	public double ProgressPercentage => TotalSteps > 0 ? (double)CurrentStepNumber / TotalSteps * 100 : 0;
+
+	public double ProgressPercentage 
+	{
+		get 
+		{
+			if (_wizardSteps.Count == 0) return 0;
+			
+			var stepType = _wizardSteps[CurrentStep].Type;
+			if (stepType == WizardStepType.Info) return 15;
+			if (stepType == WizardStepType.CategorySelection) return 30;
+			if (stepType == WizardStepType.Review) return 100;
+			
+			int questionStartIdx = _wizardSteps.FindIndex(s => s.Type == WizardStepType.Questions);
+			int reviewIdx = _wizardSteps.FindIndex(s => s.Type == WizardStepType.Review);
+			
+			if (questionStartIdx == -1) questionStartIdx = 0;
+			
+			if (reviewIdx == -1) 
+			{
+			    return (double)CurrentStepNumber / _wizardSteps.Count * 100;
+			}
+			
+			int totalQuestionSteps = reviewIdx - questionStartIdx;
+			int currentQuestionStep = CurrentStep - questionStartIdx;
+			
+			double baseProgress = 30.0;
+			double remainingProgress = 100.0 - baseProgress;
+			
+			double fraction = (double)(currentQuestionStep + 1) / (totalQuestionSteps + 1);
+			return baseProgress + (remainingProgress * fraction);
+		}
+	}
 
 	public bool IsInfoStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Info;
 	public bool IsCategoryStepVisible => _wizardSteps.Any() && CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.CategorySelection;

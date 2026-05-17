@@ -1,0 +1,114 @@
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.ViewModels
+@using Markdig
+
+<div class="job-card bs-card">
+    <div class="job-header">
+        <h4 class="job-title">@JobVm.JobPost.Title</h4>
+        <div class="d-flex justify-content-between">
+            <span class="job-category">@JobVm.JobPost.ServiceCategory.Name</span>
+            <span class="job-status status-@(JobVm.JobPost.Status.ToString().ToLower())">@Loc[$"Status_{JobVm.JobPost.Status}"]</span>
+        </div>
+    </div>
+
+    @{
+        string scopeClass = IsExpanded ? "scope-view expanded" : "scope-view collapsed";
+        string descClass = IsExpanded ? "job-description expanded" : "job-description collapsed";
+    }
+
+    @if (!string.IsNullOrEmpty(JobVm.JobPost.GeneratedScope) && JobVm.JobPost.Status != JobPostStatus.Draft)
+    {
+        <div class="@scopeClass mt-3 mb-3">
+            <div class="scope-text">
+                @((MarkupString)Markdig.Markdown.ToHtml(JobVm.JobPost.GeneratedScope))
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <button class="bs-btn-dark btn-sm" @onclick="async () => await OnToggleExpansion.InvokeAsync()">
+                @(IsExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
+            </button>
+            <button class="bs-btn-dark btn-sm" @onclick="async () => await OnSeeTasks.InvokeAsync()">
+                @Loc["ProjectDetail_SeeTasks"]
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="@descClass mt-3 mb-3">
+            @JobVm.JobPost.Description
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            @if (JobVm.JobPost.Description?.Length > 150)
+            {
+                <button class="bs-btn-dark btn-sm" @onclick="async () => await OnToggleExpansion.InvokeAsync()">
+                    @(IsExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
+                </button>
+            }
+            else
+            {
+                <div></div>
+            }
+            @if (JobVm.JobPost.Status != JobPostStatus.Draft)
+            {
+                <button class="bs-btn-dark btn-sm" @onclick="async () => await OnSeeTasks.InvokeAsync()">
+                    @Loc["ProjectDetail_SeeTasks"]
+                </button>
+            }
+        </div>
+    }
+
+    <!-- Action Buttons -->
+    <div class="d-flex flex-column gap-2 mt-3">
+        @if (JobVm.JobPost.Status == JobPostStatus.Open)
+        {
+            <button class="bs-btn-dark w-100" @onclick="async () => await OnViewTaskBreakdown.InvokeAsync()">
+                @Loc["ProjectDetail_ViewTaskBreakdown"]
+            </button>
+        }
+
+        @if (JobVm.JobPost.Bids != null && JobVm.JobPost.Bids.Any())
+        {
+            <button class="bs-btn-primary w-100" @onclick="async () => await OnViewAuctionHub.InvokeAsync()">
+                @string.Format(Loc["ProjectDetail_ViewOffersCount"], JobVm.JobPost.Bids.Count)
+            </button>
+        }
+        else if (JobVm.JobPost.Status == JobPostStatus.Open)
+        {
+            <button class="bs-btn-dark w-100" @onclick="async () => await OnViewAuctionHub.InvokeAsync()">
+                @Loc["ProjectDetail_ViewAuctionZero"]
+            </button>
+        }
+        
+        @if (JobVm.JobPost.Status == JobPostStatus.Rejected || JobVm.JobPost.Status == JobPostStatus.WaitingForUserReview)
+        {
+            <button class="bs-btn-dark w-100 mb-2" @onclick="async () => await OnEditAnswers.InvokeAsync()">@Loc["ProjectDetail_EditAnswers"]</button>
+            <button class="bs-btn-primary w-100" @onclick="async () => await OnReviewScope.InvokeAsync()">@Loc["ProjectDetail_ReviewScope"]</button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public JobPostViewModel JobVm { get; set; } = default!;
+
+    [Parameter]
+    public bool IsExpanded { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleExpansion { get; set; }
+
+    [Parameter]
+    public EventCallback OnSeeTasks { get; set; }
+
+    [Parameter]
+    public EventCallback OnViewTaskBreakdown { get; set; }
+
+    [Parameter]
+    public EventCallback OnViewAuctionHub { get; set; }
+
+    [Parameter]
+    public EventCallback OnEditAnswers { get; set; }
+
+    [Parameter]
+    public EventCallback OnReviewScope { get; set; }
+}

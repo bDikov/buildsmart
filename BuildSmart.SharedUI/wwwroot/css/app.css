@@ -243,3 +243,97 @@ hr {
     right: 0.75rem;
     top: 0.5rem;
 }
+
+/* ==========================================================================
+   WIZARD ANIMATIONS & UI
+   ========================================================================== */
+
+/* Sliding animations */
+.slide-enter-right {
+    animation: slideInRight 0.3s forwards ease-out;
+}
+.slide-exit-left {
+    animation: slideOutLeft 0.3s forwards ease-out;
+}
+.slide-enter-left {
+    animation: slideInLeft 0.3s forwards ease-out;
+}
+.slide-exit-right {
+    animation: slideOutRight 0.3s forwards ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutLeft {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-100%); opacity: 0; }
+}
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Floating Back Button */
+.bs-btn-floating-back {
+    position: fixed;
+    bottom: 30px;
+    left: 20px;
+    z-index: 50;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+[data-theme='dark'] .bs-btn-floating-back {
+    background-color: rgba(34, 37, 51, 0.6);
+}
+
+.bs-btn-floating-back:hover {
+    transform: scale(1.05);
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme='dark'] .bs-btn-floating-back:hover {
+    background-color: rgba(34, 37, 51, 0.8);
+}
+
+.bs-btn-floating-back svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Lottie Swipe Hint Overlay */
+.swipe-hint-overlay {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+    width: 150px;
+    height: 150px;
+    pointer-events: none;
+    z-index: 40;
+    opacity: 0.8;
+}
+

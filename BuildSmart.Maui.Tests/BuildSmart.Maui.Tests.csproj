@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <SkipResizetizer>true</SkipResizetizer>
+    <IsTestProject>true</IsTestProject>
+    <MauiResizetizerEnabled>false</MauiResizetizerEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +28,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BuildSmart.Maui\BuildSmart.Maui.csproj" />
+    <ProjectReference Include="..\BuildSmart.SharedUI\BuildSmart.SharedUI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiIcon Remove="**" />
+    <MauiSplashScreen Remove="**" />
+    <MauiImage Remove="**" />
   </ItemGroup>
 
 </Project>

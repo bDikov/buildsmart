@@ -5,10 +5,18 @@
         <div class="progress-content">
             <div class="circular-progress">
                 <svg viewBox="0 0 118 118" class="circular-chart">
+                    <!-- Drop shadow definition for the glow -->
+                    <defs>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <!-- Neumorphic-like track using a softer secondary background -->
                     <circle class="circular-bg" cx="59" cy="59" r="51"></circle>
                     <circle class="circular-fill" cx="59" cy="59" r="51" stroke-dashoffset="@CalculateOffset()"></circle>
                 </svg>
-                <div class="circular-text">@(Math.Round(ProgressPercentage))%</div>
+                <div class="circular-text">@(Math.Round(_displayPercentage))%</div>
             </div>
             <div class="progress-info">
                 <div class="progress-step">@StepText</div>
@@ -70,6 +78,10 @@
         width: 118px;
         height: 118px;
         flex-shrink: 0;
+        /* Soft inner background for a neumorphic feel */
+        background-color: var(--bg-card);
+        border-radius: 50%;
+        box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.05), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
     }
 
     .circular-chart {
@@ -81,20 +93,21 @@
 
     .circular-bg {
         fill: none;
-        stroke: var(--border-color);
-        stroke-width: 8;
+        stroke: var(--bg-card-alt);
+        stroke-width: 10;
     }
 
     .circular-fill {
         fill: none;
         stroke: var(--color-primary);
-        stroke-width: 8;
+        stroke-width: 10;
         stroke-linecap: round;
-        transition: stroke-dashoffset 0.5s ease-out;
+        /* Bouncy spring animation */
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         stroke-dasharray: 320.44; /* Circumference of circle with r=51 (2 * pi * 51) */
         transform: rotate(-90deg);
         transform-origin: 50% 50%;
-        filter: drop-shadow(0px 14px 10px rgba(113, 50, 193, 0.4));
+        filter: url(#glow);
     }
 
     .circular-text {
@@ -158,6 +171,25 @@
 
     [Parameter]
     public string SubtitleText { get; set; } = "Complete all steps to finish.";
+
+    private double _displayPercentage = 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        double target = Math.Max(0, Math.Min(100, ProgressPercentage));
+        if (Math.Abs(_displayPercentage - target) > 0.1)
+        {
+            double step = (target - _displayPercentage) / 25.0;
+            for (int i = 0; i < 25; i++)
+            {
+                _displayPercentage += step;
+                StateHasChanged();
+                await Task.Delay(20);
+            }
+            _displayPercentage = target;
+            StateHasChanged();
+        }
+    }
 
     private double CalculateOffset()
     {

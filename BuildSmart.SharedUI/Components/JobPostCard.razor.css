@@ -1,0 +1,74 @@
+.job-card {
+    padding: 20px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.job-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.job-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+}
+
+.job-category {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.job-status {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.status-draft { color: gray; }
+.status-open { color: var(--color-success); }
+.status-waitingforuserreview { color: var(--color-warning); }
+.status-waitingforadminreview { color: var(--color-info); }
+.status-rejected { color: var(--color-danger); }
+
+.job-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.scope-view.collapsed, .job-description.collapsed {
+    max-height: 150px;
+    overflow: hidden;
+    position: relative;
+}
+
+.scope-view.collapsed::after, .job-description.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(transparent, var(--bg-card));
+}
+
+.scope-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+::deep .scope-text p {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
