@@ -219,4 +219,55 @@ public class AppDbContext : DbContext
 
         await SaveChangesAsync();
     }
+
+    public async Task SeedCategoriesAndQuestionsAsync()
+    {
+        var filePath = Path.Combine(AppContext.BaseDirectory, "Categories_Seed_Templates.json");
+        if (!System.IO.File.Exists(filePath))
+        {
+            return; // Skip if file not found
+        }
+
+        var json = await System.IO.File.ReadAllTextAsync(filePath);
+        var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var seedData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, CategorySeedDto>>(json, options);
+        
+        if (seedData == null) return;
+
+        foreach (var kvp in seedData)
+        {
+            var categoryName = kvp.Value.Name;
+            var isGlobal = kvp.Key == "global_category";
+
+            var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == categoryName);
+            if (category == null)
+            {
+                category = new ServiceCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Name = categoryName,
+                    Status = CategoryStatus.Active,
+                    IsGlobal = isGlobal,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await ServiceCategories.AddAsync(category);
+            }
+            else
+            {
+                category.IsGlobal = isGlobal;
+            }
+            
+            // Always update the template structure to match the latest JSON
+            category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
+        }
+
+        await SaveChangesAsync();
+    }
+
+    private class CategorySeedDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public object? TemplateStructure { get; set; }
+    }
 }

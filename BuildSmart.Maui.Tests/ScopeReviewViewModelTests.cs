@@ -22,20 +22,20 @@ public class ScopeReviewViewModelTests
     public void ApplyQueryAttributes_ValidJob_InitializesWithOneEmptyTask()
     {
         // Arrange
-        var mockJob = new Mock<IJobPostDetails>();
-        mockJob.Setup(j => j.Id).Returns(Guid.NewGuid());
-        mockJob.Setup(j => j.GeneratedScope).Returns("Generated Scope Data");
-
+        var jobId = Guid.NewGuid();
         var query = new Dictionary<string, object>
         {
-            { "Job", mockJob.Object }
+            { "JobId", jobId }
         };
+
+        // Note: The ViewModel now fetches data using _apiClient.GetJobTasks.ExecuteAsync(jobId).
+        // Since we are mocking the client, it will return null and do nothing.
+        // The ViewModel will hit the fallback logic: if (Tasks.Count == 0) AddTask();
 
         // Act
         _viewModel.ApplyQueryAttributes(query);
 
         // Assert
-        Assert.Equal("Generated Scope Data", _viewModel.GeneratedScope);
         Assert.Single(_viewModel.Tasks);
         Assert.Equal(1, _viewModel.Tasks[0].SequenceOrder);
         Assert.Equal("New Task", _viewModel.Tasks[0].Title);

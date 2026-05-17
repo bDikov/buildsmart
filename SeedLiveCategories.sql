@@ -1,0 +1,64 @@
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Global Questions', 1, true, '{"questions":[{"id":"global_property_type","text":"Какъв е типът на имота?","type":"choice","required":true,"options":["Апартамент","Къща / Вила","Офис / Търговско помещение"]},{"id":"global_total_sqm","text":"Каква е общата квадратура (подова площ) на обекта в кв.м.?","type":"number","required":true},{"id":"global_ceiling_height","text":"Каква е височината на таваните?","type":"choice","required":true,"options":["Стандартна (между 2.50м и 2.70м)","Висока (над 2.70м)"]},{"id":"global_room_count","text":"Общ брой сухи помещения (спални, хол, кухня, кабинет)?","type":"number","required":true},{"id":"global_bathroom_count","text":"Колко на брой са мокрите помещения (бани и тоалетни)?","type":"number","required":true},{"id":"global_current_state","text":"Какво е текущото състояние на обекта?","type":"choice","required":true,"options":["Ново строителство (на шпакловка и замазка / БДС)","Празно жилище за основен ремонт","Обзаведено жилище (изисква местене и покриване)"]},{"id":"global_logistics","text":"Има ли осигурен достъп и паркомясто за бус/контейнер, както и работещ асансьор за качване на материали?","type":"choice","required":true,"options":["Да, има лесен достъп и асансьор","Няма асансьор (качване по стълби)","Труден достъп/Няма паркинг"]},{"id":"global_protection","text":"Изисква ли се ежедневно почистване и специално покриване/защита на общите части на сградата?","type":"boolean","required":true}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Електрическа Инсталация', 1, false, '{"questions":[{"id":"elec_walls","text":"От какво са направени стените ви в момента?","type":"choice","required":true,"options":["Бетон / Панел","Тухла","Гипсокартон","Смесено"]},{"id":"elec_floor_sqm","text":"Колко кв.м. нова замазка на пода ще правим? (Пускането на кабели по пода преди замазка пести много къртене. 0 ако няма)","type":"number","required":true},{"id":"elec_heavy_appliances","text":"Колко на брой големи уреди ще имате?","type":"number","required":true},{"id":"elec_ac_count","text":"Колко броя климатици ще имате общо?","type":"number","required":true},{"id":"elec_underfloor_heating_rooms","text":"В колко на брой помещения ще имате подово отопление?","type":"number","required":true},{"id":"elec_boiler_count","text":"Колко бойлера (стандартни или проточни) ще имате? (Захранване)","type":"number","required":true},{"id":"elec_outlets","text":"Колко общо стандартни контакти и ключове желаете?","type":"number","required":true},{"id":"elec_deviators","text":"Колко девиаторни ключа искате?","type":"number","required":true},{"id":"elec_lighting","text":"Какъв тип ще е основното осветление?","type":"multiselect","required":true,"options":["Полилеи и плафони (стандартно)","Вградени лунички / LED спотове","Скрито LED осветление (ленти в окачен таван)","Аплици (стенно осветление)"]},{"id":"elec_lan_tv_count","text":"За колко на брой стаи искате интернет кабел (LAN/TV)?","type":"number","required":true},{"id":"elec_security_points","text":"Колко слаботокови точки (камери, СОТ) ще имате?","type":"number","required":true},{"id":"elec_panel","text":"Главното ел. табло ще бъде скрито или външно?","type":"choice","required":true,"options":["Скрито/Вградено","Външно/Открито"]},{"id":"elec_blinds_count","text":"За колко прозореца ще имате ел. щори?","type":"number","required":true},{"id":"elec_fans_count","text":"Колко вентилатора за баня ще монтираме?","type":"number","required":true},{"id":"elec_three_phase","text":"Имате ли налична партида за трифазен ток?","type":"boolean","required":true}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'ВиК Услуги (Plumbing)', 1, false, '{"questions":[{"id":"plumb_scope","text":"Какъв е обхватът на ВиК ремонта?","type":"multiselect","required":true,"options":["Цялостна подмяна водопровод/канал","Изместване на кухня/баня","Само монтаж на санитария"]},{"id":"plumb_points","text":"Колко на брой нови ВиК точки са необходими?","type":"number","required":false},{"id":"plumb_builtin_count","text":"Колко вградени структури за тоалетна (конзоли) ще се монтират?","type":"number","required":true},{"id":"plumb_concealed_meters","text":"Приблизително колко линейни метра тръби ще бъдат скрити в стената (изисква къртене)? (Въведете 0 ако не знаете)","type":"number","required":true},{"id":"plumb_relocated_points","text":"Колко съществуващи ВиК точки ще се местят на друга стена?","type":"number","required":true},{"id":"plumb_subfloor","text":"Какъв е подът/основата?","type":"choice","required":true,"options":["Бетонна плоча","Гредоред"]},{"id":"plumb_fixtures_supply","text":"Кой ще осигури санитарията (смесители, мивки, тоалетни)?","type":"choice","required":true,"options":["Клиентът","Изпълнителят"]},{"id":"plumb_fixture_count","text":"Колко общо санитарни уреди (мивки, смесители, тоалетни, душове) ще се монтират?","type":"number","required":true}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Бояджийски и шпакловъчни услуги (Painting)', 1, false, '{"questions":[{"id":"paint_tasks","text":"Какви дейности са необходими?","type":"multiselect","required":true,"options":["Цялостна шпакловка","Само боядисване","Сваляне на тапети"]},{"id":"paint_sqm","text":"Каква е общата площ на стените и таваните (кв.м.)?","type":"number","required":true},{"id":"paint_trim_doors_count","text":"Колко интериорни врати или декоративни первази (л.м.) ще се боядисват?","type":"number","required":true},{"id":"paint_colors_count","text":"Колко различни цвята ще се използват?","type":"number","required":true},{"id":"paint_finish_level","text":"Какво е очакваното ниво на завършеност?","type":"choice","required":true,"options":["Стандартно (Q3/Q4)","Перфектно гладко (Q5 - изисква специална шпакловка)"],"hintText":"💡 Съвет: Q5 ''Перфектно гладко'' е силно препоръчително, ако ще ползвате тъмни бои или имате силна дневна светлина"}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Къртене и извозване (Demolition)', 1, false, '{"questions":[{"id":"demo_what","text":"Какво точно трябва да се кърти?","type":"multiselect","required":true,"options":["Фаянс/теракота","Бетонни стени","Тухлени стени","Подова замазка"]},{"id":"demo_sqm","text":"Каква е площта (кв.м.) или обемът (куб.м.) за къртене?","type":"number","required":true},{"id":"demo_floor","text":"На кой етаж се намира обектът?","type":"number","required":true},{"id":"demo_containers_count","text":"Колко контейнера за строителни отпадъци желаете (приблизително)? (0 за без извозване)","type":"number","required":true},{"id":"demo_subfloor_sqm","text":"Колко кв.м. подова замазка до бетонна плоча ще се премахва? (0 ако няма)","type":"number","required":true},{"id":"demo_utilities","text":"Кой ще спре захранването на ВиК и Ел. инсталациите преди къртенето?","type":"choice","required":true,"options":["Спряни са предварително","Изпълнителят трябва да ги спре и затапи"]}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Сухо строителство (Drywall)', 1, false, '{"questions":[{"id":"drywall_type","text":"Какъв тип сухо строителство е необходимо?","type":"multiselect","required":true,"options":["Окачен таван","Преградна стена","Предстенна обшивка (на конструкция)","Куфари (обличане на тръби)"]},{"id":"drywall_sqm","text":"Площ за изграждане (кв.м.)? (Ако е преградна стена или предстенна обшивка)","type":"number","required":true,"dependsOn":"drywall_type","dependsOnValue":"Преградна стена|Предстенна обшивка (на конструкция)"},{"id":"drywall_boxes_lm","text":"Колко линейни метра куфари за обличане на тръби ще се изграждат?","type":"number","required":true,"dependsOn":"drywall_type","dependsOnValue":"Куфари (обличане на тръби)"},{"id":"drywall_insulation","text":"Желаете ли поставяне на изолация?","type":"multiselect","required":true,"options":["Топлоизолация (стандартна минерална вата)","Шумоизолация (специализирана акустична вата и мембрани)","Не желая изолация"]},{"id":"drywall_complexity_lm","text":"Колко линейни метра сложни архитектурни форми (овални стени, арки, скрито осветление)? (0 ако няма)","type":"number","required":true},{"id":"drywall_wet_room_sqm","text":"Колко кв.м. влагоустойчив картон (за мокри помещения) ще се използва?","type":"number","required":true}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Подови и стенни настилки (Tiling)', 1, false, '{"questions":[{"id":"tile_type","text":"Какъв тип настилки и облицовки ще се полагат?","type":"multiselect","required":true,"options":["Стандартни плочки (баня/тераса)","Гранитогрес - голям формат (хол/коридор)","Ламинат или Паркет (спални)","Облицовка на стени (камък/тухлички)"]},{"id":"tile_sqm_standard","text":"Ако сте избрали стандартни плочки, каква е площта в кв.м.?","type":"number","required":false},{"id":"tile_sqm_large","text":"Ако сте избрали голям формат гранитогрес, каква е площта в кв.м.?","type":"number","required":false},{"id":"tile_sqm_laminate","text":"Ако сте избрали ламинат/паркет, каква е площта в кв.м.?","type":"number","required":false},{"id":"tile_sqm_stone","text":"Ако сте избрали облицовка на стени (камък/тухлички), каква е площта в кв.м.?","type":"number","required":false},{"id":"tile_size_pref","text":"Имате ли предпочитания за размера на плочките (напр. 60х60, 120х60)?","type":"choice","required":false,"options":["Малки / Стандартни (до 60х60)","Големи (напр. 120х60)","Изключително големи (над 120см)","Не съм решил"]},{"id":"tile_leveling_sqm","text":"Колко кв.м. саморазливна замазка е необходима?","type":"number","required":true},{"id":"tile_pattern","text":"Ще има ли сложно редене на плочките?","type":"choice","required":true,"options":["Стандартно (право)","Сложно (Рибена кост, Диагонал)"]},{"id":"tile_waterproofing_sqm","text":"Колко кв.м. хидроизолация (за мокри помещения) е необходима?","type":"number","required":true},{"id":"tile_grout","text":"Какъв тип фугираща смес ще се използва?","type":"choice","required":true,"options":["Стандартна циментова","Епоксидна фуга"]}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Микроцимент (Microcement)', 1, false, '{"questions":[{"id":"mico_area","text":"Къде ще се полага микроциментът?","type":"multiselect","required":true,"options":["Подове","Стени","Баня/Мокри помещения","Мебели/Плотове"]},{"id":"mico_sqm","text":"Каква е общата площ за покриване (кв.м.)?","type":"number","required":true},{"id":"mico_surface","text":"Каква е текущата основа?","type":"choice","required":true,"options":["Стари плочки","Нова замазка / Шпакловка","Гипсокартон","Дърво / Ламинат"]},{"id":"mico_waterproofing_sqm","text":"Колко кв.м. допълнителна хидроизолация се изисква преди микроцимента?","type":"number","required":true}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+

@@ -29,7 +29,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=db;Database=${POSTGRES_DB:-buildsmart_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres_password}
       - ASPNETCORE_URLS=http://+:8080
       # Provide valid Gemini API Key on VPS
-      - GeminiAi__ApiKey=${GEMINI_API_KEY}
+      - Gemini__ApiKey=${GEMINI_API_KEY}
       # Google OAuth
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}

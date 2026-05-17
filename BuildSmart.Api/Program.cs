@@ -287,6 +287,7 @@ public partial class Program
 				{
 					context.Database.Migrate(); // Apply any pending migrations
 				}
+				await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
 				await context.SeedAdminUser(); // Seed the admin user
 				await context.SeedHomeownerUser(); // Seed the homeowner user
 				await context.SeedTradesmanUser(); // Seed the painter tradesman

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace BuildSmart.Core.Application.DTOs;
 
 public record AiTaskPricingItemDto(
-    Guid TaskId,
+    string TaskId,
     string TaskTitle,
     List<AiTaskSkuItemDto> SkuItems
 );

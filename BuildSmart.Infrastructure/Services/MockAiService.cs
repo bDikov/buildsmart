@@ -58,7 +58,7 @@ public class MockAiService : IAiService
 			{
 				skuItems.Add(new AiTaskSkuItemDto(allowedSkus.First().SkuCode, 1));
 			}
-			pricingItems.Add(new AiTaskPricingItemDto(task.Id, task.Title, skuItems));
+			pricingItems.Add(new AiTaskPricingItemDto(task.Id.ToString(), task.Title, skuItems));
 		}
 
 		return Task.FromResult(new AiTaskPricingResponse(pricingItems));

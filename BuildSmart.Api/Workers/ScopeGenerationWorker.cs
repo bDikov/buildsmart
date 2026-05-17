@@ -89,7 +89,7 @@ public class ScopeGenerationWorker
 
 			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
 			{
-				_lastApiCallTime = UtcNowProvider();
+				await EnforceRateLimitAsync();
 
 				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus, languageCode);
 			});
@@ -287,7 +287,7 @@ public class ScopeGenerationWorker
 
 			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
 			{
-				_lastApiCallTime = UtcNowProvider();
+				await EnforceRateLimitAsync();
 
 				System.IO.File.AppendAllText(debugLogFile, $"Calling AI Service...\n");
 				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, humanReadableContext, languageCode);
@@ -330,7 +330,13 @@ public class ScopeGenerationWorker
 
 				foreach (var aiTask in aiResponse.Tasks)
 				{
-					var matchedTask = freshJobPost.JobTasks.FirstOrDefault(t => t.Id == aiTask.TaskId);
+					if (!Guid.TryParse(aiTask.TaskId, out var parsedGuid))
+					{
+						System.IO.File.AppendAllText(debugLogFile, $"WARN: AI returned invalid TaskId format: '{aiTask.TaskId}'.\n");
+						continue;
+					}
+
+					var matchedTask = freshJobPost.JobTasks.FirstOrDefault(t => t.Id == parsedGuid);
 					if (matchedTask == null)
 					{
 						System.IO.File.AppendAllText(debugLogFile, $"WARN: Could not match AI TaskId {aiTask.TaskId} with any JobTask.\n");
@@ -526,6 +532,7 @@ public class ScopeGenerationWorker
 				string finalScopeDescription = projectWithUser.Description;
 				if (combinedScope.Length > 0)
 				{
+					await EnforceRateLimitAsync();
 					finalScopeDescription = await aiService.GenerateExecutiveSummaryAsync(combinedScope.ToString(), projectWithUser.LanguageCode ?? "bg");
 				}
 
@@ -590,5 +597,15 @@ public class ScopeGenerationWorker
 		{
 			pdfLock.Release();
 		}
+	}
+
+	private async Task EnforceRateLimitAsync()
+	{
+		var timeSinceLastCall = UtcNowProvider() - _lastApiCallTime;
+		if (timeSinceLastCall < TimeSpan.FromSeconds(3))
+		{
+			await DelayTask(TimeSpan.FromSeconds(3) - timeSinceLastCall);
+		}
+		_lastApiCallTime = UtcNowProvider();
 	}
 }
