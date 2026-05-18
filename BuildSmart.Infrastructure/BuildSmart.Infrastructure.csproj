@@ -18,4 +18,8 @@
     <ProjectReference Include="..\BuildSmart.Core.Domain\BuildSmart.Core.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Templates\OfferTemplate.html" />
+  </ItemGroup>
+
 </Project>

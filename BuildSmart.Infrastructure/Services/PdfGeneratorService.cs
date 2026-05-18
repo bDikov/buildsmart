@@ -25,26 +25,18 @@ namespace BuildSmart.Infrastructure.Services
 		{
 			try
 			{
-				// 1. Load HTML Template
-				string templatePath = Path.Combine(_templateDirectory, "OfferTemplate.html");
-				if (!File.Exists(templatePath))
+				// 1. Load HTML Template (Embedded Resource)
+				var assembly = Assembly.GetExecutingAssembly();
+				var resourceName = "BuildSmart.Infrastructure.Resources.Templates.OfferTemplate.html";
+				
+				using var stream = assembly.GetManifestResourceStream(resourceName);
+				if (stream == null)
 				{
-					// Fallback to project root if running from tests or un-published app
-					templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Templates", "OfferTemplate.html");
+					var availableResources = string.Join(", ", assembly.GetManifestResourceNames());
+					throw new FileNotFoundException($"Embedded resource not found: {resourceName}. Available: {availableResources}");
 				}
-
-				if (!File.Exists(templatePath))
-				{
-					// Final fallback
-					templatePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? string.Empty, "BuildSmart.Infrastructure", "Resources", "Templates", "OfferTemplate.html");
-				}
-
-				if (!File.Exists(templatePath))
-				{
-					throw new FileNotFoundException($"Template not found at {templatePath}");
-				}
-
-				string templateSource = await File.ReadAllTextAsync(templatePath);
+				using StreamReader reader = new StreamReader(stream);
+				string templateSource = await reader.ReadToEndAsync();
 
 				// 2. Bind Data with Handlebars
 				var template = Handlebars.Compile(templateSource);
