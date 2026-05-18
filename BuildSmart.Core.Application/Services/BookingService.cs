@@ -26,8 +26,8 @@ public class BookingService : IBookingService
 	/// <returns>The newly created Booking object.</returns>
 	/// <exception cref="ArgumentException">Thrown if the user or tradesman is not found, or if the user is not a homeowner.</exception>
 	/// <exception cref="InvalidOperationException">Thrown if the tradesman is already booked for that time.</exception>
-	public async Task<Booking> CreateBookingAsync(Guid homeownerUserId, Guid tradesmanProfileId, DateTime requestedDateTime, string description)
+	public Task<Booking> CreateBookingAsync(Guid homeownerUserId, Guid tradesmanProfileId, DateTime requestedDateTime, string description)
 	{
-        throw new NotImplementedException("Direct booking is deprecated. Bookings are now generated via the Accepted Bid (Escrow) workflow.");
+        return Task.FromException<Booking>(new NotImplementedException("Direct booking is deprecated. Bookings are now generated via the Accepted Bid (Escrow) workflow."));
 	}
 }

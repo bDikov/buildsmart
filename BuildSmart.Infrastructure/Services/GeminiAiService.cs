@@ -355,7 +355,11 @@ public class GeminiAiService : IAiService
 
 			try
 			{
-				var result = JsonSerializer.Deserialize<AiTaskPricingResponse>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+				var result = JsonSerializer.Deserialize<AiTaskPricingResponse>(responseText, new JsonSerializerOptions 
+				{ 
+					PropertyNameCaseInsensitive = true,
+					NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+				});
 
 				if (result == null)
 				{

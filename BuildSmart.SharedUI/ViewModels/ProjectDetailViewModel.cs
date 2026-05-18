@@ -166,13 +166,17 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 
                 // Use a background task to allow navigation to complete smoothly
                 Task.Run(async () => {
-                    await Task.Delay(300); // Give the UI thread time to breathe
-                    
-                    AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => {
-                        Project = project;
-                        SyncJobPosts();
-                        HasLoaded = true;
-                    });
+                    try
+                    {
+                        await Task.Delay(300); // Give the UI thread time to breathe
+                        
+                        AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => {
+                            Project = project;
+                            SyncJobPosts();
+                            HasLoaded = true;
+                        });
+                    }
+                    catch { /* Prevent unobserved task exception */ }
                 });
             }
 		}
@@ -205,7 +209,16 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
             foreach (var job in Project.JobPosts)
             {
                 JobPosts.Add(new JobPostViewModel(job, LoadMoreRepliesAsync));
-                _ = _signalRService.ConnectAsync().ContinueWith(async _ => await _signalRService.JoinAuctionGroupAsync(job.Id.ToString()));
+                // Fire and forget safely to prevent UnobservedTaskException
+                Task.Run(async () => 
+                {
+                    try 
+                    {
+                        await _signalRService.ConnectAsync();
+                        await _signalRService.JoinAuctionGroupAsync(job.Id.ToString());
+                    }
+                    catch { /* Ignore SignalR connection errors in background */ }
+                });
             }
         }
     }

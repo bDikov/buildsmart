@@ -153,14 +153,19 @@
         _isOpen = !_isOpen;
     }
 
-    private void HandleFocusOut()
+    private async Task HandleFocusOut()
     {
         // Delay closing slightly to allow item clicks to register
-        Task.Delay(150).ContinueWith(_ => 
+        await Task.Delay(150);
+        try
         {
             _isOpen = false;
-            InvokeAsync(StateHasChanged);
-        });
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception)
+        {
+            // Safe to ignore if component is disposed during the delay
+        }
     }
 
     private async Task SelectOption(TValue option)

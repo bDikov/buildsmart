@@ -25,6 +25,7 @@ using Hangfire.PostgreSql;
 using Serilog;
 using Sentry;
 using Sentry.AspNetCore;
+using Sentry.Hangfire;
 
 [assembly: InternalsVisibleTo("BuildSmart.Api.Tests")]
 
@@ -135,7 +136,8 @@ public partial class Program
 			configuration
 				.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
 				.UseSimpleAssemblyNameTypeSerializer()
-				.UseRecommendedSerializerSettings();
+				.UseRecommendedSerializerSettings()
+				.UseSentry(); // Integrates Sentry with Hangfire
 
 			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 			if (!string.IsNullOrEmpty(connectionString))
