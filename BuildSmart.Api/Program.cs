@@ -37,17 +37,26 @@ public partial class Program
 		var builder = WebApplication.CreateBuilder(args);
 
 		// --- Sentry & Serilog Configuration ---
-		builder.WebHost.UseSentry((Action<SentryAspNetCoreOptions>)(options => 
+		var sentryDsn = builder.Configuration["Sentry:Dsn"];
+		if (!string.IsNullOrWhiteSpace(sentryDsn))
 		{
-			// The DSN will be read from appsettings.json or environment variables
-		}));
+			builder.WebHost.UseSentry(options => 
+			{
+				options.Dsn = sentryDsn;
+			});
+		}
 
-		Log.Logger = new LoggerConfiguration()
+		var loggerConfig = new LoggerConfiguration()
 			.ReadFrom.Configuration(builder.Configuration)
 			.Enrich.FromLogContext()
-			.WriteTo.Console()
-			.WriteTo.Sentry() // Automatically uses the DSN from Sentry SDK
-			.CreateLogger();
+			.WriteTo.Console();
+
+		if (!string.IsNullOrWhiteSpace(sentryDsn))
+		{
+			loggerConfig.WriteTo.Sentry();
+		}
+
+		Log.Logger = loggerConfig.CreateLogger();
 
 		builder.Host.UseSerilog();
 

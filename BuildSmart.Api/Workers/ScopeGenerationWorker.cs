@@ -241,8 +241,6 @@ public class ScopeGenerationWorker
 	public async Task ProcessPricingAsync(Guid jobPostId)
 	{
 		_logger.LogInformation("Processing Pricing for Job ID: {JobId}", jobPostId);
-		string debugLogFile = @"C:\Users\bonch\source\repos\worker_debug.txt";
-		System.IO.File.AppendAllText(debugLogFile, $"\n\n--- Started ProcessPricingAsync for {jobPostId} at {DateTime.Now} ---\n");
 
 		using var scope = _serviceProvider.CreateScope();
 		var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -253,7 +251,6 @@ public class ScopeGenerationWorker
 		if (jobPost == null)
 		{
 			_logger.LogWarning("Job Post {JobId} not found.", jobPostId);
-			System.IO.File.AppendAllText(debugLogFile, $"JobPost {jobPostId} not found.\n");
 			return;
 		}
 
@@ -414,7 +411,7 @@ public class ScopeGenerationWorker
 				aiCalc.TotalEstimatedPrice = grandTotal;
 
 				await saveUnitOfWork.SaveChangesAsync();
-				System.IO.File.AppendAllText(debugLogFile, $"Successfully saved AiCalculation to DB. Grand Total: {grandTotal}\n");
+				_logger.LogInformation("Successfully saved AiCalculation for Job {JobId}. Grand Total: {GrandTotal}", jobPostId, grandTotal);
 
 				// ==========================================
 				// PDF AGGREGATION LOGIC (Incremental Updates)
@@ -447,14 +444,13 @@ public class ScopeGenerationWorker
 					jobPost.Id,
 					"JobPost"
 				);
-				System.IO.File.AppendAllText(debugLogFile, $"Sent SignalR notification.\n");
+				_logger.LogInformation("Sent SignalR pricing notification for Job {JobId}.", jobPostId);
 			}
 
 			_logger.LogInformation("Pricing processed successfully for Job {JobId}.", jobPostId);
 		}
 		catch (Exception ex)
 		{
-			System.IO.File.AppendAllText(debugLogFile, $"EXCEPTION: {ex.Message}\n{ex.StackTrace}\n");
 			_logger.LogError(ex, "Failed to process pricing for Job {JobId}.", jobPostId);
 
 			try
