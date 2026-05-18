@@ -141,7 +141,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("3. NO ASSUMPTIONS: If an answer is missing or ambiguous, do not guess. Instead, add a note: 'Contractor to verify [Specific Detail] on site'.");
 			prompt.AppendLine("4. FACTUAL CONSISTENCY: Ensure every task in the SOW can be traced back to a specific user answer or a necessary technical dependency of that answer.");
 			prompt.AppendLine("5. NO PRICE CALCULATION: Do not calculate prices or include prices in your response.");
-			prompt.AppendLine($"6. LANGUAGE: ALL OUTPUT MUST BE IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'. This is a strict requirement. The scopeMarkdown, taskTitle, taskDescription, and ALL items in acceptanceCriteria MUST be written in {languageCode}, regardless of the input language.");
+			prompt.AppendLine($"6. LANGUAGE ENFORCEMENT: ALL OUTPUT (scopeMarkdown, taskTitle, taskDescription, and acceptanceCriteria) MUST be strictly written in the language corresponding to the ISO code '{languageCode.ToUpper()}'. If the provided Q&A context or input is in a different language, you MUST translate it and generate your response entirely in '{languageCode.ToUpper()}'.");
 			prompt.AppendLine("7. NO GENERIC OVERHEAD TASKS: Do NOT create separate tasks for 'Site Preparation', 'Logistics', 'Daily Cleaning', 'Material Delivery', or 'Final Waste Removal'. These are overhead. Include them as 'acceptanceCriteria' within the actual technical tasks.");
 			prompt.AppendLine("8. NO MICRO-TASKING: Do not split standard services into micro-tasks. For example, 'Metal frame construction' and 'Boarding' should be a single task: 'Build Drywall'. 'Grouting/Spackling' is either included in Drywall or belongs to Painting. Consolidate technical steps into billable units.");
 			prompt.AppendLine();
@@ -317,9 +317,9 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("CRITICAL QUANTITY RULES:");
 			prompt.AppendLine("1. EXTRACT DIMENSIONS: Use the ID: field in the Q&A context to match the dimensions. For example, if 'ID: global_total_sqm' is '107', use 107 for your calculations.");
 			prompt.AppendLine("2. NO UNIT PRICES AS TOTALS: Never return a quantity of 1 for items that are clearly area-based or length-based if dimensions are available.");
-			prompt.AppendLine("3. SKU MAPPING: Only use SkuCodes from the Allowed SKUs list below. DO NOT HALLUCINATE SKUs.");
+			prompt.AppendLine("3. SKU MAPPING: Only use SkuCodes from the Allowed SKUs list below. DO NOT HALLUCINATE SKUs. Note: The Allowed SKUs may be listed in English, while the tasks or Q&A context may be in Bulgarian (or another language). You must conceptually translate them to match the right services!");
 			prompt.AppendLine("4. MATCH EXACTLY: The taskId MUST match the provided task GUID exactly.");
-			prompt.AppendLine($"5. LANGUAGE: Respond with taskTitle in the language designated by code '{languageCode.ToUpper()}'.");
+			prompt.AppendLine($"5. LANGUAGE ENFORCEMENT: Output `taskTitle` translated into the language designated by ISO code '{languageCode.ToUpper()}'. Even if the input tasks or Q&A are in another language, your output MUST be in '{languageCode.ToUpper()}'.");
 			prompt.AppendLine();
 			prompt.AppendLine("---");
 			prompt.AppendLine("USER Q&A CONTEXT (Dimensions and Requirements):");

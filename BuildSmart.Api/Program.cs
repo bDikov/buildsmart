@@ -37,24 +37,24 @@ public partial class Program
 		var builder = WebApplication.CreateBuilder(args);
 
 		// --- Sentry & Serilog Configuration ---
-		var sentryDsn = builder.Configuration["Sentry:Dsn"];
-		if (!string.IsNullOrWhiteSpace(sentryDsn))
+		// We explicitly read SENTRY_DSN from environment variables (set in GitHub Secrets/Docker)
+		var sentryDsn = builder.Configuration["SENTRY_DSN"];
+
+		builder.WebHost.UseSentry(o => 
 		{
-			builder.WebHost.UseSentry(options => 
-			{
-				options.Dsn = sentryDsn;
-			});
-		}
+			o.Dsn = sentryDsn;
+			o.Debug = true; // Helpful for initial setup verification
+			o.TracesSampleRate = 1.0;
+		});
 
 		var loggerConfig = new LoggerConfiguration()
 			.ReadFrom.Configuration(builder.Configuration)
 			.Enrich.FromLogContext()
-			.WriteTo.Console();
-
-		if (!string.IsNullOrWhiteSpace(sentryDsn))
-		{
-			loggerConfig.WriteTo.Sentry();
-		}
+			.WriteTo.Console()
+			.WriteTo.Sentry(o => 
+			{
+				o.Dsn = sentryDsn;
+			});
 
 		Log.Logger = loggerConfig.CreateLogger();
 
