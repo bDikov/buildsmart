@@ -51,17 +51,11 @@ namespace BuildSmart.Infrastructure.Services
 					Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu" }
 				};
 
-				// If running in Docker (Linux), use the system-installed Chromium
-				if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-				{
-					launchOptions.ExecutablePath = "/usr/bin/chromium";
-				}
-				else
-				{
-					_logger.LogInformation("Downloading Chromium for local Windows/macOS PDF Generation...");
-					var fetcher = new BrowserFetcher();
-					await fetcher.DownloadAsync();
-				}
+				_logger.LogInformation("Downloading Chromium into safe Temp folder...");
+				var fetcherOptions = new BrowserFetcherOptions { Path = Path.GetTempPath() };
+				var fetcher = new BrowserFetcher(fetcherOptions);
+				var installedBrowser = await fetcher.DownloadAsync();
+				launchOptions.ExecutablePath = installedBrowser.GetExecutablePath();
 
 				using var browser = await Puppeteer.LaunchAsync(launchOptions);
 

@@ -39,9 +39,24 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (_wizardSteps.Count == 0) return 0;
 			
 			var stepType = _wizardSteps[CurrentStep].Type;
-			if (stepType == WizardStepType.Info) return 15;
-			if (stepType == WizardStepType.CategorySelection) return 30;
 			if (stepType == WizardStepType.Review) return 100;
+			
+			if (stepType == WizardStepType.Info)
+			{
+				double infoProgress = 0;
+				if (!string.IsNullOrWhiteSpace(ProjectTitle)) infoProgress += 3.75;
+				if (!string.IsNullOrWhiteSpace(ProjectLocation)) infoProgress += 3.75;
+				if (PreferredSiteVisitDate.HasValue) infoProgress += 3.75;
+				if (!string.IsNullOrWhiteSpace(ProjectDescription)) infoProgress += 3.75;
+				return infoProgress; // Max 15
+			}
+			
+			if (stepType == WizardStepType.CategorySelection)
+			{
+				double baseCat = 15;
+				if (SelectableCategories != null && SelectableCategories.Any(c => c.IsSelected)) return 30;
+				return baseCat;
+			}
 			
 			int questionStartIdx = _wizardSteps.FindIndex(s => s.Type == WizardStepType.Questions);
 			int reviewIdx = _wizardSteps.FindIndex(s => s.Type == WizardStepType.Review);
@@ -59,7 +74,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			double baseProgress = 30.0;
 			double remainingProgress = 100.0 - baseProgress;
 			
-			double fraction = (double)(currentQuestionStep + 1) / (totalQuestionSteps + 1);
+			// Calculate fraction of questions answered in this step
+			int totalQ = Questions?.Count ?? 0;
+			int answeredQ = Questions?.Count(q => !string.IsNullOrWhiteSpace(q.Answer)) ?? 0;
+			
+			double stepFraction = totalQ > 0 ? (double)answeredQ / totalQ : 1.0;
+			
+			double fraction = (currentQuestionStep + stepFraction) / (totalQuestionSteps + 1);
 			return baseProgress + (remainingProgress * fraction);
 		}
 	}
@@ -83,15 +104,19 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	[ObservableProperty]
 	private string _projectTitle = string.Empty;
+	partial void OnProjectTitleChanged(string value) => OnPropertyChanged(nameof(ProgressPercentage));
 
 	[ObservableProperty]
 	private string _projectDescription = string.Empty;
+	partial void OnProjectDescriptionChanged(string value) => OnPropertyChanged(nameof(ProgressPercentage));
 
 	[ObservableProperty]
 	private string _projectLocation = string.Empty;
+	partial void OnProjectLocationChanged(string value) => OnPropertyChanged(nameof(ProgressPercentage));
 
 	[ObservableProperty]
 	private DateTime? _preferredSiteVisitDate = null;
+	partial void OnPreferredSiteVisitDateChanged(DateTime? value) => OnPropertyChanged(nameof(ProgressPercentage));
 
 	// Errors
 	[ObservableProperty] private bool _titleHasError;
@@ -298,6 +323,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				foreach (var cat in result.Data.ServiceCategories)
 				{
 					var viewModel = new SelectableCategoryViewModel(cat);
+					viewModel.PropertyChanged += (s, e) => 
+					{
+						if (e.PropertyName == nameof(SelectableCategoryViewModel.IsSelected))
+						{
+							OnPropertyChanged(nameof(ProgressPercentage));
+						}
+					};
+					
 					_allCategories.Add(viewModel);
 
 					if (!cat.IsGlobal)
@@ -492,6 +525,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		if (e.PropertyName == nameof(WizardQuestionViewModel.Answer) || e.PropertyName == nameof(WizardQuestionViewModel.BoolAnswer))
 		{
 			EvaluateQuestionVisibility();
+			OnPropertyChanged(nameof(ProgressPercentage));
 		}
 	}
 
