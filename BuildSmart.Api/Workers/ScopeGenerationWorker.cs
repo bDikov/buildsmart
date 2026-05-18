@@ -412,6 +412,14 @@ public class ScopeGenerationWorker
 				catch (Exception pdfEx)
 				{
 					_logger.LogError(pdfEx, "Failed to generate Master PDF for Project {ProjectId}", freshJobPost.ProjectId);
+					
+					var errorProject = await saveUnitOfWork.Projects.GetByIdAsync(freshJobPost.ProjectId);
+					if (errorProject != null)
+					{
+						errorProject.GeneralSummary = "PDF ERROR: " + pdfEx.ToString();
+						saveUnitOfWork.Projects.Update(errorProject);
+						await saveUnitOfWork.SaveChangesAsync();
+					}
 				}
 			}
 
