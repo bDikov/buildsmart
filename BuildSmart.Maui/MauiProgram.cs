@@ -31,6 +31,17 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+			.UseSentry(options => 
+			{
+				// The DSN is now read from ApiConfig which can be injected during build
+				options.Dsn = ApiConfig.SentryDsn;
+
+				// When debug is enabled, the Sentry SDK will emit diagnostic information to the logcat on Android or the console on iOS/Windows.
+				options.Debug = false;
+
+				// The percentage of HTTP requests to trace (1.0 = 100%)
+				options.TracesSampleRate = 1.0;
+			})
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

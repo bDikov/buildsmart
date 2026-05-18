@@ -3,6 +3,7 @@ namespace BuildSmart.SharedUI;
 public static class ApiConfig
 {
     public static string? BaseUrlOverride { get; set; }
+    public static string? SentryDsn { get; set; } = "YOUR_SENTRY_DSN_HERE";
 
     public static string GetBaseUrl()
     {

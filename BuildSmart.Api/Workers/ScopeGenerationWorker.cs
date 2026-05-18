@@ -222,6 +222,7 @@ public class ScopeGenerationWorker
 
 				if (questionMap.TryGetValue(qId, out var qText))
 				{
+					contextBuilder.AppendLine($"ID: {qId}"); // Critical for AI mapping
 					contextBuilder.AppendLine($"Q: {qText}");
 					contextBuilder.AppendLine($"A: {ansVal}");
 					contextBuilder.AppendLine();
@@ -258,13 +259,28 @@ public class ScopeGenerationWorker
 
 		try
 		{
-			System.IO.File.AppendAllText(debugLogFile, $"Found JobPost with {jobPost.JobTasks.Count} tasks.\n");
+			_logger.LogInformation("Processing pricing for JobPost {JobId} with {TaskCount} tasks.", jobPostId, jobPost.JobTasks.Count);
+			
 			var allCategories = await unitOfWork.ServiceCategories.GetAllAsync();
 			var relevantCategories = allCategories.Where(c => c.Id == jobPost.ServiceCategoryId || c.IsGlobal).ToList();
 			var humanReadableContext = BuildHumanReadableContext(jobPost.JobDetails, relevantCategories);
 
+			// Fetch SKUs for specific category AND Global categories
 			var allowedSkus = (await unitOfWork.ServiceSkus.GetByCategoryAsync(jobPost.ServiceCategoryId)).ToList();
-			System.IO.File.AppendAllText(debugLogFile, $"Found {allowedSkus.Count} allowed SKUs.\n");
+			foreach (var globalCat in allCategories.Where(c => c.IsGlobal))
+			{
+				var globalSkus = await unitOfWork.ServiceSkus.GetByCategoryAsync(globalCat.Id);
+				allowedSkus.AddRange(globalSkus);
+			}
+
+			if (allowedSkus.Count == 0)
+			{
+				_logger.LogWarning("No allowed SKUs found for JobPost {JobId} (Category: {CategoryId}). AI will not be able to map any prices.", jobPostId, jobPost.ServiceCategoryId);
+			}
+			else
+			{
+				_logger.LogInformation("Found {SkuCount} total allowed SKUs for pricing.", allowedSkus.Count);
+			}
 
 			// 2.5 Get Homeowner's Preferred Language
 			string languageCode = "en";
@@ -282,20 +298,16 @@ public class ScopeGenerationWorker
 				.WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(5 * retryAttempt),
 					(exception, timeSpan, retryCount, context) =>
 					{
-						_logger.LogWarning(exception, "Gemini API failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
+						_logger.LogWarning(exception, "Gemini API pricing failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
 					});
 
 			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
 			{
 				await EnforceRateLimitAsync();
-
-				System.IO.File.AppendAllText(debugLogFile, $"Calling AI Service...\n");
 				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, humanReadableContext, languageCode);
 			});
 
-			System.IO.File.AppendAllText(debugLogFile, $"AI Service returned. Tasks count: {aiResponse?.Tasks?.Count ?? 0}\n");
-
-			if (aiResponse.Tasks != null)
+			if (aiResponse?.Tasks != null)
 			{
 				using var saveScope = _serviceProvider.CreateScope();
 				var saveUnitOfWork = saveScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -303,19 +315,18 @@ public class ScopeGenerationWorker
 
 				if (freshJobPost == null)
 				{
-					System.IO.File.AppendAllText(debugLogFile, $"freshJobPost is null.\n");
+					_logger.LogError("Could not find JobPost {JobId} during result saving phase.", jobPostId);
 					return;
 				}
 
 				var aiCalc = await saveUnitOfWork.AiCalculations.GetByProjectAndCategoryAsync(freshJobPost.ProjectId, freshJobPost.ServiceCategoryId);
 				if (aiCalc != null)
 				{
-					System.IO.File.AppendAllText(debugLogFile, $"Deleting existing AiCalculation {aiCalc.Id} to avoid concurrency tracking issues.\n");
+					_logger.LogInformation("Deleting existing AiCalculation {AiCalcId} to refresh with new AI data.", aiCalc.Id);
 					saveUnitOfWork.AiCalculations.Delete(aiCalc);
 					await saveUnitOfWork.SaveChangesAsync();
 				}
 
-				System.IO.File.AppendAllText(debugLogFile, $"Creating new AiCalculation.\n");
 				aiCalc = new AiCalculation
 				{
 					Id = Guid.NewGuid(),
@@ -332,18 +343,16 @@ public class ScopeGenerationWorker
 				{
 					if (!Guid.TryParse(aiTask.TaskId, out var parsedGuid))
 					{
-						System.IO.File.AppendAllText(debugLogFile, $"WARN: AI returned invalid TaskId format: '{aiTask.TaskId}'.\n");
+						_logger.LogWarning("AI returned invalid TaskId format: '{TaskId}'. Skipping task.", aiTask.TaskId);
 						continue;
 					}
 
 					var matchedTask = freshJobPost.JobTasks.FirstOrDefault(t => t.Id == parsedGuid);
 					if (matchedTask == null)
 					{
-						System.IO.File.AppendAllText(debugLogFile, $"WARN: Could not match AI TaskId {aiTask.TaskId} with any JobTask.\n");
+						_logger.LogWarning("AI TaskId {TaskId} could not be matched with any existing JobTask for JobPost {JobId}.", aiTask.TaskId, jobPostId);
 						continue;
 					}
-
-					System.IO.File.AppendAllText(debugLogFile, $"Matched JobTask {matchedTask.Id} ('{matchedTask.Title}').\n");
 
 					decimal taskTotal = 0;
 					var calcTask = new AiCalculationTask
@@ -366,14 +375,14 @@ public class ScopeGenerationWorker
 						});
 					}
 
-					if (aiTask.SkuItems != null)
+					if (aiTask.SkuItems != null && aiTask.SkuItems.Count > 0)
 					{
 						foreach (var skuDto in aiTask.SkuItems)
 						{
 							var matchedSku = allowedSkus.FirstOrDefault(s => s.SkuCode.Equals(skuDto.SkuCode, StringComparison.OrdinalIgnoreCase));
 							if (matchedSku == null)
 							{
-								System.IO.File.AppendAllText(debugLogFile, $"WARN: SKU {skuDto.SkuCode} not found in allowed SKUs.\n");
+								_logger.LogWarning("SKU {SkuCode} mapped by AI for Task {TaskId} was not found in the allowed list.", skuDto.SkuCode, parsedGuid);
 								continue;
 							}
 
@@ -388,8 +397,13 @@ public class ScopeGenerationWorker
 								Quantity = skuDto.Quantity,
 								EstimatedPrice = skuEstimatedPrice
 							});
-							System.IO.File.AppendAllText(debugLogFile, $"Mapped SKU {matchedSku.SkuCode} x {skuDto.Quantity}.\n");
+							
+							_logger.LogDebug("Mapped SKU {SkuCode} x {Quantity} to Task {TaskId}.", matchedSku.SkuCode, skuDto.Quantity, parsedGuid);
 						}
+					}
+					else
+					{
+						_logger.LogWarning("Task {TaskId} ('{TaskTitle}') has no SKUs mapped by AI.", parsedGuid, matchedTask.Title);
 					}
 
 					calcTask.EstimatedPrice = taskTotal;

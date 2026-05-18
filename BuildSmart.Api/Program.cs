@@ -22,6 +22,9 @@ using Microsoft.AspNetCore.Authentication.Google;
 using AspNet.Security.OAuth.Apple;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Serilog;
+using Sentry;
+using Sentry.AspNetCore;
 
 [assembly: InternalsVisibleTo("BuildSmart.Api.Tests")]
 
@@ -32,6 +35,21 @@ public partial class Program
 		var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 		var builder = WebApplication.CreateBuilder(args);
+
+		// --- Sentry & Serilog Configuration ---
+		builder.WebHost.UseSentry((Action<SentryAspNetCoreOptions>)(options => 
+		{
+			// The DSN will be read from appsettings.json or environment variables
+		}));
+
+		Log.Logger = new LoggerConfiguration()
+			.ReadFrom.Configuration(builder.Configuration)
+			.Enrich.FromLogContext()
+			.WriteTo.Console()
+			.WriteTo.Sentry() // Automatically uses the DSN from Sentry SDK
+			.CreateLogger();
+
+		builder.Host.UseSerilog();
 
 		builder.Services.AddCors(options =>
 		{

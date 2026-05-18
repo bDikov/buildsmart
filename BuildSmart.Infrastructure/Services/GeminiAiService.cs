@@ -23,7 +23,7 @@ public class GeminiAiService : IAiService
 		var geminiKey = configuration["Gemini:ApiKey"];
 
 		_apiKey = geminiKey ?? throw new ArgumentNullException("Gemini:ApiKey is not configured.");
-		_model = "gemini-2.5-flash"; // Default direct Gemini model
+		_model = "gemini-1.5-flash"; // Corrected from non-existent 2.5-flash
 
 		_logger = logger;
 		_httpClient = new HttpClient();
@@ -240,7 +240,8 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("Role: You are an expert Construction Estimator and Quantity Surveyor. Your job is to strictly map homeowner tasks to the Allowed SKUs and determine precise quantities based on the project dimensions.");
 			prompt.AppendLine();
 			prompt.AppendLine("Goal: Analyze the 'USER TASKS' and look for matching data in the 'USER Q&A CONTEXT' (sqm, linear meters, counts, etc.) to determine the correct 'quantity' for each SKU. DO NOT default to a quantity of 1 if the Q&A context provides dimensions.");
-			prompt.AppendLine("CRITICAL RULE: You MUST output the EXACT SkuCode provided in the Allowed SKUs list. Do not make up SKUs. If the allowed SKU is named UNK-004, output UNK-004.");
+			prompt.AppendLine("CRITICAL RULE 1: You MUST output the EXACT SkuCode provided in the Allowed SKUs list. Do not make up SKUs. If the allowed SKU is named UNK-004, output UNK-004.");
+			prompt.AppendLine("CRITICAL RULE 2: You MUST return the EXACT TaskId GUID for each task. If you return a different ID, the system will fail to map the price.");
 			prompt.AppendLine();
 			prompt.AppendLine("CONSTRUCTION HEURISTICS (USE THESE TO CALCULATE QUANTITIES):");
 			prompt.AppendLine();
@@ -307,18 +308,17 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("      \"taskId\": \"(Exact TaskId GUID from Input)\",");
 			prompt.AppendLine("      \"taskTitle\": \"(Exact Task Title from Input)\",");
 			prompt.AppendLine("      \"skuItems\": [");
-			prompt.AppendLine("         { \"skuCode\": \"SKU_PAINTING_LABOR\", \"quantity\": 230 },");
-			prompt.AppendLine("         { \"skuCode\": \"SKU_SANDING\", \"quantity\": 230 }");
+			prompt.AppendLine("         { \"skuCode\": \"SKU_CODE_HERE\", \"quantity\": 230 }");
 			prompt.AppendLine("      ]");
 			prompt.AppendLine("    }");
 			prompt.AppendLine("  ]");
 			prompt.AppendLine("}");
 			prompt.AppendLine();
 			prompt.AppendLine("CRITICAL QUANTITY RULES:");
-			prompt.AppendLine("1. EXTRACT DIMENSIONS: If the USER Q&A CONTEXT mentions 'Area: 230 sqm' and the task is 'Painting', the quantity MUST be 230.");
+			prompt.AppendLine("1. EXTRACT DIMENSIONS: Use the ID: field in the Q&A context to match the dimensions. For example, if 'ID: global_total_sqm' is '107', use 107 for your calculations.");
 			prompt.AppendLine("2. NO UNIT PRICES AS TOTALS: Never return a quantity of 1 for items that are clearly area-based or length-based if dimensions are available.");
 			prompt.AppendLine("3. SKU MAPPING: Only use SkuCodes from the Allowed SKUs list below. DO NOT HALLUCINATE SKUs.");
-			prompt.AppendLine("4. MATCH EXACTLY: The taskId MUST match the provided task exactly.");
+			prompt.AppendLine("4. MATCH EXACTLY: The taskId MUST match the provided task GUID exactly.");
 			prompt.AppendLine($"5. LANGUAGE: Respond with taskTitle in the language designated by code '{languageCode.ToUpper()}'.");
 			prompt.AppendLine();
 			prompt.AppendLine("---");
@@ -329,7 +329,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("USER TASKS TO PRICE:");
 			foreach (var task in tasks)
 			{
-				prompt.AppendLine($"- ID: {task.Id}");
+				prompt.AppendLine($"- ID: {task.Id}"); // This is a GUID
 				prompt.AppendLine($"  Title: {task.Title}");
 				prompt.AppendLine($"  Description: {task.Description}");
 				if (task.AcceptanceCriteria != null && task.AcceptanceCriteria.Any())
@@ -347,17 +347,46 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine();
 			prompt.AppendLine("Output ONLY valid JSON. Do not use Markdown blocks like ```json.");
 
+			_logger.LogInformation("Requesting pricing for {TaskCount} tasks with {SkuCount} allowed SKUs.", tasks.Count, allowedSkus.Count);
+
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), useJsonMode: true);
+			var rawResponse = responseText;
 			responseText = CleanJsonMarkdown(responseText);
 
-			var result = JsonSerializer.Deserialize<AiTaskPricingResponse>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-			if (result == null)
+			try
 			{
-				throw new Exception("AI returned null or invalid JSON.");
-			}
+				var result = JsonSerializer.Deserialize<AiTaskPricingResponse>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-			return result;
+				if (result == null)
+				{
+					_logger.LogError("AI returned null result. Raw response: {RawResponse}", rawResponse);
+					throw new Exception("AI returned null or invalid JSON.");
+				}
+
+				// Validate that all returned task IDs match input tasks
+				foreach (var taskItem in result.Tasks)
+				{
+					if (!Guid.TryParse(taskItem.TaskId, out var taskGuid) || !tasks.Any(t => t.Id == taskGuid))
+					{
+						_logger.LogWarning("AI returned unknown TaskId {UnknownId}. It will be ignored.", taskItem.TaskId);
+					}
+					
+					foreach (var skuItem in taskItem.SkuItems)
+					{
+						if (!allowedSkus.Any(s => s.SkuCode == skuItem.SkuCode))
+						{
+							_logger.LogWarning("AI returned unknown SkuCode {UnknownSku} for Task {TaskId}. This SKU will have no price.", skuItem.SkuCode, taskItem.TaskId);
+						}
+					}
+				}
+
+				return result;
+			}
+			catch (JsonException jex)
+			{
+				_logger.LogError(jex, "Failed to deserialize AI pricing response. Raw response: {RawResponse}", rawResponse);
+				throw;
+			}
 		}
 		catch (Exception ex)
 		{

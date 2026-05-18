@@ -65,6 +65,11 @@ jobs:
           distribution: 'microsoft'
           java-version: '17'
 
+      - name: Inject Sentry DSN into MAUI
+        shell: pwsh
+        run: |
+          (Get-Content BuildSmart.SharedUI/ApiConfig.cs) -replace 'YOUR_SENTRY_DSN_HERE', '${{ secrets.SENTRY_MAUI_DSN }}' | Set-Content BuildSmart.SharedUI/ApiConfig.cs
+
       - name: Build MAUI Android App
         run: dotnet publish BuildSmart.Maui/BuildSmart.Maui.csproj -f net9.0-android -c Release
 
@@ -111,6 +116,7 @@ jobs:
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+            echo "SENTRY_DSN=${{ secrets.SENTRY_API_DSN }}" >> .env
             
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build

@@ -119,7 +119,7 @@
 
                                                 @if (q.IsText)
                                                 {
-                                                    <input type="text" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="@Loc["JobWizard_TypeAnswerHere"]" @bind="q.Answer" />
+                                                    <input type="text" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="@Loc["JobWizard_TypeAnswerHere"]" @bind="q.Answer" @bind:event="oninput" />
                                                 }
                                                 else if (q.IsNumber)
                                                 {
