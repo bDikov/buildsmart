@@ -40,21 +40,28 @@ public partial class Program
 		// We explicitly read SENTRY_DSN from environment variables (set in GitHub Secrets/Docker)
 		var sentryDsn = builder.Configuration["SENTRY_DSN"];
 
-		builder.WebHost.UseSentry(o => 
+		if (!string.IsNullOrWhiteSpace(sentryDsn))
 		{
-			o.Dsn = sentryDsn;
-			o.Debug = true; // Helpful for initial setup verification
-			o.TracesSampleRate = 1.0;
-		});
+			builder.WebHost.UseSentry(o => 
+			{
+				o.Dsn = sentryDsn;
+				o.Debug = true; // Helpful for initial setup verification
+				o.TracesSampleRate = 1.0;
+			});
+		}
 
 		var loggerConfig = new LoggerConfiguration()
 			.ReadFrom.Configuration(builder.Configuration)
 			.Enrich.FromLogContext()
-			.WriteTo.Console()
-			.WriteTo.Sentry(o => 
+			.WriteTo.Console();
+
+		if (!string.IsNullOrWhiteSpace(sentryDsn))
+		{
+			loggerConfig.WriteTo.Sentry(o => 
 			{
 				o.Dsn = sentryDsn;
 			});
+		}
 
 		Log.Logger = loggerConfig.CreateLogger();
 

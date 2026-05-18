@@ -170,9 +170,15 @@ public class ScopeGenerationWorker
 
 			try
 			{
-				jobPost.MarkGenerationFailed(ex.Message);
-				unitOfWork.JobPosts.Update(jobPost);
-				await unitOfWork.SaveChangesAsync();
+				using var errorScope = _serviceProvider.CreateScope();
+				var errorUnitOfWork = errorScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+				var currentJobPost = await errorUnitOfWork.JobPosts.GetByIdAsync(jobPostId);
+				if (currentJobPost != null)
+				{
+					currentJobPost.MarkGenerationFailed(ex.Message);
+					errorUnitOfWork.JobPosts.Update(currentJobPost);
+					await errorUnitOfWork.SaveChangesAsync();
+				}
 			}
 			catch (Exception dbEx)
 			{
@@ -455,9 +461,15 @@ public class ScopeGenerationWorker
 
 			try
 			{
-				jobPost.MarkGenerationFailed(ex.Message);
-				unitOfWork.JobPosts.Update(jobPost);
-				await unitOfWork.SaveChangesAsync();
+				using var errorScope = _serviceProvider.CreateScope();
+				var errorUnitOfWork = errorScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+				var currentJobPost = await errorUnitOfWork.JobPosts.GetByIdAsync(jobPostId);
+				if (currentJobPost != null)
+				{
+					currentJobPost.MarkGenerationFailed(ex.Message);
+					errorUnitOfWork.JobPosts.Update(currentJobPost);
+					await errorUnitOfWork.SaveChangesAsync();
+				}
 			}
 			catch (Exception dbEx)
 			{
