@@ -68,7 +68,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.10" />
 				<!-- Removed <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.120" /> -->
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-		<PackageReference Include="Sentry.Maui" Version="5.0.1" />
+		<PackageReference Include="Sentry.Maui" Version="6.5.0" />
 		<PackageReference Include="Serilog.Sinks.Sentry" Version="2.4.3" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
 	</ItemGroup>

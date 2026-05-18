@@ -47,6 +47,7 @@ public partial class Program
 				o.Dsn = sentryDsn;
 				o.Debug = true; // Helpful for initial setup verification
 				o.TracesSampleRate = 1.0;
+				o.EnableLogs = true; // Enable Sentry logging
 			});
 		}
 

@@ -41,6 +41,9 @@ public static class MauiProgram
 
 				// The percentage of HTTP requests to trace (1.0 = 100%)
 				options.TracesSampleRate = 1.0;
+				
+				// Enable Sentry logging
+				options.EnableLogs = true;
 			})
 			.ConfigureFonts(fonts =>
 			{
