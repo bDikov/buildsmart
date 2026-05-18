@@ -23,7 +23,7 @@ public class GeminiAiService : IAiService
 		var geminiKey = configuration["Gemini:ApiKey"];
 
 		_apiKey = geminiKey ?? throw new ArgumentNullException("Gemini:ApiKey is not configured.");
-		_model = "gemini-1.5-flash"; // Corrected from non-existent 2.5-flash
+		_model = "gemini-2.5-flash"; // Updated to current 2026 model
 
 		_logger = logger;
 		_httpClient = new HttpClient();
