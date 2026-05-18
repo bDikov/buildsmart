@@ -90,7 +90,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           # Exclude heavy Android/MAUI, Test, and Git folders from the server payload to speed up transfer
-          source: "docker-compose.prod.yml,Caddyfile,BuildSmart.sln,BuildSmart.Api/,BuildSmart.Web/,BuildSmart.Core.Domain/,BuildSmart.Core.Application/,BuildSmart.SharedUI/"
+          source: "docker-compose.prod.yml,Caddyfile,BuildSmart.sln,BuildSmart.Api/,BuildSmart.Web/,BuildSmart.Core.Domain/,BuildSmart.Core.Application/,BuildSmart.Infrastructure/,BuildSmart.SharedUI/"
           target: "/opt/buildsmart"
           
       - name: Deploy via SSH
