@@ -16,7 +16,7 @@
                     <circle class="circular-bg" cx="59" cy="59" r="51"></circle>
                     <circle class="circular-fill" cx="59" cy="59" r="51" stroke-dashoffset="@CalculateOffset()"></circle>
                 </svg>
-                <div class="circular-text">@(Math.Round(_displayPercentage))%</div>
+                <div class="circular-text">@(Math.Max(0, (int)Math.Round(_displayPercentage)))%</div>
             </div>
             <div class="progress-info">
                 <div class="progress-step">@StepText</div>
@@ -103,7 +103,7 @@
         stroke-width: 10;
         stroke-linecap: round;
         /* Bouncy spring animation */
-        transition: stroke-dashoffset 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         stroke-dasharray: 320.44; /* Circumference of circle with r=51 (2 * pi * 51) */
         transform: rotate(-90deg);
         transform-origin: 50% 50%;
@@ -173,21 +173,61 @@
     public string SubtitleText { get; set; } = "Complete all steps to finish.";
 
     private double _displayPercentage = 0;
+    private CancellationTokenSource? _animationCts;
+    private double _lastTarget = -1;
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnInitialized()
+    {
+        _displayPercentage = Math.Max(0, Math.Min(100, ProgressPercentage));
+        _lastTarget = _displayPercentage;
+    }
+
+    protected override void OnParametersSet()
     {
         double target = Math.Max(0, Math.Min(100, ProgressPercentage));
-        if (Math.Abs(_displayPercentage - target) > 0.1)
+        if (Math.Abs(target - _lastTarget) > 0.01)
         {
-            double step = (target - _displayPercentage) / 25.0;
-            for (int i = 0; i < 25; i++)
+            _lastTarget = target;
+            
+            // Start the animation loop if it's not already running
+            if (_animationCts == null || _animationCts.IsCancellationRequested)
             {
-                _displayPercentage += step;
-                StateHasChanged();
-                await Task.Delay(20);
+                _animationCts = new CancellationTokenSource();
+                _ = AnimateTextAsync(_animationCts.Token);
             }
-            _displayPercentage = target;
-            StateHasChanged();
+        }
+    }
+
+    private async Task AnimateTextAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                double target = Math.Max(0, Math.Min(100, ProgressPercentage));
+                double diff = target - _displayPercentage;
+
+                if (Math.Abs(diff) < 0.5)
+                {
+                    _displayPercentage = target;
+                    StateHasChanged();
+                    break; // Target reached, stop loop
+                }
+
+                // Smooth ease-out lerp tracking the target continuously
+                _displayPercentage += diff * 0.15;
+                StateHasChanged();
+                
+                await Task.Delay(16, token); // ~60fps
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignored, normal cancellation
+        }
+        finally
+        {
+            _animationCts?.Cancel();
         }
     }
 

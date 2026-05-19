@@ -30,7 +30,7 @@ public class GeminiAiService : IAiService
 		_httpClient.Timeout = TimeSpan.FromHours(1); // Increase timeout for long AI generation
 	}
 
-	private async Task<string> ExecuteAiPromptAsync(string prompt, bool useJsonMode = false)
+	private async Task<string> ExecuteAiPromptAsync(string prompt, bool useJsonMode = false, CancellationToken cancellationToken = default)
 	{
 		object requestBody;
 		if (useJsonMode)
@@ -71,15 +71,15 @@ public class GeminiAiService : IAiService
 		}
 
 		var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
-		var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+		var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var errorString = await response.Content.ReadAsStringAsync();
+			var errorString = await response.Content.ReadAsStringAsync(cancellationToken);
 			throw new Exception($"Gemini API failed with status {response.StatusCode}: {errorString}");
 		}
 
-		var responseJson = await response.Content.ReadFromJsonAsync<JsonElement>();
+		var responseJson = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
 		return responseJson.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString() ?? string.Empty;
 	}
 
@@ -106,7 +106,7 @@ public class GeminiAiService : IAiService
 		return responseText.Trim();
 	}
 
-	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "en")
+	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -175,7 +175,7 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en")
+	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -207,7 +207,7 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en")
+	public async Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -221,7 +221,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine();
 			prompt.AppendLine($"Output ONLY the executive summary IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
 
-			var responseText = await ExecuteAiPromptAsync(prompt.ToString());
+			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), false, cancellationToken);
 			return responseText.Trim();
 		}
 		catch (Exception ex)
@@ -231,7 +231,7 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en")
+	public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		try
 		{

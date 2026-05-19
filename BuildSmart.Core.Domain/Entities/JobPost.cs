@@ -76,6 +76,18 @@ public class JobPost : BaseEntity
 	/// </summary>
 	public int AmendmentCount { get; private set; } = 0;
 
+	/// <summary>
+	/// The Hangfire Job ID for the active scope generation background task.
+	/// Used to cancel the task if the user changes their answers before it completes.
+	/// </summary>
+	public string? ActiveHangfireJobId { get; private set; }
+
+	/// <summary>
+	/// The exact JobDetails JSON that was sent to the background task.
+	/// Used to detect if the user's answers actually changed when navigating back and forth.
+	/// </summary>
+	public string? LastQueuedJobDetails { get; private set; }
+
 	// --- Navigation ---
 	public ICollection<JobTask> JobTasks { get; set; } = new List<JobTask>();
 
@@ -151,6 +163,13 @@ public class JobPost : BaseEntity
 
 		GeneratedScope = scope;
 		Status = JobPostStatus.WaitingForUserReview;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void MarkScopeGenerationQueued(string jobId, string jobDetails)
+	{
+		ActiveHangfireJobId = jobId;
+		LastQueuedJobDetails = jobDetails;
 		UpdatedAt = DateTime.UtcNow;
 	}
 

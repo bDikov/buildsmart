@@ -8,6 +8,9 @@ using Xunit;
 using FluentAssertions;
 using BuildSmart.Core.Domain.Enums;
 using System.Collections.Generic;
+using MockQueryable.Moq;
+using System.Linq;
+using System.Threading;
 
 namespace BuildSmart.Api.Tests;
 
@@ -286,6 +289,82 @@ public class JobPostServiceTests
 
         // 4. Verify Pricing was queued
         _mockQueue.Verify(q => q.QueuePricingUpdateAsync(jobPostId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SubmitJobPostAsync_ShouldNotQueue_WhenStatusIsGeneratingScopeAndDetailsUnchanged()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var jobDetails = "{\"answers\": {}}";
+        var jobPost = new JobPost { Id = jobPostId, Title = "Test" };
+        
+        var prop = typeof(JobPost).GetProperty("JobDetails");
+        if (prop != null && prop.CanWrite) prop.SetValue(jobPost, jobDetails);
+
+        jobPost.SubmitForScopeGeneration();
+        jobPost.MarkScopeGenerationQueued("job-123", jobDetails); // ActiveHangfireJobId = "job-123", LastQueuedJobDetails = jobDetails
+        
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockCatRepo = new Mock<IServiceCategoryRepository>();
+        mockCatRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ServiceCategory>());
+        // Also need GetByIdAsync for specificCategory
+        mockCatRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((ServiceCategory)null);
+        mockCatRepo.Setup(r => r.GetQueryable()).Returns(new List<ServiceCategory>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.ServiceCategories).Returns(mockCatRepo.Object);
+
+        // Act
+        await _service.SubmitJobPostAsync(jobPostId);
+
+        // Assert
+        _mockQueue.Verify(q => q.CancelJobAsync(It.IsAny<string>()), Times.Never);
+        _mockQueue.Verify(q => q.QueueBackgroundWorkItemAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SubmitJobPostAsync_ShouldCancelAndQueue_WhenStatusIsGeneratingScopeAndDetailsChanged()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var oldDetails = "{\"answers\": {\"a\": 1}}";
+        var newDetails = "{\"answers\": {\"a\": 2}}";
+        var jobPost = new JobPost { Id = jobPostId, Title = "Test" };
+        
+        var prop = typeof(JobPost).GetProperty("JobDetails");
+        if (prop != null && prop.CanWrite) prop.SetValue(jobPost, newDetails);
+
+        jobPost.SubmitForScopeGeneration();
+        jobPost.MarkScopeGenerationQueued("job-123", oldDetails); // Different details
+        
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockCatRepo = new Mock<IServiceCategoryRepository>();
+        mockCatRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ServiceCategory>());
+        mockCatRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((ServiceCategory)null);
+        mockCatRepo.Setup(r => r.GetQueryable()).Returns(new List<ServiceCategory>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.ServiceCategories).Returns(mockCatRepo.Object);
+
+        var mockUserRepo = new Mock<IUserRepository>();
+        mockUserRepo.Setup(r => r.GetQueryable()).Returns(new List<User>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
+
+        _mockQueue.Setup(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync("new-job-456");
+
+        // Act
+        await _service.SubmitJobPostAsync(jobPostId);
+
+        // Assert
+        _mockQueue.Verify(q => q.CancelJobAsync("job-123"), Times.Once);
+        _mockQueue.Verify(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()), Times.Once);
+        
+        jobPost.ActiveHangfireJobId.Should().Be("new-job-456");
+        jobPost.LastQueuedJobDetails.Should().Be(newDetails);
     }
 
     [Fact]
