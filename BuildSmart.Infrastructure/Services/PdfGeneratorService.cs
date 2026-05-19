@@ -58,29 +58,55 @@ namespace BuildSmart.Infrastructure.Services
 				launchOptions.ExecutablePath = installedBrowser.GetExecutablePath();
 
 				using var browser = await Puppeteer.LaunchAsync(launchOptions);
-
 				using var page = await browser.NewPageAsync();
 
-				// Wait until all assets (like Tailwind CDN) are loaded
-				await page.SetContentAsync(populatedHtml, new NavigationOptions { WaitUntil = new[] { WaitUntilNavigation.Networkidle0 } });
+				// We avoid Networkidle0 because external assets (Tailwind, Fonts) might redirect
+				// and cause PuppeteerSharp to throw 'Response body is unavailable for redirect responses'
+				// on internal background tasks.
+				try
+				{
+					await page.SetContentAsync(populatedHtml, new NavigationOptions 
+					{ 
+						WaitUntil = new[] { WaitUntilNavigation.Load }, 
+						Timeout = 30000 
+					});
+				}
+				catch (Exception contentEx)
+				{
+					_logger.LogWarning(contentEx, "SetContentAsync finished with warnings. Proceeding to PDF generation anyway.");
+				}
 
 				_logger.LogInformation("Printing to PDF...");
-				var pdfStream = await page.PdfStreamAsync(new PdfOptions
+				try
 				{
-					Format = PaperFormat.A4,
-					PrintBackground = true, // Required for Tailwind background colors and borders
-					MarginOptions = new MarginOptions
+					var pdfStream = await page.PdfStreamAsync(new PdfOptions
 					{
-						Top = "20px",
-						Bottom = "20px",
-						Left = "20px",
-						Right = "20px"
-					}
-				});
+						Format = PaperFormat.A4,
+						PrintBackground = true,
+						MarginOptions = new MarginOptions
+						{
+							Top = "20px",
+							Bottom = "20px",
+							Left = "20px",
+							Right = "20px"
+						}
+					});
 
-				using var memoryStream = new MemoryStream();
-				await pdfStream.CopyToAsync(memoryStream);
-				return memoryStream.ToArray();
+					using var memoryStream = new MemoryStream();
+					await pdfStream.CopyToAsync(memoryStream);
+					return memoryStream.ToArray();
+				}
+				catch (Exception pdfEx)
+				{
+					_logger.LogError(pdfEx, "Failed during PdfStreamAsync phase.");
+					throw;
+				}
+				finally
+				{
+					// Explicitly close page to avoid leaking tasks
+					await page.CloseAsync();
+					await browser.CloseAsync();
+				}
 			}
 			catch (Exception ex)
 			{

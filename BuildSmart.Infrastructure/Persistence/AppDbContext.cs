@@ -113,13 +113,13 @@ public class AppDbContext : DbContext
 
     public async Task SeedTradesmanUser()
     {
-        var paintingCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Painting");
+        var paintingCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Бояджийски и шпакловъчни услуги (Painting)");
         if (paintingCategory == null)
         {
             paintingCategory = new ServiceCategory
             {
                 Id = Guid.NewGuid(),
-                Name = "Painting",
+                Name = "Бояджийски и шпакловъчни услуги (Painting)",
                 Description = "Interior and exterior painting services",
                 Status = CategoryStatus.Active,
                 CreatedAt = DateTime.UtcNow,
@@ -128,13 +128,13 @@ public class AppDbContext : DbContext
             await ServiceCategories.AddAsync(paintingCategory);
         }
 
-        var electricalCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Electrical");
+        var electricalCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Електрическа Инсталация");
         if (electricalCategory == null)
         {
             electricalCategory = new ServiceCategory
             {
                 Id = Guid.NewGuid(),
-                Name = "Electrical",
+                Name = "Електрическа Инсталация",
                 Description = "Electrical wiring and repair services",
                 Status = CategoryStatus.Active,
                 CreatedAt = DateTime.UtcNow,
@@ -265,9 +265,185 @@ public class AppDbContext : DbContext
         await SaveChangesAsync();
     }
 
+    public async Task SeedSkusAsync()
+    {
+        // 1. Seed from MarketData_Sofia_Seed.json (General Market Data)
+        var marketDataPath = Path.Combine(AppContext.BaseDirectory, "MarketData_Sofia_Seed.json");
+        if (System.IO.File.Exists(marketDataPath))
+        {
+            var json = await System.IO.File.ReadAllTextAsync(marketDataPath);
+            var marketData = System.Text.Json.JsonSerializer.Deserialize<List<MarketCategorySeedDto>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            
+            if (marketData != null)
+            {
+                foreach (var marketCat in marketData)
+                {
+                    // Map market category names to our DB category names
+                    var dbCategoryName = MapMarketCategoryToDbName(marketCat.Category);
+                    var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == dbCategoryName);
+                    
+                    if (category != null)
+                    {
+                        var prefix = GetCategoryPrefix(dbCategoryName);
+                        int count = 1;
+                        foreach (var marketTask in marketCat.Tasks)
+                        {
+                            var skuCode = $"{prefix}-{count:D3}";
+                            var existingSku = await ServiceSkus.Include(s => s.Translations).FirstOrDefaultAsync(s => s.SkuCode == skuCode);
+                            
+                            if (existingSku == null)
+                            {
+                                var skuId = Guid.NewGuid();
+                                var newSku = new ServiceSku
+                                {
+                                    Id = skuId,
+                                    ServiceCategoryId = category.Id,
+                                    SkuCode = skuCode,
+                                    Name = marketTask.Name,
+                                    Description = $"{marketTask.Name} ({marketTask.Unit})",
+                                    BasePrice = marketTask.MaxPrice,
+                                    UnitType = MapMarketUnitToUnitType(marketTask.Unit),
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
+
+                                newSku.Translations.Add(new ServiceSkuTranslation
+                                {
+                                    Id = Guid.NewGuid(),
+                                    SkuId = skuId,
+                                    LanguageCode = "bg",
+                                    Name = marketTask.Name,
+                                    Description = $"{marketTask.Name} ({marketTask.Unit})",
+                                    UnitType = marketTask.Unit,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                });
+
+                                await ServiceSkus.AddAsync(newSku);
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Seed from Electrical_SKUs_Seed.json (Specific Electrical Data)
+        var elecPath = Path.Combine(AppContext.BaseDirectory, "Electrical_SKUs_Seed.json");
+        if (System.IO.File.Exists(elecPath))
+        {
+            var json = await System.IO.File.ReadAllTextAsync(elecPath);
+            var elecData = System.Text.Json.JsonSerializer.Deserialize<ElectricalSeedDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            
+            if (elecData != null)
+            {
+                var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Електрическа Инсталация" || c.Name == "Electrical");
+                if (category != null)
+                {
+                    foreach (var skuDto in elecData.Skus)
+                    {
+                        var existing = await ServiceSkus.Include(s => s.Translations).FirstOrDefaultAsync(s => s.SkuCode == skuDto.SkuCode);
+                        if (existing == null)
+                        {
+                            var skuId = Guid.NewGuid();
+                            var newSku = new ServiceSku
+                            {
+                                Id = skuId,
+                                ServiceCategoryId = category.Id,
+                                SkuCode = skuDto.SkuCode,
+                                Name = skuDto.Name,
+                                Description = skuDto.Description,
+                                BasePrice = skuDto.BasePrice,
+                                UnitType = skuDto.UnitType,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+
+                            newSku.Translations.Add(new ServiceSkuTranslation
+                            {
+                                Id = Guid.NewGuid(),
+                                SkuId = skuId,
+                                LanguageCode = "bg",
+                                Name = skuDto.Name,
+                                Description = skuDto.Description,
+                                UnitType = skuDto.UnitType,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            });
+
+                            await ServiceSkus.AddAsync(newSku);
+                        }
+                    }
+                }
+            }
+        }
+
+        await SaveChangesAsync();
+    }
+
+    private string MapMarketCategoryToDbName(string marketName)
+    {
+        if (marketName.Contains("Demolition")) return "Къртене и извозване (Demolition)";
+        if (marketName.Contains("Drywall")) return "Сухо строителство (Drywall)";
+        if (marketName.Contains("Painting")) return "Бояджийски и шпакловъчни услуги (Painting)";
+        if (marketName.Contains("Tiling")) return "Подови и стенни настилки (Tiling)";
+        if (marketName.Contains("Plumbing")) return "ВиК Услуги (Plumbing)";
+        if (marketName.Contains("Electrical")) return "Електрическа Инсталация";
+        return marketName;
+    }
+
+    private string GetCategoryPrefix(string dbName)
+    {
+        if (dbName.Contains("Demolition")) return "DEMO";
+        if (dbName.Contains("Drywall")) return "DRYW";
+        if (dbName.Contains("Painting")) return "PANT";
+        if (dbName.Contains("Tiling")) return "TILE";
+        if (dbName.Contains("Plumbing")) return "PLMB";
+        if (dbName.Contains("Electrical")) return "ELEC";
+        return "GEN";
+    }
+
+    private string MapMarketUnitToUnitType(string marketUnit)
+    {
+        if (marketUnit.Contains("кв.м")) return "sqm";
+        if (marketUnit.Contains("лин.м")) return "m";
+        if (marketUnit.Contains("бр")) return "pcs";
+        if (marketUnit.Contains("курс")) return "trip";
+        if (marketUnit.Contains("куб.м")) return "m3";
+        return "pcs";
+    }
+
     private class CategorySeedDto
     {
         public string Name { get; set; } = string.Empty;
         public object? TemplateStructure { get; set; }
+    }
+
+    private class MarketCategorySeedDto
+    {
+        public string Category { get; set; } = string.Empty;
+        public List<MarketTaskSeedDto> Tasks { get; set; } = new();
+    }
+
+    private class MarketTaskSeedDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public decimal MinPrice { get; set; }
+        public decimal MaxPrice { get; set; }
+        public string Unit { get; set; } = string.Empty;
+    }
+
+    private class ElectricalSeedDto
+    {
+        public List<ElectricalSkuSeedDto> Skus { get; set; } = new();
+    }
+
+    private class ElectricalSkuSeedDto
+    {
+        public string SkuCode { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal BasePrice { get; set; }
+        public string UnitType { get; set; } = string.Empty;
     }
 }

@@ -22,4 +22,16 @@
     <EmbeddedResource Include="Resources\Templates\OfferTemplate.html" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Categories_Seed_Templates.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Electrical_SKUs_Seed.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MarketData_Sofia_Seed.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

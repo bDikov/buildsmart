@@ -33,6 +33,15 @@ public partial class Program
 {
 	public static async Task Main(string[] args)
 	{
+		// --- Global Error Handling for Background Tasks ---
+		TaskScheduler.UnobservedTaskException += (sender, e) => 
+		{
+			// We handle this so it doesn't crash the process or get reported as a Fatal error.
+			// Internal Puppeteer tasks often trigger this due to redirects or network timeouts.
+			Log.Warning(e.Exception, "Unobserved Task Exception caught: {Message}", e.Exception.Message);
+			e.SetObserved();
+		};
+
 		var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 		var builder = WebApplication.CreateBuilder(args);
@@ -325,6 +334,7 @@ public partial class Program
 					context.Database.Migrate(); // Apply any pending migrations
 				}
 				await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
+				await context.SeedSkusAsync(); // Seed the SKUs from JSON data
 				await context.SeedAdminUser(); // Seed the admin user
 				await context.SeedHomeownerUser(); // Seed the homeowner user
 				await context.SeedTradesmanUser(); // Seed the painter tradesman
