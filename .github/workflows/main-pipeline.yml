@@ -87,7 +87,7 @@ jobs:
 
   deploy-backend:
     name: Deploy Backend & Database
-    needs: test
+    needs: [test, e2e-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
