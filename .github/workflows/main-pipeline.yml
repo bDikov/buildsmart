@@ -41,43 +41,14 @@ jobs:
       - name: Run Domain Tests
         run: dotnet test BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj --no-restore --verbosity normal -c Release
 
-  build-android:
-    name: Build Android APK
-    needs: test
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-          cache: true
-          cache-dependency-path: '**/*.csproj'
-
-      - name: Install MAUI workload
-        run: dotnet workload install maui
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'microsoft'
-          java-version: '17'
-
-      - name: Inject Sentry DSN into MAUI
-        shell: pwsh
-        run: |
-          (Get-Content BuildSmart.SharedUI/ApiConfig.cs) -replace 'YOUR_SENTRY_DSN_HERE', '${{ secrets.SENTRY_MAUI_DSN }}' | Set-Content BuildSmart.SharedUI/ApiConfig.cs
-
-      - name: Build MAUI Android App
-        run: dotnet publish BuildSmart.Maui/BuildSmart.Maui.csproj -f net9.0-android -c Release
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: BuildSmart.Maui/bin/Release/net9.0-android/**/*-Signed.apk
+  # build-android:
+  #   name: Build Android APK
+  #   needs: test
+  #   runs-on: windows-latest
+    
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
 
   deploy-backend:
     name: Deploy Backend & Database
