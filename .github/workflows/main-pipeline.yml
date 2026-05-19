@@ -89,6 +89,10 @@ jobs:
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
             echo "SENTRY_DSN=${{ secrets.SENTRY_API_DSN }}" >> .env
             
+            # Force a clean update to ensure JSON files and new code are active
             docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml build
-            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml build --no-cache api
+            docker compose -f docker-compose.prod.yml up -d --force-recreate api web caddy
+            
+            # Clean up old images to save space
+            docker image prune -f
