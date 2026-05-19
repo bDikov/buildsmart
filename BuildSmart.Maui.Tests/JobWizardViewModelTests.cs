@@ -38,6 +38,12 @@ public class JobWizardViewModelTests
         // Arrange (Initial state is Info, Step 0)
         _viewModel.CurrentStep = 0;
         
+        // Mock data to reach 15 points
+        _viewModel.ProjectTitle = "123456789012345"; // 15 chars
+        _viewModel.ProjectLocation = "1234567890"; // 10 chars
+        _viewModel.ProjectDescription = "1234567890123456789012345678901234567890"; // 40 chars
+        _viewModel.PreferredSiteVisitDate = System.DateTime.Now;
+        
         // Act
         var progress = _viewModel.ProgressPercentage;
 
@@ -50,6 +56,10 @@ public class JobWizardViewModelTests
     {
         // Arrange
         _viewModel.CurrentStep = 1;
+        _viewModel.SelectableCategories = new System.Collections.ObjectModel.ObservableCollection<SelectableCategoryViewModel>
+        {
+            new SelectableCategoryViewModel(new Mock<IGetServiceCategories_ServiceCategories>().Object) { IsSelected = true }
+        };
         
         // Act
         var progress = _viewModel.ProgressPercentage;
@@ -116,6 +126,53 @@ public class JobWizardViewModelTests
 
         // Assert
         progress.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task LoadCategoriesAsync_WithZeroProjects_SetsHasProjectsToFalse()
+    {
+        // Arrange
+        var getProjectsQuery = new Mock<IGetMyProjectsQuery>();
+        var projectsResponseMock = new Mock<IOperationResult<IGetMyProjectsResult>>();
+        projectsResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        
+        var resultDataMock = new Mock<IGetMyProjectsResult>();
+        resultDataMock.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects>());
+        projectsResponseMock.Setup(r => r.Data).Returns(resultDataMock.Object);
+        
+        getProjectsQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(projectsResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetMyProjects).Returns(getProjectsQuery.Object);
+
+        // Act
+        await _viewModel.LoadCategoriesAsync();
+
+        // Assert
+        _viewModel.HasProjects.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LoadCategoriesAsync_WithExistingProjects_SetsHasProjectsToTrue()
+    {
+        // Arrange
+        var getProjectsQuery = new Mock<IGetMyProjectsQuery>();
+        var projectsResponseMock = new Mock<IOperationResult<IGetMyProjectsResult>>();
+        projectsResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        
+        var resultDataMock = new Mock<IGetMyProjectsResult>();
+        
+        var projectMock = new Mock<IGetMyProjects_MyProjects>();
+        resultDataMock.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects> { projectMock.Object });
+        
+        projectsResponseMock.Setup(r => r.Data).Returns(resultDataMock.Object);
+        
+        getProjectsQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(projectsResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetMyProjects).Returns(getProjectsQuery.Object);
+
+        // Act
+        await _viewModel.LoadCategoriesAsync();
+
+        // Assert
+        _viewModel.HasProjects.Should().BeTrue();
     }
 
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)

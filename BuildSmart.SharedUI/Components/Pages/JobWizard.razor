@@ -3,8 +3,9 @@
 @using System.ComponentModel
 @using Microsoft.AspNetCore.Components.Web
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
-@implements IDisposable
+@implements IAsyncDisposable
 @inject JobWizardViewModel ViewModel
+@inject IJSRuntime JSRuntime
 
 <style>
     /* Prevent horizontal scrollbars during swipe without triggering the 'auto' vertical scrollbar bug */
@@ -26,9 +27,7 @@
         }
         else
         {
-            <div class="container py-4" style="position: relative; min-height: 80vh; user-select: none; -webkit-user-select: none;" 
-                 @ontouchstart="HandleTouchStart" @ontouchmove="HandleTouchMove" @ontouchend="HandleTouchEnd"
-                 @onmousedown="HandleMouseDown" @onmousemove="HandleMouseMove" @onmouseup="HandleMouseUp" @onmouseleave="HandleMouseUp">
+            <div class="container py-4" style="position: relative; min-height: 80vh; user-select: none; -webkit-user-select: none;">
                 
                 <!-- Progress Bar & Title -->
                 <BuildSmart.SharedUI.Components.ProgressCard 
@@ -56,7 +55,7 @@
                         }
                     }
 
-                    <div class="@_transitionClass" style="width: 100%; @GetSwipeStyle(); position: relative; z-index: 2;">
+                    <div @ref="_swipeCardContainer" class="@_transitionClass" style="width: 100%; @GetSwipeStyle(); position: relative; z-index: 2;">
                         <!-- Step 0: Basic Info -->
                         @if (ViewModel.IsInfoStepVisible)
                         {
@@ -277,6 +276,11 @@
     private CancellationTokenSource? _wiggleCts;
     private bool _isWiggling = false;
 
+    // JS Interop
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<JobWizard>? _objRef;
+    private ElementReference _swipeCardContainer;
+
     private string GetSwipeStyle()
     {
         if (_currentSwipeX == 0 && _currentSwipeRotation == 0 && string.IsNullOrEmpty(_swipeTransition))
@@ -298,9 +302,101 @@
     {
         if (firstRender)
         {
+            try 
+            {
+                _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/BuildSmart.SharedUI/Components/Pages/JobWizard.razor.js");
+                _objRef = DotNetObjectReference.Create(this);
+                await _module.InvokeVoidAsync("initializeSwipe", _swipeCardContainer, _objRef);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading JS: {ex.Message}");
+            }
+
             // Give the UI a moment to settle, then wiggle the first card
             _wiggleCts = new CancellationTokenSource();
             _ = PlayWiggleAnimation(_wiggleCts.Token);
+        }
+    }
+
+    [JSInvokable]
+    public void NotifyInteraction()
+    {
+        _wiggleCts?.Cancel();
+    }
+
+    [JSInvokable]
+    public async Task ProcessSwipeEndFromJS(double deltaX, double velocity, double currentX, double currentRot)
+    {
+        // First, sync our Blazor state with exactly where the JS left the card,
+        // so our CSS transition starts from the correct position.
+        _currentSwipeX = currentX;
+        _currentSwipeRotation = currentRot;
+        _swipeTransition = "none";
+        await InvokeAsync(StateHasChanged);
+
+        // Accept a swipe if they dragged far enough OR if they flicked it quickly
+        bool isSwipeAction = deltaX > 80 || (deltaX > 30 && velocity > 0.5);
+
+        if (isSwipeAction && ViewModel.GoToNextStepCommand.CanExecute(null)) // Swiped right -> Next
+        {
+            if (!ViewModel.ValidateCurrentStep())
+            {
+                // Validation failed! Snap back immediately and show errors with a bouncy spring
+                if (_module != null && _swipeCardContainer.Id != null) 
+                    await _module.InvokeVoidAsync("resetSwipeStyle", _swipeCardContainer);
+
+                _swipeTransition = "transform 0.6s cubic-bezier(0.2, 1.2, 0.3, 1)";
+                _currentSwipeX = 0;
+                _currentSwipeRotation = 0;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(600); // let animation finish
+                _swipeTransition = "none";
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            _hasUserSwiped = true;
+            if (_module != null && _swipeCardContainer.Id != null) 
+                await _module.InvokeVoidAsync("resetSwipeStyle", _swipeCardContainer);
+
+            // Fluid fly-away
+            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
+            _currentSwipeX = 1200; // Fly offscreen right
+            _currentSwipeRotation = 15;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(300); // Let it fly away just enough
+            
+            ViewModel.GoToNextStepCommand.Execute(null);
+        }
+        else if (deltaX < -80 && ViewModel.CurrentStepNumber > 1 && ViewModel.GoToPreviousStepCommand.CanExecute(null) && !ViewModel.IsEditing)
+        {
+            // Allow swiping left to go back, but only if not editing single job and NOT on the very first step
+            _hasUserSwiped = true;
+            if (_module != null && _swipeCardContainer.Id != null) 
+                await _module.InvokeVoidAsync("resetSwipeStyle", _swipeCardContainer);
+
+            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
+            _currentSwipeX = -1200;
+            _currentSwipeRotation = -15;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(300);
+            
+            ViewModel.GoToPreviousStepCommand.Execute(null);
+        }
+        else
+        {
+            if (_module != null && _swipeCardContainer.Id != null) 
+                await _module.InvokeVoidAsync("resetSwipeStyle", _swipeCardContainer);
+
+            // Not swiped far enough (or trying to swipe left on step 1), snap back with a bouncy "spring" feel
+            _swipeTransition = "transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)";
+            _currentSwipeX = 0;
+            _currentSwipeRotation = 0;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(500); // let animation finish
+            _swipeTransition = "none";
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -417,144 +513,6 @@
         }
     }
 
-    private void HandleTouchStart(TouchEventArgs e)
-    {
-        _wiggleCts?.Cancel(); // Cancel auto-animation if user interacts
-        
-        _touchStartX = e.Touches.FirstOrDefault()?.ClientX;
-        _touchStartTime = DateTime.Now;
-        _isSwiping = true;
-        _swipeTransition = "none"; // Follow finger instantly
-    }
-
-    private void HandleTouchMove(TouchEventArgs e)
-    {
-        if (!_touchStartX.HasValue || !_isSwiping) return;
-
-        var currentX = e.Touches.FirstOrDefault()?.ClientX;
-        if (currentX.HasValue)
-        {
-            var rawDelta = currentX.Value - _touchStartX.Value;
-            // Add "weight/resistance" so it doesn't just fly with the finger immediately
-            _currentSwipeX = rawDelta * 0.85; 
-            // Cap rotation to look natural and pivot around the bottom
-            _currentSwipeRotation = Math.Clamp(_currentSwipeX * 0.03, -10, 10);
-        }
-    }
-
-    private async Task HandleTouchEnd(TouchEventArgs e)
-    {
-        if (!_touchStartX.HasValue || !_isSwiping) return;
-        _isSwiping = false;
-
-        var touchEndX = e.ChangedTouches.FirstOrDefault()?.ClientX;
-        if (touchEndX.HasValue)
-        {
-            var deltaX = touchEndX.Value - _touchStartX.Value;
-            await ProcessSwipeEnd(deltaX);
-        }
-        else
-        {
-            await ProcessSwipeEnd(0);
-        }
-    }
-
-    private void HandleMouseDown(MouseEventArgs e)
-    {
-        _wiggleCts?.Cancel(); // Cancel auto-animation if user interacts
-        
-        _touchStartX = e.ClientX;
-        _touchStartTime = DateTime.Now;
-        _isSwiping = true;
-        _swipeTransition = "none";
-    }
-
-    private void HandleMouseMove(MouseEventArgs e)
-    {
-        if (!_touchStartX.HasValue || !_isSwiping) return;
-
-        var rawDelta = e.ClientX - _touchStartX.Value;
-        _currentSwipeX = rawDelta * 0.85;
-        _currentSwipeRotation = Math.Clamp(_currentSwipeX * 0.03, -10, 10);
-    }
-
-    private async Task HandleMouseUp(MouseEventArgs e)
-    {
-        if (!_touchStartX.HasValue || !_isSwiping) return;
-        _isSwiping = false;
-
-        var deltaX = e.ClientX - _touchStartX.Value;
-        await ProcessSwipeEnd(deltaX);
-    }
-
-    private async Task ProcessSwipeEnd(double deltaX)
-    {
-        double velocity = 0;
-        if (_touchStartTime.HasValue)
-        {
-            var timeElapsed = (DateTime.Now - _touchStartTime.Value).TotalMilliseconds;
-            if (timeElapsed > 0)
-            {
-                velocity = Math.Abs(deltaX) / timeElapsed;
-            }
-        }
-
-        // Accept a swipe if they dragged far enough OR if they flicked it quickly
-        bool isSwipeAction = deltaX > 80 || (deltaX > 30 && velocity > 0.5);
-
-        if (isSwipeAction && ViewModel.GoToNextStepCommand.CanExecute(null)) // Swiped right -> Next
-        {
-            if (!ViewModel.ValidateCurrentStep())
-            {
-                // Validation failed! Snap back immediately and show errors with a bouncy spring
-                _swipeTransition = "transform 0.6s cubic-bezier(0.2, 1.2, 0.3, 1)";
-                _currentSwipeX = 0;
-                _currentSwipeRotation = 0;
-                await InvokeAsync(StateHasChanged);
-                await Task.Delay(600); // let animation finish
-                _swipeTransition = "none";
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-
-            _hasUserSwiped = true;
-            // Fluid fly-away
-            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
-            _currentSwipeX = 1200; // Fly offscreen right
-            _currentSwipeRotation = 15;
-            await InvokeAsync(StateHasChanged);
-            await Task.Delay(300); // Let it fly away just enough
-            
-            ViewModel.GoToNextStepCommand.Execute(null);
-        }
-        else if (deltaX < -80 && ViewModel.GoToPreviousStepCommand.CanExecute(null) && !ViewModel.IsEditing)
-        {
-            // Allow swiping left to go back, but only if not editing single job
-            _hasUserSwiped = true;
-            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
-            _currentSwipeX = -1200;
-            _currentSwipeRotation = -15;
-            await InvokeAsync(StateHasChanged);
-            await Task.Delay(300);
-            
-            ViewModel.GoToPreviousStepCommand.Execute(null);
-        }
-        else
-        {
-            // Not swiped far enough, snap back with a bouncy "spring" feel
-            _swipeTransition = "transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)";
-            _currentSwipeX = 0;
-            _currentSwipeRotation = 0;
-            await InvokeAsync(StateHasChanged);
-            await Task.Delay(500); // let animation finish
-            _swipeTransition = "none";
-            await InvokeAsync(StateHasChanged);
-        }
-        
-        _touchStartX = null;
-        _touchStartTime = null;
-    }
-
     private async Task HandleNextClick()
     {
         _hasUserSwiped = true; // Hide hint if they manually click next
@@ -579,6 +537,8 @@
 
     private async Task HandlePreviousClick()
     {
+        if (ViewModel.CurrentStepNumber <= 1) return;
+
         _hasUserSwiped = true; // Hide hint if they manually click back
         if (ViewModel.GoToPreviousStepCommand.CanExecute(null))
         {
@@ -592,11 +552,19 @@
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+
+        _wiggleCts?.Cancel();
+        _wiggleCts?.Dispose();
+        _objRef?.Dispose();
+        if (_module != null)
+        {
+            try { await _module.DisposeAsync(); } catch { }
         }
     }
 
