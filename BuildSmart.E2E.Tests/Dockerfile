@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0-noble
 
 WORKDIR /src
 
+# Allow .NET 8 tools (like StrawberryShake) to run on the .NET 9 runtime
+ENV DOTNET_ROLL_FORWARD=Major
+
 # Install required system dependencies for Playwright
 RUN apt-get update && apt-get install -y \
     wget \
@@ -26,8 +29,8 @@ COPY . .
 
 WORKDIR /src/BuildSmart.E2E.Tests
 
-# Build the tests without regenerating the GraphQL client
-RUN dotnet build -c Release /p:StrawberryShake_SkipGenerate=true
+# Build the tests
+RUN dotnet build -c Release
 
 # Install Playwright dependencies and browsers
 RUN pwsh bin/Release/net9.0/playwright.ps1 install --with-deps
