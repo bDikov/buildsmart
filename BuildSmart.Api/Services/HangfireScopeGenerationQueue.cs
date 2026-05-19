@@ -12,15 +12,21 @@ public class HangfireScopeGenerationQueue : IScopeGenerationQueue
         _backgroundJobClient = backgroundJobClient;
     }
 
-    public ValueTask QueueBackgroundWorkItemAsync(Guid jobPostId, CancellationToken cancellationToken)
+    public ValueTask<string> QueueBackgroundWorkItemAsync(Guid jobPostId, CancellationToken cancellationToken)
     {
-        _backgroundJobClient.Enqueue<Workers.ScopeGenerationWorker>(worker => worker.ProcessJobAsync(jobPostId));
-        return ValueTask.CompletedTask;
+        var jobId = _backgroundJobClient.Enqueue<Workers.ScopeGenerationWorker>(worker => worker.ProcessJobAsync(jobPostId, CancellationToken.None));
+        return ValueTask.FromResult(jobId);
     }
 
-    public ValueTask QueuePricingUpdateAsync(Guid jobPostId, CancellationToken cancellationToken)
+    public ValueTask<string> QueuePricingUpdateAsync(Guid jobPostId, CancellationToken cancellationToken)
     {
-        _backgroundJobClient.Enqueue<Workers.ScopeGenerationWorker>(worker => worker.ProcessPricingAsync(jobPostId));
+        var jobId = _backgroundJobClient.Enqueue<Workers.ScopeGenerationWorker>(worker => worker.ProcessPricingAsync(jobPostId, CancellationToken.None));
+        return ValueTask.FromResult(jobId);
+    }
+
+    public ValueTask CancelJobAsync(string jobId)
+    {
+        _backgroundJobClient.Delete(jobId);
         return ValueTask.CompletedTask;
     }
 

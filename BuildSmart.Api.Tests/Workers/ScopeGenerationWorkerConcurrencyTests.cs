@@ -71,7 +71,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         
         mockSkuRepo.Setup(r => r.GetByCategoryAsync(It.IsAny<Guid>())).ReturnsAsync(new List<ServiceSku>());
 
-        mockAiService.Setup(a => a.CalculateTaskPricesAsync(It.IsAny<List<JobTask>>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>(), It.IsAny<string>()))
+        mockAiService.Setup(a => a.CalculateTaskPricesAsync(It.IsAny<List<JobTask>>(), It.IsAny<List<ServiceSku>>(), It.IsAny<string>(), It.IsAny<string>(), System.Threading.CancellationToken.None))
             .ReturnsAsync(new AiTaskPricingResponse(new List<AiTaskPricingItemDto>())); // Emulate successful empty tasks
             
         mockPdfService.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>())).ReturnsAsync(new byte[] { 1, 2, 3 });
@@ -91,9 +91,9 @@ public class ScopeGenerationWorkerConcurrencyTests
         var worker = new ScopeGenerationWorker(serviceProvider, mockLogger.Object);
         
         // Act - Run 3 jobs concurrently to see if SemaphoreSlim prevents issues
-        var task1 = worker.ProcessPricingAsync(jobPost1.Id);
-        var task2 = worker.ProcessPricingAsync(jobPost2.Id);
-        var task3 = worker.ProcessPricingAsync(jobPost3.Id);
+        var task1 = worker.ProcessPricingAsync(jobPost1.Id, System.Threading.CancellationToken.None);
+        var task2 = worker.ProcessPricingAsync(jobPost2.Id, System.Threading.CancellationToken.None);
+        var task3 = worker.ProcessPricingAsync(jobPost3.Id, System.Threading.CancellationToken.None);
         
         var exception = await Record.ExceptionAsync(async () => await Task.WhenAll(task1, task2, task3));
         

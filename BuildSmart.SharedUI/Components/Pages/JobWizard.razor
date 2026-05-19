@@ -6,6 +6,14 @@
 @implements IDisposable
 @inject JobWizardViewModel ViewModel
 
+<style>
+    /* Prevent horizontal scrollbars during swipe without triggering the 'auto' vertical scrollbar bug */
+    body, html, .page, .main-content, .content {
+        overflow-x: clip !important;
+        overflow-y: visible !important;
+    }
+</style>
+
 <ErrorBoundary>
     <ChildContent>
         @if (ViewModel == null || !ViewModel.WizardSteps.Any())
@@ -18,7 +26,7 @@
         }
         else
         {
-            <div class="container py-4" style="overflow-x: hidden; position: relative; min-height: 80vh; user-select: none; -webkit-user-select: none;" 
+            <div class="container py-4" style="position: relative; min-height: 80vh; user-select: none; -webkit-user-select: none;" 
                  @ontouchstart="HandleTouchStart" @ontouchmove="HandleTouchMove" @ontouchend="HandleTouchEnd"
                  @onmousedown="HandleMouseDown" @onmousemove="HandleMouseMove" @onmouseup="HandleMouseUp" @onmouseleave="HandleMouseUp">
                 
@@ -30,7 +38,7 @@
                     SubtitleText="@GetSubtitleText()" />
 
                 <!-- Swipe Hint Lottie -->
-                @if (!_hasUserSwiped && ViewModel.CurrentStepNumber == 1)
+                @if (!_hasUserSwiped && ViewModel.CurrentStepNumber == 1 && !ViewModel.HasProjects)
                 {
                     <div class="swipe-hint-overlay">
                         <lottie-player src="https://lottie.host/809fccbe-d886-4f49-9f79-e58f000b9573/1G0eRIn1R3.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
@@ -55,12 +63,12 @@
                             <div class="bs-card p-4">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold @(ViewModel.TitleHasError ? "text-danger" : "text-secondary")">@Loc["JobWizard_ProjectTitle"]</label>
-                                    <input type="text" class="bs-input @(ViewModel.TitleHasError ? "border border-danger" : "")" placeholder="@Loc["JobWizard_ProjectTitlePlaceholder"]" @bind="ViewModel.ProjectTitle" />
+                                    <input type="text" class="bs-input @(ViewModel.TitleHasError ? "border border-danger" : "")" placeholder="@Loc["JobWizard_ProjectTitlePlaceholder"]" @bind="ViewModel.ProjectTitle" @bind:event="oninput" />
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label fw-bold @(ViewModel.LocationHasError ? "text-danger" : "text-secondary")">@Loc["JobWizard_Location"]</label>
-                                    <input type="text" class="bs-input @(ViewModel.LocationHasError ? "border border-danger" : "")" placeholder="@Loc["JobWizard_LocationPlaceholder"]" @bind="ViewModel.ProjectLocation" />
+                                    <input type="text" class="bs-input @(ViewModel.LocationHasError ? "border border-danger" : "")" placeholder="@Loc["JobWizard_LocationPlaceholder"]" @bind="ViewModel.ProjectLocation" @bind:event="oninput" />
                                 </div>
 
                                 <div class="mb-3">
@@ -73,7 +81,7 @@
 
                                 <div class="mb-3">
                                     <label class="form-label fw-bold @(ViewModel.DescriptionHasError ? "text-danger" : "text-secondary")">@Loc["JobWizard_Description"]</label>
-                                    <textarea class="bs-input @(ViewModel.DescriptionHasError ? "border border-danger" : "")" rows="4" placeholder="@Loc["JobWizard_DescriptionPlaceholder"]" @bind="ViewModel.ProjectDescription"></textarea>
+                                    <textarea class="bs-input @(ViewModel.DescriptionHasError ? "border border-danger" : "")" rows="4" placeholder="@Loc["JobWizard_DescriptionPlaceholder"]" @bind="ViewModel.ProjectDescription" @bind:event="oninput"></textarea>
                                 </div>
 
                                 <button class="bs-btn-primary mt-3 w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="HandleNextClick">
@@ -265,13 +273,16 @@
     private double _currentSwipeRotation = 0;
     private string _swipeTransition = "none";
     private bool _isSwiping = false;
+    private DateTime? _touchStartTime;
+    private CancellationTokenSource? _wiggleCts;
+    private bool _isWiggling = false;
 
     private string GetSwipeStyle()
     {
         if (_currentSwipeX == 0 && _currentSwipeRotation == 0 && string.IsNullOrEmpty(_swipeTransition))
             return "touch-action: pan-y;";
             
-        return $"transition: {_swipeTransition}; transform: translateX({_currentSwipeX}px) rotate({_currentSwipeRotation}deg); touch-action: pan-y;";
+        return $"transition: {_swipeTransition}; transform: translateX({_currentSwipeX}px) rotate({_currentSwipeRotation}deg); touch-action: pan-y; transform-origin: 50% 100%;";
     }
 
     protected override void OnInitialized()
@@ -280,6 +291,88 @@
         {
             _previousStepNumber = ViewModel.CurrentStepNumber;
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Give the UI a moment to settle, then wiggle the first card
+            _wiggleCts = new CancellationTokenSource();
+            _ = PlayWiggleAnimation(_wiggleCts.Token);
+        }
+    }
+
+    private async Task PlayWiggleAnimation(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(1500, token); // Wait for the user to read the first screen
+
+            while (!token.IsCancellationRequested)
+            {
+                if (_hasUserSwiped || ViewModel == null || ViewModel.CurrentStepNumber != 1) return;
+                
+                _isWiggling = true;
+                
+                // Wiggle Right
+                // Use a smooth ease-in-out curve (Material standard) so it 'hangs' naturally at the peak of the swing.
+                _swipeTransition = "transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
+                _currentSwipeX = 90;
+                _currentSwipeRotation = 6;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(650, token); // Let it reach the peak smoothly
+
+                // Swing Left
+                _swipeTransition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+                _currentSwipeX = -90;
+                _currentSwipeRotation = -6;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(750, token);
+
+                // Swing Right (medium)
+                _swipeTransition = "transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
+                _currentSwipeX = 50;
+                _currentSwipeRotation = 3;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(650, token);
+
+                // Swing Left (small)
+                _swipeTransition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+                _currentSwipeX = -20;
+                _currentSwipeRotation = -1;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(550, token);
+
+                // Settle gently back to center
+                _swipeTransition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
+                _currentSwipeX = 0;
+                _currentSwipeRotation = 0;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(500, token);
+
+                _swipeTransition = "none";
+                await InvokeAsync(StateHasChanged);
+                
+                _isWiggling = false;
+                
+                // Wait for a few seconds before playing the animation again
+                await Task.Delay(4000, token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // User touched the screen, cancel the animation and let their finger take over
+            if (_isWiggling)
+            {
+                 _swipeTransition = "none";
+                 // Don't reset X and Rotation here, let HandleTouchMove manage it
+            }
+        }
+        finally
+        {
+            _isWiggling = false;
         }
     }
 
@@ -326,7 +419,10 @@
 
     private void HandleTouchStart(TouchEventArgs e)
     {
+        _wiggleCts?.Cancel(); // Cancel auto-animation if user interacts
+        
         _touchStartX = e.Touches.FirstOrDefault()?.ClientX;
+        _touchStartTime = DateTime.Now;
         _isSwiping = true;
         _swipeTransition = "none"; // Follow finger instantly
     }
@@ -338,9 +434,11 @@
         var currentX = e.Touches.FirstOrDefault()?.ClientX;
         if (currentX.HasValue)
         {
-            _currentSwipeX = currentX.Value - _touchStartX.Value;
-            // Cap rotation to look natural
-            _currentSwipeRotation = Math.Clamp(_currentSwipeX * 0.05, -15, 15);
+            var rawDelta = currentX.Value - _touchStartX.Value;
+            // Add "weight/resistance" so it doesn't just fly with the finger immediately
+            _currentSwipeX = rawDelta * 0.85; 
+            // Cap rotation to look natural and pivot around the bottom
+            _currentSwipeRotation = Math.Clamp(_currentSwipeX * 0.03, -10, 10);
         }
     }
 
@@ -363,7 +461,10 @@
 
     private void HandleMouseDown(MouseEventArgs e)
     {
+        _wiggleCts?.Cancel(); // Cancel auto-animation if user interacts
+        
         _touchStartX = e.ClientX;
+        _touchStartTime = DateTime.Now;
         _isSwiping = true;
         _swipeTransition = "none";
     }
@@ -372,8 +473,9 @@
     {
         if (!_touchStartX.HasValue || !_isSwiping) return;
 
-        _currentSwipeX = e.ClientX - _touchStartX.Value;
-        _currentSwipeRotation = Math.Clamp(_currentSwipeX * 0.05, -15, 15);
+        var rawDelta = e.ClientX - _touchStartX.Value;
+        _currentSwipeX = rawDelta * 0.85;
+        _currentSwipeRotation = Math.Clamp(_currentSwipeX * 0.03, -10, 10);
     }
 
     private async Task HandleMouseUp(MouseEventArgs e)
@@ -387,34 +489,60 @@
 
     private async Task ProcessSwipeEnd(double deltaX)
     {
-        if (deltaX > 100 && ViewModel.GoToNextStepCommand.CanExecute(null)) // Swiped right -> Next
+        double velocity = 0;
+        if (_touchStartTime.HasValue)
+        {
+            var timeElapsed = (DateTime.Now - _touchStartTime.Value).TotalMilliseconds;
+            if (timeElapsed > 0)
+            {
+                velocity = Math.Abs(deltaX) / timeElapsed;
+            }
+        }
+
+        // Accept a swipe if they dragged far enough OR if they flicked it quickly
+        bool isSwipeAction = deltaX > 80 || (deltaX > 30 && velocity > 0.5);
+
+        if (isSwipeAction && ViewModel.GoToNextStepCommand.CanExecute(null)) // Swiped right -> Next
         {
             if (!ViewModel.ValidateCurrentStep())
             {
-                // Validation failed! Snap back immediately and show errors.
-                _swipeTransition = "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
+                // Validation failed! Snap back immediately and show errors with a bouncy spring
+                _swipeTransition = "transform 0.6s cubic-bezier(0.2, 1.2, 0.3, 1)";
                 _currentSwipeX = 0;
                 _currentSwipeRotation = 0;
                 await InvokeAsync(StateHasChanged);
-                await Task.Delay(500); // let animation finish
+                await Task.Delay(600); // let animation finish
                 _swipeTransition = "none";
                 await InvokeAsync(StateHasChanged);
                 return;
             }
 
             _hasUserSwiped = true;
-            _swipeTransition = "transform 0.4s ease-out";
-            _currentSwipeX = 1000; // Fly offscreen right
-            _currentSwipeRotation = 20;
+            // Fluid fly-away
+            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
+            _currentSwipeX = 1200; // Fly offscreen right
+            _currentSwipeRotation = 15;
             await InvokeAsync(StateHasChanged);
-            await Task.Delay(200); // Let it fly away
+            await Task.Delay(300); // Let it fly away just enough
             
             ViewModel.GoToNextStepCommand.Execute(null);
         }
+        else if (deltaX < -80 && ViewModel.GoToPreviousStepCommand.CanExecute(null) && !ViewModel.IsEditing)
+        {
+            // Allow swiping left to go back, but only if not editing single job
+            _hasUserSwiped = true;
+            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
+            _currentSwipeX = -1200;
+            _currentSwipeRotation = -15;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(300);
+            
+            ViewModel.GoToPreviousStepCommand.Execute(null);
+        }
         else
         {
-            // Not swiped far enough or swiping left is disabled, snap back bouncy
-            _swipeTransition = "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
+            // Not swiped far enough, snap back with a bouncy "spring" feel
+            _swipeTransition = "transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)";
             _currentSwipeX = 0;
             _currentSwipeRotation = 0;
             await InvokeAsync(StateHasChanged);
@@ -424,6 +552,7 @@
         }
         
         _touchStartX = null;
+        _touchStartTime = null;
     }
 
     private async Task HandleNextClick()
@@ -438,11 +567,11 @@
 
         if (ViewModel.GoToNextStepCommand.CanExecute(null))
         {
-            _swipeTransition = "transform 0.4s ease-out";
-            _currentSwipeX = 1000;
-            _currentSwipeRotation = 20;
+            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
+            _currentSwipeX = 1200;
+            _currentSwipeRotation = 15;
             await InvokeAsync(StateHasChanged);
-            await Task.Delay(200);
+            await Task.Delay(300);
             
             ViewModel.GoToNextStepCommand.Execute(null);
         }
@@ -453,11 +582,11 @@
         _hasUserSwiped = true; // Hide hint if they manually click back
         if (ViewModel.GoToPreviousStepCommand.CanExecute(null))
         {
-            _swipeTransition = "transform 0.4s ease-out";
-            _currentSwipeX = -1000;
-            _currentSwipeRotation = -20;
+            _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
+            _currentSwipeX = -1200;
+            _currentSwipeRotation = -15;
             await InvokeAsync(StateHasChanged);
-            await Task.Delay(200);
+            await Task.Delay(300);
             
             ViewModel.GoToPreviousStepCommand.Execute(null);
         }

@@ -32,6 +32,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	public int TotalSteps => _wizardSteps.Count;
 	public int CurrentStepNumber => CurrentStep + 1;
 
+	private double GetTextProgress(string? text, int targetLength, double maxPoints)
+	{
+		if (string.IsNullOrWhiteSpace(text)) return 0;
+		double ratio = (double)text.Length / targetLength;
+		return Math.Min(ratio, 1.0) * maxPoints;
+	}
+
 	public double ProgressPercentage 
 	{
 		get 
@@ -43,11 +50,16 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			
 			if (stepType == WizardStepType.Info)
 			{
-				double infoProgress = 0;
-				if (!string.IsNullOrWhiteSpace(ProjectTitle)) infoProgress += 3.75;
-				if (!string.IsNullOrWhiteSpace(ProjectLocation)) infoProgress += 3.75;
-				if (PreferredSiteVisitDate.HasValue) infoProgress += 3.75;
-				if (!string.IsNullOrWhiteSpace(ProjectDescription)) infoProgress += 3.75;
+				double mandatoryProgress = 0;
+				mandatoryProgress += GetTextProgress(ProjectTitle, 15, 3.75);
+				mandatoryProgress += GetTextProgress(ProjectLocation, 10, 3.75);
+				mandatoryProgress += GetTextProgress(ProjectDescription, 40, 3.75);
+				
+				double infoProgress = mandatoryProgress;
+				if (mandatoryProgress > 0 && PreferredSiteVisitDate.HasValue)
+				{
+					infoProgress += 3.75;
+				}
 				return infoProgress; // Max 15
 			}
 			
@@ -63,24 +75,69 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			
 			if (questionStartIdx == -1) questionStartIdx = 0;
 			
-			if (reviewIdx == -1) 
+			int totalQuestionSteps = _wizardSteps.Count - questionStartIdx;
+			if (reviewIdx != -1) 
 			{
-			    return (double)CurrentStepNumber / _wizardSteps.Count * 100;
+			    totalQuestionSteps = reviewIdx - questionStartIdx;
 			}
 			
-			int totalQuestionSteps = reviewIdx - questionStartIdx;
 			int currentQuestionStep = CurrentStep - questionStartIdx;
 			
 			double baseProgress = 30.0;
+			if (_wizardSteps.Count == 1 || questionStartIdx == 0) 
+			{
+			    baseProgress = 0.0; // Single step edit mode
+			}
+
 			double remainingProgress = 100.0 - baseProgress;
 			
 			// Calculate fraction of questions answered in this step
-			int totalQ = Questions?.Count ?? 0;
-			int answeredQ = Questions?.Count(q => !string.IsNullOrWhiteSpace(q.Answer)) ?? 0;
+			var visibleQuestions = Questions?.Where(q => q.IsVisible).ToList() ?? new List<WizardQuestionViewModel>();
+			int totalQ = visibleQuestions.Count;
+			double answeredQ = 0;
+			double mandatoryAnswered = 0;
+			bool hasMandatory = false;
 			
-			double stepFraction = totalQ > 0 ? (double)answeredQ / totalQ : 1.0;
+			if (totalQ > 0)
+			{
+				foreach (var q in visibleQuestions)
+				{
+					double qProg = 0;
+					if (q.IsText)
+					{
+						qProg = GetTextProgress(q.Answer, 15, 1.0);
+					}
+					else if (q.IsBoolean)
+					{
+					    // Checkboxes default to "False", so they should only count as progress if actually checked
+					    qProg = q.Answer == "True" ? 1.0 : 0.0;
+					}
+					else if (!string.IsNullOrWhiteSpace(q.Answer))
+					{
+						qProg = 1.0;
+					}
+
+					if (q.IsRequired)
+					{
+						hasMandatory = true;
+						mandatoryAnswered += qProg;
+					}
+					
+					answeredQ += qProg;
+				}
+			}
 			
-			double fraction = (currentQuestionStep + stepFraction) / (totalQuestionSteps + 1);
+			if (hasMandatory && mandatoryAnswered == 0)
+			{
+				// If there are mandatory questions but NONE have been answered, don't count optional progress
+				answeredQ = 0;
+			}
+			
+			double stepFraction = totalQ > 0 ? answeredQ / totalQ : 1.0;
+			
+			int denominator = totalQuestionSteps + (reviewIdx != -1 ? 1 : 0);
+			double fraction = (currentQuestionStep + stepFraction) / denominator;
+			
 			return baseProgress + (remainingProgress * fraction);
 		}
 	}
@@ -132,6 +189,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	[ObservableProperty]
 	private ObservableCollection<WizardQuestionViewModel> _questions = new();
+
+	[ObservableProperty]
+	private bool _hasProjects = true; // Default to true, so swipe hint is hidden unless confirmed 0.
 
 	[ObservableProperty]
 	private bool _isBusy;
@@ -339,6 +399,17 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					}
 				}
 			}
+
+			// Also check if user has projects to determine if we should show the swipe hint
+			try
+			{
+				var projectsResult = await _apiClient.GetMyProjects.ExecuteAsync();
+				if (projectsResult.Data?.MyProjects != null)
+				{
+					HasProjects = projectsResult.Data.MyProjects.Count > 0;
+				}
+			}
+			catch { }
 		}
 		catch (Exception ex)
 		{

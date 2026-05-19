@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpassword
+      - POSTGRES_DB=buildsmart_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d buildsmart_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: BuildSmart.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=buildsmart_test;Username=testuser;Password=testpassword
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: BuildSmart.Web/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ApiConfig__BaseUrlOverride=http://api:8080
+    depends_on:
+      - api
+
+  e2e-tests:
+    build:
+      context: .
+      dockerfile: BuildSmart.E2E.Tests/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=buildsmart_test;Username=testuser;Password=testpassword
+      - BaseUrl=http://web:8080
+    depends_on:
+      - web

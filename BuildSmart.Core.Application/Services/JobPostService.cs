@@ -284,7 +284,23 @@ public class JobPostService : IJobPostService
 		ValidateMandatoryQuestions(allCategories, jobPost.JobDetails);
 
 		// 3. Trigger Scope Generation (AI)
-		jobPost.SubmitForScopeGeneration();
+		bool shouldQueue = true;
+		if (jobPost.Status == JobPostStatus.GeneratingScope)
+		{
+			if (jobPost.JobDetails == jobPost.LastQueuedJobDetails)
+			{
+				shouldQueue = false; // Unchanged, let current run
+			}
+			else if (!string.IsNullOrEmpty(jobPost.ActiveHangfireJobId))
+			{
+				await _scopeGenerationQueue.CancelJobAsync(jobPost.ActiveHangfireJobId);
+			}
+		}
+
+		if (shouldQueue)
+		{
+			jobPost.SubmitForScopeGeneration();
+		}
 
 		// 4. Also update Project status if needed
 		if (jobPost.ProjectId != Guid.Empty)
@@ -300,21 +316,28 @@ public class JobPostService : IJobPostService
 		_unitOfWork.JobPosts.Update(jobPost);
 		await _unitOfWork.SaveChangesAsync();
 
-		// Notify Admins of New Submission
-		var admins = await _unitOfWork.Users.GetQueryable().Where(u => u.Role == UserRoleTypes.Admin).ToListAsync();
-		foreach (var admin in admins)
+		if (shouldQueue)
 		{
-			await _notificationService.SendNotificationAsync(
-				admin.Id,
-				"New Job Submission",
-				$"A new scope for '{jobPost.Title}' is ready for admin review.",
-				jobPost.Id,
-				"JobPost"
-			);
-		}
+			// Notify Admins of New Submission
+			var admins = await _unitOfWork.Users.GetQueryable().Where(u => u.Role == UserRoleTypes.Admin).ToListAsync();
+			foreach (var admin in admins)
+			{
+				await _notificationService.SendNotificationAsync(
+					admin.Id,
+					"New Job Submission",
+					$"A new scope for '{jobPost.Title}' is ready for admin review.",
+					jobPost.Id,
+					"JobPost"
+				);
+			}
 
-		// Queue for background processing
-		await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
+			// Queue for background processing
+			var jobId = await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
+			jobPost.MarkScopeGenerationQueued(jobId, jobPost.JobDetails);
+			
+			_unitOfWork.JobPosts.Update(jobPost);
+			await _unitOfWork.SaveChangesAsync();
+		}
 	}
 
 	private void ValidateMandatoryQuestions(List<ServiceCategory> categories, string jobDetailsJson)
