@@ -4,6 +4,7 @@ using BuildSmart.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Sentry;
 
 namespace BuildSmart.Infrastructure.Persistence;
 
@@ -267,8 +268,13 @@ public class AppDbContext : DbContext
 
     public async Task SeedSkusAsync()
     {
+        Console.WriteLine("--- SKU SEEDING START ---");
+        SentrySdk.AddBreadcrumb("Starting SKU seeding process...");
+
         // 1. Seed from MarketData_Sofia_Seed.json (General Market Data)
         var marketDataPath = Path.Combine(AppContext.BaseDirectory, "MarketData_Sofia_Seed.json");
+        Console.WriteLine($"Looking for Market Data at: {marketDataPath}");
+
         if (System.IO.File.Exists(marketDataPath))
         {
             var json = await System.IO.File.ReadAllTextAsync(marketDataPath);
@@ -276,9 +282,9 @@ public class AppDbContext : DbContext
             
             if (marketData != null)
             {
+                int totalMarketSkus = 0;
                 foreach (var marketCat in marketData)
                 {
-                    // Map market category names to our DB category names
                     var dbCategoryName = MapMarketCategoryToDbName(marketCat.Category);
                     var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == dbCategoryName);
                     
@@ -320,16 +326,25 @@ public class AppDbContext : DbContext
                                 });
 
                                 await ServiceSkus.AddAsync(newSku);
+                                totalMarketSkus++;
                                 count++;
                             }
                         }
                     }
                 }
+                Console.WriteLine($"Successfully queued {totalMarketSkus} Market SKUs for insertion.");
             }
+        }
+        else
+        {
+             Console.WriteLine("CRITICAL: MarketData_Sofia_Seed.json NOT FOUND!");
+             SentrySdk.CaptureMessage("SKU Seeding Error: MarketData_Sofia_Seed.json not found.", SentryLevel.Error);
         }
 
         // 2. Seed from Electrical_SKUs_Seed.json (Specific Electrical Data)
         var elecPath = Path.Combine(AppContext.BaseDirectory, "Electrical_SKUs_Seed.json");
+        Console.WriteLine($"Looking for Electrical Data at: {elecPath}");
+
         if (System.IO.File.Exists(elecPath))
         {
             var json = await System.IO.File.ReadAllTextAsync(elecPath);
@@ -337,6 +352,7 @@ public class AppDbContext : DbContext
             
             if (elecData != null)
             {
+                int totalElecSkus = 0;
                 var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Електрическа Инсталация" || c.Name == "Electrical");
                 if (category != null)
                 {
@@ -372,13 +388,22 @@ public class AppDbContext : DbContext
                             });
 
                             await ServiceSkus.AddAsync(newSku);
+                            totalElecSkus++;
                         }
                     }
                 }
+                Console.WriteLine($"Successfully queued {totalElecSkus} Electrical SKUs for insertion.");
             }
+        }
+        else
+        {
+            Console.WriteLine("CRITICAL: Electrical_SKUs_Seed.json NOT FOUND!");
+            SentrySdk.CaptureMessage("SKU Seeding Error: Electrical_SKUs_Seed.json not found.", SentryLevel.Error);
         }
 
         await SaveChangesAsync();
+        Console.WriteLine("--- SKU SEEDING FINISHED (Changes Saved) ---");
+        SentrySdk.CaptureMessage("Database SKU Seeding Completed Successfully.", SentryLevel.Info);
     }
 
     private string MapMarketCategoryToDbName(string marketName)

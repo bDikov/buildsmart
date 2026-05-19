@@ -46,10 +46,6 @@
     <ProjectReference Include="..\BuildSmart.Infrastructure\BuildSmart.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\Categories_Seed_Templates.json" Link="Categories_Seed_Templates.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://www.schemastore.org/xs-app.json" /></VisualStudio></ProjectExtensions>
 
 </Project>
