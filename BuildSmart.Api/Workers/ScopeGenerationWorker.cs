@@ -32,7 +32,7 @@ public class ScopeGenerationWorker
 
 	[AutomaticRetry(Attempts = 2)]
 	[Queue("ai-queue")]
-	public async Task ProcessJobAsync(Guid jobPostId)
+	public async Task ProcessJobAsync(Guid jobPostId, CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Processing Job Scope for Job ID: {JobId}", jobPostId);
 
@@ -87,12 +87,12 @@ public class ScopeGenerationWorker
 						_logger.LogWarning(exception, "Gemini API failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
 					});
 
-			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
+			var aiResponse = await retryPolicy.ExecuteAsync(async (ct) =>
 			{
 				await EnforceRateLimitAsync();
 
-				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus, languageCode);
-			});
+				return await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, allowedSkus, languageCode, ct);
+			}, cancellationToken);
 
 			// 4. Clear existing Tasks if any (in case of regeneration)
 			var existingTasks = await unitOfWork.JobTasks.GetTasksByJobPostAsync(jobPostId);
@@ -244,7 +244,7 @@ public class ScopeGenerationWorker
 
 	[AutomaticRetry(Attempts = 3)]
 	[Queue("ai-queue")]
-	public async Task ProcessPricingAsync(Guid jobPostId)
+	public async Task ProcessPricingAsync(Guid jobPostId, CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Processing Pricing for Job ID: {JobId}", jobPostId);
 
@@ -304,11 +304,11 @@ public class ScopeGenerationWorker
 						_logger.LogWarning(exception, "Gemini API pricing failed on attempt {RetryCount}. Retrying in {Delay}s.", retryCount, timeSpan.TotalSeconds);
 					});
 
-			var aiResponse = await retryPolicy.ExecuteAsync(async () =>
+			var aiResponse = await retryPolicy.ExecuteAsync(async (ct) =>
 			{
 				await EnforceRateLimitAsync();
-				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, humanReadableContext, languageCode);
-			});
+				return await aiService.CalculateTaskPricesAsync(jobPost.JobTasks.ToList(), allowedSkus, humanReadableContext, languageCode, ct);
+			}, cancellationToken);
 
 			if (aiResponse?.Tasks != null)
 			{

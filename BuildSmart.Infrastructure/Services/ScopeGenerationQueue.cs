@@ -17,17 +17,25 @@ public class ScopeGenerationQueue : IScopeGenerationQueue
         _queue = Channel.CreateBounded<Guid>(options);
     }
 
-    public async ValueTask QueueBackgroundWorkItemAsync(Guid jobPostId, CancellationToken cancellationToken)
+    public async ValueTask<string> QueueBackgroundWorkItemAsync(Guid jobPostId, CancellationToken cancellationToken)
     {
         await _queue.Writer.WriteAsync(jobPostId, cancellationToken);
+        return Guid.NewGuid().ToString();
     }
 
-    public async ValueTask QueuePricingUpdateAsync(Guid jobPostId, CancellationToken cancellationToken)
+    public async ValueTask<string> QueuePricingUpdateAsync(Guid jobPostId, CancellationToken cancellationToken)
     {
         // This is a legacy queue. We write to the same channel, but the BackgroundService 
         // won't know to execute pricing instead of generation. 
         // Using Hangfire handles this properly.
         await _queue.Writer.WriteAsync(jobPostId, cancellationToken);
+        return Guid.NewGuid().ToString();
+    }
+
+    public ValueTask CancelJobAsync(string jobId)
+    {
+        // Not supported in legacy queue
+        return ValueTask.CompletedTask;
     }
 
     public async ValueTask<Guid> DequeueAsync(CancellationToken cancellationToken)

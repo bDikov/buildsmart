@@ -7,10 +7,10 @@ namespace BuildSmart.Infrastructure.Services;
 
 public class MockAiService : IAiService
 {
-	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "en")
+	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		// Simulate AI processing delay
-		await Task.Delay(3000);
+		await Task.Delay(3000, cancellationToken);
 
 		var sb = new System.Text.StringBuilder();
 		sb.AppendLine($"## AI Generated Scope for: {jobPost.Title}");
@@ -47,7 +47,7 @@ public class MockAiService : IAiService
 		return new BuildSmart.Core.Application.DTOs.AiScopeBreakdownResponse(sb.ToString(), tasks);
 	}
 
-	public Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string languageCode = "en")
+	public Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		var pricingItems = new List<AiTaskPricingItemDto>();
 
@@ -64,9 +64,9 @@ public class MockAiService : IAiService
 		return Task.FromResult(new AiTaskPricingResponse(pricingItems));
 	}
 
-	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en")
+	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
-		await Task.Delay(2000);
+		await Task.Delay(2000, cancellationToken);
 
 		var sb = new StringBuilder();
 		sb.AppendLine($"## Project Summary: {project.Title}");
@@ -86,12 +86,7 @@ public class MockAiService : IAiService
 		return sb.ToString();
 	}
 
-	public Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en")
-	{
-		throw new NotImplementedException();
-	}
-
-	public Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en")
+	public Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en", CancellationToken cancellationToken = default)
 	{
 		return Task.FromResult("This is a mocked executive summary based on combined scopes.");
 	}
