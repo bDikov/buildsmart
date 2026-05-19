@@ -269,12 +269,18 @@ public class AppDbContext : DbContext
     public async Task SeedSkusAsync()
     {
         Console.WriteLine("--- SKU SEEDING START ---");
-        SentrySdk.AddBreadcrumb("Starting SKU seeding process...");
+        
+        var allDbCategories = await ServiceCategories.ToListAsync();
+        Console.WriteLine($"Database contains {allDbCategories.Count} categories.");
+        foreach(var c in allDbCategories) Console.WriteLine($" - Category: '{c.Name}'");
+
+        if (allDbCategories.Count == 0)
+        {
+             throw new Exception("SKU Seeding aborted: ServiceCategories table is empty! Seeding questions must happen first.");
+        }
 
         // 1. Seed from MarketData_Sofia_Seed.json (General Market Data)
         var marketDataPath = Path.Combine(AppContext.BaseDirectory, "MarketData_Sofia_Seed.json");
-        Console.WriteLine($"Looking for Market Data at: {marketDataPath}");
-
         if (System.IO.File.Exists(marketDataPath))
         {
             var json = await System.IO.File.ReadAllTextAsync(marketDataPath);
@@ -282,11 +288,10 @@ public class AppDbContext : DbContext
             
             if (marketData != null)
             {
-                int totalMarketSkus = 0;
                 foreach (var marketCat in marketData)
                 {
                     var dbCategoryName = MapMarketCategoryToDbName(marketCat.Category);
-                    var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == dbCategoryName);
+                    var category = allDbCategories.FirstOrDefault(c => c.Name == dbCategoryName);
                     
                     if (category != null)
                     {
@@ -295,9 +300,9 @@ public class AppDbContext : DbContext
                         foreach (var marketTask in marketCat.Tasks)
                         {
                             var skuCode = $"{prefix}-{count:D3}";
-                            var existingSku = await ServiceSkus.Include(s => s.Translations).FirstOrDefaultAsync(s => s.SkuCode == skuCode);
+                            var existingSku = await ServiceSkus.AnyAsync(s => s.SkuCode == skuCode);
                             
-                            if (existingSku == null)
+                            if (!existingSku)
                             {
                                 var skuId = Guid.NewGuid();
                                 var newSku = new ServiceSku
@@ -326,25 +331,24 @@ public class AppDbContext : DbContext
                                 });
 
                                 await ServiceSkus.AddAsync(newSku);
-                                totalMarketSkus++;
                                 count++;
                             }
                         }
                     }
+                    else
+                    {
+                        Console.WriteLine($"Warning: Could not match market category '{marketCat.Category}' to any DB category. Mapped to: '{dbCategoryName}'");
+                    }
                 }
-                Console.WriteLine($"Successfully queued {totalMarketSkus} Market SKUs for insertion.");
             }
         }
         else
         {
-             Console.WriteLine("CRITICAL: MarketData_Sofia_Seed.json NOT FOUND!");
-             SentrySdk.CaptureMessage("SKU Seeding Error: MarketData_Sofia_Seed.json not found.", SentryLevel.Error);
+             throw new FileNotFoundException($"CRITICAL: MarketData_Sofia_Seed.json not found at {marketDataPath}");
         }
 
         // 2. Seed from Electrical_SKUs_Seed.json (Specific Electrical Data)
         var elecPath = Path.Combine(AppContext.BaseDirectory, "Electrical_SKUs_Seed.json");
-        Console.WriteLine($"Looking for Electrical Data at: {elecPath}");
-
         if (System.IO.File.Exists(elecPath))
         {
             var json = await System.IO.File.ReadAllTextAsync(elecPath);
@@ -352,14 +356,13 @@ public class AppDbContext : DbContext
             
             if (elecData != null)
             {
-                int totalElecSkus = 0;
-                var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Електрическа Инсталация" || c.Name == "Electrical");
+                var category = allDbCategories.FirstOrDefault(c => c.Name == "Електрическа Инсталация" || c.Name == "Electrical");
                 if (category != null)
                 {
                     foreach (var skuDto in elecData.Skus)
                     {
-                        var existing = await ServiceSkus.Include(s => s.Translations).FirstOrDefaultAsync(s => s.SkuCode == skuDto.SkuCode);
-                        if (existing == null)
+                        var existing = await ServiceSkus.AnyAsync(s => s.SkuCode == skuDto.SkuCode);
+                        if (!existing)
                         {
                             var skuId = Guid.NewGuid();
                             var newSku = new ServiceSku
@@ -388,22 +391,21 @@ public class AppDbContext : DbContext
                             });
 
                             await ServiceSkus.AddAsync(newSku);
-                            totalElecSkus++;
                         }
                     }
                 }
-                Console.WriteLine($"Successfully queued {totalElecSkus} Electrical SKUs for insertion.");
             }
-        }
-        else
-        {
-            Console.WriteLine("CRITICAL: Electrical_SKUs_Seed.json NOT FOUND!");
-            SentrySdk.CaptureMessage("SKU Seeding Error: Electrical_SKUs_Seed.json not found.", SentryLevel.Error);
         }
 
         await SaveChangesAsync();
-        Console.WriteLine("--- SKU SEEDING FINISHED (Changes Saved) ---");
-        SentrySdk.CaptureMessage("Database SKU Seeding Completed Successfully.", SentryLevel.Info);
+        
+        var finalCount = await ServiceSkus.CountAsync();
+        Console.WriteLine($"--- SKU SEEDING FINISHED. Total SKUs in DB: {finalCount} ---");
+        
+        if (finalCount == 0)
+        {
+            throw new Exception("SKU Seeding failed: ServiceSkus table is still empty after SaveChangesAsync!");
+        }
     }
 
     private string MapMarketCategoryToDbName(string marketName)
