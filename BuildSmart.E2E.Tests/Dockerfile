@@ -27,7 +27,7 @@ COPY . .
 WORKDIR /src/BuildSmart.E2E.Tests
 
 # Build the tests without regenerating the GraphQL client
-RUN dotnet build -c Release /p:StrawberryShake_Generate=false
+RUN dotnet build -c Release /p:StrawberryShake_SkipGenerate=true
 
 # Install Playwright dependencies and browsers
 RUN pwsh bin/Release/net9.0/playwright.ps1 install --with-deps
