@@ -221,69 +221,83 @@ public class AppDbContext : DbContext
         await SaveChangesAsync();
     }
 
+    private async Task<string> ReadEmbeddedResourceAsync(string fileName)
+    {
+        var assembly = typeof(AppDbContext).Assembly;
+        var resourceName = $"BuildSmart.Infrastructure.{fileName}";
+        
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+        {
+            var availableResources = string.Join(", ", assembly.GetManifestResourceNames());
+            throw new FileNotFoundException($"Embedded resource '{resourceName}' not found. Available: {availableResources}");
+        }
+
+        using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync();
+    }
+
     public async Task SeedCategoriesAndQuestionsAsync()
     {
-        var filePath = Path.Combine(AppContext.BaseDirectory, "Categories_Seed_Templates.json");
-        if (!System.IO.File.Exists(filePath))
+        try
         {
-            return; // Skip if file not found
-        }
-
-        var json = await System.IO.File.ReadAllTextAsync(filePath);
-        var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var seedData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, CategorySeedDto>>(json, options);
-        
-        if (seedData == null) return;
-
-        foreach (var kvp in seedData)
-        {
-            var categoryName = kvp.Value.Name;
-            var isGlobal = kvp.Key == "global_category";
-
-            var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == categoryName);
-            if (category == null)
-            {
-                category = new ServiceCategory
-                {
-                    Id = Guid.NewGuid(),
-                    Name = categoryName,
-                    Status = CategoryStatus.Active,
-                    IsGlobal = isGlobal,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-                await ServiceCategories.AddAsync(category);
-            }
-            else
-            {
-                category.IsGlobal = isGlobal;
-            }
+            var json = await ReadEmbeddedResourceAsync("Categories_Seed_Templates.json");
+            var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var seedData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, CategorySeedDto>>(json, options);
             
-            // Always update the template structure to match the latest JSON
-            category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
-        }
+            if (seedData == null) return;
 
-        await SaveChangesAsync();
+            foreach (var kvp in seedData)
+            {
+                var categoryName = kvp.Value.Name;
+                var isGlobal = kvp.Key == "global_category";
+
+                var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == categoryName);
+                if (category == null)
+                {
+                    category = new ServiceCategory
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = categoryName,
+                        Status = CategoryStatus.Active,
+                        IsGlobal = isGlobal,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    await ServiceCategories.AddAsync(category);
+                }
+                else
+                {
+                    category.IsGlobal = isGlobal;
+                }
+                
+                category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
+            }
+
+            await SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            SentrySdk.CaptureException(ex);
+            Console.WriteLine($"Error seeding categories: {ex.Message}");
+            throw;
+        }
     }
 
     public async Task SeedSkusAsync()
     {
-        Console.WriteLine("--- SKU SEEDING START ---");
+        Console.WriteLine("--- SKU SEEDING START (Embedded Resources) ---");
         
         var allDbCategories = await ServiceCategories.ToListAsync();
-        Console.WriteLine($"Database contains {allDbCategories.Count} categories.");
-        foreach(var c in allDbCategories) Console.WriteLine($" - Category: '{c.Name}'");
-
         if (allDbCategories.Count == 0)
         {
-             throw new Exception("SKU Seeding aborted: ServiceCategories table is empty! Seeding questions must happen first.");
+             throw new Exception("SKU Seeding aborted: ServiceCategories table is empty!");
         }
 
-        // 1. Seed from MarketData_Sofia_Seed.json (General Market Data)
-        var marketDataPath = Path.Combine(AppContext.BaseDirectory, "MarketData_Sofia_Seed.json");
-        if (System.IO.File.Exists(marketDataPath))
+        // 1. Seed from MarketData_Sofia_Seed.json
+        try
         {
-            var json = await System.IO.File.ReadAllTextAsync(marketDataPath);
+            var json = await ReadEmbeddedResourceAsync("MarketData_Sofia_Seed.json");
             var marketData = System.Text.Json.JsonSerializer.Deserialize<List<MarketCategorySeedDto>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             if (marketData != null)
@@ -335,23 +349,19 @@ public class AppDbContext : DbContext
                             }
                         }
                     }
-                    else
-                    {
-                        Console.WriteLine($"Warning: Could not match market category '{marketCat.Category}' to any DB category. Mapped to: '{dbCategoryName}'");
-                    }
                 }
             }
         }
-        else
+        catch (Exception ex)
         {
-             throw new FileNotFoundException($"CRITICAL: MarketData_Sofia_Seed.json not found at {marketDataPath}");
+            Console.WriteLine($"Error seeding market SKUs: {ex.Message}");
+            SentrySdk.CaptureException(ex);
         }
 
-        // 2. Seed from Electrical_SKUs_Seed.json (Specific Electrical Data)
-        var elecPath = Path.Combine(AppContext.BaseDirectory, "Electrical_SKUs_Seed.json");
-        if (System.IO.File.Exists(elecPath))
+        // 2. Seed from Electrical_SKUs_Seed.json
+        try
         {
-            var json = await System.IO.File.ReadAllTextAsync(elecPath);
+            var json = await ReadEmbeddedResourceAsync("Electrical_SKUs_Seed.json");
             var elecData = System.Text.Json.JsonSerializer.Deserialize<ElectricalSeedDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             if (elecData != null)
@@ -396,16 +406,17 @@ public class AppDbContext : DbContext
                 }
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error seeding electrical SKUs: {ex.Message}");
+            SentrySdk.CaptureException(ex);
+        }
 
         await SaveChangesAsync();
         
         var finalCount = await ServiceSkus.CountAsync();
-        Console.WriteLine($"--- SKU SEEDING FINISHED. Total SKUs in DB: {finalCount} ---");
-        
-        if (finalCount == 0)
-        {
-            throw new Exception("SKU Seeding failed: ServiceSkus table is still empty after SaveChangesAsync!");
-        }
+        Console.WriteLine($"--- SKU SEEDING FINISHED. Total SKUs: {finalCount} ---");
+        SentrySdk.CaptureMessage($"Seeding Complete. Total SKUs: {finalCount}", SentryLevel.Info);
     }
 
     private string MapMarketCategoryToDbName(string marketName)
