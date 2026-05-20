@@ -400,9 +400,6 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				}
 				
 				OnPropertyChanged(nameof(SelectableCategories));
-				
-				// Allow UI to update before proceeding
-				await Task.Delay(100);
 			}
 
 			// Also check if user has projects to determine if we should show the swipe hint
