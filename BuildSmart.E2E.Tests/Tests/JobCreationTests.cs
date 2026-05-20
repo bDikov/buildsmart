@@ -231,16 +231,27 @@ public class JobCreationTests : TestBase
         dbContext.ServiceCategories.Add(dummyCategory);
         await dbContext.SaveChangesAsync();
 
-        // 1. Navigate & Login
+        // 1. Arrange - Inject the Language Cookie
+        await Context.AddCookiesAsync(new[]
+        {
+            new Microsoft.Playwright.Cookie
+            {
+                Name = ".AspNetCore.Culture",
+                Value = "c=en|uic=en",
+                Url = BaseUrl
+            }
+        });
+
+        // 2. Navigate & Login
         var loginPage = new LoginPage(Page);
         await loginPage.GotoAsync(BaseUrl);
         await loginPage.LoginWithCredentialsAsync($"testuserlang{uniqueLangId}@buildsmart.com", "Password123!");
         await Expect(Page).Not.ToHaveURLAsync(new Regex(".*login"), new() { Timeout = 10000 });
         
-        // Wait for Blazor MainLayout to fetch user profile and apply language cookie / reload if necessary
-        await Page.WaitForTimeoutAsync(2000);
+        // Wait briefly for safety
+        await Page.WaitForTimeoutAsync(1000);
 
-        // 2. Start Project Wizard
+        // 3. Start Project Wizard
         var myProjectsPage = new MyProjectsPage(Page);
         await myProjectsPage.GotoAsync(BaseUrl);
         await myProjectsPage.ClickCreateNewProjectAsync();

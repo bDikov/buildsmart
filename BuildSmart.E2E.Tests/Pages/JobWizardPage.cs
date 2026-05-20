@@ -54,12 +54,11 @@ public class JobWizardPage : BasePage
         await _page.Locator(".category-list").WaitForAsync();
 
         var label = _page.Locator($".category-item:has-text('{categoryName}')");
-        await label.Locator("input[type='checkbox']").CheckAsync();
+        await label.ClickAsync(); // Click the label to trigger the native checkbox change event
 
         // Wait for Blazor binding to sync before clicking Next
         await _page.WaitForTimeoutAsync(500);
     }
-
     // --- Question Step Helpers ---
     public async Task ExpectQuestionVisibleAsync(string partialQuestionText)
     {
