@@ -231,15 +231,10 @@ public class JobCreationTests : TestBase
         dbContext.ServiceCategories.Add(dummyCategory);
         await dbContext.SaveChangesAsync();
 
-        // 1. Arrange - Inject the Language Cookie
-        await Context.AddCookiesAsync(new[]
+        // 1. Arrange - Inject the Language Header
+        await Context.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
         {
-            new Microsoft.Playwright.Cookie
-            {
-                Name = ".AspNetCore.Culture",
-                Value = "c=en|uic=en",
-                Url = BaseUrl
-            }
+            { "Accept-Language", "en-US,en;q=0.9" }
         });
 
         // 2. Navigate & Login
