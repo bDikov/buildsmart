@@ -54,8 +54,10 @@ public class JobWizardPage : BasePage
         await _page.Locator(".category-list").WaitForAsync();
 
         var label = _page.Locator($".category-item:has-text('{categoryName}')");
-        await label.ClickAsync(); // Click the label to trigger the native checkbox change event
-
+        
+        // Use Force = true to bypass Playwright's visibility check on the hidden checkbox
+        await label.Locator("input[type='checkbox']").CheckAsync(new LocatorCheckOptions { Force = true });
+        
         // Wait for Blazor binding to sync before clicking Next
         await _page.WaitForTimeoutAsync(500);
     }

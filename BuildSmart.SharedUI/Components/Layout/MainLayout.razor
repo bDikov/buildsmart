@@ -502,15 +502,28 @@
             try
             {
                 var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
-                if (userResult.Data?.CurrentUser != null && !string.IsNullOrEmpty(userResult.Data.CurrentUser.PreferredTheme))
+                if (userResult.Data?.CurrentUser != null)
                 {
-                    var theme = userResult.Data.CurrentUser.PreferredTheme;
-                    if (theme != "system")
+                    if (!string.IsNullOrEmpty(userResult.Data.CurrentUser.PreferredTheme))
                     {
-                        await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
+                        var theme = userResult.Data.CurrentUser.PreferredTheme;
+                        if (theme != "system")
+                        {
+                            await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
+                        }
+                        
+                        await JSRuntime.InvokeVoidAsync("setCookie", "user_theme", theme, 365);
                     }
+
+                    var preferredLang = userResult.Data.CurrentUser.PreferredLanguage;
+                    var currentCulture = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
                     
-                    await JSRuntime.InvokeVoidAsync("setCookie", "user_theme", theme, 365);
+                    if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture)
+                    {
+                        var cookieValue = $"c={preferredLang}|uic={preferredLang}";
+                        await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
+                        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+                    }
                 }
             }
             catch (Exception)
