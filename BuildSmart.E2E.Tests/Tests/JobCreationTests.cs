@@ -107,6 +107,7 @@ public class JobCreationTests : TestBase
         {
             Id = Guid.NewGuid(),
             Name = categoryName,
+            IsGlobal = false,
             Status = CategoryStatus.Active,
             TemplateStructure = @"{
                 ""questions"": [
@@ -116,9 +117,20 @@ public class JobCreationTests : TestBase
                 ]
             }"
         };
+
+        var dummyCategoryName = $"Dummy Category Seq-{uniqueSubSeqId}";
+        var dummyCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = dummyCategoryName,
+            IsGlobal = false,
+            Status = CategoryStatus.Active,
+            TemplateStructure = "{}"
+        };
         
         dbContext.Users.Add(testUser);
         dbContext.ServiceCategories.Add(subSeqCategory);
+        dbContext.ServiceCategories.Add(dummyCategory);
         await dbContext.SaveChangesAsync();
 
         // 1. Navigate & Login
@@ -126,6 +138,9 @@ public class JobCreationTests : TestBase
         await loginPage.GotoAsync(BaseUrl);
         await loginPage.LoginWithCredentialsAsync($"testuserq{uniqueSubSeqId}@buildsmart.com", "Password123!");
         await Expect(Page).Not.ToHaveURLAsync(new Regex(".*login"), new() { Timeout = 10000 });
+        
+        // Wait for Blazor MainLayout to fetch user profile and apply language cookie / reload if necessary
+        await Page.WaitForTimeoutAsync(2000);
 
         // 2. Start Project Wizard
         var myProjectsPage = new MyProjectsPage(Page);
@@ -221,6 +236,9 @@ public class JobCreationTests : TestBase
         await loginPage.GotoAsync(BaseUrl);
         await loginPage.LoginWithCredentialsAsync($"testuserlang{uniqueLangId}@buildsmart.com", "Password123!");
         await Expect(Page).Not.ToHaveURLAsync(new Regex(".*login"), new() { Timeout = 10000 });
+        
+        // Wait for Blazor MainLayout to fetch user profile and apply language cookie / reload if necessary
+        await Page.WaitForTimeoutAsync(2000);
 
         // 2. Start Project Wizard
         var myProjectsPage = new MyProjectsPage(Page);
