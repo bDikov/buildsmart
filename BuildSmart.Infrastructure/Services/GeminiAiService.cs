@@ -71,16 +71,39 @@ public class GeminiAiService : IAiService
 		}
 
 		var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
-		var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
+		
+		int maxRetries = 5;
+		int delayMs = 2000;
 
-		if (!response.IsSuccessStatusCode)
+		for (int i = 0; i < maxRetries; i++)
 		{
-			var errorString = await response.Content.ReadAsStringAsync(cancellationToken);
-			throw new Exception($"Gemini API failed with status {response.StatusCode}: {errorString}");
+			var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
+
+			if (response.IsSuccessStatusCode)
+			{
+				var responseJson = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
+				return responseJson.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString() ?? string.Empty;
+			}
+			
+			if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable || (int)response.StatusCode == 429)
+			{
+				if (i == maxRetries - 1)
+				{
+					var errorString = await response.Content.ReadAsStringAsync(cancellationToken);
+					throw new Exception($"Gemini API failed with status {response.StatusCode} after {maxRetries} retries: {errorString}");
+				}
+				
+				_logger.LogWarning($"Gemini API returned {response.StatusCode}. Retrying in {delayMs}ms...");
+				await Task.Delay(delayMs, cancellationToken);
+				delayMs *= 2; // Exponential backoff
+				continue;
+			}
+
+			var fatalErrorString = await response.Content.ReadAsStringAsync(cancellationToken);
+			throw new Exception($"Gemini API failed with status {response.StatusCode}: {fatalErrorString}");
 		}
 
-		var responseJson = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
-		return responseJson.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString() ?? string.Empty;
+		throw new Exception("Gemini API failed unexpectedly.");
 	}
 
 	private string CleanJsonMarkdown(string responseText)

@@ -52,30 +52,30 @@ public class JobWizardPage : BasePage
     {
         // Give category list a moment to render
         await _page.Locator(".category-list").WaitForAsync();
-        
-        var label = _page.Locator($".category-item:has-text('{categoryName}')");
-        await label.ClickAsync();
 
-        // Wait for the checkbox to actually be checked
-        await Microsoft.Playwright.Assertions.Expect(label.Locator("input[type='checkbox']")).ToBeCheckedAsync();
+        var label = _page.Locator($".category-item:has-text('{categoryName}')");
+        await label.Locator("input[type='checkbox']").CheckAsync();
+
+        // Wait for Blazor binding to sync before clicking Next
+        await _page.WaitForTimeoutAsync(500);
     }
 
     // --- Question Step Helpers ---
     public async Task ExpectQuestionVisibleAsync(string partialQuestionText)
     {
-        var locator = _page.Locator($".question-container:has-text('{partialQuestionText}')");
+        var locator = _page.Locator($"label.form-label:has-text('{partialQuestionText}')");
         await Microsoft.Playwright.Assertions.Expect(locator).ToBeVisibleAsync();
     }
 
     public async Task ExpectQuestionHiddenAsync(string partialQuestionText)
     {
-        var locator = _page.Locator($".question-container:has-text('{partialQuestionText}')");
+        var locator = _page.Locator($"label.form-label:has-text('{partialQuestionText}')");
         await Microsoft.Playwright.Assertions.Expect(locator).ToBeHiddenAsync();
     }
 
     public async Task SelectChoiceOptionAsync(string partialQuestionText, string optionText)
     {
-        var questionCard = _page.Locator($".question-container:has-text('{partialQuestionText}')");
-        await questionCard.Locator($"label:has-text('{optionText}')").ClickAsync();
-    }
-}
+        var questionWrapper = _page.Locator($".mb-4:has(label.form-label:has-text('{partialQuestionText}'))");
+        await questionWrapper.Locator($"label.form-check-label:has-text('{optionText}')").ClickAsync();
+        await _page.WaitForTimeoutAsync(500); // Wait for Blazor binding to evaluate subsequential questions
+    }}
