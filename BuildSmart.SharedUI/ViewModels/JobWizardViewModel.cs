@@ -398,6 +398,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						SelectableCategories.Add(viewModel);
 					}
 				}
+				
+				OnPropertyChanged(nameof(SelectableCategories));
+				
+				// Allow UI to update before proceeding
+				await Task.Delay(100);
 			}
 
 			// Also check if user has projects to determine if we should show the swipe hint
@@ -903,7 +908,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private bool ValidateCategoryStep()
 	{
-		if (!_selectableCategories.Any(c => c.IsSelected))
+		if (!SelectableCategories.Any(c => c.IsSelected))
 		{
 			CategorySelectionHasError = true;
 			AppServiceLocator.Alerts.DisplayAlert("Required", "Please select at least one category.", "OK");
