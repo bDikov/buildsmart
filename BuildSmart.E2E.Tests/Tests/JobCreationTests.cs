@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using BuildSmart.Infrastructure.Persistence;
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace BuildSmart.E2E.Tests.Tests;
 
