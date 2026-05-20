@@ -602,49 +602,60 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private void EvaluateQuestionVisibility()
 	{
-		bool anyChanged = false;
-		foreach (var q in Questions)
+		bool anyChanged = true;
+		bool overallChanged = false;
+
+		while (anyChanged)
 		{
-			bool newVisibility = true;
-			if (string.IsNullOrEmpty(q.DependsOn))
+			anyChanged = false;
+			foreach (var q in Questions)
 			{
-				newVisibility = true;
-			}
-			else
-			{
-				var parentQuestion = Questions.FirstOrDefault(p => p.Id == q.DependsOn);
-				if (parentQuestion != null)
+				bool newVisibility = true;
+				if (string.IsNullOrEmpty(q.DependsOn))
 				{
-					if (string.IsNullOrEmpty(parentQuestion.Answer))
-					{
-						newVisibility = false;
-					}
-					else if (parentQuestion.IsMultiSelect)
-					{
-						var selectedOptions = parentQuestion.Answer.Split(',').Select(a => a.Trim()).ToList();
-						var targetValues = q.DependsOnValue.Split('|').Select(v => v.Trim()).ToList();
-						newVisibility = selectedOptions.Any(opt => targetValues.Contains(opt));
-					}
-					else
-					{
-						var targetValues = q.DependsOnValue.Split('|').Select(v => v.Trim()).ToList();
-						newVisibility = targetValues.Any(v => parentQuestion.Answer.Contains(v, StringComparison.OrdinalIgnoreCase));
-					}
+					newVisibility = true;
 				}
 				else
 				{
-					newVisibility = false;
+					var parentQuestion = Questions.FirstOrDefault(p => p.Id == q.DependsOn);
+					if (parentQuestion != null)
+					{
+						if (!parentQuestion.IsVisible)
+						{
+							newVisibility = false;
+						}
+						else if (string.IsNullOrEmpty(parentQuestion.Answer))
+						{
+							newVisibility = false;
+						}
+						else if (parentQuestion.IsMultiSelect)
+						{
+							var selectedOptions = parentQuestion.Answer.Split(',').Select(a => a.Trim()).ToList();
+							var targetValues = q.DependsOnValue.Split('|').Select(v => v.Trim()).ToList();
+							newVisibility = selectedOptions.Any(opt => targetValues.Contains(opt));
+						}
+						else
+						{
+							var targetValues = q.DependsOnValue.Split('|').Select(v => v.Trim()).ToList();
+							newVisibility = targetValues.Any(v => parentQuestion.Answer.Contains(v, StringComparison.OrdinalIgnoreCase));
+						}
+					}
+					else
+					{
+						newVisibility = false;
+					}
 				}
-			}
 
-			if (q.IsVisible != newVisibility)
-			{
-				q.IsVisible = newVisibility;
-				anyChanged = true;
+				if (q.IsVisible != newVisibility)
+				{
+					q.IsVisible = newVisibility;
+					anyChanged = true;
+					overallChanged = true;
+				}
 			}
 		}
 
-		if (anyChanged)
+		if (overallChanged)
 		{
 			OnPropertyChanged(nameof(Questions));
 		}
@@ -776,9 +787,40 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		Console.WriteLine($"[JobWizard] Rebuilt steps. Total steps: {_wizardSteps.Count}");
 	}
 
+	private string GetLocalizedValue(JsonNode? node, string lang, string fallbackLang = "bg")
+	{
+		if (node == null) return "";
+		if (node is JsonObject obj)
+		{
+			return obj[lang]?.GetValue<string>() ?? obj[fallbackLang]?.GetValue<string>() ?? "";
+		}
+		return node.GetValue<string>() ?? "";
+	}
+
+	private List<string> GetLocalizedOptions(JsonNode? node, string lang, string fallbackLang = "bg")
+	{
+		var list = new List<string>();
+		if (node == null) return list;
+
+		if (node is JsonObject obj)
+		{
+			var array = obj[lang] as JsonArray ?? obj[fallbackLang] as JsonArray;
+			if (array != null)
+			{
+				list.AddRange(array.Select(o => o?.GetValue<string>() ?? ""));
+			}
+		}
+		else if (node is JsonArray array)
+		{
+			list.AddRange(array.Select(o => o?.GetValue<string>() ?? ""));
+		}
+		return list;
+	}
+
 	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
 	{
 		var list = new List<WizardQuestionViewModel>();
+		string currentLang = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "bg" : "en";
 
 		foreach (var cat in categories)
 		{
@@ -803,14 +845,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 							if (qNode is JsonObject qObj)
 							{
 								var qType = qObj["type"]?.GetValue<string>() ?? "text";
-								var qText = qObj["text"]?.GetValue<string>() ?? "";
+								var qText = GetLocalizedValue(qObj["text"], currentLang);
 								var qId = qObj["id"]?.GetValue<string>() ?? "";
-								var qOptions = new List<string>();
-
-								if (qObj["options"] is JsonArray opts)
-								{
-									qOptions.AddRange(opts.Select(o => o?.GetValue<string>() ?? ""));
-								}
+								
+								var qOptions = GetLocalizedOptions(qObj["options"], currentLang);
 
 								if (!string.IsNullOrEmpty(qId)) _questionTextCache[qId] = qText;
 
@@ -822,7 +860,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 									CategoryName = cat.Category.Name,
 									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
 									Options = qOptions,
-									Answer = qType == "boolean" ? "False" : ""
+									Answer = qType == "boolean" ? "False" : "",
+									DependsOn = qObj["dependsOn"]?.GetValue<string>() ?? "",
+									DependsOnValue = GetLocalizedValue(qObj["dependsOnValue"], currentLang)
 								});
 							}
 						}
@@ -875,7 +915,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private bool ValidateQuestionsStep()
 	{
-		var missingQuestions = Questions.Where(q => q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
+		var missingQuestions = Questions.Where(q => q.IsVisible && q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
 		if (missingQuestions.Any())
 		{
 			foreach (var q in missingQuestions) q.HasError = true;

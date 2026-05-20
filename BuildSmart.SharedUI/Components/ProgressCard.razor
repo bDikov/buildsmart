@@ -231,7 +231,7 @@
         }
     }
 
-    private double CalculateOffset()
+    private string CalculateOffset()
     {
         // Total circumference of circle with radius 51 is ~320.44
         double circumference = 320.44;
@@ -240,6 +240,9 @@
         double progress = Math.Max(0, Math.Min(100, ProgressPercentage));
         
         // Calculate offset (100% = 0 offset, 0% = full circumference offset)
-        return circumference - (progress / 100.0) * circumference;
+        double offset = circumference - (progress / 100.0) * circumference;
+        
+        // Format with InvariantCulture so decimals use '.' instead of ',' (fixes SVG in EU locales)
+        return offset.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }

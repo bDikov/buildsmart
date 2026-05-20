@@ -93,16 +93,17 @@
     "name": "Подови и стенни настилки (Tiling)",
     "templateStructure": {
       "questions": [
-        { "id": "tile_type", "text": "Какъв тип настилки и облицовки ще се полагат?", "type": "multiselect", "required": true, "options": ["Стандартни плочки (баня/тераса)", "Гранитогрес - голям формат (хол/коридор)", "Ламинат или Паркет (спални)", "Облицовка на стени (камък/тухлички)"] },
-        { "id": "tile_sqm_standard", "text": "Ако сте избрали стандартни плочки, каква е площта в кв.м.?", "type": "number", "required": false },
-        { "id": "tile_sqm_large", "text": "Ако сте избрали голям формат гранитогрес, каква е площта в кв.м.?", "type": "number", "required": false },
-        { "id": "tile_sqm_laminate", "text": "Ако сте избрали ламинат/паркет, каква е площта в кв.м.?", "type": "number", "required": false },
-        { "id": "tile_sqm_stone", "text": "Ако сте избрали облицовка на стени (камък/тухлички), каква е площта в кв.м.?", "type": "number", "required": false },
-        { "id": "tile_size_pref", "text": "Имате ли предпочитания за размера на плочките (напр. 60х60, 120х60)?", "type": "choice", "required": false, "options": ["Малки / Стандартни (до 60х60)", "Големи (напр. 120х60)", "Изключително големи (над 120см)", "Не съм решил"] },
-        { "id": "tile_leveling_sqm", "text": "Колко кв.м. саморазливна замазка е необходима?", "type": "number", "required": true },
-        { "id": "tile_pattern", "text": "Ще има ли сложно редене на плочките?", "type": "choice", "required": true, "options": ["Стандартно (право)", "Сложно (Рибена кост, Диагонал)"] },
-        { "id": "tile_waterproofing_sqm", "text": "Колко кв.м. хидроизолация (за мокри помещения) е необходима?", "type": "number", "required": true },
-        { "id": "tile_grout", "text": "Какъв тип фугираща смес ще се използва?", "type": "choice", "required": true, "options": ["Стандартна циментова", "Епоксидна фуга"] }
+        { "id": "tile_type", "text": "Моля, посочете видовете настилки и облицовки, които ще бъдат полагани:", "type": "multiselect", "required": true, "options": ["Стандартни керамични плочки", "Голямоформатен гранитогрес", "Ламиниран или естествен паркет", "Декоративни стенни облицовки"] },
+        { "id": "tile_prep_standard", "text": "Какви подготвителни дейности са необходими за стандартните плочки?", "type": "multiselect", "required": true, "options": ["Полагане на саморазливна замазка", "Полагане на хидроизолация", "Не е необходима подготовка"], "dependsOn": "tile_type", "dependsOnValue": "Стандартни керамични плочки" },
+        { "id": "tile_leveling_sqm", "text": "Моля, посочете площта за полагане на саморазливна замазка (кв.м.):", "type": "number", "required": true, "dependsOn": "tile_prep_standard", "dependsOnValue": "Полагане на саморазливна замазка" },
+        { "id": "tile_waterproofing_sqm", "text": "Моля, посочете площта за полагане на хидроизолация (кв.м.):", "type": "number", "required": true, "dependsOn": "tile_prep_standard", "dependsOnValue": "Полагане на хидроизолация" },
+        { "id": "tile_sqm_standard", "text": "Моля, посочете общата площ за полагане на стандартни плочки (кв.м.):", "type": "number", "required": true, "dependsOn": "tile_type", "dependsOnValue": "Стандартни керамични плочки" },
+        { "id": "tile_sqm_large", "text": "Моля, посочете общата площ за полагане на голямоформатен гранитогрес (кв.м.):", "type": "number", "required": true, "dependsOn": "tile_type", "dependsOnValue": "Голямоформатен гранитогрес" },
+        { "id": "tile_large_format_size", "text": "Какъв е точният размер на избрания голямоформатен гранитогрес?", "type": "choice", "required": true, "options": ["60x120 см", "80x160 см", "120x120 см", "120x240 см или по-голям"], "dependsOn": "tile_type", "dependsOnValue": "Голямоформатен гранитогрес" },
+        { "id": "tile_sqm_laminate", "text": "Моля, посочете общата площ за полагане на ламиниран/естествен паркет (кв.м.):", "type": "number", "required": true, "dependsOn": "tile_type", "dependsOnValue": "Ламиниран или естествен паркет" },
+        { "id": "tile_sqm_stone", "text": "Моля, посочете общата площ за декоративни стенни облицовки (кв.м.):", "type": "number", "required": true, "dependsOn": "tile_type", "dependsOnValue": "Декоративни стенни облицовки" },
+        { "id": "tile_pattern", "text": "Ще бъде ли необходимо нестандартно или сложно редене на плочките?", "type": "choice", "required": true, "options": ["Стандартно (право)", "Сложно (Рибена кост, Диагонал, Мозайка)"] },
+        { "id": "tile_grout", "text": "Моля, изберете предпочитания вид фугираща смес:", "type": "choice", "required": true, "options": ["Стандартна циментова фуга", "Епоксидна фуга (повишена здравина и водоустойчивост)"] }
       ]
     }
   },

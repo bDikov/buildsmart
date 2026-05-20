@@ -215,5 +215,79 @@ namespace BuildSmart.Api.Tests
 				}
 			}
 		}
+
+		[Fact(Skip = "Run manually to test real Gemini AI API. Requires 'Gemini:ApiKey' configured in user secrets.")]
+		public async Task TestLanguageEnforcement_PassesCorrectCodeToAI()
+		{
+			using var scope = _factory.Services.CreateScope();
+			var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+			var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+			var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+			var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+			var aiService = new GeminiAiService(config, loggerFactory.CreateLogger<GeminiAiService>());
+
+			// Use Bulgarian as preferred language
+			var homeowner = new User
+			{
+				Id = Guid.NewGuid(),
+				Email = $"test-lang-{Guid.NewGuid()}@bs.com",
+				FirstName = "Test",
+				LastName = "Homeowner",
+				HashedPassword = "hash",
+				Role = UserRoleTypes.Homeowner,
+				PreferredLanguage = "bg"
+			};
+			var homeownerProfile = new HomeownerProfile { Id = Guid.NewGuid(), UserId = homeowner.Id };
+			homeowner.HomeownerProfile = homeownerProfile;
+			await dbContext.Users.AddAsync(homeowner);
+
+			var category = new ServiceCategory 
+			{ 
+			    Id = Guid.NewGuid(), 
+			    Name = $"Simple Paint {Guid.NewGuid()}",
+			    TemplateStructure = "{\"questions\": [{\"id\": \"q1\", \"text\": \"What color?\"}]}"
+			};
+			await dbContext.ServiceCategories.AddAsync(category);
+
+			var skus = new List<ServiceSku>
+			{
+			    new ServiceSku { Id = Guid.NewGuid(), ServiceCategoryId = category.Id, SkuCode = "PAINT", Name = "Painting", BasePrice = 10m, UnitType = "Per Sqm" }
+			};
+			await dbContext.ServiceSkus.AddRangeAsync(skus);
+
+			var project = new Project { Id = Guid.NewGuid(), Title = "Paint Room", Description = "Paint it.", HomeownerId = homeowner.Id, LanguageCode = "bg" };
+			await dbContext.Projects.AddAsync(project);
+
+			var jobDetailsJson = "{\"q1\": \"Blue\"}";
+
+			var jobPost = new JobPost
+			{
+			    Id = Guid.NewGuid(),
+			    ProjectId = project.Id,
+			    ServiceCategoryId = category.Id,
+			    Title = "Painting",
+			    Description = "Blue Paint",
+			    Location = "Living Room",
+			    JobDetails = jobDetailsJson,
+			    HomeownerProfileId = homeownerProfile.Id
+			};
+			await dbContext.JobPosts.AddAsync(jobPost);
+			await dbContext.SaveChangesAsync();
+
+			string humanReadableContext = $"Q: What color?\nA: Blue.";
+
+			jobPost.SubmitForScopeGeneration();
+			
+			// ACT: Call AI Service with LanguageCode = bg
+			var aiResponse = await aiService.GenerateJobScopeAsync(jobPost, humanReadableContext, skus, "bg");
+			
+			// ASSERT: Check that AI correctly returned Cyrillic/Bulgarian text
+			Assert.NotNull(aiResponse);
+			Assert.NotEmpty(aiResponse.ScopeMarkdown);
+			
+			// A naive but effective check to ensure Bulgarian was generated instead of English
+			bool containsCyrillic = aiResponse.ScopeMarkdown.Any(c => c >= '\u0400' && c <= '\u04FF');
+			Assert.True(containsCyrillic, "AI Response should contain Cyrillic characters because language code 'bg' was enforced.");
+		}
 	}
 }

@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+using System.Threading.Tasks;
 
 namespace BuildSmart.E2E.Tests.Pages;
 
@@ -53,5 +54,24 @@ public class JobWizardPage : BasePage
         await CategoryCards.First.WaitForAsync();
         
         await _page.Locator($".category-card:has-text('{categoryName}')").ClickAsync();
+    }
+
+    // --- Question Step Helpers ---
+    public async Task ExpectQuestionVisibleAsync(string partialQuestionText)
+    {
+        var locator = _page.Locator($".question-container:has-text('{partialQuestionText}')");
+        await Microsoft.Playwright.Assertions.Expect(locator).ToBeVisibleAsync();
+    }
+
+    public async Task ExpectQuestionHiddenAsync(string partialQuestionText)
+    {
+        var locator = _page.Locator($".question-container:has-text('{partialQuestionText}')");
+        await Microsoft.Playwright.Assertions.Expect(locator).ToBeHiddenAsync();
+    }
+
+    public async Task SelectChoiceOptionAsync(string partialQuestionText, string optionText)
+    {
+        var questionCard = _page.Locator($".question-container:has-text('{partialQuestionText}')");
+        await questionCard.Locator($"label:has-text('{optionText}')").ClickAsync();
     }
 }

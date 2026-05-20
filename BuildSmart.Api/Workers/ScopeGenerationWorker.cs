@@ -68,7 +68,7 @@ public class ScopeGenerationWorker
 			var allowedSkus = (await unitOfWork.ServiceSkus.GetByCategoryAsync(jobPost.ServiceCategoryId)).ToList();
 
 			// 2.5 Get Homeowner's Preferred Language
-			string languageCode = "en";
+			string languageCode = "bg";
 			if (jobPost.Project != null)
 			{
 				var homeowner = await unitOfWork.Users.GetByIdAsync(jobPost.Project.HomeownerId);
@@ -286,7 +286,7 @@ public class ScopeGenerationWorker
 			}
 
 			// 2.5 Get Homeowner's Preferred Language
-			string languageCode = "en";
+			string languageCode = "bg";
 			if (jobPost.Project != null)
 			{
 				var homeowner = await unitOfWork.Users.GetByIdAsync(jobPost.Project.HomeownerId);

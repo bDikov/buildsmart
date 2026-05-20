@@ -106,7 +106,7 @@ public class GeminiAiService : IAiService
 		return responseText.Trim();
 	}
 
-	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "en", CancellationToken cancellationToken = default)
+	public async Task<AiScopeBreakdownResponse> GenerateJobScopeAsync(JobPost jobPost, string humanReadableContext, List<ServiceSku> allowedSkus, string languageCode = "bg", CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -175,7 +175,7 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "en", CancellationToken cancellationToken = default)
+	public async Task<string> GenerateProjectSummaryAsync(Project project, string languageCode = "bg", CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -207,7 +207,7 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en", CancellationToken cancellationToken = default)
+	public async Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "bg", CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -231,7 +231,7 @@ public class GeminiAiService : IAiService
 		}
 	}
 
-	public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "en", CancellationToken cancellationToken = default)
+	public async Task<AiTaskPricingResponse> CalculateTaskPricesAsync(List<JobTask> tasks, List<ServiceSku> allowedSkus, string humanReadableContext, string languageCode = "bg", CancellationToken cancellationToken = default)
 	{
 		try
 		{

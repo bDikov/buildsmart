@@ -16,7 +16,7 @@ public class BuildSmartWebAppFactory : WebApplicationFactory<Program>
     {
         // Use environment variable provided by docker-compose, fallback to local test DB for VS runs
         _connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") 
-            ?? "Host=localhost;Port=5432;Database=buildsmart_test_db;Username=test_user;Password=test_pass";
+            ?? "Host=localhost;Port=5432;Database=buildsmart_test_db;Username=postgres;Password=postgres";
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

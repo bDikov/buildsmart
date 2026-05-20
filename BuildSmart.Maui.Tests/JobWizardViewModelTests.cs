@@ -175,6 +175,79 @@ public class JobWizardViewModelTests
         _viewModel.HasProjects.Should().BeTrue();
     }
 
+    [Fact]
+    public void EvaluateQuestionVisibility_DeepNesting_UpdatesVisibilityCorrectly()
+    {
+        // Arrange
+        var q1 = new WizardQuestionViewModel { Id = "q1", Type = "multiselect", Answer = "", IsVisible = true };
+        var q2 = new WizardQuestionViewModel { Id = "q2", Type = "multiselect", DependsOn = "q1", DependsOnValue = "OptionA", Answer = "", IsVisible = false };
+        var q3 = new WizardQuestionViewModel { Id = "q3", Type = "number", DependsOn = "q2", DependsOnValue = "OptionB", Answer = "", IsVisible = false };
+        
+        _viewModel.Questions.Add(q1);
+        _viewModel.Questions.Add(q2);
+        _viewModel.Questions.Add(q3);
+
+        // Attach property changed manually to mimic the internal LoadStepData behavior
+        var method = typeof(JobWizardViewModel).GetMethod("EvaluateQuestionVisibility", BindingFlags.NonPublic | BindingFlags.Instance);
+        
+        // Act 1: Answer Q1 to show Q2
+        q1.Answer = "OptionA";
+        method.Invoke(_viewModel, null);
+        
+        // Assert 1
+        q2.IsVisible.Should().BeTrue();
+        q3.IsVisible.Should().BeFalse();
+
+        // Act 2: Answer Q2 to show Q3
+        q2.Answer = "OptionB";
+        method.Invoke(_viewModel, null);
+        
+        // Assert 2
+        q3.IsVisible.Should().BeTrue();
+
+        // Act 3: Remove answer from Q1. Both Q2 and Q3 should hide.
+        q1.Answer = "";
+        method.Invoke(_viewModel, null);
+        
+        // Assert 3
+        q2.IsVisible.Should().BeFalse();
+        q3.IsVisible.Should().BeFalse(); // Deep nesting resolves correctly
+    }
+
+    [Fact]
+    public void GetLocalizedValue_ReturnsCorrectLanguageString()
+    {
+        // Arrange
+        var method = typeof(JobWizardViewModel).GetMethod("GetLocalizedValue", BindingFlags.NonPublic | BindingFlags.Instance);
+        
+        var jsonString = "{ \"bg\": \"Здравей\", \"en\": \"Hello\" }";
+        var node = System.Text.Json.Nodes.JsonNode.Parse(jsonString);
+
+        // Act & Assert
+        var resultBg = method.Invoke(_viewModel, new object[] { node, "bg", "en" });
+        resultBg.Should().Be("Здравей");
+
+        var resultEn = method.Invoke(_viewModel, new object[] { node, "en", "bg" });
+        resultEn.Should().Be("Hello");
+
+        var resultFallback = method.Invoke(_viewModel, new object[] { node, "fr", "en" });
+        resultFallback.Should().Be("Hello");
+    }
+
+    [Fact]
+    public void GetLocalizedValue_WithPlainString_ReturnsString()
+    {
+        // Arrange
+        var method = typeof(JobWizardViewModel).GetMethod("GetLocalizedValue", BindingFlags.NonPublic | BindingFlags.Instance);
+        
+        var jsonString = "\"Plain String\"";
+        var node = System.Text.Json.Nodes.JsonNode.Parse(jsonString);
+
+        // Act & Assert
+        var result = method.Invoke(_viewModel, new object[] { node, "bg", "en" });
+        result.Should().Be("Plain String");
+    }
+
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)
     {
         var field = typeof(JobWizardViewModel).GetField("_wizardSteps", BindingFlags.NonPublic | BindingFlags.Instance);

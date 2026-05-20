@@ -13,7 +13,10 @@ public abstract class TestBase : PageTest
     protected BuildSmartWebAppFactory Factory { get; private set; } = null!;
     
     // Read the BaseUrl from Docker Compose, fallback to local test server
-    protected string BaseUrl => Environment.GetEnvironmentVariable("BaseUrl") ?? "http://localhost:59125";
+    protected string BaseUrl => Environment.GetEnvironmentVariable("BaseUrl") 
+        ?? Environment.GetEnvironmentVariable("BASEURL") 
+        ?? Environment.GetEnvironmentVariable("BASE_URL") 
+        ?? "http://web:8080";
 
     [OneTimeSetUp]
     public async Task GlobalSetup()
