@@ -50,14 +50,14 @@ public class JobWizardPage : BasePage
 
     public async Task SelectCategoryAsync(string categoryName)
     {
-        // Give category cards a moment to render
-        await CategoryCards.First.WaitForAsync();
+        // Give category list a moment to render
+        await _page.Locator(".category-list").WaitForAsync();
         
-        var card = _page.Locator($".category-card:has-text('{categoryName}')");
-        await card.ClickAsync();
+        var label = _page.Locator($".category-item:has-text('{categoryName}')");
+        await label.ClickAsync();
 
-        // Wait for the Blazor UI to update the state and apply the 'selected' class
-        await Microsoft.Playwright.Assertions.Expect(card).ToHaveClassAsync(new System.Text.RegularExpressions.Regex(".*selected.*"));
+        // Wait for the checkbox to actually be checked
+        await Microsoft.Playwright.Assertions.Expect(label.Locator("input[type='checkbox']")).ToBeCheckedAsync();
     }
 
     // --- Question Step Helpers ---
