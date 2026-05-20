@@ -20,6 +20,9 @@ public class JobCreationTests : TestBase
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
+        // Clear seeded global categories to avoid them injecting a General Questions step that blocks our tests
+        await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        
         var uniqueUserGuid = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
         { 
@@ -88,6 +91,9 @@ public class JobCreationTests : TestBase
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
+        // Clear seeded global categories to avoid them injecting a General Questions step that blocks our tests
+        await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        
         var uniqueSubSeqId = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
         { 
@@ -107,7 +113,7 @@ public class JobCreationTests : TestBase
         {
             Id = Guid.NewGuid(),
             Name = categoryName,
-            IsGlobal = false,
+            IsGlobal = false, // MUST be false to appear on category selection page
             Status = CategoryStatus.Active,
             TemplateStructure = @"{
                 ""questions"": [
@@ -190,6 +196,9 @@ public class JobCreationTests : TestBase
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
+        // Clear seeded global categories to avoid them injecting a General Questions step that blocks our tests
+        await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        
         var uniqueLangId = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
         { 
@@ -203,11 +212,12 @@ public class JobCreationTests : TestBase
             HomeownerProfile = new HomeownerProfile()
         };
         
-        var globalCategory = new ServiceCategory
+        var categoryName = $"Localized Category-{uniqueLangId}";
+        var localizedCategory = new ServiceCategory
         {
             Id = Guid.NewGuid(),
-            Name = $"Global Questions-{uniqueLangId}",
-            IsGlobal = true, // Force it to appear for every job
+            Name = categoryName,
+            IsGlobal = false, // Isolated to this test
             Status = CategoryStatus.Active,
             TemplateStructure = @"{
               ""questions"": [
@@ -215,20 +225,9 @@ public class JobCreationTests : TestBase
               ]
             }"
         };
-
-        var dummyCategoryName = $"Dummy Category-{uniqueLangId}";
-        var dummyCategory = new ServiceCategory
-        {
-            Id = Guid.NewGuid(),
-            Name = dummyCategoryName,
-            IsGlobal = false,
-            Status = CategoryStatus.Active,
-            TemplateStructure = "{}"
-        };
         
         dbContext.Users.Add(testUser);
-        dbContext.ServiceCategories.Add(globalCategory);
-        dbContext.ServiceCategories.Add(dummyCategory);
+        dbContext.ServiceCategories.Add(localizedCategory);
         await dbContext.SaveChangesAsync();
 
         // 1. Arrange - Inject the Language Header and Cookie
@@ -267,10 +266,10 @@ public class JobCreationTests : TestBase
         await wizardPage.ClickNextAsync();
 
         // 4. Select Category
-        await wizardPage.SelectCategoryAsync(dummyCategoryName);
+        await wizardPage.SelectCategoryAsync(categoryName);
         await wizardPage.ClickNextAsync();
 
-        // 5. Assert: We should see the ENGLISH text of the global question
+        // 5. Assert: We should see the ENGLISH text of the question
         await wizardPage.ExpectQuestionVisibleAsync("What is the property type?");
     }
 }
