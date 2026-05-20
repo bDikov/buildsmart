@@ -200,9 +200,20 @@ public class JobCreationTests : TestBase
               ]
             }"
         };
+
+        var dummyCategoryName = $"Dummy Category-{uniqueLangId}";
+        var dummyCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = dummyCategoryName,
+            IsGlobal = false,
+            Status = CategoryStatus.Active,
+            TemplateStructure = "{}"
+        };
         
         dbContext.Users.Add(testUser);
         dbContext.ServiceCategories.Add(globalCategory);
+        dbContext.ServiceCategories.Add(dummyCategory);
         await dbContext.SaveChangesAsync();
 
         // 1. Navigate & Login
@@ -221,12 +232,8 @@ public class JobCreationTests : TestBase
         await wizardPage.FillBasicInfoAsync("Lang Test", "City", "Lang UI Test");
         await wizardPage.ClickNextAsync();
 
-        // 4. Select Any Category (we will see Global questions next)
-        // Just click next if no standard categories exist in this test scope
-        if (await Page.Locator(".category-card").CountAsync() > 0)
-        {
-            await Page.Locator(".category-card").First.ClickAsync();
-        }
+        // 4. Select Category
+        await wizardPage.SelectCategoryAsync(dummyCategoryName);
         await wizardPage.ClickNextAsync();
 
         // 5. Assert: We should see the ENGLISH text of the global question

@@ -53,7 +53,11 @@ public class JobWizardPage : BasePage
         // Give category cards a moment to render
         await CategoryCards.First.WaitForAsync();
         
-        await _page.Locator($".category-card:has-text('{categoryName}')").ClickAsync();
+        var card = _page.Locator($".category-card:has-text('{categoryName}')");
+        await card.ClickAsync();
+
+        // Wait for the Blazor UI to update the state and apply the 'selected' class
+        await Microsoft.Playwright.Assertions.Expect(card).ToHaveClassAsync(new System.Text.RegularExpressions.Regex(".*selected.*"));
     }
 
     // --- Question Step Helpers ---
