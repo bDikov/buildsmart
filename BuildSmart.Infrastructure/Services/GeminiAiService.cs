@@ -73,7 +73,7 @@ public class GeminiAiService : IAiService
 		var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
 		
 		int maxRetries = 5;
-		int delayMs = 2000;
+		int delayMs = 30000;
 
 		for (int i = 0; i < maxRetries; i++)
 		{
@@ -95,7 +95,6 @@ public class GeminiAiService : IAiService
 				
 				_logger.LogWarning($"Gemini API returned {response.StatusCode}. Retrying in {delayMs}ms...");
 				await Task.Delay(delayMs, cancellationToken);
-				delayMs *= 2; // Exponential backoff
 				continue;
 			}
 
