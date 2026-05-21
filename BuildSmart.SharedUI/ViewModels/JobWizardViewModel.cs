@@ -671,7 +671,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 
 		_wizardSteps.Clear();
-		Console.WriteLine($"[JobWizard] Generating Dynamic Steps. AllCategories Count: {_allCategories.Count}");
+		System.Diagnostics.Debug.WriteLine($"[JobWizard] Generating Dynamic Steps. AllCategories Count: {_allCategories.Count}");
 
 		if (_targetCategoryId != null)
 		{
@@ -745,14 +745,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
 		var selectedCategories = _allCategories.Where(c => !c.Category.IsGlobal && c.IsSelected).ToList();
 
-		Console.WriteLine($"[JobWizard] Global Categories Found: {globalCategories.Count}");
-		Console.WriteLine($"[JobWizard] Selected Categories Found: {selectedCategories.Count}");
+		System.Diagnostics.Debug.WriteLine($"[JobWizard] Global Categories Found: {globalCategories.Count}");
+		System.Diagnostics.Debug.WriteLine($"[JobWizard] Selected Categories Found: {selectedCategories.Count}");
 
 		// 1. Global Questions Step
 		var globalQuestions = ExtractQuestions(globalCategories);
 		if (globalQuestions.Any())
 		{
-			Console.WriteLine($"[JobWizard] Adding General Questions Step with {globalQuestions.Count} questions.");
+			System.Diagnostics.Debug.WriteLine($"[JobWizard] Adding General Questions Step with {globalQuestions.Count} questions.");
 			_wizardSteps.Add(new WizardStep
 			{
 				Type = WizardStepType.Questions,
@@ -762,7 +762,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 		else
 		{
-			Console.WriteLine("[JobWizard] NO Global questions extracted.");
+			System.Diagnostics.Debug.WriteLine("[JobWizard] NO Global questions extracted.");
 		}
 
 		// 2. Specific Category Steps
@@ -786,7 +786,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
 		}
 		
-		Console.WriteLine($"[JobWizard] Rebuilt steps. Total steps: {_wizardSteps.Count}");
+		System.Diagnostics.Debug.WriteLine($"[JobWizard] Rebuilt steps. Total steps: {_wizardSteps.Count}");
 	}
 
 	private string GetLocalizedValue(JsonNode? node, string lang, string fallbackLang = "bg")
@@ -826,7 +826,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 		foreach (var cat in categories)
 		{
-			Console.WriteLine($"[JobWizard] Processing Category for questions: {cat.Category.Name}");
+			System.Diagnostics.Debug.WriteLine($"[JobWizard] Processing Category for questions: {cat.Category.Name}");
 
 			if (!string.IsNullOrWhiteSpace(cat.Category.TemplateStructure))
 			{
@@ -835,13 +835,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					var template = JsonNode.Parse(cat.Category.TemplateStructure);
 					if (template == null)
 					{
-						Console.WriteLine($"[JobWizard] Template for {cat.Category.Name} parsed to NULL");
+						System.Diagnostics.Debug.WriteLine($"[JobWizard] Template for {cat.Category.Name} parsed to NULL");
 						continue;
 					}
 
 					if (template["questions"] is JsonArray qArray)
 					{
-						Console.WriteLine($"[JobWizard] Found {qArray.Count} questions in {cat.Category.Name}");
+						System.Diagnostics.Debug.WriteLine($"[JobWizard] Found {qArray.Count} questions in {cat.Category.Name}");
 						foreach (var qNode in qArray)
 						{
 							if (qNode is JsonObject qObj)
@@ -871,21 +871,21 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					}
 					else
 					{
-						Console.WriteLine($"[JobWizard] 'questions' array NOT found in template for {cat.Category.Name}");
+						System.Diagnostics.Debug.WriteLine($"[JobWizard] 'questions' array NOT found in template for {cat.Category.Name}");
 					}
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine($"[JobWizard] Error parsing template for {cat.Category.Name}: {ex.Message}");
+					System.Diagnostics.Debug.WriteLine($"[JobWizard] Error parsing template for {cat.Category.Name}: {ex.Message}");
 				}
 			}
 			else
 			{
-				Console.WriteLine($"[JobWizard] TemplateStructure for {cat.Category.Name} is EMPTY or NULL.");
+				System.Diagnostics.Debug.WriteLine($"[JobWizard] TemplateStructure for {cat.Category.Name} is EMPTY or NULL.");
 			}
 		}
 
-		Console.WriteLine($"[JobWizard] Total extracted questions: {list.Count}");
+		System.Diagnostics.Debug.WriteLine($"[JobWizard] Total extracted questions: {list.Count}");
 		return list;
 	}
 
@@ -1023,8 +1023,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			// Jobs are now individually submitted to the AI when the user clicks 'Next' on their respective question pages.
 			// No need to batch submit them here again.
 
-			await AppServiceLocator.Alerts.DisplayAlert("Success", "Project submitted! AI is generating your scopes.", "OK");
-			await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+			await AppServiceLocator.Navigation.NavigateToAsync($"/ai-processing?ProjectId={_currentProjectId}");
 		}
 		catch (Exception ex)
 		{

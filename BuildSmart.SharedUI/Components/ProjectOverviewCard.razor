@@ -16,13 +16,11 @@
             </button>
         }
     </div>
-    <p class="project-description mt-2">
-        @(string.IsNullOrEmpty(Project?.GeneralSummary) ? Project?.Description : Project?.GeneralSummary)
-    </p>
+    <div class="project-description mt-3">@(string.IsNullOrEmpty(Project?.GeneralSummary) ? Project?.Description : Project?.GeneralSummary)</div>
     
     @if (Project?.Status == ProjectStatus.Draft)
     {
-        <div class="mt-3">
+        <div class="mt-4">
             <button class="bs-btn-primary w-100" @onclick="async () => await OnContinueDraft.InvokeAsync()">
                 @Loc["ProjectDetail_ContinueDraft"]
             </button>

@@ -2,8 +2,11 @@ export function initializeSwipe(element, dotNetHelper) {
     if (!element) return;
 
     let touchStartX = null;
+    let touchStartY = null;
     let touchStartTime = null;
     let isSwiping = false;
+    let swipeLocked = false;
+    let scrollLocked = false;
     let currentX = 0;
     let currentRot = 0;
     
@@ -11,10 +14,13 @@ export function initializeSwipe(element, dotNetHelper) {
     if (element.__swipeInitialized) return;
     element.__swipeInitialized = true;
 
-    const handleStart = (clientX) => {
+    const handleStart = (clientX, clientY) => {
         touchStartX = clientX;
+        touchStartY = clientY;
         touchStartTime = Date.now();
         isSwiping = true;
+        swipeLocked = false;
+        scrollLocked = false;
         // Instantly remove transitions so it sticks to the finger
         element.style.transition = 'none'; 
         
@@ -22,11 +28,30 @@ export function initializeSwipe(element, dotNetHelper) {
         dotNetHelper.invokeMethodAsync('NotifyInteraction');
     };
 
-    const handleMove = (clientX) => {
-        if (!isSwiping || touchStartX === null) return;
+    const handleMove = (clientX, clientY) => {
+        if (!isSwiping || touchStartX === null || touchStartY === null) return;
         
-        const rawDelta = clientX - touchStartX;
-        currentX = rawDelta * 0.85; // Weight/resistance
+        const deltaX = clientX - touchStartX;
+        const deltaY = clientY - touchStartY;
+        
+        if (!swipeLocked && !scrollLocked) {
+            // Determine direction
+            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 5) {
+                // Vertical scroll detected
+                scrollLocked = true;
+                isSwiping = false;
+                element.style.transform = '';
+                return;
+            } else if (Math.abs(deltaX) > 5) {
+                swipeLocked = true;
+            } else {
+                return; // Haven't moved enough to determine intent
+            }
+        }
+
+        if (scrollLocked) return;
+
+        currentX = deltaX * 0.85; // Weight/resistance
         currentRot = Math.max(-10, Math.min(10, currentX * 0.03)); // Cap rotation
         
         element.style.transform = `translateX(${currentX}px) rotate(${currentRot}deg)`;
@@ -34,12 +59,23 @@ export function initializeSwipe(element, dotNetHelper) {
     };
 
     const handleEnd = (clientX) => {
-        if (!isSwiping || touchStartX === null) return;
+        if (!isSwiping || touchStartX === null) {
+            touchStartX = null;
+            touchStartY = null;
+            touchStartTime = null;
+            swipeLocked = false;
+            scrollLocked = false;
+            return;
+        }
         isSwiping = false;
 
         let deltaX = 0;
         if (clientX !== null) {
             deltaX = clientX - touchStartX;
+        }
+
+        if (!swipeLocked && Math.abs(deltaX) < 10) {
+            deltaX = 0;
         }
 
         let velocity = 0;
@@ -51,7 +87,10 @@ export function initializeSwipe(element, dotNetHelper) {
         }
 
         touchStartX = null;
+        touchStartY = null;
         touchStartTime = null;
+        swipeLocked = false;
+        scrollLocked = false;
 
         // Blazor will handle the animation/snap-back from here based on the result.
         // We pass currentX so Blazor knows exactly where the card is right now 
@@ -61,12 +100,12 @@ export function initializeSwipe(element, dotNetHelper) {
 
     // Touch events
     element.addEventListener('touchstart', (e) => {
-        if (e.touches.length > 0) handleStart(e.touches[0].clientX);
+        if (e.touches.length > 0) handleStart(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
     element.addEventListener('touchmove', (e) => {
         if (isSwiping && e.touches.length > 0) {
-            handleMove(e.touches[0].clientX);
+            handleMove(e.touches[0].clientX, e.touches[0].clientY);
             // Cannot preventDefault if passive: true. But we want vertical scroll to work natively anyway.
         }
     }, { passive: true });
@@ -80,11 +119,11 @@ export function initializeSwipe(element, dotNetHelper) {
     });
 
     // Mouse events
-    element.addEventListener('mousedown', (e) => handleStart(e.clientX));
+    element.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
     
     // Bind move/up to window so fast drags don't lose focus
     window.addEventListener('mousemove', (e) => {
-        if(isSwiping) handleMove(e.clientX);
+        if(isSwiping) handleMove(e.clientX, e.clientY);
     }); 
     window.addEventListener('mouseup', (e) => {
         if(isSwiping) handleEnd(e.clientX);

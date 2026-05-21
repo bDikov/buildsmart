@@ -95,6 +95,10 @@ public partial class MyProjectsViewModel : ObservableObject
 		{
 			await AppServiceLocator.Navigation.NavigateToAsync($"/job-wizard?ProjectId={project.Id}");
 		}
+		else if (!project.HasOfferPdf)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Processing", "Your project is currently being processed by the AI. You will be notified when the offer is ready.", "OK");
+		}
 		else
 		{
 			await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?ProjectId={project.Id}");

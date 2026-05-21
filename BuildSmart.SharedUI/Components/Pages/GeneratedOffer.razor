@@ -17,7 +17,7 @@
         }
         else
         {
-            <div class="container py-4">
+            <div class="container generated-offer-container py-4">
                 <div class="mb-4">
                     <h2 class="h3 fw-bold mb-2" style="color: var(--text-primary);">@Loc["GeneratedOffer_Title"]</h2>
                     <p class="text-muted">@Loc["GeneratedOffer_Subtitle"]</p>
@@ -61,15 +61,15 @@
                                     <div class="d-flex flex-column gap-3">
                                         @foreach (var sku in task.SkuItems)
                                         {
-                                            <div class="d-flex justify-content-between align-items-center bg-light p-3" style="border-radius: 8px;">
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <span class="fw-bold" style="color: var(--text-primary);">@(sku.Quantity)x</span>
-                                                    <div>
-                                                        <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem;">@sku.ServiceSku.Name</div>
-                                                        <div class="text-muted" style="font-size: 0.8rem;">@sku.ServiceSku.SkuCode</div>
+                                            <div class="d-flex justify-content-between align-items-center bg-light p-3" style="border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                                                <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
+                                                    <span class="fw-bold" style="color: var(--text-primary); flex-shrink: 0;">@(sku.Quantity)x</span>
+                                                    <div style="min-width: 0; flex: 1;">
+                                                        <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.Name</div>
+                                                        <div class="text-muted" style="font-size: 0.8rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.SkuCode</div>
                                                     </div>
                                                 </div>
-                                                <span class="fw-bold" style="color: var(--color-success);">
+                                                <span class="fw-bold" style="color: var(--color-success); flex-shrink: 0;">
                                                     $@sku.EstimatedPrice.ToString("F2")
                                                 </span>
                                             </div>
@@ -161,3 +161,47 @@
         }
     }
 }
+
+<style>
+    /* 
+       INLINE STYLES TO BYPASS BLAZOR SCOPED CSS BUNDLE CACHING ON WEB 
+       This guarantees the container has padding from the edges of the screen
+       and that all text uses enterprise typography standards.
+    */
+    .generated-offer-container {
+        max-width: 800px !important;
+        margin: 0 auto !important;
+        padding: 24px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    @@media (max-width: 768px) {
+        .generated-offer-container {
+            padding: 16px !important;
+        }
+    }
+
+    /* Force all inner cards to respect padding */
+    .generated-offer-container .bs-card {
+        padding: 24px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Force all text elements to wrap safely */
+    .generated-offer-container p, 
+    .generated-offer-container h2,
+    .generated-offer-container h3,
+    .generated-offer-container h4,
+    .generated-offer-container h5,
+    .generated-offer-container h6,
+    .generated-offer-container span,
+    .generated-offer-container div {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+    }
+</style>

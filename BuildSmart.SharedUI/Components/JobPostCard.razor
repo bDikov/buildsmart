@@ -59,13 +59,6 @@
 
     <!-- Action Buttons -->
     <div class="d-flex flex-column gap-2 mt-3">
-        @if (JobVm.JobPost.Status == JobPostStatus.Open)
-        {
-            <button class="bs-btn-dark w-100" @onclick="async () => await OnViewTaskBreakdown.InvokeAsync()">
-                @Loc["ProjectDetail_ViewTaskBreakdown"]
-            </button>
-        }
-
         @if (JobVm.JobPost.Bids != null && JobVm.JobPost.Bids.Any())
         {
             <button class="bs-btn-primary w-100" @onclick="async () => await OnViewAuctionHub.InvokeAsync()">
@@ -81,8 +74,7 @@
         
         @if (JobVm.JobPost.Status == JobPostStatus.Rejected || JobVm.JobPost.Status == JobPostStatus.WaitingForUserReview)
         {
-            <button class="bs-btn-dark w-100 mb-2" @onclick="async () => await OnEditAnswers.InvokeAsync()">@Loc["ProjectDetail_EditAnswers"]</button>
-            <button class="bs-btn-primary w-100" @onclick="async () => await OnReviewScope.InvokeAsync()">@Loc["ProjectDetail_ReviewScope"]</button>
+            <button class="bs-btn-primary w-100" @onclick="async () => await OnViewAIOffer.InvokeAsync()">View AI Offer</button>
         }
     </div>
 </div>
@@ -101,14 +93,8 @@
     public EventCallback OnSeeTasks { get; set; }
 
     [Parameter]
-    public EventCallback OnViewTaskBreakdown { get; set; }
-
-    [Parameter]
     public EventCallback OnViewAuctionHub { get; set; }
 
     [Parameter]
-    public EventCallback OnEditAnswers { get; set; }
-
-    [Parameter]
-    public EventCallback OnReviewScope { get; set; }
+    public EventCallback OnViewAIOffer { get; set; }
 }

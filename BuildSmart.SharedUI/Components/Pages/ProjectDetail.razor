@@ -58,10 +58,8 @@
                                 IsExpanded="_expandedJobs.Contains(jobVm.JobPost.Id)" 
                                 OnToggleExpansion="() => ToggleJobExpansion(jobVm.JobPost.Id)" 
                                 OnSeeTasks='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")'
-                                OnViewTaskBreakdown="() => ViewModel.ViewTaskBreakdownCommand.ExecuteAsync(jobVm.JobPost)"
                                 OnViewAuctionHub="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(jobVm.JobPost)"
-                                OnEditAnswers="() => ViewModel.EditAnswersCommand.ExecuteAsync(jobVm.JobPost)"
-                                OnReviewScope="() => ViewModel.ReviewScopeCommand.ExecuteAsync(jobVm.JobPost)" />
+                                OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")' />
                         }
                     }
                 </div>
@@ -91,6 +89,8 @@
             _expandedJobs.Remove(jobId);
         else
             _expandedJobs.Add(jobId);
+            
+        InvokeAsync(StateHasChanged);
     }
 
     private bool IsMasterOfferReady()
@@ -149,3 +149,42 @@
         }
     }
 }
+
+<style>
+    /* 
+       INLINE STYLES TO BYPASS BLAZOR SCOPED CSS BUNDLE CACHING ON WEB 
+       This guarantees the container has padding from the edges of the screen.
+    */
+    .project-detail-container {
+        max-width: 800px !important;
+        margin: 0 auto !important;
+        padding: 24px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    @@media (max-width: 768px) {
+        .project-detail-container {
+            padding: 16px !important;
+        }
+    }
+
+    /* Force all inner cards to respect padding */
+    .project-detail-container .bs-card {
+        padding: 24px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Force all text elements to wrap safely */
+    .project-detail-container p, 
+    .project-detail-container .project-description, 
+    .project-detail-container .job-description, 
+    .project-detail-container .scope-text {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+    }
+</style>

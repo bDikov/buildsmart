@@ -34,7 +34,7 @@ public class ScopeGenerationWorker
 	[Queue("ai-queue")]
 	public async Task ProcessJobAsync(Guid jobPostId, CancellationToken cancellationToken)
 	{
-		_logger.LogInformation("Processing Job Scope for Job ID: {JobId}", jobPostId);
+		_logger.LogDebug("Processing Job Scope for Job ID: {JobId}", jobPostId);
 
 		using var scope = _serviceProvider.CreateScope();
 		var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -58,6 +58,11 @@ public class ScopeGenerationWorker
 		try
 		{
 			var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+			var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<BuildSmart.Api.Hubs.JobProcessingHub>>();
+
+			// Layer 1
+			await hubContext.Clients.Group(jobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 1, "Analyzing project requirements and building context...", 10);
+
 
 			// 1. Build Human Readable Q&A Context
 			var allCategories = await unitOfWork.ServiceCategories.GetAllAsync();
@@ -153,16 +158,7 @@ public class ScopeGenerationWorker
 			var scopeGenerationQueue = scope.ServiceProvider.GetRequiredService<IScopeGenerationQueue>();
 			await scopeGenerationQueue.QueuePricingUpdateAsync(jobPostId, CancellationToken.None);
 
-			await notificationService.SendLocalizedNotificationAsync(
-				jobPost.Project.HomeownerId,
-				"Title_ScopeReady",
-				"Msg_ScopeReady",
-				new object[] { jobPost.Title },
-				jobPost.Id,
-				"JobPost"
-			);
-
-			_logger.LogInformation("Scope generated successfully for Job {JobId}.", jobPostId);
+			_logger.LogDebug("Scope generated successfully for Job {JobId}.", jobPostId);
 		}
 		catch (Exception ex)
 		{
@@ -246,7 +242,7 @@ public class ScopeGenerationWorker
 	[Queue("ai-queue")]
 	public async Task ProcessPricingAsync(Guid jobPostId, CancellationToken cancellationToken)
 	{
-		_logger.LogInformation("Processing Pricing for Job ID: {JobId}", jobPostId);
+		_logger.LogDebug("Processing Pricing for Job ID: {JobId}", jobPostId);
 
 		using var scope = _serviceProvider.CreateScope();
 		var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -262,8 +258,13 @@ public class ScopeGenerationWorker
 
 		try
 		{
-			_logger.LogInformation("Processing pricing for JobPost {JobId} with {TaskCount} tasks.", jobPostId, jobPost.JobTasks.Count);
+			_logger.LogDebug("Processing pricing for JobPost {JobId} with {TaskCount} tasks.", jobPostId, jobPost.JobTasks.Count);
 			
+			var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<BuildSmart.Api.Hubs.JobProcessingHub>>();
+
+			// Layer 2
+			await hubContext.Clients.Group(jobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 2, "Matching materials and calculating pricing...", 35);
+
 			var allCategories = await unitOfWork.ServiceCategories.GetAllAsync();
 			var relevantCategories = allCategories.Where(c => c.Id == jobPost.ServiceCategoryId || c.IsGlobal).ToList();
 			var humanReadableContext = BuildHumanReadableContext(jobPost.JobDetails, relevantCategories);
@@ -282,7 +283,7 @@ public class ScopeGenerationWorker
 			}
 			else
 			{
-				_logger.LogInformation("Found {SkuCount} total allowed SKUs for pricing.", allowedSkus.Count);
+				_logger.LogDebug("Found {SkuCount} total allowed SKUs for pricing.", allowedSkus.Count);
 			}
 
 			// 2.5 Get Homeowner's Preferred Language
@@ -325,7 +326,7 @@ public class ScopeGenerationWorker
 				var aiCalc = await saveUnitOfWork.AiCalculations.GetByProjectAndCategoryAsync(freshJobPost.ProjectId, freshJobPost.ServiceCategoryId);
 				if (aiCalc != null)
 				{
-					_logger.LogInformation("Deleting existing AiCalculation {AiCalcId} to refresh with new AI data.", aiCalc.Id);
+					_logger.LogDebug("Deleting existing AiCalculation {AiCalcId} to refresh with new AI data.", aiCalc.Id);
 					saveUnitOfWork.AiCalculations.Delete(aiCalc);
 					await saveUnitOfWork.SaveChangesAsync();
 				}
@@ -416,15 +417,24 @@ public class ScopeGenerationWorker
 
 				aiCalc.TotalEstimatedPrice = grandTotal;
 
+				// Layer 3
+				await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 3, "Validating estimations and finalizing structure...", 65);
+
 				await saveUnitOfWork.SaveChangesAsync();
-				_logger.LogInformation("Successfully saved AiCalculation for Job {JobId}. Grand Total: {GrandTotal}", jobPostId, grandTotal);
+				_logger.LogDebug("Successfully saved AiCalculation for Job {JobId}. Grand Total: {GrandTotal}", jobPostId, grandTotal);
 
 				// ==========================================
 				// PDF AGGREGATION LOGIC (Incremental Updates)
 				// ==========================================
 				try
 				{
+					// Layer 4
+					await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 4, "Applying finishes and generating master offer...", 85);
+
 					await GenerateMasterProjectPdf(freshJobPost.ProjectId, saveScope.ServiceProvider);
+					
+					// Layer 5
+					await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 5, "Complete", 100);
 				}
 				catch (Exception pdfEx)
 				{
@@ -440,20 +450,7 @@ public class ScopeGenerationWorker
 				}
 			}
 
-			if (jobPost.Project != null)
-			{
-				await notificationService.SendLocalizedNotificationAsync(
-					jobPost.Project.HomeownerId,
-					"Title_PricingUpdated",
-					"Msg_PricingUpdated",
-					new object[] { jobPost.Title },
-					jobPost.Id,
-					"JobPost"
-				);
-				_logger.LogInformation("Sent SignalR pricing notification for Job {JobId}.", jobPostId);
-			}
-
-			_logger.LogInformation("Pricing processed successfully for Job {JobId}.", jobPostId);
+			_logger.LogDebug("Pricing processed successfully for Job {JobId}.", jobPostId);
 		}
 		catch (Exception ex)
 		{
@@ -612,11 +609,22 @@ public class ScopeGenerationWorker
 				unitOfWork.Projects.Update(project);
 				await unitOfWork.SaveChangesAsync();
 
-				_logger.LogInformation("Master PDF Generated for Project {ProjectId} and saved to database. Size: {Size} bytes", projectId, pdfBytes.Length);
+				_logger.LogDebug("Master PDF Generated for Project {ProjectId} and saved to database. Size: {Size} bytes", projectId, pdfBytes.Length);
 
 				// Broadcast to Admin UI that the PDF is ready
 				var hubContext = pdfScope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<BuildSmart.Api.Hubs.NotificationHub>>();
 				await hubContext.Clients.All.SendAsync("OfferRegenerated", projectId);
+
+				// Notify the Homeowner that the offer is fully complete
+				var notificationService = pdfScope.ServiceProvider.GetRequiredService<INotificationService>();
+				await notificationService.SendLocalizedNotificationAsync(
+					projectWithUser.HomeownerId,
+					"Title_OfferReady",
+					"Msg_OfferReady",
+					new object[] { projectWithUser.Title },
+					projectWithUser.Id,
+					"Project"
+				);
 			}
 			finally
 			{

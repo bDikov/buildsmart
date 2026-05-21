@@ -377,7 +377,8 @@ public partial class Program
 
 		// This is the endpoint that our MAUI and Blazor apps will call
 		app.MapGraphQL("/graphql");
-		app.MapHub<NotificationHub>("/hubs/notifications"); // Added Hub mapping
+		app.MapHub<BuildSmart.Api.Hubs.NotificationHub>("/hubs/notifications"); // Added Hub mapping
+		app.MapHub<BuildSmart.Api.Hubs.JobProcessingHub>("/jobProcessingHub");
 
 		app.MapControllers();
 

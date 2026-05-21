@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BuildSmart.Api.Hubs;
 using BuildSmart.Api.Workers;
 using BuildSmart.Core.Application.DTOs;
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Application.Resources;
 using BuildSmart.Core.Domain.Entities;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -35,6 +37,12 @@ public class ScopeGenerationWorkerConcurrencyTests
         var mockNotificationService = new Mock<INotificationService>();
         var mockQueue = new Mock<IScopeGenerationQueue>();
         var mockLogger = new Mock<ILogger<ScopeGenerationWorker>>();
+        var mockHubContext = new Mock<IHubContext<JobProcessingHub>>();
+        var mockHubClients = new Mock<IHubClients>();
+        var mockClientProxy = new Mock<IClientProxy>();
+
+        mockHubContext.Setup(x => x.Clients).Returns(mockHubClients.Object);
+        mockHubClients.Setup(x => x.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
         
         var projectId = Guid.NewGuid();
         var categoryId = Guid.NewGuid();
@@ -85,6 +93,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         services.AddScoped(sp => mockStringLocalizer.Object);
         services.AddScoped(sp => mockNotificationService.Object);
         services.AddScoped(sp => mockQueue.Object);
+        services.AddScoped(sp => mockHubContext.Object);
         
         var serviceProvider = services.BuildServiceProvider();
         
