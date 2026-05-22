@@ -1,0 +1,34 @@
+.generated-offer-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+    .generated-offer-container {
+        padding: 16px;
+    }
+}
+
+::deep .bs-card {
+    padding: 24px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+::deep p, 
+::deep h2,
+::deep h3,
+::deep h4,
+::deep h5,
+::deep h6,
+::deep span,
+::deep div {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}

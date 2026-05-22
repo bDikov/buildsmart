@@ -566,4 +566,7 @@
   <data name="Status_Expired" xml:space="preserve">
     <value>Изтекъл</value>
   </data>
+  <data name="ProjectDetail_ViewGeneratedOffer" xml:space="preserve">
+    <value>Преглед на генерираната оферта</value>
+  </data>
 </root>

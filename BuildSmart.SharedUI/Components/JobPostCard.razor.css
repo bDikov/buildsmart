@@ -4,6 +4,9 @@
     border: 1px solid var(--border-color);
     border-radius: 1rem;
     box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .job-header {
@@ -12,6 +15,7 @@
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 1.5rem;
+    width: 100%;
 }
 
 .job-title {
@@ -20,6 +24,8 @@
     margin: 0 0 0.5rem 0;
     line-height: 1.4;
     color: var(--text-primary);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .job-category {
@@ -50,7 +56,9 @@
     font-size: 1rem;
     color: var(--text-secondary);
     line-height: 1.6;
-    max-width: 75ch; /* Web typography best practice: max 75 chars per line */
+    max-width: 100%;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .scope-view.collapsed, .job-description.collapsed {
@@ -70,11 +78,18 @@
     pointer-events: none; /* Let clicks pass through the fade */
 }
 
+.scope-view.expanded, .job-description.expanded {
+    max-height: none;
+    overflow: visible;
+}
+
 .scope-text {
     font-size: 1rem;
     line-height: 1.6;
     color: var(--text-secondary);
-    max-width: 75ch; /* Cap the width of reading text to prevent eye fatigue on wide screens */
+    max-width: 100%; 
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 ::deep .scope-text p {

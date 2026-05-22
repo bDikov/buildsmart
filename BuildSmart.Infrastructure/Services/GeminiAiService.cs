@@ -166,6 +166,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine($"6. LANGUAGE ENFORCEMENT: ALL OUTPUT (scopeMarkdown, taskTitle, taskDescription, and acceptanceCriteria) MUST be strictly written in the language corresponding to the ISO code '{languageCode.ToUpper()}'. If the provided Q&A context or input is in a different language, you MUST translate it and generate your response entirely in '{languageCode.ToUpper()}'.");
 			prompt.AppendLine("7. NO GENERIC OVERHEAD TASKS: Do NOT create separate tasks for 'Site Preparation', 'Logistics', 'Daily Cleaning', 'Material Delivery', or 'Final Waste Removal'. These are overhead. Include them as 'acceptanceCriteria' within the actual technical tasks.");
 			prompt.AppendLine("8. NO MICRO-TASKING: Do not split standard services into micro-tasks. For example, 'Metal frame construction' and 'Boarding' should be a single task: 'Build Drywall'. 'Grouting/Spackling' is either included in Drywall or belongs to Painting. Consolidate technical steps into billable units.");
+			prompt.AppendLine("9. CONSISTENT FORMATTING: ALWAYS use standard decimal digits (1., 2., 3.) for numbering sections and lists in your scopeMarkdown. NEVER use Roman numerals (I., II., III.).");
 			prompt.AppendLine();
 			prompt.AppendLine("---");
 			prompt.AppendLine("USER INPUT DATA:");

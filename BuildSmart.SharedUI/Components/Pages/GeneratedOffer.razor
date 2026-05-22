@@ -10,7 +10,7 @@
         @if (ViewModel == null || ViewModel.Job == null && ViewModel.IsBusy)
         {
             <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
-                <div class="spinner-border text-primary" role="status">
+                <div class="spinner-border" style="color: var(--color-primary);" role="status">
                     <span class="visually-hidden">@Loc["GeneratedOffer_Loading"]</span>
                 </div>
             </div>
@@ -20,7 +20,7 @@
             <div class="container generated-offer-container py-4">
                 <div class="mb-4">
                     <h2 class="h3 fw-bold mb-2" style="color: var(--text-primary);">@Loc["GeneratedOffer_Title"]</h2>
-                    <p class="text-muted">@Loc["GeneratedOffer_Subtitle"]</p>
+                    <p style="color: var(--text-muted); margin-bottom: 0;">@Loc["GeneratedOffer_Subtitle"]</p>
                 </div>
 
                 <div class="p-4 text-center mb-4" style="background-color: var(--bg-card-alt); border: 2px solid var(--color-success); border-radius: 12px;">
@@ -30,7 +30,7 @@
                             $@ViewModel.TotalEstimatedPrice.ToString("F2")
                         </span>
                     </div>
-                    <button class="btn btn-outline-primary fw-bold" @onclick="ToggleBreakdown">
+                    <button class="bs-btn-primary w-100 fw-bold" @onclick="ToggleBreakdown">
                         @(_showBreakdown ? Loc["GeneratedOffer_HideTaskBreakdowns"] : Loc["GeneratedOffer_SeeTasksBreakdowns"])
                     </button>
                 </div>
@@ -50,23 +50,23 @@
                                 
                                 @if (!string.IsNullOrEmpty(task.Description))
                                 {
-                                    <p class="text-muted mb-4" style="font-size: 0.95rem;">@task.Description</p>
+                                    <p class="mb-4" style="font-size: 0.95rem; color: var(--text-muted);">@task.Description</p>
                                 }
 
-                                <hr style="color: #EEEEEE;" />
-                                <h6 class="fw-bold mb-3" style="color: #1565C0;">@Loc["GeneratedOffer_BillableSKUs"]</h6>
+                                <hr style="border-color: var(--border-color); opacity: 0.5;" />
+                                <h6 class="fw-bold mb-3" style="color: var(--color-primary);">@Loc["GeneratedOffer_BillableSKUs"]</h6>
 
                                 @if (task.SkuItems != null && task.SkuItems.Count > 0)
                                 {
                                     <div class="d-flex flex-column gap-3">
                                         @foreach (var sku in task.SkuItems)
                                         {
-                                            <div class="d-flex justify-content-between align-items-center bg-light p-3" style="border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                                            <div class="d-flex justify-content-between align-items-center p-3" style="background-color: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                                                 <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
                                                     <span class="fw-bold" style="color: var(--text-primary); flex-shrink: 0;">@(sku.Quantity)x</span>
                                                     <div style="min-width: 0; flex: 1;">
                                                         <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.Name</div>
-                                                        <div class="text-muted" style="font-size: 0.8rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.SkuCode</div>
+                                                        <div style="color: var(--text-muted); font-size: 0.8rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.SkuCode</div>
                                                     </div>
                                                 </div>
                                                 <span class="fw-bold" style="color: var(--color-success); flex-shrink: 0;">
@@ -78,32 +78,17 @@
                                 }
                                 else
                                 {
-                                    <p class="text-muted" style="font-size: 0.9rem;">@Loc["GeneratedOffer_NoSKUs"]</p>
+                                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0;">@Loc["GeneratedOffer_NoSKUs"]</p>
                                 }
                             </div>
                         }
                     </div>
                 }
 
-                <hr style="color: #E0E0E0; margin: 2rem 0;" />
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <button class="bs-btn-primary w-100 fw-bold" style="height: 50px; border-radius: 10px; background-color: var(--color-success); border-color: var(--color-success);" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitToAdminCommand.Execute(null)">
-                            @Loc["GeneratedOffer_SubmitToAdmin"]
-                        </button>
-                    </div>
-                    <div class="col-md-6">
-                        <button class="btn btn-secondary w-100 fw-bold" style="height: 50px; border-radius: 10px;" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.GoBackCommand.Execute(null)">
-                            @Loc["GeneratedOffer_EditTasks"]
-                        </button>
-                    </div>
-                </div>
-
                 @if (ViewModel.IsBusy)
                 {
                     <div class="d-flex justify-content-center mt-4">
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border" style="color: var(--color-primary);" role="status">
                             <span class="visually-hidden">@Loc["GeneratedOffer_Processing"]</span>
                         </div>
                     </div>
@@ -161,47 +146,3 @@
         }
     }
 }
-
-<style>
-    /* 
-       INLINE STYLES TO BYPASS BLAZOR SCOPED CSS BUNDLE CACHING ON WEB 
-       This guarantees the container has padding from the edges of the screen
-       and that all text uses enterprise typography standards.
-    */
-    .generated-offer-container {
-        max-width: 800px !important;
-        margin: 0 auto !important;
-        padding: 24px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        overflow-x: hidden !important;
-    }
-
-    @@media (max-width: 768px) {
-        .generated-offer-container {
-            padding: 16px !important;
-        }
-    }
-
-    /* Force all inner cards to respect padding */
-    .generated-offer-container .bs-card {
-        padding: 24px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        overflow-x: hidden !important;
-    }
-
-    /* Force all text elements to wrap safely */
-    .generated-offer-container p, 
-    .generated-offer-container h2,
-    .generated-offer-container h3,
-    .generated-offer-container h4,
-    .generated-offer-container h5,
-    .generated-offer-container h6,
-    .generated-offer-container span,
-    .generated-offer-container div {
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        max-width: 100% !important;
-    }
-</style>

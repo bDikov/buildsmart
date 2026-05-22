@@ -605,6 +605,7 @@ public class ScopeGenerationWorker
 				byte[] pdfBytes = await pdfService.GenerateOfferPdfAsync(offerData);
 
 				project.MasterOfferPdf = pdfBytes;
+				project.GeneralSummary = finalScopeDescription;
 				project.UpdatedAt = DateTime.UtcNow;
 				unitOfWork.Projects.Update(project);
 				await unitOfWork.SaveChangesAsync();

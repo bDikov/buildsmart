@@ -23,12 +23,9 @@
                 @((MarkupString)Markdig.Markdown.ToHtml(JobVm.JobPost.GeneratedScope))
             </div>
         </div>
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
             <button class="bs-btn-dark btn-sm" @onclick="async () => await OnToggleExpansion.InvokeAsync()">
                 @(IsExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
-            </button>
-            <button class="bs-btn-dark btn-sm" @onclick="async () => await OnSeeTasks.InvokeAsync()">
-                @Loc["ProjectDetail_SeeTasks"]
             </button>
         </div>
     }
@@ -37,21 +34,11 @@
         <div class="@descClass mt-3 mb-3">
             @JobVm.JobPost.Description
         </div>
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
             @if (JobVm.JobPost.Description?.Length > 150)
             {
                 <button class="bs-btn-dark btn-sm" @onclick="async () => await OnToggleExpansion.InvokeAsync()">
                     @(IsExpanded ? Loc["ProjectDetail_ViewLess"] : Loc["ProjectDetail_ViewMore"])
-                </button>
-            }
-            else
-            {
-                <div></div>
-            }
-            @if (JobVm.JobPost.Status != JobPostStatus.Draft)
-            {
-                <button class="bs-btn-dark btn-sm" @onclick="async () => await OnSeeTasks.InvokeAsync()">
-                    @Loc["ProjectDetail_SeeTasks"]
                 </button>
             }
         </div>
@@ -72,9 +59,11 @@
             </button>
         }
         
-        @if (JobVm.JobPost.Status == JobPostStatus.Rejected || JobVm.JobPost.Status == JobPostStatus.WaitingForUserReview)
+        @if (JobVm.JobPost.Status == JobPostStatus.Rejected || JobVm.JobPost.Status == JobPostStatus.WaitingForUserReview || JobVm.JobPost.Status == JobPostStatus.WaitingForAdminReview)
         {
-            <button class="bs-btn-primary w-100" @onclick="async () => await OnViewAIOffer.InvokeAsync()">View AI Offer</button>
+            <div class="d-flex justify-content-center mt-2">
+                <button class="bs-btn-primary px-5 py-2" @onclick="async () => await OnViewAIOffer.InvokeAsync()">@Loc["ProjectDetail_ViewGeneratedOffer"]</button>
+            </div>
         }
     </div>
 </div>
@@ -88,9 +77,6 @@
 
     [Parameter]
     public EventCallback OnToggleExpansion { get; set; }
-
-    [Parameter]
-    public EventCallback OnSeeTasks { get; set; }
 
     [Parameter]
     public EventCallback OnViewAuctionHub { get; set; }

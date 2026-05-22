@@ -95,3 +95,9 @@ Bind primary actions directly to the ViewModel's asynchronous RelayCommands:
 ```razor
 <button class="bs-btn-primary" @onclick="ViewModel.SaveProfileCommand.ExecuteAsync">Save</button>
 ```
+
+## 6. Localization Policy
+
+**STRICT RULE:** Hardcoded text in `.razor` components is strictly prohibited. 
+All static text, labels, button texts, and placeholders MUST be localized. Because the application targets multiple languages, you must always use the injected localization service (e.g., `@Loc["Your_Resource_Key"]`) or ensure the text is driven by a translatable resource. 
+When adding new text, define it in the appropriate `AppResources.resx` file and use the `@Loc` reference in the UI.
