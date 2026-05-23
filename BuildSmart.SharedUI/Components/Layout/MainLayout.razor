@@ -452,6 +452,8 @@
     private string? _userEmail;
     private string? _userProfilePictureUrl;
 
+    private static bool _hasAttemptedLanguageSync = false;
+
     protected override async Task OnInitializedAsync()
     {
         NavigationRegistry.CurrentManager = NavManager;
@@ -469,7 +471,7 @@
                 var preferredLang = user.PreferredLanguage;
                 var currentCulture = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
                 
-                if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture)
+                if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture && !_hasAttemptedLanguageSync)
                 {
                     // We defer the force reload to OnAfterRenderAsync where we can safely set the cookie via JSInterop
                     _currentLang = preferredLang;
@@ -518,8 +520,9 @@
                     var preferredLang = userResult.Data.CurrentUser.PreferredLanguage;
                     var currentCulture = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
                     
-                    if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture)
+                    if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture && !_hasAttemptedLanguageSync)
                     {
+                        _hasAttemptedLanguageSync = true;
                         var cookieValue = $"c={preferredLang}|uic={preferredLang}";
                         await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
                         NavManager.NavigateTo(NavManager.Uri, forceLoad: true);

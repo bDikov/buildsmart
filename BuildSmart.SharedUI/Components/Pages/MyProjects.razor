@@ -60,7 +60,20 @@
                             </div>
                         </div>
                         
-                        <p class="project-desc">@(string.IsNullOrEmpty(project.Description) ? Loc["Projects_DefaultDesc"] : project.Description)</p>
+                        @{
+                            bool isExpanded = _expandedProjects.Contains(project.Id);
+                            string descText = string.IsNullOrEmpty(project.Description) ? Loc["Projects_DefaultDesc"] : project.Description;
+                            bool isLongDesc = descText?.Length > 120;
+                        }
+                        <div class="project-desc-container mb-4">
+                            <p class="project-desc @(isExpanded ? "expanded" : "collapsed")">@descText</p>
+                            @if (isLongDesc)
+                            {
+                                <button type="button" class="bs-btn-text p-0 mt-1" style="font-size: 13px; font-weight: 600; color: var(--color-primary); background: transparent; border: none; cursor: pointer;" @onclick:stopPropagation="true" @onclick="() => ToggleProjectDescription(project.Id)">
+                                    @(isExpanded ? Loc["ProjectDetail_ViewLess", "View Less"] : Loc["ProjectDetail_ViewMore", "View More"])
+                                </button>
+                            }
+                        </div>
                         
                         @if (project.JobPosts != null && project.JobPosts.Any())
                         {
@@ -195,10 +208,20 @@
 
     .project-header {
         display: flex;
+        flex-wrap: wrap; /* CRITICAL: Allow wrapping on mobile */
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 20px;
         gap: 16px;
+    }
+
+    .title-area {
+        flex: 1;
+        min-width: 0; /* CRITICAL: Allow child elements to wrap/truncate instead of pushing parent wider */
+    }
+
+    .status-badge-container {
+        flex-shrink: 0; /* Keep badge size stable */
     }
 
     .project-title {
@@ -207,6 +230,8 @@
         margin: 0 0 8px 0;
         color: var(--text-primary);
         line-height: 1.2;
+        word-break: break-word; /* Prevent long words from breaking layout */
+        overflow-wrap: break-word;
     }
 
     .project-meta {
@@ -354,6 +379,16 @@
 </style>
 
 @code {
+    private HashSet<Guid> _expandedProjects = new HashSet<Guid>();
+
+    private void ToggleProjectDescription(Guid projectId)
+    {
+        if (_expandedProjects.Contains(projectId))
+            _expandedProjects.Remove(projectId);
+        else
+            _expandedProjects.Add(projectId);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (ViewModel.Projects.Count == 0)

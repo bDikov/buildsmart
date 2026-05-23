@@ -64,16 +64,16 @@
 }
 
 :root[data-theme='light'] {
-    --bg-page: rgb(239, 239, 239); /* Primary/C1 50 */
+    --bg-page: rgb(250, 250, 250); /* Clean light surface from Figma */
     --bg-card: rgb(255, 255, 255);
-    --bg-card-alt: rgb(245, 245, 245);
-    --text-primary: rgb(0, 0, 0);
-    --text-secondary: rgba(0, 0, 0, 0.70);
-    --text-muted: rgba(0, 0, 0, 0.50);
-    --text-disabled: rgba(0, 0, 0, var(--state-disabled));
-    --color-primary: rgb(17, 17, 17); /* Primary/C1 from visual slides */
-    --color-primary-hover: rgb(51, 51, 51); /* Primary/C1 700 */
-    --border-color: rgb(220, 220, 220);
+    --bg-card-alt: rgb(243, 243, 243);
+    --text-primary: rgba(17, 17, 17, 0.95); /* Deep dark gray for high contrast readability */
+    --text-secondary: rgba(17, 17, 17, 0.70);
+    --text-muted: rgba(17, 17, 17, 0.50);
+    --text-disabled: rgba(17, 17, 17, var(--state-disabled));
+    --color-primary: rgb(17, 17, 17);
+    --color-primary-hover: rgb(51, 51, 51);
+    --border-color: rgb(221, 221, 221);
 }
 
 :root[data-theme='dark'] {

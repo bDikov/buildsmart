@@ -9,6 +9,13 @@ BuildSmart uses a **Blazor Hybrid** approach inside a .NET MAUI shell.
 - All modern UI rendering, layouts, and responsive components are handled by HTML/CSS within `.razor` files.
 - **Do not write new XAML views** unless strictly necessary for platform-specific shells. All new pages and components should be placed in `BuildSmart.Maui/Components/`.
 
+### 1.1 Web vs Mobile Host Parity (CRITICAL)
+Because this application runs as both a Server/Web app and a MAUI Mobile app, there are **two distinct HTML hosts**:
+- **Web App Host:** `BuildSmart.Web/Components/App.razor`
+- **Mobile MAUI Host:** `BuildSmart.Maui/wwwroot/index.html`
+
+**STRICT RULE:** Whenever you add a new `<script>`, global JavaScript function (like `setCookie`), `<link>` stylesheet, or modify the `<head>` tag, you MUST apply the change to **BOTH** `App.razor` and `index.html`. Failure to duplicate these host-level changes will cause features to work on the web but crash on the mobile emulator (or vice versa).
+
 ## 2. ViewModel Injection & Data Flow
 
 BuildSmart heavily utilizes the MVVM pattern with `CommunityToolkit.Mvvm`.
@@ -47,6 +54,13 @@ We use a custom, Fimga-driven CSS design system. **We do not rely on Bootstrap f
    - **Colors:** `var(--color-primary)`, `var(--color-secondary)`, `var(--color-success)`, `var(--color-warning)`, `var(--color-danger)`, `var(--color-info)`, `var(--color-tertiary)`.
    - **State Opacities:** `var(--state-disabled)`, `var(--state-hover)`, `var(--state-focus)`, etc.
 4. **Dark Mode is Native:** Dark mode is handled automatically at the root level via `@media (prefers-color-scheme: dark)` in `app.css`. As long as you use `var(--bg-card)` and `var(--text-primary)`, components will seamlessly swap colors without requiring JS logic or duplicate CSS classes.
+
+### Mobile-First & Responsive Layouts
+To ensure the UI is fully functional on mobile devices within the MAUI WebView, always adhere to mobile-first responsive principles:
+1. **Fluid Containers:** Avoid hardcoding large pixel widths (e.g., `max-width: 800px;` with large fixed paddings). Use fluid containers and reduce padding on smaller viewports (`padding: 12px;` or `1rem` on mobile, scaling up with `@media (min-width: 768px)`).
+2. **Flex Wrapping:** Never assume horizontal space is infinite. When using `d-flex` for side-by-side elements, use `flex-wrap` and stack elements on small screens using `flex-column flex-sm-row`.
+3. **Button Sizing:** Use full-width buttons on mobile (`w-100`) that snap to their auto-content width on larger screens (`w-sm-auto`).
+4. **Prevent Horizontal Bleeding:** Apply `word-break: break-word;` and `overflow-wrap: break-word;` to text containers (titles, descriptions, scopes) and ensure parent containers have `overflow-x: hidden;` to prevent the UI from horizontal scrolling or breaking.
 
 ### Reusable Classes Available
 - **Containers:** `.bs-card`

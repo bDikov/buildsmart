@@ -1,7 +1,7 @@
 .project-detail-container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 16px;
+    padding: 12px; /* Reduced for mobile */
     font-family: var(--font-primary);
     color: var(--text-primary);
     width: 100%;
@@ -29,9 +29,16 @@
 .header-section {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 30px;
-    gap: 16px;
+    margin-bottom: 20px; /* Reduced for mobile */
+    gap: 12px; /* Reduced for mobile */
     width: 100%;
+}
+
+@media (min-width: 768px) {
+    .header-section {
+        margin-bottom: 30px;
+        gap: 16px;
+    }
 }
 
 .header-content {
@@ -47,7 +54,7 @@
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     cursor: pointer;
-    padding: 10px;
+    padding: 8px; /* Reduced for mobile */
     border-radius: 12px;
     transition: all 0.2s ease;
     display: flex;
@@ -57,13 +64,19 @@
     flex-shrink: 0;
 }
 
+@media (min-width: 768px) {
+    .back-btn {
+        padding: 10px;
+    }
+}
+
 .back-btn:hover {
     background-color: var(--bg-card-alt);
     transform: translateY(-2px);
 }
 
 .page-title {
-    font-size: 28px;
+    font-size: 22px; /* Reduced for mobile */
     font-weight: 800;
     margin: 0;
     color: var(--text-primary);
@@ -72,16 +85,29 @@
     overflow-wrap: break-word;
 }
 
+@media (min-width: 768px) {
+    .page-title {
+        font-size: 28px;
+    }
+}
+
 .status-badge {
     align-self: flex-start;
-    font-size: 13px;
+    font-size: 12px; /* Reduced for mobile */
     font-weight: 700;
-    padding: 4px 12px;
+    padding: 4px 10px;
     border-radius: 20px;
     background-color: var(--bg-card-alt);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+    .status-badge {
+        font-size: 13px;
+        padding: 4px 12px;
+    }
 }
 
 .status-draft { color: gray; }
@@ -91,18 +117,32 @@
 .status-rejected { color: var(--color-danger); background-color: rgba(220, 53, 69, 0.1); }
 
 .section-title {
-    font-size: 24px;
+    font-size: 20px; /* Reduced for mobile */
     font-weight: 800;
-    margin-top: 32px;
-    margin-bottom: 20px;
+    margin-top: 24px;
+    margin-bottom: 16px;
     color: var(--text-primary);
     word-break: break-word;
+}
+
+@media (min-width: 768px) {
+    .section-title {
+        font-size: 24px;
+        margin-top: 32px;
+        margin-bottom: 20px;
+    }
 }
 
 .job-posts-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px; /* Reduced for mobile */
+}
+
+@media (min-width: 768px) {
+    .job-posts-list {
+        gap: 20px;
+    }
 }
 
 /* 
@@ -111,11 +151,17 @@
  * this guarantees they stay within bounds inside ProjectDetail.
  */
 ::deep .bs-card {
-    padding: 1.5rem !important; /* Force internal card padding */
+    padding: 1rem !important; /* Force internal card padding - reduced for mobile */
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: hidden !important; /* Prevent content bleeding */
+}
+
+@media (min-width: 768px) {
+    ::deep .bs-card {
+        padding: 1.5rem !important; /* Original padding */
+    }
 }
 
 ::deep .project-description, 

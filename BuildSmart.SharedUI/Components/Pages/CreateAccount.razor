@@ -3,42 +3,167 @@
 @attribute [AllowAnonymous]
 @layout BuildSmart.SharedUI.Components.Layout.BlankLayout
 @inject CreateAccountPageViewModel ViewModel
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
 
-<Card CssClass="m-4 shadow-sm">
-    <Header>
-        <h2 class="h5 mb-0">@Loc["CreateAccount_Title"]</h2>
-    </Header>
-    <ChildContent>
-        <form @onsubmit="HandleSubmit">
-            <div class="mb-3">
-                <label for="firstName" class="form-label">@Loc["CreateAccount_FirstName"]</label>
-                <input type="text" class="form-control" id="firstName" @bind="ViewModel.FirstName" />
+<div class="register-container">
+    <div class="register-card bs-card">
+        
+        <h2 class="register-title">@Loc["CreateAccount_Title"]</h2>
+
+        <form @onsubmit="HandleSubmit" class="register-form">
+            <div class="form-row">
+                <div class="form-group flex-fill">
+                    <label for="firstName" class="form-label">@Loc["CreateAccount_FirstName"]</label>
+                    <input type="text" class="bs-input register-input" id="firstName" @bind="ViewModel.FirstName" />
+                </div>
+
+                <div class="form-group flex-fill">
+                    <label for="lastName" class="form-label">@Loc["CreateAccount_LastName"]</label>
+                    <input type="text" class="bs-input register-input" id="lastName" @bind="ViewModel.LastName" />
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label for="lastName" class="form-label">@Loc["CreateAccount_LastName"]</label>
-                <input type="text" class="form-control" id="lastName" @bind="ViewModel.LastName" />
-            </div>
-
-            <div class="mb-3">
+            <div class="form-group">
                 <label for="email" class="form-label">@Loc["CreateAccount_Email"]</label>
-                <input type="email" class="form-control" id="email" @bind="ViewModel.Email" />
+                <input type="email" class="bs-input register-input" id="email" @bind="ViewModel.Email" />
             </div>
 
-            <div class="mb-3">
+            <div class="form-group">
                 <label for="phoneNumber" class="form-label">Phone Number (Optional)</label>
-                <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
+                <input type="tel" class="bs-input register-input" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
             </div>
 
-            <div class="mb-3">
+            <div class="form-group">
                 <label for="password" class="form-label">@Loc["CreateAccount_Password"]</label>
-                <input type="password" class="form-control" id="password" @bind="ViewModel.Password" />
+                <input type="password" class="bs-input register-input" id="password" @bind="ViewModel.Password" />
             </div>
 
-            <PrimaryButton CssClass="btn btn-primary w-100" Type="submit">@Loc["CreateAccount_CreateButton"]</PrimaryButton>
+            <button class="bs-btn-primary register-btn w-100" type="submit">
+                @Loc["CreateAccount_CreateButton"]
+            </button>
+            
+            <div class="login-prompt">
+                <span>Already have an account? <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault>Log In</a></span>
+            </div>
         </form>
-    </ChildContent>
-</Card>
+
+    </div>
+</div>
+
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100dvh;
+        background-color: var(--bg-page);
+        font-family: var(--font-primary);
+        margin: 0;
+        padding: 0;
+    }
+
+    .register-card {
+        width: 100%;
+        max-width: 500px;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        box-sizing: border-box;
+    }
+
+    .register-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    @@media (min-width: 481px) {
+        .form-row {
+            flex-direction: row;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .register-container {
+            align-items: flex-start;
+        }
+        .register-card {
+            min-height: 100dvh;
+            padding: 20px 20px 40px 20px;
+            justify-content: flex-start;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            margin: 0;
+            max-width: 100%;
+        }
+        .register-title {
+            margin-top: 20px;
+        }
+    }
+
+    .register-title {
+        color: var(--text-primary);
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+        font-family: var(--font-heading);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-label {
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .register-input {
+        height: 52px;
+        padding: 0 15px;
+    }
+
+    .register-btn {
+        height: 56px;
+        font-weight: 600;
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+    .login-prompt {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .login-prompt span {
+        color: var(--text-primary);
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .login-prompt a {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-prompt a:hover {
+        text-decoration: underline;
+    }
+</style>
 
 @code {
     private async Task HandleSubmit()
