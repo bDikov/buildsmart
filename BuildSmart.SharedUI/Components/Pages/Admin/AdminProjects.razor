@@ -252,7 +252,7 @@
         background: var(--bg-card-alt);
         padding: 8px 12px;
         border-radius: 6px;
-        border: 1px solid rgba(255,255,255,0.05);
+        border: 1px solid var(--border-color);
     }
 
     .status-badge {
@@ -261,10 +261,12 @@
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        background: rgba(255,255,255,0.1);
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
     }
-    .status-badge.underreview { background: rgba(255, 152, 0, 0.15); color: #ff9800; }
-    .status-badge.active { background: rgba(76, 175, 80, 0.15); color: #4CAF50; }
+    .status-badge.underreview { background: rgba(255, 193, 7, 0.15); color: var(--color-warning); border-color: transparent; }
+    .status-badge.active { background: rgba(16, 185, 129, 0.15); color: var(--color-success); border-color: transparent; }
 </style>
 
 @code {

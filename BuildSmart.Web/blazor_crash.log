@@ -11328,3 +11328,153 @@ Object name: 'IServiceProvider'.
    at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[23.05.2026 г. 9:19:21 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 9:19:21 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 9:19:21 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 9:19:21 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 9:24:15 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 9:24:15 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 9:24:15 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 9:24:15 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 9:37:23 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 9:37:23 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 9:37:23 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 9:37:23 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:02:42 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:02:42 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:02:42 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:02:42 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:13:29 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:13:29 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:13:29 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:13:29 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:25:58 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:25:58 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:25:58 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:25:58 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:38:54 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:38:54 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:38:54 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:38:54 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:52:10 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:52:10 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:52:10 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:52:10 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:58:13 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:58:13 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 10:58:13 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 10:58:13 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 11:07:26 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 11:07:26 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[23.05.2026 г. 11:07:26 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[23.05.2026 г. 11:07:26 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

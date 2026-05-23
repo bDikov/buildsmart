@@ -3,20 +3,32 @@
 <div class="overview-card bs-card mb-4">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-3 gap-3">
         <h3 class="section-title mb-0" style="color: var(--color-primary);">@Loc["ProjectDetail_Overview"]</h3>
-        
-        @if (IsMasterOfferReady)
-        {
-            <button class="bs-btn-primary w-100 w-sm-auto" @onclick="async () => await OnDownloadMasterOffer.InvokeAsync()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                @Loc["ProjectDetail_DownloadOffer", "Download Official Offer"]
-            </button>
+    </div>
+    <div class="project-description mt-3">
+        @{
+            var descriptionText = string.IsNullOrEmpty(Project?.GeneralSummary) ? Project?.Description : Project?.GeneralSummary;
+            if (!string.IsNullOrEmpty(descriptionText))
+            {
+                if (_isExpanded || descriptionText.Length <= 200)
+                {
+                    @descriptionText
+                }
+                else
+                {
+                    @(descriptionText.Substring(0, 200) + "...")
+                }
+
+                if (descriptionText.Length > 200)
+                {
+                    <div class="mt-2 text-end">
+                        <button type="button" class="btn btn-link p-0 text-decoration-none" style="color: var(--color-primary); font-weight: 500;" @onclick="ToggleDescription">
+                            @(_isExpanded ? Loc["ProjectDetail_ViewLess", "View Less"] : Loc["ProjectDetail_ViewMore", "View More"])
+                        </button>
+                    </div>
+                }
+            }
         }
     </div>
-    <div class="project-description mt-3">@(string.IsNullOrEmpty(Project?.GeneralSummary) ? Project?.Description : Project?.GeneralSummary)</div>
     
     @if (Project?.Status == ProjectStatus.Draft)
     {
@@ -29,6 +41,13 @@
 </div>
 
 @code {
+    private bool _isExpanded = false;
+
+    private void ToggleDescription()
+    {
+        _isExpanded = !_isExpanded;
+    }
+
     [Parameter, EditorRequired]
     public IProjectDetails Project { get; set; } = default!;
 

@@ -46,7 +46,9 @@ We use a custom, Fimga-driven CSS design system. **We do not rely on Bootstrap f
 ### Rules of CSS
 1. **The `bs-` Namespace:** All custom utility classes must be prefixed with `bs-` (e.g., `bs-btn-primary`, `bs-card`, `bs-input`, `bs-placeholder`). This prevents Bootstrap from hijacking our styling (e.g., Bootstrap uses `.placeholder` for loading skeletons, which turns text into solid grey boxes!).
 2. **No `!important`:** Do not use `!important` tags. The `bs-` namespace provides enough specificity.
-3. **Global CSS Variables:** Always use the CSS variables defined in `wwwroot/css/app.css`. Never hardcode colors or dimensions inside `.razor` files. Use the variables defined by the **Light Design Guide v2.0**:
+3. **Global CSS Variables & The "No Hardcoding" Rule:** Always use the CSS variables defined in `wwwroot/css/app.css`. **NEVER hardcode colors (e.g., `rgba(255,255,255,0.1)` or `#FFFFFF`) inside `.razor` files.** Hardcoding colors instantly breaks the Light/Dark theme switching.
+   - **Borders & Backgrounds:** If a component needs a border or a subtle background, you MUST use `var(--border-color)` or `var(--bg-card-alt)`.
+   - **Text Colors & Light Theme Contrast:** Always verify your UI in the Light Theme. Variables like `--text-muted` and `--color-warning` must maintain a high enough opacity/darkness to be legible on pure white backgrounds (`--bg-card`).
    - **Typography (1-Typeface Rule):** `var(--font-h0)` to `var(--font-h3)`, `var(--font-body-1)`, `var(--font-body-2)`. (Fallback legacy fonts: `var(--font-primary)`, `var(--font-heading)`, `var(--font-secondary)`).
    - **Elevations (Surfaces):** `var(--elevation-00dp)` to `var(--elevation-24dp)`.
    - **Backgrounds:** `var(--bg-page)`, `var(--bg-card)`, `var(--bg-card-alt)`.

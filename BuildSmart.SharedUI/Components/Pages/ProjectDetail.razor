@@ -42,7 +42,14 @@
                     OnDownloadMasterOffer="DownloadMasterOffer" 
                     OnContinueDraft='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")' />
 
-                <h3 class="section-title">@Loc["ProjectDetail_JobsTitle"]</h3>
+                <!-- Next Steps Component -->
+                <ProjectNextStepsCard 
+                    Project="ViewModel.Project"
+                    OnSubmitToAdmin="SubmitProjectToAdmin"
+                    OnDownloadMasterOffer="DownloadMasterOffer"
+                    OnAskAdmin="AskAdminQuestion" />
+
+                <h3 class="section-title mt-4">@Loc["ProjectDetail_JobsTitle"]</h3>
 
                 <div class="job-posts-list">
                     @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
@@ -110,6 +117,7 @@
 
         return true;
     }
+    
     private void DownloadMasterOffer()
     {
         if (ViewModel.Project != null)
@@ -117,6 +125,19 @@
             var url = $"{ApiConfig.GetBaseUrl()}/api/offers/{ViewModel.Project.Id}/download";
             NavManager.NavigateTo(url, forceLoad: true);
         }
+    }
+
+    private async Task SubmitProjectToAdmin()
+    {
+        // TODO: Implement actual submission logic to GraphQL API
+        Console.WriteLine("Project submitted for admin review.");
+        await Task.CompletedTask;
+    }
+
+    private void AskAdminQuestion()
+    {
+        // TODO: Navigate to messaging/Q&A page or open a modal
+        NavManager.NavigateTo($"/project-messages?projectId={ViewModel.Project?.Id}");
     }
 
     protected override async Task OnInitializedAsync()
