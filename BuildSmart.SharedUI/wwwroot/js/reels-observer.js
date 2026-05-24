@@ -80,7 +80,9 @@ window.reelsObserver = {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
                 autoplay: false,
                 muted: true,
-                clickToPlay: false // Disable single click to play/pause so we can use double-click
+                clickToPlay: false, // Disable single click to play/pause so we can use double-click
+                fullscreen: { enabled: false, fallback: false }, // Completely disable fullscreen to prevent double-click hijacking
+                doubleClick: { toggles: false } // Prevent Plyr from listening to double clicks natively
             });
             
             // Listen for user volume/mute changes to sync across all videos
@@ -265,8 +267,7 @@ window.reelsObserver = {
     pauseVideo: function (videoId) {
         const player = this.players[videoId];
         if (player) {
-            player.pause();
-            player.currentTime = 0;
+            this.safePause(videoId, player);
         }
     }
 };

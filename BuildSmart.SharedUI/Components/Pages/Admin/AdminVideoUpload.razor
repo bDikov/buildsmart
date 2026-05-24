@@ -207,7 +207,14 @@
             StateHasChanged();
 
             // The public URL is the pre-signed URL without the query string parameters
-            var publicVideoUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
+            var privateVideoUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
+            
+            // CRITICAL FIX: The pre-signed URL uses the S3 API endpoint (e.g., https://f1e77b...cloudflarestorage.com/buildsmart-media/video.mp4).
+            // This endpoint is completely locked down and requires a cryptographic signature to view the file.
+            // If we save this raw S3 URL to the database, the Feed page's <video> tag will get a 403 Forbidden and remain black!
+            // We MUST swap the private S3 domain for the public R2 domain (or custom subdomain) before saving to the DB.
+            var fileName = System.IO.Path.GetFileName(privateVideoUrl);
+            var publicVideoUrl = $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
 
             // 3. Confirm with API
             var confirmResult = await ApiClient.ConfirmVideoUpload.ExecuteAsync(Guid.Parse(selectedTradesmanUserId), publicVideoUrl);
