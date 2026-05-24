@@ -324,6 +324,26 @@
     .reel-action-btn:hover {
         background-color: var(--color-secondary, #7943e0);
     }
+
+    /* --- PLYR VIDEO CONTROLS FIX --- */
+    /* Force Plyr wrapper to fill the container so vertical videos aren't letterboxed weirdly */
+    .plyr {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .plyr__video-wrapper, .plyr__video-wrapper video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover !important;
+    }
+    /* Push the Plyr controls up so they aren't hidden behind our custom title/avatar overlay */
+    .plyr__controls {
+        padding-bottom: 120px !important;
+        z-index: 20 !important; /* Ensure it floats above the gradient overlay */
+        background: transparent !important;
+    }
 </style>
 
 @code {

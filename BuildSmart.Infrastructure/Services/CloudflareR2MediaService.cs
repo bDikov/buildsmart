@@ -29,6 +29,7 @@ public class CloudflareR2MediaService : IMediaService
         var s3Config = new AmazonS3Config
         {
             ServiceURL = _serviceUrl,
+            ForcePathStyle = true // CRITICAL: Cloudflare R2 requires Path-Style URLs
         };
 
         _s3Client = new AmazonS3Client(_accessKey, _secretKey, s3Config);

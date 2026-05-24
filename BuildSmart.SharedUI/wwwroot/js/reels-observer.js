@@ -2,6 +2,7 @@ window.reelsObserver = {
     observer: null,
     dotNetRef: null,
     players: {},
+    globalMuted: true, // Track user's mute intent across all videos
 
     initialize: function (dotNetHelper, containerId) {
         this.dotNetRef = dotNetHelper;
@@ -19,10 +20,22 @@ window.reelsObserver = {
 
                 if (entry.isIntersecting) {
                     if (player) {
-                        player.muted = true; // Force mute to bypass strict autoplay policies
+                        // Apply the global mute state chosen by the user
+                        player.muted = window.reelsObserver.globalMuted;
+                        if (!window.reelsObserver.globalMuted) {
+                            player.volume = 1;
+                        }
+                        
                         let playPromise = player.play();
                         if (playPromise !== undefined) {
-                            playPromise.catch(e => console.log('Autoplay prevented by browser', e));
+                            playPromise.catch(e => {
+                                // If the browser blocks unmuted autoplay, fallback to muted so the video still plays
+                                if (!player.muted) {
+                                    player.muted = true;
+                                    player.play();
+                                }
+                                console.log('Autoplay prevented by browser, falling back to muted', e);
+                            });
                         }
                     }
                     // Notify Blazor that this video is now active
@@ -47,6 +60,16 @@ window.reelsObserver = {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
                 autoplay: false,
                 muted: true
+            });
+            
+            // Listen for user volume/mute changes to sync across all videos
+            this.players[videoId].on('volumechange', (e) => {
+                const p = e.detail.plyr;
+                if (!p.muted && p.volume > 0) {
+                    window.reelsObserver.globalMuted = false;
+                } else {
+                    window.reelsObserver.globalMuted = true;
+                }
             });
         }
 
@@ -178,10 +201,22 @@ window.reelsObserver = {
     playVideo: function (videoId) {
         const player = this.players[videoId];
         if (player) {
-            player.muted = true;
+            // Respect the user's global mute choice
+            player.muted = window.reelsObserver.globalMuted;
+            if (!window.reelsObserver.globalMuted) {
+                player.volume = 1;
+            }
+            
             let playPromise = player.play();
             if (playPromise !== undefined) {
-                playPromise.catch(e => console.log('Autoplay prevented by browser', e));
+                playPromise.catch(e => {
+                    // If the browser blocks unmuted autoplay, fallback to muted so the video still plays
+                    if (!player.muted) {
+                        player.muted = true;
+                        player.play();
+                    }
+                    console.log('Autoplay prevented by browser, falling back to muted', e);
+                });
             }
         }
     },
