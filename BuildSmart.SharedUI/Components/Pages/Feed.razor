@@ -165,24 +165,50 @@
 <style>
     .reels-container {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         gap: 20px;
-        padding-bottom: 40px;
+        padding-bottom: 20px;
         width: 100%;
-        max-width: 500px;
+        max-width: 100%;
         margin: 0 auto;
+        padding-top: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+
+    /* Hide scrollbar for cleaner look */
+    .reels-container::-webkit-scrollbar {
+        display: none;
+    }
+    .reels-container {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
     }
 
     .reel-item {
         position: relative;
-        width: 100%;
-        aspect-ratio: 9 / 16;
+        flex: 0 0 auto; /* Prevent shrinking in horizontal layout */
+        width: 85vw; /* Take up most of the screen width */
+        max-width: 326px; /* Match Figma exact width */
+        aspect-ratio: 326 / 438; /* Match Figma exactly */
         background-color: var(--bg-card);
-        border-radius: 20px;
+        
+        /* Figma PersonalityCard Properties */
+        border: 2px solid var(--border-color, #ffffff);
+        border-radius: 24px;
+        box-shadow: 
+            inset 3.6px 2.7px 19.8px rgba(0, 0, 0, 0.30), 
+            0px 6px 14px 0px rgba(0, 0, 0, 0.75);
+            
         overflow: hidden;
         cursor: pointer;
-        box-shadow: var(--elevation-8dp);
+        scroll-snap-align: center;
     }
 
     .reel-video {
@@ -196,6 +222,9 @@
         bottom: 0;
         left: 0;
         right: 0;
+        /* Add border-radius to match the container so the gradient doesn't bleed */
+        border-bottom-left-radius: 22px;
+        border-bottom-right-radius: 22px;
         background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%);
         padding: 30px 20px 20px 20px;
         display: flex;
