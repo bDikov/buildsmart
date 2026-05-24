@@ -196,12 +196,12 @@
             using var uploadClient = new HttpClient();
             uploadClient.Timeout = TimeSpan.FromMinutes(60); // 1 hour timeout for large videos
 
-            var response = await uploadClient.PutAsync(preSignedUrl, content);            
+            var response = await uploadClient.PutAsync(preSignedUrl, content);
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"CDN upload failed with status {response.StatusCode}.");
+                var responseBody = await response.Content.ReadAsStringAsync();
+                throw new Exception($"CDN upload failed with status {response.StatusCode}. URL: {preSignedUrl}. Cloudflare Error: {responseBody}");
             }
-
             uploadProgress = 100;
             statusMessage = "Saving database record...";
             StateHasChanged();

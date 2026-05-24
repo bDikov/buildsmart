@@ -57,7 +57,7 @@ window.reelsObserver = {
         // Initialize Plyr if not already initialized for this video
         if (videoElement && !this.players[videoId]) {
             this.players[videoId] = new Plyr(videoElement, {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
                 autoplay: false,
                 muted: true
             });
