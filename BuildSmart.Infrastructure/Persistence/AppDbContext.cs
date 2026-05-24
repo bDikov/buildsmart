@@ -42,6 +42,8 @@ public class AppDbContext : DbContext
 	public DbSet<Review> Reviews { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<Certification> Certifications { get; set; } = null!;
+	public DbSet<TradesmanMedia> TradesmanMedia { get; set; } = null!;
+	public DbSet<ProjectMilestoneMedia> ProjectMilestoneMedia { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
@@ -51,6 +53,19 @@ public class AppDbContext : DbContext
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
+		
+		modelBuilder.Entity<TradesmanMedia>()
+			.HasOne(m => m.TradesmanProfile)
+			.WithMany(p => p.Media)
+			.HasForeignKey(m => m.TradesmanId)
+			.OnDelete(DeleteBehavior.Cascade);
+
+		modelBuilder.Entity<ProjectMilestoneMedia>()
+			.HasOne(m => m.TradesmanProfile)
+			.WithMany(p => p.MilestoneMedia)
+			.HasForeignKey(m => m.TradesmanProfileId)
+			.OnDelete(DeleteBehavior.Cascade);
+
 		modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 	}
 

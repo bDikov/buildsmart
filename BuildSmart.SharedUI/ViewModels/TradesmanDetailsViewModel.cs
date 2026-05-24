@@ -48,9 +48,11 @@ namespace BuildSmart.SharedUI.ViewModels
 
                 if (result.Errors.Count == 0 && result.Data?.TradesmanProfiles is not null)
                 {
+                     // Convert ID string comparison to ignore case and properly match the queried route param
                      Tradesman = result.Data.TradesmanProfiles
-                        .FirstOrDefault(t => t.Id.ToString() == TradesmanId || t.User.Id.ToString() == TradesmanId); 
-                        // Checking both ID and UserID just in case, though ID should match TradesmanProfileId
+                        .FirstOrDefault(t => 
+                            string.Equals(t.Id.ToString(), TradesmanId, System.StringComparison.OrdinalIgnoreCase) || 
+                            string.Equals(t.User.Id.ToString(), TradesmanId, System.StringComparison.OrdinalIgnoreCase)); 
                 }
                 else
                 {

@@ -49,7 +49,24 @@
         </div>
 
         <div class="photo-grid">
-            @if (ViewModel.Tradesman.PortfolioEntries != null && ViewModel.Tradesman.PortfolioEntries.Any())
+            @if (ViewModel.Tradesman.Media != null && ViewModel.Tradesman.Media.Any(m => m.IsActive))
+            {
+                @foreach (var entry in ViewModel.Tradesman.Media.Where(m => m.IsActive))
+                {
+                    <div class="photo-item" @onclick="GoToReels">
+                        @if (!string.IsNullOrEmpty(entry.ThumbnailUrl))
+                        {
+                            <img src="@entry.ThumbnailUrl" />
+                        }
+                        else
+                        {
+                            <!-- Fallback: a video element can serve as a thumbnail if muted and paused -->
+                            <video src="@entry.VideoUrl" muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        }
+                    </div>
+                }
+            }
+            else if (ViewModel.Tradesman.PortfolioEntries != null && ViewModel.Tradesman.PortfolioEntries.Any())
             {
                 @foreach (var entry in ViewModel.Tradesman.PortfolioEntries)
                 {
@@ -252,7 +269,10 @@
     
     private void GoToReels()
     {
-        Navigation.NavigateTo("/reels");
+        if (ViewModel.Tradesman != null)
+        {
+            Navigation.NavigateTo($"/reels/{ViewModel.Tradesman.Id}");
+        }
     }
 
     public void Dispose()

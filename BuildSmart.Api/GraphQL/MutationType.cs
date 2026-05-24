@@ -142,5 +142,21 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.RestoreAuction(default!, default!, default!))
             .Description("Restores a previously passed auction for a tradesman.")
             .Authorize(roles: new[] { "Tradesman" });
+
+        descriptor.Field(m => m.RequestVideoUploadUrl(default!, default!, default!))
+            .Description("Generates a secure, time-limited Pre-signed URL for direct video uploads to the CDN.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.ConfirmVideoUpload(default!, default!, default!, default!))
+            .Description("Confirms a successful CDN upload and saves the video record to the tradesman's profile.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.ToggleTradesmanMediaStatus(default!, default!, default!))
+            .Description("Toggles the visibility/active status of a tradesman's media reel.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.DeleteTradesmanMedia(default!, default!))
+            .Description("Deletes a tradesman's media reel from the database.")
+            .Authorize(roles: new[] { "Admin" });
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using BuildSmart.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BuildSmart.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260523185645_AddTradesmanMedia")]
+    partial class AddTradesmanMedia
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -834,6 +837,9 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("TradesmanId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("TradesmanProfileId")
                         .HasColumnType("uuid");
 
@@ -1156,6 +1162,9 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<Guid>("TradesmanId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("TradesmanProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1165,7 +1174,7 @@ namespace BuildSmart.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TradesmanId");
+                    b.HasIndex("TradesmanProfileId");
 
                     b.ToTable("TradesmanMedia");
                 });
@@ -2023,7 +2032,7 @@ namespace BuildSmart.Infrastructure.Migrations
                 {
                     b.HasOne("BuildSmart.Core.Domain.Entities.TradesmanProfile", "TradesmanProfile")
                         .WithMany("Media")
-                        .HasForeignKey("TradesmanId")
+                        .HasForeignKey("TradesmanProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

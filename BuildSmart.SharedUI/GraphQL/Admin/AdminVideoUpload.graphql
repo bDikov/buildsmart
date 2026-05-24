@@ -1,0 +1,10 @@
+mutation RequestVideoUploadUrl($fileName: String!, $contentType: String!) {
+  requestVideoUploadUrl(fileName: $fileName, contentType: $contentType)
+}
+
+mutation ConfirmVideoUpload($tradesmanUserId: UUID!, $videoUrl: String!) {
+  confirmVideoUpload(tradesmanUserId: $tradesmanUserId, videoUrl: $videoUrl) {
+    id
+    videoUrl
+  }
+}

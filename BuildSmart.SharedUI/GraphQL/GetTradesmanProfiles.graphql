@@ -18,5 +18,19 @@ query GetTradesmanProfiles {
         }
         verificationStatus
     }
+    media {
+      id
+      videoUrl
+      thumbnailUrl
+      isActive
+      createdAt
+    }
+    milestoneMedia {
+      id
+      jobId
+      url
+      type
+      createdAt
+    }
   }
 }

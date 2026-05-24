@@ -133,6 +133,7 @@ public partial class Program
 		builder.Services.AddScoped<IAuthService, AuthService>();
 		builder.Services.AddScoped<INotificationService, BuildSmart.Api.Services.NotificationService>();
 		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
+		builder.Services.AddScoped<IMediaService, BuildSmart.Infrastructure.Services.CloudflareR2MediaService>();
 		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 
 		// --- Background Services (Scope Generation) ---
@@ -288,6 +289,8 @@ public partial class Program
 			.AddType<BidType>()
 			.AddType<CertificationType>()
 			.AddType<PortfolioEntryType>()
+			.AddType<TradesmanMediaType>()
+			.AddType<ProjectMilestoneMediaType>()
 			.AddType<JobPostQuestionType>()
             .AddType<JobPostFeedbackType>()
 			.AddType<JobTaskType>()

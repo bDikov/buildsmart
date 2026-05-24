@@ -19,6 +19,8 @@ public class TradesmanProfileRepository : ITradesmanProfileRepository
 			.Include(tp => tp.User)
 			.Include(tp => tp.Skills)
                 .ThenInclude(s => s.ServiceCategory)
+			.Include(tp => tp.Media)
+			.Include(tp => tp.MilestoneMedia)
 			.FirstOrDefaultAsync(tp => tp.Id == id);
 	}
 
@@ -28,6 +30,8 @@ public class TradesmanProfileRepository : ITradesmanProfileRepository
 			.Include(tp => tp.User)
             .Include(tp => tp.Skills)
                 .ThenInclude(s => s.ServiceCategory)
+			.Include(tp => tp.Media)
+			.Include(tp => tp.MilestoneMedia)
 			.FirstOrDefaultAsync(tp => tp.UserId == userId);
 	}
 
@@ -37,6 +41,8 @@ public class TradesmanProfileRepository : ITradesmanProfileRepository
 			.Include(tp => tp.User)
             .Include(tp => tp.Skills)
                 .ThenInclude(s => s.ServiceCategory)
+			.Include(tp => tp.Media)
+			.Include(tp => tp.MilestoneMedia)
 			.ToListAsync();
 	}
 
@@ -48,6 +54,8 @@ public class TradesmanProfileRepository : ITradesmanProfileRepository
 			.Include(tp => tp.User)
             .Include(tp => tp.Skills)
                 .ThenInclude(s => s.ServiceCategory)
+			.Include(tp => tp.Media)
+			.Include(tp => tp.MilestoneMedia)
 			.AsQueryable();
 	}
 
@@ -64,5 +72,10 @@ public class TradesmanProfileRepository : ITradesmanProfileRepository
 	public void Delete(TradesmanProfile profile)
 	{
 		_context.TradesmanProfiles.Remove(profile);
+	}
+
+	public async Task AddMediaAsync(TradesmanMedia media)
+	{
+		await _context.TradesmanMedia.AddAsync(media);
 	}
 }

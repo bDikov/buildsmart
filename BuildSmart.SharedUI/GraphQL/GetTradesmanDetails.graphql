@@ -34,5 +34,19 @@ query GetTradesmanDetailsById {
       comment
       createdAt
     }
+    media {
+      id
+      videoUrl
+      thumbnailUrl
+      isActive
+      createdAt
+    }
+    milestoneMedia {
+      id
+      jobId
+      url
+      type
+      createdAt
+    }
   }
 }

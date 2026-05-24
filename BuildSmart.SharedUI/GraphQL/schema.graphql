@@ -15,6 +15,18 @@ type TaskSkuItem {
   jobTask: JobTask!
 }
 
+"Represents a high-quality video (Reel) or media item in the tradesman's portfolio feed."
+type TradesmanMedia {
+  id: ID!
+  tradesmanId: ID!
+  videoUrl: String!
+  thumbnailUrl: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  tradesmanProfile: TradesmanProfile!
+  updatedAt: DateTime!
+}
+
 type JobPostQuestion {
   id: UUID!
   questionText: String!
@@ -72,6 +84,8 @@ type JobPost {
   status: JobPostStatus!
   estimatedBudget: Amount
   amendmentCount: Int!
+  activeHangfireJobId: String
+  lastQueuedJobDetails: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -87,6 +101,19 @@ input SubmitBidInput {
   estimatedDurationDays: Int
   "The list of prices mapped to specific job tasks."
   bidItems: [BidItemInput!]!
+}
+
+"Represents raw verification photos or videos linked to a specific completed project\/milestone."
+type ProjectMilestoneMedia {
+  id: ID!
+  tradesmanProfileId: ID!
+  jobId: ID!
+  url: String!
+  type: String!
+  createdAt: DateTime!
+  tradesmanProfile: TradesmanProfile!
+  job: JobPost!
+  updatedAt: DateTime!
 }
 
 input ListFilterInputTypeOfServiceSkuTranslationFilterInput {
@@ -747,6 +774,20 @@ input ServiceCategoryTranslationFilterInput {
   updatedAt: DateTimeOperationFilterInput
 }
 
+input ProjectMilestoneMediaFilterInput {
+  and: [ProjectMilestoneMediaFilterInput!]
+  or: [ProjectMilestoneMediaFilterInput!]
+  tradesmanProfileId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  jobId: UuidOperationFilterInput
+  job: JobPostFilterInput
+  url: StringOperationFilterInput
+  type: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
 input ServiceCategoryFilterInput {
   and: [ServiceCategoryFilterInput!]
   or: [ServiceCategoryFilterInput!]
@@ -848,6 +889,14 @@ type Mutation {
   updateVideoIntroduction(file: Upload!): Boolean!
   "Restores a previously passed auction for a tradesman."
   restoreAuction(jobId: UUID!): Boolean!
+  "Generates a secure, time-limited Pre-signed URL for direct video uploads to the CDN."
+  requestVideoUploadUrl(fileName: String! contentType: String!): String!
+  "Confirms a successful CDN upload and saves the video record to the tradesman's profile."
+  confirmVideoUpload(tradesmanUserId: UUID! videoUrl: String!): TradesmanMedia!
+  "Toggles the visibility\/active status of a tradesman's media reel."
+  toggleTradesmanMediaStatus(mediaId: UUID! isActive: Boolean!): TradesmanMedia!
+  "Deletes a tradesman's media reel from the database."
+  deleteTradesmanMedia(mediaId: UUID!): Boolean!
   updateUserLanguage(languageCode: String!): User!
   updateUserTheme(theme: String!): User!
   updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
@@ -920,6 +969,19 @@ input JobPostFeedbackFilterInput {
   parentFeedbackId: UuidOperationFilterInput
   parentFeedback: JobPostFeedbackFilterInput
   replies: ListFilterInputTypeOfJobPostFeedbackFilterInput
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input TradesmanMediaFilterInput {
+  and: [TradesmanMediaFilterInput!]
+  or: [TradesmanMediaFilterInput!]
+  tradesmanId: UuidOperationFilterInput
+  tradesmanProfile: TradesmanProfileFilterInput
+  videoUrl: StringOperationFilterInput
+  thumbnailUrl: StringOperationFilterInput
+  isActive: BooleanOperationFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
@@ -1030,6 +1092,13 @@ enum BookingStatusTypes {
 "The `Byte` scalar type represents non-fractional whole numeric values. Byte can represent values between 0 and 255."
 scalar Byte
 
+input ListFilterInputTypeOfProjectMilestoneMediaFilterInput {
+  all: ProjectMilestoneMediaFilterInput
+  none: ProjectMilestoneMediaFilterInput
+  some: ProjectMilestoneMediaFilterInput
+  any: Boolean
+}
+
 input MilestonePaymentFilterInput {
   and: [MilestonePaymentFilterInput!]
   or: [MilestonePaymentFilterInput!]
@@ -1113,6 +1182,10 @@ type TradesmanProfile {
   portfolioEntries: [PortfolioEntry!]!
   "The tradesman's certifications and credentials."
   certifications: [Certification!]!
+  "High-quality media files (Reels) associated with this tradesman's portfolio."
+  media: [TradesmanMedia!]!
+  "Milestone verification media for completed projects."
+  milestoneMedia: [ProjectMilestoneMedia!]!
   user: User!
   bookings: [Booking!]!
   reviews: [Review!]!
@@ -1295,6 +1368,13 @@ input SkillVerificationStatusOperationFilterInput {
   nin: [SkillVerificationStatus!]
 }
 
+input ListFilterInputTypeOfTradesmanMediaFilterInput {
+  all: TradesmanMediaFilterInput
+  none: TradesmanMediaFilterInput
+  some: TradesmanMediaFilterInput
+  any: Boolean
+}
+
 input UuidOperationFilterInput {
   eq: UUID
   neq: UUID
@@ -1323,6 +1403,8 @@ input TradesmanProfileFilterInput {
   certifications: ListFilterInputTypeOfCertificationFilterInput
   bookings: ListFilterInputTypeOfBookingFilterInput
   reviews: ListFilterInputTypeOfReviewFilterInput
+  media: ListFilterInputTypeOfTradesmanMediaFilterInput
+  milestoneMedia: ListFilterInputTypeOfProjectMilestoneMediaFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
@@ -1411,6 +1493,8 @@ input JobPostSortInput {
   status: SortEnumType
   estimatedBudget: AmountSortInput
   amendmentCount: SortEnumType
+  activeHangfireJobId: SortEnumType
+  lastQueuedJobDetails: SortEnumType
   id: SortEnumType
   createdAt: SortEnumType
   updatedAt: SortEnumType
@@ -1517,6 +1601,8 @@ input JobPostFilterInput {
   status: JobPostStatusOperationFilterInput
   estimatedBudget: AmountFilterInput
   amendmentCount: IntOperationFilterInput
+  activeHangfireJobId: StringOperationFilterInput
+  lastQueuedJobDetails: StringOperationFilterInput
   jobTasks: ListFilterInputTypeOfJobTaskFilterInput
   questions: ListFilterInputTypeOfJobPostQuestionFilterInput
   bids: ListFilterInputTypeOfBidFilterInput

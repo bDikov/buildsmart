@@ -907,4 +907,88 @@ public class Mutation
 		await unitOfWork.SaveChangesAsync();
 		return true;
 	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public string RequestVideoUploadUrl(
+		string fileName,
+		string contentType,
+		[Service] IMediaService mediaService)
+	{
+		return mediaService.GeneratePreSignedUploadUrl(fileName, contentType, TimeSpan.FromMinutes(15));
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<TradesmanMedia> ConfirmVideoUpload(
+		Guid tradesmanUserId,
+		string videoUrl,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] Microsoft.Extensions.Configuration.IConfiguration config)
+	{
+		var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(tradesmanUserId)
+			?? throw new GraphQLException("Tradesman profile not found.");
+
+		// Remap the internal S3 URL to the Public CDN URL if configured
+		var publicBaseUrl = config["CloudflareR2:PublicUrl"];
+		if (!string.IsNullOrEmpty(publicBaseUrl) && Uri.TryCreate(videoUrl, UriKind.Absolute, out var parsedUri))
+		{
+			videoUrl = $"{publicBaseUrl.TrimEnd('/')}{parsedUri.AbsolutePath}";
+		}
+
+		var media = new TradesmanMedia
+		{
+			Id = Guid.NewGuid(),
+			TradesmanId = profile.Id, 
+			VideoUrl = videoUrl,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow,
+			IsActive = true
+		};
+
+		await unitOfWork.TradesmanProfiles.AddMediaAsync(media);
+		await unitOfWork.SaveChangesAsync();
+
+		return media;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<TradesmanMedia> ToggleTradesmanMediaStatus(
+		Guid mediaId,
+		bool isActive,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var dbContext = unitOfWork.GetType().GetProperty("Context", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+			?.GetValue(unitOfWork) as BuildSmart.Infrastructure.Persistence.AppDbContext;
+
+		if (dbContext == null) throw new GraphQLException("Database context not found.");
+
+		var media = await dbContext.TradesmanMedia.FirstOrDefaultAsync(m => m.Id == mediaId)
+			?? throw new GraphQLException("Media not found.");
+
+		media.IsActive = isActive;
+		media.UpdatedAt = DateTime.UtcNow;
+
+		dbContext.TradesmanMedia.Update(media);
+		await dbContext.SaveChangesAsync();
+
+		return media;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> DeleteTradesmanMedia(
+		Guid mediaId,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var dbContext = unitOfWork.GetType().GetProperty("Context", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+			?.GetValue(unitOfWork) as BuildSmart.Infrastructure.Persistence.AppDbContext;
+
+		if (dbContext == null) throw new GraphQLException("Database context not found.");
+
+		var media = await dbContext.TradesmanMedia.FirstOrDefaultAsync(m => m.Id == mediaId)
+			?? throw new GraphQLException("Media not found.");
+
+		dbContext.TradesmanMedia.Remove(media);
+		await dbContext.SaveChangesAsync();
+
+		return true;
+	}
 }

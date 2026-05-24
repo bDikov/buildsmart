@@ -1,38 +1,60 @@
-@page "/reels"
+@page "/reels/{TradesmanId}"
+@using BuildSmart.SharedUI.GraphQL
 @inject IJSRuntime JSRuntime
+@inject BuildSmartApiClient ApiClient
 @implements IAsyncDisposable
 
 <div class="reels-page-container">
-    <div id="reels-feed-container" class="reels-feed-container">
-        @foreach (var reel in Reels)
-        {
-            var isRendered = Math.Abs(Reels.IndexOf(reel) - CurrentIndex) <= 1; // Rule of 3 (prev, current, next)
+    <div class="close-btn-container">
+        <button class="back-btn" @onclick="GoBack">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+    </div>
 
-            <div class="reel-wrapper" id="@reel.Id" data-video-id="@reel.Id">
-                @if (isRendered)
-                {
-                    <video class="reel-video" 
-                           src="@reel.VideoUrl" 
-                           loop 
-                           muted="false" 
-                           playsinline 
-                           preload="auto">
-                    </video>
-                }
-                else
-                {
-                    <div class="video-placeholder"></div>
-                }
+    @if (isLoading)
+    {
+        <div class="loading-state" style="color: white; margin-top: 50px; text-align: center;">Loading Reels...</div>
+    }
+    else if (Reels.Count == 0)
+    {
+        <div class="empty-state" style="color: white; margin-top: 50px; text-align: center;">No videos available for this tradesman.</div>
+    }
+    else
+    {
+        <div id="reels-feed-container" class="reels-feed-container">
+            @foreach (var reel in Reels)
+            {
+                var isRendered = Math.Abs(Reels.IndexOf(reel) - CurrentIndex) <= 1; // Rule of 3 (prev, current, next)
 
-                <!-- Overlay UI (e.g., likes, comments, title) -->
-                <div class="reel-overlay">
-                    <div class="reel-info">
-                        <h3 class="reel-title">@reel.Title</h3>
+                <div class="reel-wrapper" id="@reel.Id" data-video-id="@reel.Id">
+                    @if (isRendered)
+                    {
+                        <video class="reel-video" 
+                               src="@reel.VideoUrl" 
+                               loop 
+                               muted="false" 
+                               playsinline 
+                               preload="auto">
+                        </video>
+                    }
+                    else
+                    {
+                        <div class="video-placeholder"></div>
+                    }
+
+                    <!-- Overlay UI -->
+                    <div class="reel-overlay">
+                        <div class="reel-info">
+                            <h3 class="reel-title">@reel.Title</h3>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
 
 <style>
@@ -142,47 +164,73 @@
 </style>
 
 @code {
+    [Parameter]
+    public string TradesmanId { get; set; } = string.Empty;
+
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     public class ReelModel
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        public string Id { get; set; } = "";
         public string VideoUrl { get; set; } = "";
         public string Title { get; set; } = "";
     }
 
-    private List<ReelModel> Reels = new List<ReelModel>();
+    private List<ReelModel> Reels = new();
     private int CurrentIndex = 0;
+    private bool isLoading = true;
     private DotNetObjectReference<ReelsFeed>? _objRef;
     private bool _isJsInitialized = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        // Add sample CDN videos
-        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4", Title = "Kitchen remodel project #interiordesign #kitchen" });
-        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4", Title = "Bathroom renovation day 1! 🛁" });
-        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4", Title = "Electrician tips ⚡️ #hometips" });
-        Reels.Add(new ReelModel { VideoUrl = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4", Title = "Custom cabinets install" });
+        isLoading = true;
+        
+        try
+        {
+            var result = await ApiClient.GetTradesmanProfiles.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.TradesmanProfiles != null)
+            {
+                var profile = result.Data.TradesmanProfiles.FirstOrDefault(p => p.User.Id.ToString() == TradesmanId || p.Id.ToString() == TradesmanId);
+                if (profile?.Media != null)
+                {
+                    Reels = profile.Media.Select(m => new ReelModel
+                    {
+                        Id = m.Id.ToString(),
+                        VideoUrl = m.VideoUrl,
+                        Title = "Tradesman Portfolio" // We can add a Title property to TradesmanMedia later if needed
+                    }).ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!isLoading && Reels.Any())
         {
-            _objRef = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("reelsObserver.initialize", _objRef, "reels-feed-container");
-            _isJsInitialized = true;
-            ObserveAll();
-        }
-        else if (_isJsInitialized)
-        {
-            // Re-observe if elements changed
+            if (firstRender || !_isJsInitialized)
+            {
+                _objRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("reelsObserver.initialize", _objRef, "reels-feed-container");
+                _isJsInitialized = true;
+            }
             ObserveAll();
         }
     }
 
     private void ObserveAll()
     {
+        if (!_isJsInitialized) return;
+        
         foreach (var reel in Reels)
         {
             JSRuntime.InvokeVoidAsync("reelsObserver.observeVideo", reel.Id);
@@ -202,14 +250,18 @@
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/tradesman-profile"); // Adjust according to logic
+        Navigation.NavigateTo($"/tradesman-profile?TradesmanId={TradesmanId}");
     }
 
     public async ValueTask DisposeAsync()
     {
         if (_isJsInitialized)
         {
-            await JSRuntime.InvokeVoidAsync("reelsObserver.dispose");
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("reelsObserver.dispose");
+            }
+            catch { /* Ignore if JS interop is already disconnected */ }
         }
         _objRef?.Dispose();
     }

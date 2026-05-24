@@ -1,0 +1,377 @@
+@page "/admin-video-upload"
+@attribute [Authorize(Roles = "Admin")]
+@using BuildSmart.SharedUI.GraphQL
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using BuildSmart.SharedUI.Resources
+@inject BuildSmartApiClient ApiClient
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<AppResources> Loc
+
+<div class="admin-page">
+    <div class="header">
+        <h1>Tradesman Video Upload</h1>
+        <p>Upload a high-quality, web-optimized MP4 directly to the CDN.</p>
+    </div>
+
+    <div class="bs-card form-card">
+        @if (isLoading)
+        {
+            <div class="loading-state">@Loc["Common_Loading"]</div>
+        }
+        else
+        {
+            <div class="form-group">
+                <label>Select Tradesman:</label>
+                <select @bind="selectedTradesmanUserId" class="bs-input">
+                    <option value="">-- Select a Tradesman --</option>
+                    @foreach (var t in tradesmen)
+                    {
+                        <option value="@t.User.Id">@t.User.FirstName @t.User.LastName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Select Web-Optimized Video (.mp4):</label>
+                <InputFile OnChange="HandleFileSelected" accept="video/mp4,video/x-m4v,video/*" class="bs-input file-input" />
+                @if (selectedFile != null)
+                {
+                    <small>Selected: @selectedFile.Name (@(selectedFile.Size / 1024 / 1024) MB)</small>
+                }
+            </div>
+
+            <button class="bs-btn-primary" @onclick="UploadVideo" disabled="@(!CanUpload || isUploading)">
+                @if (isUploading)
+                {
+                    <span>Uploading... @uploadProgress%</span>
+                }
+                else
+                {
+                    <span>Upload to CDN</span>
+                }
+            </button>
+
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="status-message @(isError ? "error" : "success")">
+                    @statusMessage
+                </div>
+            }
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(selectedTradesmanUserId))
+    {
+        var currentTradesman = tradesmen.FirstOrDefault(t => t.User.Id.ToString() == selectedTradesmanUserId);
+        if (currentTradesman?.Media != null && currentTradesman.Media.Any())
+        {
+            <div class="bs-card form-card" style="margin-top: 2rem;">
+                <h2>Manage Videos</h2>
+                <div class="video-list">
+                    @foreach (var media in currentTradesman.Media)
+                    {
+                        <div class="video-item" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem; border-bottom: 1px solid var(--border-color, #ccc);">
+                            <div>
+                                <video src="@media.VideoUrl" style="width: 100px; height: 100px; object-fit: cover;" muted></video>
+                            </div>
+                            <div>
+                                <p style="margin:0;">Uploaded: @media.CreatedAt.DateTime.ToLocalTime().ToString("g")</p>
+                                <p style="margin:0;">Status: @(media.IsActive ? "Visible in Feed" : "Hidden")</p>
+                            </div>
+                            <div style="display:flex; gap: 0.5rem;">
+                                <button class="bs-btn-dark" @onclick="() => ToggleMedia(media.Id, !media.IsActive)">
+                                    @(media.IsActive ? "Hide" : "Show")
+                                </button>
+                                <button class="bs-btn-action-light" style="color:var(--color-danger); border: 1px solid var(--color-danger);" @onclick="() => DeleteMedia(media.Id)">Delete</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool isLoading = true;
+    private bool isUploading = false;
+    private string selectedTradesmanUserId = "";
+    private IBrowserFile? selectedFile;
+    private List<IGetTradesmanProfiles_TradesmanProfiles> tradesmen = new();
+    private string statusMessage = "";
+    private bool isError = false;
+    private int uploadProgress = 0;
+    private bool CanUpload => !string.IsNullOrEmpty(selectedTradesmanUserId) && selectedFile != null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTradesmen();
+    }
+
+    private async Task LoadTradesmen()
+    {
+        try
+        {
+            var result = await ApiClient.GetTradesmanProfiles.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.TradesmanProfiles != null)
+            {
+                tradesmen = result.Data.TradesmanProfiles.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            statusMessage = "Failed to load tradesmen.";
+            isError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        statusMessage = "";
+        isError = false;
+    }
+
+    private async Task UploadVideo()
+    {
+        if (!CanUpload) return;
+
+        isUploading = true;
+        statusMessage = "Requesting secure upload URL...";
+        isError = false;
+        uploadProgress = 0;
+        StateHasChanged();
+
+        try
+        {
+            // 1. Get Pre-signed URL
+            var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(selectedFile.Name, selectedFile.ContentType);
+            if (urlResult.Errors.Count > 0 || string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
+            {
+                throw new Exception("Failed to get pre-signed upload URL from API.");
+            }
+
+            var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;
+            statusMessage = "Uploading directly to CDN...";
+            StateHasChanged();
+
+            // 2. Upload directly to CDN using a dedicated HttpClient with an extended timeout
+            using var rawStream = selectedFile.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024); // 500MB max
+            
+            // Wrap the stream to intercept reads and report progress dynamically
+            using var progressStream = new ProgressStream(rawStream, (bytesRead) =>
+            {
+                var newProgress = (int)((bytesRead * 100) / selectedFile.Size);
+                if (newProgress != uploadProgress)
+                {
+                    uploadProgress = newProgress;
+                    var mbSent = (bytesRead / 1024.0 / 1024.0).ToString("0.0");
+                    var mbTotal = (selectedFile.Size / 1024.0 / 1024.0).ToString("0.0");
+                    statusMessage = $"Uploading... {mbSent} MB / {mbTotal} MB";
+                    _ = InvokeAsync(StateHasChanged);
+                }
+            });
+
+            using var content = new StreamContent(progressStream); 
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+            // CRITICAL: R2/S3 Pre-signed URLs reject 'Transfer-Encoding: chunked'. We MUST provide the exact Content-Length.
+            content.Headers.ContentLength = selectedFile.Size;
+            
+            using var uploadClient = new HttpClient();
+            uploadClient.Timeout = TimeSpan.FromMinutes(60); // 1 hour timeout for large videos
+            
+            var response = await uploadClient.PutAsync(preSignedUrl, content);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"CDN upload failed with status {response.StatusCode}.");
+            }
+
+            uploadProgress = 100;
+            statusMessage = "Saving database record...";
+            StateHasChanged();
+
+            // The public URL is the pre-signed URL without the query string parameters
+            var publicVideoUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
+
+            // 3. Confirm with API
+            var confirmResult = await ApiClient.ConfirmVideoUpload.ExecuteAsync(Guid.Parse(selectedTradesmanUserId), publicVideoUrl);
+            if (confirmResult.Errors.Count > 0)
+            {
+                var errorMsg = string.Join(", ", confirmResult.Errors.Select(e => e.Message));
+                throw new Exception($"Database save failed: {errorMsg}");
+            }
+
+            statusMessage = "Video uploaded and saved successfully!";
+            isError = false;
+            selectedFile = null; // Reset
+            
+            // Refresh the UI to show the newly added video in the Manage Videos section
+            await LoadTradesmen();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+            isError = true;
+        }
+        finally
+        {
+            isUploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleMedia(object mediaIdObj, bool isActive)
+    {
+        if (!Guid.TryParse(mediaIdObj?.ToString(), out var mediaId)) return;
+
+        try
+        {
+            var result = await ApiClient.ToggleTradesmanMediaStatus.ExecuteAsync(mediaId, isActive);
+            if (result.Errors.Count == 0)
+            {
+                await LoadTradesmen();
+            }
+            else 
+            {
+                statusMessage = "Failed to toggle status.";
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error toggling media: {ex.Message}";
+            isError = true;
+        }
+    }
+
+    private async Task DeleteMedia(object mediaIdObj)
+    {
+        if (!Guid.TryParse(mediaIdObj?.ToString(), out var mediaId)) return;
+
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to permanently delete this video from the feed?");
+        if (!confirmed) return;
+
+        try
+        {
+            var result = await ApiClient.DeleteTradesmanMedia.ExecuteAsync(mediaId);
+            if (result.Errors.Count == 0)
+            {
+                await LoadTradesmen();
+            }
+            else
+            {
+                statusMessage = "Failed to delete media.";
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error deleting media: {ex.Message}";
+            isError = true;
+        }
+    }
+
+    public class ProgressStream : Stream
+    {
+        private readonly Stream _innerStream;
+        private readonly Action<long> _onProgress;
+
+        public ProgressStream(Stream innerStream, Action<long> onProgress)
+        {
+            _innerStream = innerStream;
+            _onProgress = onProgress;
+        }
+
+        public override bool CanRead => _innerStream.CanRead;
+        public override bool CanSeek => _innerStream.CanSeek;
+        public override bool CanWrite => _innerStream.CanWrite;
+        public override long Length => _innerStream.Length;
+        public override long Position { get => _innerStream.Position; set => _innerStream.Position = value; }
+
+        public override void Flush() => _innerStream.Flush();
+        
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int read = _innerStream.Read(buffer, offset, count);
+            _onProgress(Position);
+            return read;
+        }
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            int read = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+            _onProgress(Position);
+            return read;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => _innerStream.Seek(offset, origin);
+        public override void SetLength(long value) => _innerStream.SetLength(value);
+        public override void Write(byte[] buffer, int offset, int count) => _innerStream.Write(buffer, offset, count);
+    }
+}
+
+<style>
+    .admin-page {
+        padding: var(--spacing-4, 2rem);
+        max-width: 800px;
+        margin: 0 auto;
+        color: var(--text-primary);
+    }
+    .header {
+        margin-bottom: var(--spacing-4, 2rem);
+    }
+    .header h1 {
+        font-family: var(--font-h1, inherit);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .header p {
+        color: var(--text-muted);
+        font-size: var(--font-body-2, 0.9rem);
+    }
+    .form-card {
+        padding: var(--spacing-4, 2rem);
+        background-color: var(--bg-card);
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    .file-input {
+        padding: 0.5rem;
+    }
+    .status-message {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    .status-message.success {
+        background-color: var(--bg-card-alt);
+        color: var(--color-success);
+        border: 1px solid var(--color-success);
+    }
+    .status-message.error {
+        background-color: var(--bg-card-alt);
+        color: var(--color-danger);
+        border: 1px solid var(--color-danger);
+    }
+    .loading-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+    }
+</style>

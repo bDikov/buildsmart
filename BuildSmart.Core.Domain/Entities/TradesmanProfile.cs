@@ -66,6 +66,16 @@ public class TradesmanProfile : BaseEntity
 	/// </summary>
 	public ICollection<Review> Reviews { get; set; } = [];
 
+	/// <summary>
+	/// A collection of high-quality media files (Reels/Videos) associated with this tradesman's portfolio.
+	/// </summary>
+	public ICollection<TradesmanMedia> Media { get; set; } = [];
+
+	/// <summary>
+	/// A collection of milestone verification media.
+	/// </summary>
+	public ICollection<ProjectMilestoneMedia> MilestoneMedia { get; set; } = [];
+
 	// --- Domain Logic Methods ---
 
 	/// <summary>

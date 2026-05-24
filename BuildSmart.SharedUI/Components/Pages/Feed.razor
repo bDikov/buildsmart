@@ -4,7 +4,7 @@
 @using System.ComponentModel
 @using Microsoft.Extensions.Localization
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
-@implements IDisposable
+@implements IAsyncDisposable
 @inject FeedPageViewModel ViewModel
 @inject NavigationManager NavManager
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
@@ -59,34 +59,38 @@
                 else
                 {
                     <!-- 1. Homeowner View: Pros Directory (Reels) -->
-                    @if (ViewModel.IsHomeowner && ViewModel.Tradesmen != null)
+                    @if (ViewModel.IsHomeowner && ViewModel.FeedVideos != null)
                     {
-                        <div class="reels-container">
-                            @foreach (var tradesman in ViewModel.Tradesmen)
+                        <div id="reels-feed-container" class="reels-container">
+                            @foreach (var video in ViewModel.FeedVideos)
                             {
-                                <div class="reel-item" @onclick="() => NavigateToTradesmanProfile(tradesman.Id.ToString())">
-                                    <video class="reel-video" src="@tradesman.VideoIntroductionUrl" autoplay loop muted playsinline></video>
+                                var videoId = $"video_{video.TradesmanId}_{video.VideoUrl.GetHashCode()}";
+                                var wrapperId = $"wrapper_{videoId}";
+                                <div class="reel-item" data-video-id="@videoId" id="@wrapperId">
+                                    <video id="@videoId" class="reel-video plyr" loop playsinline preload="auto" poster="" muted>
+                                        <source src="@video.VideoUrl" type="video/mp4" />
+                                    </video>
                                     
-                                    <div class="reel-overlay">
+                                    <div class="reel-overlay" @onclick:stopPropagation="true">
                                         <div class="reel-info">
-                                            <h3 class="reel-name">@tradesman.User?.FirstName @tradesman.User?.LastName</h3>
-                                            <p class="reel-role">@Loc["Feed_ProfessionalRole"]・@tradesman.User?.Location</p>
+                                            <h3 class="reel-name">@video.Name</h3>
+                                            <p class="reel-role">@video.Role・@video.Location</p>
                                             
                                             <div class="reel-stats">
                                                 <div class="reel-stat-item">
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                                     </svg>
-                                                    <span>@string.Format("{0:F1}", tradesman.AverageRating)</span>
+                                                    <span>@string.Format("{0:F1}", video.Rating)</span>
                                                 </div>
                                             </div>
                                         </div>
                                         
                                         <div class="reel-actions">
                                             <div class="reel-avatar-ring">
-                                                <img src="@(string.IsNullOrEmpty(tradesman.User?.ProfilePictureUrl) ? "dotnet_bot.png" : tradesman.User.ProfilePictureUrl)" alt="Profile" class="reel-avatar-image" />
+                                                <img src="@(string.IsNullOrEmpty(video.ProfilePictureUrl) ? "" : video.ProfilePictureUrl)" alt="Profile" class="reel-avatar-image" />
                                             </div>
-                                            <button class="reel-action-btn">
+                                            <button class="reel-action-btn" @onclick="() => NavigateToTradesmanProfile(video.TradesmanId)">
                                                 @Loc["Feed_ViewProfile"]
                                             </button>
                                         </div>
@@ -174,11 +178,11 @@
         position: relative;
         width: 100%;
         aspect-ratio: 9 / 16;
-        background-color: #000;
+        background-color: var(--bg-card);
         border-radius: 20px;
         overflow: hidden;
         cursor: pointer;
-        box-shadow: 0px 10px 20px rgba(0,0,0,0.3);
+        box-shadow: var(--elevation-8dp);
     }
 
     .reel-video {
@@ -192,49 +196,14 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%);
         padding: 30px 20px 20px 20px;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        color: white;
-    }
-
-    .reel-info {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        max-width: 70%;
-    }
-
-    .reel-name {
-        font-family: var(--font-heading);
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0;
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    }
-
-    .reel-role {
-        font-family: var(--font-primary);
-        font-size: 14px;
-        opacity: 0.9;
-        margin: 0;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
-
-    .reel-stats {
-        display: flex;
-        gap: 15px;
-        margin-top: 5px;
-    }
-
-    .reel-stat-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 14px;
-        font-weight: 600;
+        color: var(--text-primary);
+        z-index: 10;
+        pointer-events: none; /* Let clicks pass through to Plyr controls */
     }
 
     .reel-actions {
@@ -242,13 +211,14 @@
         flex-direction: column;
         align-items: center;
         gap: 15px;
+        pointer-events: auto; /* Re-enable clicks on buttons */
     }
 
     .reel-avatar-ring {
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        border: 2px solid white;
+        border: 2px solid var(--bg-card);
         overflow: hidden;
     }
 
@@ -262,7 +232,7 @@
         background-color: var(--color-primary);
         border: none;
         border-radius: 20px;
-        color: white;
+        color: var(--bg-page);
         font-weight: bold;
         padding: 8px 16px;
         font-size: 12px;
@@ -271,12 +241,16 @@
     }
 
     .reel-action-btn:hover {
-        background-color: #7943e0;
+        background-color: var(--color-secondary, #7943e0);
     }
 </style>
 
 @code {
     private string _errorMessage = string.Empty;
+    private DotNetObjectReference<Feed>? _objRef;
+    private bool _isJsInitialized = false;
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -295,6 +269,42 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ViewModel.IsHomeowner && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+        {
+            try
+            {
+                if (firstRender || !_isJsInitialized)
+                {
+                    _objRef = DotNetObjectReference.Create(this);
+                    await JSRuntime.InvokeVoidAsync("reelsObserver.initialize", _objRef, "reels-feed-container");
+                    _isJsInitialized = true;
+                }
+                
+                // Re-observe elements (the JS safely handles duplicates)
+                foreach (var video in ViewModel.FeedVideos)
+                {
+                    var vId = $"video_{video.TradesmanId}_{video.VideoUrl.GetHashCode()}";
+                    var wId = $"wrapper_{vId}";
+                    await JSRuntime.InvokeVoidAsync("reelsObserver.observeVideo", wId, vId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Graceful degradation: The video will still render and have controls, 
+                // but auto-play on scroll won't work until the browser cache is cleared.
+                Console.WriteLine($"[Feed.razor] JSInterop Error: {ex.Message}. Please Hard Refresh (Ctrl+F5) to clear browser cache.");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public void OnVideoVisible(string videoId)
+    {
+        // Handled by JS for playback, we can use this hook for analytics later if needed.
+    }
+
     private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-profile?TradesmanId={id}");
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -302,11 +312,21 @@
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
+        
+        if (_isJsInitialized)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("reelsObserver.dispose");
+            }
+            catch { /* Ignore if JS interop is disconnected */ }
+        }
+        _objRef?.Dispose();
     }
 }

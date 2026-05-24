@@ -1,0 +1,10 @@
+mutation ToggleTradesmanMediaStatus($mediaId: UUID!, $isActive: Boolean!) {
+  toggleTradesmanMediaStatus(mediaId: $mediaId, isActive: $isActive) {
+    id
+    isActive
+  }
+}
+
+mutation DeleteTradesmanMedia($mediaId: UUID!) {
+  deleteTradesmanMedia(mediaId: $mediaId)
+}

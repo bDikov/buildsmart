@@ -26,6 +26,14 @@ public class TradesmanProfileType : ObjectType<TradesmanProfile>
 			.Description("The tradesman's certifications and credentials.")
 			.Type<NonNullType<ListType<NonNullType<CertificationType>>>>();
 
+        descriptor.Field(t => t.Media)
+            .Description("High-quality media files (Reels) associated with this tradesman's portfolio.")
+            .Type<NonNullType<ListType<NonNullType<TradesmanMediaType>>>>();
+
+        descriptor.Field(t => t.MilestoneMedia)
+            .Description("Milestone verification media for completed projects.")
+            .Type<NonNullType<ListType<NonNullType<ProjectMilestoneMediaType>>>>();
+
 		// Relationships will be configured here later
 	}
 }

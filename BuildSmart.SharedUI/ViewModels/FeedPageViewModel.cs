@@ -16,6 +16,20 @@ namespace BuildSmart.SharedUI.ViewModels
 		private ObservableCollection<IGetTradesmanProfiles_TradesmanProfiles> _tradesmen = new();
 
 		[ObservableProperty]
+		private ObservableCollection<FeedMediaItem> _feedVideos = new();
+
+		public class FeedMediaItem
+		{
+			public string TradesmanId { get; set; } = string.Empty;
+			public string VideoUrl { get; set; } = string.Empty;
+			public string Name { get; set; } = string.Empty;
+			public string Role { get; set; } = string.Empty;
+			public string Location { get; set; } = string.Empty;
+			public double Rating { get; set; }
+			public string ProfilePictureUrl { get; set; } = string.Empty;
+		}
+
+		[ObservableProperty]
 		private ObservableCollection<IGetAvailableAuctions_AvailableAuctions> _auctions = new();
 
 		[ObservableProperty]
@@ -188,12 +202,27 @@ namespace BuildSmart.SharedUI.ViewModels
 					if (result.Data?.TradesmanProfiles is not null)
 					{
 						Tradesmen.Clear();
+						FeedVideos.Clear();
 						foreach (var tradesman in result.Data.TradesmanProfiles)
 						{
-							// Only add tradesmen who have a valid video introduction URL
-							if (tradesman != null && !string.IsNullOrWhiteSpace(tradesman.VideoIntroductionUrl))
+							// Populate Tradesmen for any other components
+							Tradesmen.Add(tradesman);
+							
+							if (tradesman != null && tradesman.Media != null && tradesman.Media.Any())
 							{
-								Tradesmen.Add(tradesman);
+								foreach (var media in tradesman.Media.Where(m => m.IsActive))
+								{
+									FeedVideos.Add(new FeedMediaItem
+									{
+										TradesmanId = tradesman.Id.ToString(),
+										VideoUrl = media.VideoUrl,
+										Name = $"{tradesman.User?.FirstName} {tradesman.User?.LastName}",
+										Role = tradesman.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
+										Location = tradesman.User?.Location ?? "",
+										Rating = tradesman.AverageRating,
+										ProfilePictureUrl = tradesman.User?.ProfilePictureUrl ?? ""
+									});
+								}
 							}
 						}
 					}

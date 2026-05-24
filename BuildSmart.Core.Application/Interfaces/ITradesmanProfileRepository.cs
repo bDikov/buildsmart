@@ -43,4 +43,9 @@ public interface ITradesmanProfileRepository
 	/// Deletes a tradesman profile from the repository.
 	/// </summary>
 	void Delete(TradesmanProfile profile);
+
+	/// <summary>
+	/// Adds media directly to the database Context.
+	/// </summary>
+	Task AddMediaAsync(TradesmanMedia media);
 }

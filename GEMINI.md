@@ -82,7 +82,14 @@ This script uses `dotnet test` to execute the tests in the `BuildSmart.Api.Tests
 
 ### StrawberryShake GraphQL Generation
 **STRICT RULE:** You must **NEVER** change the GraphQL API URL or ports in `StrawberryShake.json` or `.graphqlrc.json` without explicit user permission. You must **NEVER** attempt to run the `BuildSmart.Api` project via `dotnet run` in the background to update the GraphQL schema. 
-When a schema update is required, **always ask the user** to start the API manually via Visual Studio (ensuring it runs on the configured port, usually IIS Express on 44378 or https on 7212). Only run `dotnet graphql update` after the user confirms the API is running. If StrawberryShake causes MAUI build errors because of missing schema fields, comment out the offending `.graphql` files so the user can compile the API first.
+When a schema update is required, **always ask the user** to start the API manually via Visual Studio or their terminal.
+
+**Troubleshooting Schema Updates (`dotnet graphql update`):**
+If the update fails with `error HTTP_ERROR: No connection could be made because the target machine actively refused it`, or if builds are failing due to file locks (`The file is locked by BuildSmart.Api`), there is likely a zombie `dotnet` process holding the port open.
+1. **Kill all background processes:** Run `Stop-Process -Name dotnet -Force -ErrorAction SilentlyContinue` and `Stop-Process -Name BuildSmart.Api -Force -ErrorAction SilentlyContinue`.
+2. **Start the API:** Navigate to `BuildSmart.Api` and run `dotnet run --launch-profile https`. (StrawberryShake requires the HTTPS profile, not HTTP).
+3. **Update the Schema:** Once the API says "Now listening on: https://localhost:7212", open a new terminal in `BuildSmart.SharedUI` and run `dotnet graphql update`.
+4. **Compile:** Run `dotnet build` to ensure the new schema resolves all `SS0002` errors.
 
 ### Manual Migrations
 
