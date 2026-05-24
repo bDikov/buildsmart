@@ -2,6 +2,7 @@ window.reelsObserver = {
     observer: null,
     dotNetRef: null,
     players: {},
+    playPromises: {}, // Track pending play promises to prevent AbortErrors
     globalMuted: true, // Track user's mute intent across all videos
 
     initialize: function (dotNetHelper, containerId) {
@@ -28,11 +29,15 @@ window.reelsObserver = {
                         
                         let playPromise = player.play();
                         if (playPromise !== undefined) {
+                            window.reelsObserver.playPromises[videoId] = playPromise;
                             playPromise.catch(e => {
                                 // If the browser blocks unmuted autoplay, fallback to muted so the video still plays
-                                if (!player.muted) {
+                                if (e.name !== 'AbortError' && !player.muted) {
                                     player.muted = true;
-                                    player.play();
+                                    let fallbackPromise = player.play();
+                                    if (fallbackPromise !== undefined) {
+                                        window.reelsObserver.playPromises[videoId] = fallbackPromise;
+                                    }
                                 }
                                 console.log('Autoplay prevented by browser, falling back to muted', e);
                             });
@@ -42,12 +47,27 @@ window.reelsObserver = {
                     this.dotNetRef.invokeMethodAsync('OnVideoVisible', videoId);
                 } else {
                     if (player) {
-                        player.pause();
-                        player.currentTime = 0; // Rewind to start
+                        window.reelsObserver.safePause(videoId, player);
                     }
                 }
             });
         }, options);
+    },
+
+    safePause: function(videoId, player) {
+        const playPromise = this.playPromises[videoId];
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                player.pause();
+                player.currentTime = 0; // Rewind to start
+            }).catch(e => {
+                // Play was already aborted or failed, safe to ignore
+            });
+        } else {
+            player.pause();
+            player.currentTime = 0;
+        }
+        delete this.playPromises[videoId];
     },
 
     observeVideo: function (wrapperId, videoId) {
@@ -59,7 +79,8 @@ window.reelsObserver = {
             this.players[videoId] = new Plyr(videoElement, {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
                 autoplay: false,
-                muted: true
+                muted: true,
+                clickToPlay: false // Disable single click to play/pause so we can use double-click
             });
             
             // Listen for user volume/mute changes to sync across all videos
@@ -83,6 +104,26 @@ window.reelsObserver = {
             let touchStartX = null;
             let touchStartY = null;
             let isSwiping = false;
+
+            // Custom Tap Logic for Double Click (Play/Pause)
+            let lastTapTime = 0;
+            element.addEventListener('click', (e) => {
+                // Ignore clicks on actual buttons or the plyr controls
+                if (e.target.closest('.bs-reel-action-btn') || e.target.closest('.plyr__controls')) return;
+
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTapTime;
+                
+                if (tapLength < 300 && tapLength > 0) {
+                    // Double Tap -> Play/Pause
+                    const player = window.reelsObserver.players[videoId];
+                    if (player) player.togglePlay();
+                    lastTapTime = 0; // Reset
+                } else {
+                    // Single Tap -> Let Plyr natively wake up controls
+                    lastTapTime = currentTime;
+                }
+            });
 
             const startSwipe = (x, y) => {
                 touchStartX = x;

@@ -275,14 +275,24 @@
         /* Add border-radius to match the container so the gradient doesn't bleed */
         border-bottom-left-radius: 22px;
         border-bottom-right-radius: 22px;
-        background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%);
-        padding: 30px 20px 20px 20px;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        padding: 40px 20px 60px 20px; /* Extra bottom padding pushes user info ABOVE the media controls */
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
         color: var(--text-primary);
         z-index: 10;
         pointer-events: none; /* Let clicks pass through to Plyr controls */
+        
+        /* Auto-Hide UI: Hidden by default, shown on hover/tap via Plyr state */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Show the overlay when the user hovers the card, OR when Plyr decides controls should be visible */
+    .bs-reel-item:hover .bs-reel-overlay,
+    .plyr:not(.plyr--hide-controls) + .bs-reel-overlay {
+        opacity: 1;
     }
 
     .bs-reel-actions {
@@ -340,7 +350,7 @@
 
     /* Push the Plyr controls up so they aren't hidden behind our custom title/avatar overlay */
     #reels-feed-container .plyr__controls {
-        padding-bottom: 120px;
+        padding-bottom: 10px; /* Sit at the absolute bottom */
         z-index: 20; /* Ensure it floats above the gradient overlay */
         background: transparent;
     }
