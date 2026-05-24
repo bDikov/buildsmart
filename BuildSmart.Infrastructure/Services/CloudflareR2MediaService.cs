@@ -20,11 +20,22 @@ public class CloudflareR2MediaService : IMediaService
         _accessKey = configuration["CloudflareR2:AccessKey"] ?? string.Empty;
         _secretKey = configuration["CloudflareR2:SecretKey"] ?? string.Empty;
         
+        _bucketName = configuration["CloudflareR2:BucketName"] ?? string.Empty;
+
         // Strip trailing slash if present
         var url = configuration["CloudflareR2:ServiceUrl"] ?? string.Empty;
-        _serviceUrl = url.TrimEnd('/');
+        url = url.TrimEnd('/');
         
-        _bucketName = configuration["CloudflareR2:BucketName"] ?? string.Empty;
+        // CRITICAL FIX: Cloudflare dashboard provides the S3 URL *with* the bucket name appended.
+        // If the user pasted that into the environment variable, the AWS SDK (which uses Path-Style) 
+        // will append the bucket name a SECOND time, causing a 404 NotFound. 
+        // We must strip the bucket name from the Service URL if it exists.
+        if (url.EndsWith($"/{_bucketName}", StringComparison.OrdinalIgnoreCase))
+        {
+            url = url.Substring(0, url.Length - $"/{_bucketName}".Length);
+        }
+        
+        _serviceUrl = url;
         
         var s3Config = new AmazonS3Config
         {
