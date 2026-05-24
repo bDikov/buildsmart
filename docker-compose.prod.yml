@@ -35,6 +35,12 @@ services:
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
       # Sentry Error Tracking
       - SENTRY_DSN=${SENTRY_DSN}
+      # Cloudflare R2 Media
+      - CloudflareR2__ServiceUrl=${CLOUDFLARE_R2_SERVICE_URL}
+      - CloudflareR2__SecretKey=${CLOUDFLARE_R2_SECRET_KEY}
+      - CloudflareR2__PublicUrl=${CLOUDFLARE_R2_PUBLIC_URL}
+      - CloudflareR2__BucketName=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CloudflareR2__AccessKey=${CLOUDFLARE_R2_ACCESS_KEY}
     depends_on:
       db:
         condition: service_healthy

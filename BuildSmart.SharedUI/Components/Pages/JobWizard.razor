@@ -336,9 +336,10 @@
         await InvokeAsync(StateHasChanged);
 
         // Accept a swipe if they dragged far enough OR if they flicked it quickly
-        bool isSwipeAction = deltaX > 80 || (deltaX > 30 && velocity > 0.5);
+        bool isSwipeLeft = deltaX < -80 || (deltaX < -30 && velocity > 0.5);
+        bool isSwipeRight = deltaX > 80 || (deltaX > 30 && velocity > 0.5);
 
-        if (isSwipeAction && ViewModel.GoToNextStepCommand.CanExecute(null)) // Swiped right -> Next
+        if (isSwipeLeft && ViewModel.GoToNextStepCommand.CanExecute(null)) // Swiped left -> Next
         {
             if (!ViewModel.ValidateCurrentStep())
             {
@@ -362,23 +363,23 @@
 
             // Fluid fly-away
             _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
-            _currentSwipeX = 1200; // Fly offscreen right
-            _currentSwipeRotation = 15;
+            _currentSwipeX = -1200; // Fly offscreen left
+            _currentSwipeRotation = -15;
             await InvokeAsync(StateHasChanged);
             await Task.Delay(300); // Let it fly away just enough
             
             ViewModel.GoToNextStepCommand.Execute(null);
         }
-        else if (deltaX < -80 && ViewModel.CurrentStepNumber > 1 && ViewModel.GoToPreviousStepCommand.CanExecute(null) && !ViewModel.IsEditing)
+        else if (isSwipeRight && ViewModel.CurrentStepNumber > 1 && ViewModel.GoToPreviousStepCommand.CanExecute(null) && !ViewModel.IsEditing)
         {
-            // Allow swiping left to go back, but only if not editing single job and NOT on the very first step
+            // Allow swiping right to go back, but only if not editing single job and NOT on the very first step
             _hasUserSwiped = true;
             if (_module != null && _swipeCardContainer.Id != null) 
                 await _module.InvokeVoidAsync("resetSwipeStyle", _swipeCardContainer);
 
             _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
-            _currentSwipeX = -1200;
-            _currentSwipeRotation = -15;
+            _currentSwipeX = 1200; // Fly offscreen right
+            _currentSwipeRotation = 15;
             await InvokeAsync(StateHasChanged);
             await Task.Delay(300);
             
@@ -389,7 +390,7 @@
             if (_module != null && _swipeCardContainer.Id != null) 
                 await _module.InvokeVoidAsync("resetSwipeStyle", _swipeCardContainer);
 
-            // Not swiped far enough (or trying to swipe left on step 1), snap back with a bouncy "spring" feel
+            // Not swiped far enough (or trying to swipe wrong way on step 1), snap back with a bouncy "spring" feel
             _swipeTransition = "transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)";
             _currentSwipeX = 0;
             _currentSwipeRotation = 0;
@@ -526,8 +527,8 @@
         if (ViewModel.GoToNextStepCommand.CanExecute(null))
         {
             _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
-            _currentSwipeX = 1200;
-            _currentSwipeRotation = 15;
+            _currentSwipeX = -1200; // Fly left
+            _currentSwipeRotation = -15;
             await InvokeAsync(StateHasChanged);
             await Task.Delay(300);
             
@@ -543,8 +544,8 @@
         if (ViewModel.GoToPreviousStepCommand.CanExecute(null))
         {
             _swipeTransition = "transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)";
-            _currentSwipeX = -1200;
-            _currentSwipeRotation = -15;
+            _currentSwipeX = 1200; // Fly right
+            _currentSwipeRotation = 15;
             await InvokeAsync(StateHasChanged);
             await Task.Delay(300);
             

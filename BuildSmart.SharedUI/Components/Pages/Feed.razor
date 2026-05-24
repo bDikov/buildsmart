@@ -21,7 +21,7 @@
         }
         else
         {
-            <div class="container-fluid py-3" style="min-height: 100vh;">
+            <div class="container-fluid py-3" style="min-height: 100vh; overflow-x: hidden;">
                 <!-- Homeowner Action Header -->
                 @if (ViewModel.IsHomeowner && ViewModel.HasProjects == false)
                 {
@@ -66,7 +66,7 @@
                             {
                                 var videoId = $"video_{video.TradesmanId}_{video.VideoUrl.GetHashCode()}";
                                 var wrapperId = $"wrapper_{videoId}";
-                                <div class="reel-item" data-video-id="@videoId" id="@wrapperId">
+                                <div @key="video.Id" class="reel-item" data-video-id="@videoId" id="@wrapperId">
                                     <video id="@videoId" class="reel-video plyr" loop playsinline preload="auto" poster="" muted>
                                         <source src="@video.VideoUrl" type="video/mp4" />
                                     </video>
@@ -164,37 +164,19 @@
 
 <style>
     .reels-container {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 20px;
-        padding-bottom: 20px;
+        position: relative;
         width: 100%;
-        max-width: 100%;
+        height: 70vh; /* Give the stack some height to live in */
+        max-width: 400px;
         margin: 0 auto;
-        padding-top: 20px;
-        padding-left: 20px;
-        padding-right: 20px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-    }
-
-    /* Hide scrollbar for cleaner look */
-    .reels-container::-webkit-scrollbar {
-        display: none;
-    }
-    .reels-container {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .reel-item {
-        position: relative;
-        flex: 0 0 auto; /* Prevent shrinking in horizontal layout */
-        width: 85vw; /* Take up most of the screen width */
+        position: absolute;
+        width: 100%;
         max-width: 326px; /* Match Figma exact width */
         aspect-ratio: 326 / 438; /* Match Figma exactly */
         background-color: var(--bg-card);
@@ -208,7 +190,32 @@
             
         overflow: hidden;
         cursor: pointer;
-        scroll-snap-align: center;
+        
+        /* Stack them perfectly on top of each other */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transition: transform 0.3s ease;
+    }
+
+    /* Simulate depth by pushing earlier items back slightly, similar to JobWizard */
+    .reel-item:nth-last-child(1) {
+        z-index: 3;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    .reel-item:nth-last-child(2) {
+        z-index: 2;
+        transform: translate(-50%, calc(-50% + 14px)) scale(0.96);
+        opacity: 0.8;
+    }
+    .reel-item:nth-last-child(3) {
+        z-index: 1;
+        transform: translate(-50%, calc(-50% + 28px)) scale(0.92);
+        opacity: 0.4;
+    }
+    .reel-item:nth-last-child(n+4) {
+        opacity: 0;
+        pointer-events: none;
     }
 
     .reel-video {
@@ -324,6 +331,38 @@
                 // Graceful degradation: The video will still render and have controls, 
                 // but auto-play on scroll won't work until the browser cache is cleared.
                 Console.WriteLine($"[Feed.razor] JSInterop Error: {ex.Message}. Please Hard Refresh (Ctrl+F5) to clear browser cache.");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task ProcessSwipeEndFromJS(double deltaX, double velocity, double currentX, double currentRot, string videoId)
+    {
+        // For the Feed, any significant swipe (left or right) dismisses the current video
+        bool isSwipeAction = Math.Abs(deltaX) > 80 || (Math.Abs(deltaX) > 30 && Math.Abs(velocity) > 0.5);
+
+        if (isSwipeAction && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+        {
+            // The top video is the first one in the list (or the one that matches the ID)
+            // But because of how nth-last-child works, the visually "top" card is the LAST item in the DOM/collection.
+            var videoToRemove = ViewModel.FeedVideos.LastOrDefault();
+            if (videoToRemove != null)
+            {
+                ViewModel.FeedVideos.Remove(videoToRemove);
+                ViewModel.FeedVideos.Insert(0, videoToRemove); // This actually makes the loop infinite
+                
+                // Optional: Stop the video player before removing it from DOM
+                try { await JSRuntime.InvokeVoidAsync("reelsObserver.pauseVideo", videoId); } catch { }
+                
+                await InvokeAsync(StateHasChanged);
+                
+                // Trigger the observer to play the NEW top video
+                if (ViewModel.FeedVideos.Any())
+                {
+                    var newTopVideo = ViewModel.FeedVideos.Last();
+                    var newTopVideoId = $"video_{newTopVideo.TradesmanId}_{newTopVideo.VideoUrl.GetHashCode()}";
+                    try { await JSRuntime.InvokeVoidAsync("reelsObserver.playVideo", newTopVideoId); } catch { }
+                }
             }
         }
     }

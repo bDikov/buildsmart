@@ -2,10 +2,10 @@ window.reelsObserver = {
     observer: null,
     dotNetRef: null,
     players: {},
-    
+
     initialize: function (dotNetHelper, containerId) {
         this.dotNetRef = dotNetHelper;
-        
+
         let options = {
             root: document.getElementById(containerId),
             rootMargin: '0px',
@@ -53,6 +53,89 @@ window.reelsObserver = {
         if (element && this.observer) {
             this.observer.observe(element);
         }
+
+        // --- ADD TINDER-STYLE SWIPE LOGIC TO THE REEL WRAPPER ---
+        if (element && !element.__swipeInitialized) {
+            element.__swipeInitialized = true;
+            let touchStartX = null;
+            let touchStartY = null;
+            let isSwiping = false;
+
+            const startSwipe = (x, y) => {
+                touchStartX = x;
+                touchStartY = y;
+                isSwiping = true;
+                element.style.transition = 'none';
+            };
+
+            const moveSwipe = (x, y) => {
+                if (!isSwiping || touchStartX === null) return;
+                const deltaX = x - touchStartX;
+                const deltaY = y - touchStartY;
+
+                // Add physical resistance
+                const currentX = deltaX * 0.85;
+                const currentY = deltaY * 0.85;
+                // Figma animation adds slight rotation as it drags
+                const currentRot = currentX * 0.05;
+
+                // Keep the -50% -50% centering from CSS, then add our drag transform
+                element.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) rotate(${currentRot}deg)`;
+            };
+
+            const endSwipe = (x, y) => {
+                if (!isSwiping || touchStartX === null) return;
+                isSwiping = false;
+                const deltaX = x - touchStartX;
+                const deltaY = y - touchStartY;
+                touchStartX = null;
+
+                // If swiped far enough in any direction
+                if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
+                    // Determine direction based on where they swiped
+                    const flyX = deltaX > 0 ? 1000 : -1000;
+                    const rotate = deltaX > 0 ? 25 : -25;
+                    
+                    element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
+                    element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
+
+                    // Tell Blazor to completely remove this element from the list
+                    setTimeout(() => {
+                        if (window.reelsObserver.dotNetRef) {
+                            window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', deltaX, 0, 0, 0, videoId);
+                        }
+                        
+                        // IMPORTANT: Clear the fly-away styles!
+                        // When Blazor inserts this element back at the start of the list to loop it, 
+                        // we don't want it to remain 1000px off screen. 
+                        element.style.transition = 'none';
+                        element.style.transform = '';
+                        element.__swipeInitialized = false; // Force re-attach just in case
+                        
+                    }, 400);
+                } else {
+                    // Didn't swipe far enough, snap back to center
+                    element.style.transition = 'transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)';
+                    element.style.transform = '';
+                }
+            };
+
+            // Bind Touch
+            element.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+            element.addEventListener('touchmove', (e) => {
+                // Prevent vertical page scrolling while swiping cards
+                if (isSwiping) e.preventDefault();
+                moveSwipe(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+            element.addEventListener('touchend', (e) => {
+                if (e.changedTouches.length > 0) endSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            });
+
+            // Bind Mouse (for desktop testing)
+            element.addEventListener('mousedown', (e) => startSwipe(e.clientX, e.clientY));
+            window.addEventListener('mousemove', (e) => { if (isSwiping) moveSwipe(e.clientX, e.clientY); });
+            window.addEventListener('mouseup', (e) => { if (isSwiping) endSwipe(e.clientX, e.clientY); });
+        }
     },
 
     unobserveVideo: function (wrapperId, videoId) {
@@ -60,7 +143,7 @@ window.reelsObserver = {
         if (element && this.observer) {
             this.observer.unobserve(element);
         }
-        
+
         // Optionally destroy Plyr instance to free memory
         if (this.players[videoId]) {
             this.players[videoId].destroy();
@@ -73,18 +156,16 @@ window.reelsObserver = {
             this.observer.disconnect();
             this.observer = null;
         }
-        
+
         // Destroy all Plyr instances
         for (const videoId in this.players) {
             this.players[videoId].destroy();
         }
         this.players = {};
-        
+
         this.dotNetRef = null;
     },
 
-    // Not strictly needed anymore since Plyr provides a giant play button natively, 
-    // but kept just in case for manual overlay integration.
     togglePlayback: function (videoId) {
         const player = this.players[videoId];
         if (player) {
@@ -92,6 +173,25 @@ window.reelsObserver = {
             if (player.muted) {
                 player.muted = false; // Unmute on explicit user interaction
             }
+        }
+    },
+
+    playVideo: function (videoId) {
+        const player = this.players[videoId];
+        if (player) {
+            player.muted = true;
+            let playPromise = player.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => console.log('Autoplay prevented by browser', e));
+            }
+        }
+    },
+
+    pauseVideo: function (videoId) {
+        const player = this.players[videoId];
+        if (player) {
+            player.pause();
+            player.currentTime = 0;
         }
     }
 };
