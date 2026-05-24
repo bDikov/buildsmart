@@ -954,11 +954,8 @@ public class Mutation
 	public async Task<TradesmanMedia> ToggleTradesmanMediaStatus(
 		Guid mediaId,
 		bool isActive,
-		[Service] IUnitOfWork unitOfWork)
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)
 	{
-		var dbContext = unitOfWork.GetType().GetProperty("Context", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-			?.GetValue(unitOfWork) as BuildSmart.Infrastructure.Persistence.AppDbContext;
-
 		if (dbContext == null) throw new GraphQLException("Database context not found.");
 
 		var media = await dbContext.TradesmanMedia.FirstOrDefaultAsync(m => m.Id == mediaId)
@@ -976,11 +973,8 @@ public class Mutation
 	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<bool> DeleteTradesmanMedia(
 		Guid mediaId,
-		[Service] IUnitOfWork unitOfWork)
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)
 	{
-		var dbContext = unitOfWork.GetType().GetProperty("Context", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-			?.GetValue(unitOfWork) as BuildSmart.Infrastructure.Persistence.AppDbContext;
-
 		if (dbContext == null) throw new GraphQLException("Database context not found.");
 
 		var media = await dbContext.TradesmanMedia.FirstOrDefaultAsync(m => m.Id == mediaId)

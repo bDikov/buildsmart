@@ -11558,3 +11558,12 @@ Error: Could not find 'reelsObserver.initialize' ('reelsObserver' was undefined)
    at BuildSmart.SharedUI.Components.Pages.Feed.OnAfterRenderAsync(Boolean firstRender) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Components\Pages\Feed.razor:line 310
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[24.05.2026 г. 15:13:04 ч.] Exception: CDN upload failed with status Forbidden.
+   at BuildSmart.SharedUI.Components.Pages.Admin.AdminVideoUpload.UploadVideo() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Components\Pages\Admin\AdminVideoUpload.razor:line 195
+
+[24.05.2026 г. 15:28:38 ч.] Exception: CDN upload failed with status Forbidden.
+   at BuildSmart.SharedUI.Components.Pages.Admin.AdminVideoUpload.UploadVideo() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Components\Pages\Admin\AdminVideoUpload.razor:line 202
+
+[24.05.2026 г. 15:31:09 ч.] Exception: CDN upload failed with status Forbidden.
+   at BuildSmart.SharedUI.Components.Pages.Admin.AdminVideoUpload.UploadVideo() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Components\Pages\Admin\AdminVideoUpload.razor:line 202
+

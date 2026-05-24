@@ -181,15 +181,17 @@
             });
 
             using var content = new StreamContent(progressStream); 
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+            
+            // Do not explicitly set Content-Type here, as it triggers a strict Signature mismatch
+            // block from Cloudflare R2 if it doesn't perfectly match the backend signature.
+            
             // CRITICAL: R2/S3 Pre-signed URLs reject 'Transfer-Encoding: chunked'. We MUST provide the exact Content-Length.
             content.Headers.ContentLength = selectedFile.Size;
             
             using var uploadClient = new HttpClient();
             uploadClient.Timeout = TimeSpan.FromMinutes(60); // 1 hour timeout for large videos
-            
-            var response = await uploadClient.PutAsync(preSignedUrl, content);
-            
+
+            var response = await uploadClient.PutAsync(preSignedUrl, content);            
             if (!response.IsSuccessStatusCode)
             {
                 throw new Exception($"CDN upload failed with status {response.StatusCode}.");
