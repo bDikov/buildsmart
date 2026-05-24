@@ -95,6 +95,14 @@ If the update fails with `error HTTP_ERROR: No connection could be made because 
 
 **IMPORTANT:** The Gemini agent is configured to **never** execute migration commands automatically.
 
+### 3rd Party API Keys & Secrets Policy
+
+**STRICT RULE:** Whenever a new 3rd-party API key, secret, or environment variable is introduced into the project, it MUST be synchronized across all environments immediately. This means adding it to:
+1. Local `appsettings.json` / `appsettings.Development.json` (as a placeholder) and `dotnet user-secrets`.
+2. The `docker-compose.yml` and `docker-compose.prod.yml` environment blocks.
+3. The GitHub Actions CI/CD workflow (`main-pipeline.yml`) so it is injected into the live server's `.env` file during deployment.
+4. The user must be instructed to add the actual secret values to their GitHub Repository Secrets.
+
 ### Git and Version Control
 
 **STRICT RULE:** The Gemini agent must **NEVER EVER** execute `git add`, `git commit`, or `git push` commands unless the user explicitly gives a specific instruction to do so and then confirms it. The user prefers to manage version control manually through Visual Studio.

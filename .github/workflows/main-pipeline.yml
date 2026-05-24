@@ -123,6 +123,11 @@ jobs:
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
             echo "SENTRY_DSN=${{ secrets.SENTRY_API_DSN }}" >> .env
+            echo "CLOUDFLARE_R2_SERVICE_URL=${{ secrets.CLOUDFLARE_R2_SERVICE_URL }}" >> .env
+            echo "CLOUDFLARE_R2_SECRET_KEY=${{ secrets.CLOUDFLARE_R2_SECRET_KEY }}" >> .env
+            echo "CLOUDFLARE_R2_PUBLIC_URL=${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" >> .env
+            echo "CLOUDFLARE_R2_BUCKET_NAME=${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}" >> .env
+            echo "CLOUDFLARE_R2_ACCESS_KEY=${{ secrets.CLOUDFLARE_R2_ACCESS_KEY }}" >> .env
             
             # Force a clean update to ensure JSON files and new code are active
             docker compose -f docker-compose.prod.yml down

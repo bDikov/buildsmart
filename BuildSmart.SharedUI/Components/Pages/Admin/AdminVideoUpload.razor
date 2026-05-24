@@ -154,9 +154,14 @@
         {
             // 1. Get Pre-signed URL
             var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(selectedFile.Name, selectedFile.ContentType);
-            if (urlResult.Errors.Count > 0 || string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
+            if (urlResult.Errors.Count > 0)
             {
-                throw new Exception("Failed to get pre-signed upload URL from API.");
+                var errorMsg = string.Join(", ", urlResult.Errors.Select(e => e.Message));
+                throw new Exception($"API Error: {errorMsg}");
+            }
+            if (string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
+            {
+                throw new Exception("Failed to get pre-signed upload URL: the URL was empty.");
             }
 
             var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;

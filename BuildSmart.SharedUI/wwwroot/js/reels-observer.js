@@ -110,7 +110,6 @@ window.reelsObserver = {
                         // we don't want it to remain 1000px off screen. 
                         element.style.transition = 'none';
                         element.style.transform = '';
-                        element.__swipeInitialized = false; // Force re-attach just in case
                         
                     }, 400);
                 } else {
@@ -123,8 +122,8 @@ window.reelsObserver = {
             // Bind Touch
             element.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
             element.addEventListener('touchmove', (e) => {
-                // Prevent vertical page scrolling while swiping cards
-                if (isSwiping) e.preventDefault();
+                // Prevent vertical page scrolling while swiping cards, but only if the event can be canceled
+                if (isSwiping && e.cancelable) e.preventDefault();
                 moveSwipe(e.touches[0].clientX, e.touches[0].clientY);
             }, { passive: false });
             element.addEventListener('touchend', (e) => {

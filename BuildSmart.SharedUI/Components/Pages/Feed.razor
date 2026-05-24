@@ -25,7 +25,7 @@
                 <!-- Homeowner Action Header -->
                 @if (ViewModel.IsHomeowner && ViewModel.HasProjects == false)
                 {
-                    <div class="mb-4">
+                    <div class="mb-5 pb-3">
                         <button class="bs-btn-primary w-100" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -39,7 +39,7 @@
                 <!-- Tradesman Feed Header -->
                 @if (ViewModel.IsTradesman)
                 {
-                    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
                         <h2 class="h5 fw-bold mb-0">@Loc["Feed_AvailableAuctions"]</h2>
                         <a href="#" class="text-primary text-decoration-underline" style="font-size: 0.85rem;" @onclick='() => NavManager.NavigateTo("/passed-auctions")' @onclick:preventDefault>
                             @Loc["Feed_DismissedJobs"]
@@ -50,7 +50,7 @@
                 <!-- Loading Indicator -->
                 @if (ViewModel.IsLoading)
                 {
-                    <div class="text-center my-4">
+                    <div class="text-center my-5">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">@Loc["Feed_Loading"]</span>
                         </div>
@@ -61,10 +61,10 @@
                     <!-- 1. Homeowner View: Pros Directory (Reels) -->
                     @if (ViewModel.IsHomeowner && ViewModel.FeedVideos != null)
                     {
-                        <div id="reels-feed-container" class="reels-container">
+                        <div id="reels-feed-container" class="reels-container mt-4">
                             @foreach (var video in ViewModel.FeedVideos)
                             {
-                                var videoId = $"video_{video.TradesmanId}_{video.VideoUrl.GetHashCode()}";
+                                var videoId = $"video_{video.Id}";
                                 var wrapperId = $"wrapper_{videoId}";
                                 <div @key="video.Id" class="reel-item" data-video-id="@videoId" id="@wrapperId">
                                     <video id="@videoId" class="reel-video plyr" loop playsinline preload="auto" poster="" muted>
@@ -196,26 +196,71 @@
         left: 50%;
         transform: translate(-50%, -50%);
         transition: transform 0.3s ease;
+        
+        /* Only allow the top card to be swipeable to prevent bugs */
+        pointer-events: none;
     }
 
-    /* Simulate depth by pushing earlier items back slightly, similar to JobWizard */
-    .reel-item:nth-last-child(1) {
-        z-index: 3;
-        transform: translate(-50%, -50%) scale(1);
+    /* --- MOBILE VIEW: Tinder Stack --- */
+    @@media (max-width: 768px) {
+        /* Simulate depth by pushing earlier items back slightly, similar to JobWizard */
+        .reel-item:nth-last-child(1) {
+            z-index: 3;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto; /* Active Top Card */
+        }
+        .reel-item:nth-last-child(2) {
+            z-index: 2;
+            transform: translate(-50%, calc(-50% + 14px)) scale(0.96);
+            opacity: 0.8;
+        }
+        .reel-item:nth-last-child(3) {
+            z-index: 1;
+            transform: translate(-50%, calc(-50% + 28px)) scale(0.92);
+            opacity: 0.4;
+        }
+        .reel-item:nth-last-child(n+4) {
+            opacity: 0;
+        }
     }
-    .reel-item:nth-last-child(2) {
-        z-index: 2;
-        transform: translate(-50%, calc(-50% + 14px)) scale(0.96);
-        opacity: 0.8;
-    }
-    .reel-item:nth-last-child(3) {
-        z-index: 1;
-        transform: translate(-50%, calc(-50% + 28px)) scale(0.92);
-        opacity: 0.4;
-    }
-    .reel-item:nth-last-child(n+4) {
-        opacity: 0;
-        pointer-events: none;
+
+    /* --- DESKTOP/TABLET VIEW: 3D Roller Coaster --- */
+    @@media (min-width: 769px) {
+        .reels-container {
+            max-width: 1200px; /* Allow wider container on desktop */
+        }
+        
+        .reel-item {
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease;
+        }
+
+        /* Center (Active) */
+        .reel-item:nth-last-child(1) {
+            z-index: 3;
+            transform: translate(-50%, -50%) scale(1);
+            filter: blur(0px);
+            opacity: 1;
+            pointer-events: auto; /* Active Top Card */
+        }
+        /* Right Side (Next in queue) */
+        .reel-item:nth-last-child(2) {
+            z-index: 2;
+            transform: translate(calc(-50% + 360px), -50%) scale(0.85);
+            filter: blur(4px);
+            opacity: 0.5;
+        }
+        /* Left Side (Previously viewed / Bottom of deck) */
+        .reel-item:nth-child(1):not(:nth-last-child(1)):not(:nth-last-child(2)) {
+            z-index: 1;
+            transform: translate(calc(-50% - 360px), -50%) scale(0.85);
+            filter: blur(4px);
+            opacity: 0.5;
+        }
+        /* Hidden (Any cards in the middle of the deck) */
+        .reel-item:not(:nth-last-child(1)):not(:nth-last-child(2)):not(:nth-child(1)) {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+        }
     }
 
     .reel-video {
@@ -321,7 +366,7 @@
                 // Re-observe elements (the JS safely handles duplicates)
                 foreach (var video in ViewModel.FeedVideos)
                 {
-                    var vId = $"video_{video.TradesmanId}_{video.VideoUrl.GetHashCode()}";
+                    var vId = $"video_{video.Id}";
                     var wId = $"wrapper_{vId}";
                     await JSRuntime.InvokeVoidAsync("reelsObserver.observeVideo", wId, vId);
                 }
@@ -341,28 +386,36 @@
         // For the Feed, any significant swipe (left or right) dismisses the current video
         bool isSwipeAction = Math.Abs(deltaX) > 80 || (Math.Abs(deltaX) > 30 && Math.Abs(velocity) > 0.5);
 
-        if (isSwipeAction && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+        if (isSwipeAction && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Count > 1)
         {
-            // The top video is the first one in the list (or the one that matches the ID)
-            // But because of how nth-last-child works, the visually "top" card is the LAST item in the DOM/collection.
-            var videoToRemove = ViewModel.FeedVideos.LastOrDefault();
-            if (videoToRemove != null)
+            if (deltaX < 0)
             {
+                // SWIPE LEFT -> Go to Next Video
+                // The top video (Last item) moves to the bottom of the stack (Index 0)
+                var videoToRemove = ViewModel.FeedVideos.Last();
                 ViewModel.FeedVideos.Remove(videoToRemove);
-                ViewModel.FeedVideos.Insert(0, videoToRemove); // This actually makes the loop infinite
+                ViewModel.FeedVideos.Insert(0, videoToRemove);
+            }
+            else
+            {
+                // SWIPE RIGHT -> Go to Previous Video
+                // The bottom video (Index 0) moves to the top of the stack (Last item)
+                var previousVideo = ViewModel.FeedVideos.First();
+                ViewModel.FeedVideos.Remove(previousVideo);
+                ViewModel.FeedVideos.Add(previousVideo);
+            }
                 
-                // Optional: Stop the video player before removing it from DOM
-                try { await JSRuntime.InvokeVoidAsync("reelsObserver.pauseVideo", videoId); } catch { }
-                
-                await InvokeAsync(StateHasChanged);
-                
-                // Trigger the observer to play the NEW top video
-                if (ViewModel.FeedVideos.Any())
-                {
-                    var newTopVideo = ViewModel.FeedVideos.Last();
-                    var newTopVideoId = $"video_{newTopVideo.TradesmanId}_{newTopVideo.VideoUrl.GetHashCode()}";
-                    try { await JSRuntime.InvokeVoidAsync("reelsObserver.playVideo", newTopVideoId); } catch { }
-                }
+            // Optional: Stop the old top video player
+            try { await JSRuntime.InvokeVoidAsync("reelsObserver.pauseVideo", videoId); } catch { }
+            
+            await InvokeAsync(StateHasChanged);
+            
+            // Trigger the observer to play the NEW top video
+            if (ViewModel.FeedVideos.Any())
+            {
+                var newTopVideo = ViewModel.FeedVideos.Last();
+                var newTopVideoId = $"video_{newTopVideo.Id}";
+                try { await JSRuntime.InvokeVoidAsync("reelsObserver.playVideo", newTopVideoId); } catch { }
             }
         }
     }
