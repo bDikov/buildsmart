@@ -22,20 +22,6 @@
         else
         {
             <div class="container-fluid py-3" style="overflow-x: hidden;">
-                <!-- Homeowner Action Header -->
-                @if (ViewModel.IsHomeowner && ViewModel.HasProjects == false)
-                {
-                    <div class="feed-header-action">
-                        <button class="bs-btn-primary feed-action-btn" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feed-action-icon">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span class="feed-action-text">@Loc["Feed_StartNewProject"]</span>
-                        </button>
-                    </div>
-                }
-
                 <!-- Tradesman Feed Header -->
                 @if (ViewModel.IsTradesman)
                 {
@@ -205,50 +191,6 @@
 </ErrorBoundary>
 
 <style>
-    /* --- FLOATING HEADER ACTION (Start Project) --- */
-    .feed-header-action {
-        position: fixed;
-        top: 10px;
-        left: 330px; /* Desktop: Just right of the 312px sidebar */
-        z-index: 1050;
-        width: auto;
-    }
-    
-    .feed-header-action .bs-btn-primary {
-        padding: 6px 16px;
-        font-size: 0.9rem;
-        height: 40px;
-        border-radius: 20px;
-        white-space: nowrap; /* Force text to stay on one line */
-        display: flex;
-        align-items: center;
-    }
-
-    @@media (max-width: 992px) {
-        .feed-header-action {
-            top: 10px;
-            left: auto;
-            right: 90px; /* Safely to the left of the mobile menu/bell so it doesn't overlap the logo */
-        }
-    }
-
-    @@media (max-width: 480px) {
-        .feed-action-text {
-            display: none !important;
-        }
-        
-        .feed-header-action .bs-btn-primary {
-            width: 40px !important;
-            height: 40px !important;
-            padding: 0 !important;
-            justify-content: center;
-        }
-
-        .feed-action-icon {
-            margin-right: 0 !important;
-        }
-    }
-
     /* --- COMPACT CATEGORY FILTERS --- */
     .bs-category-filters-container {
         position: relative;
