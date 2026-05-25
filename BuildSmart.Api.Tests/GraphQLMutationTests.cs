@@ -590,5 +590,80 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 		response.EnsureSuccessStatusCode();
 
 		Snapshot.Match(content);
-	}
-}
+		}
+
+		[Fact]
+		public async Task ConfirmVideoUpload_ValidData_ReplacesDomain()
+		{
+		// Arrange
+		var adminToken = TestTokenHelper.GenerateJwtToken(Guid.NewGuid(), "admin@example.com", "Admin", _configuration);
+		var tradesmanUserId = Guid.NewGuid();
+		var tradesmanProfileId = Guid.NewGuid();
+
+		var testProfile = new TradesmanProfile
+		{
+		Id = tradesmanProfileId,
+		UserId = tradesmanUserId
+		};
+
+		var mockProfileRepo = new Mock<ITradesmanProfileRepository>();
+		mockProfileRepo.Setup(r => r.GetByUserIdAsync(tradesmanUserId))
+		.ReturnsAsync(testProfile);
+		mockProfileRepo.Setup(r => r.AddMediaAsync(It.IsAny<TradesmanMedia>()))
+		.Returns(Task.CompletedTask);
+
+		var mockUnitOfWork = new Mock<IUnitOfWork>();
+		mockUnitOfWork.Setup(u => u.TradesmanProfiles).Returns(mockProfileRepo.Object);
+
+		var client = CreateClient(services =>
+		{
+		services.RemoveAll(typeof(IUnitOfWork));
+		services.AddSingleton(mockUnitOfWork.Object);
+
+		var configValues = new Dictionary<string, string>
+		{
+		{"CloudflareR2:PublicUrl", "https://pub-my-cool-url.r2.dev"}
+		};
+		// Add custom configuration builder on top of existing ones
+		var newConfig = new ConfigurationBuilder()
+		.AddInMemoryCollection(configValues)
+		.Build();
+
+		services.AddSingleton<IConfiguration>(newConfig);
+		}, adminToken);
+
+		var rawS3Url = "https://myaccount.r2.cloudflarestorage.com/buildsmart-media/myvid.mp4?X-Amz-Signature=12345";
+
+		var graphQLRequest = new
+		{
+		query = "mutation Confirm($userId: UUID!, $url: String!, $type: MediaType!) { confirmVideoUpload(tradesmanUserId: $userId, videoUrl: $url, type: $type) { videoUrl type } }",
+		variables = new
+		{
+		userId = tradesmanUserId,
+		url = rawS3Url,
+		type = "VIDEO"
+		}
+		};
+
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+		Content = new StringContent(JsonConvert.SerializeObject(graphQLRequest), Encoding.UTF8, "application/json")
+		};
+
+		// Act
+		var response = await client.SendAsync(request);
+		var content = await response.Content.ReadAsStringAsync();
+
+		// Assert
+		response.EnsureSuccessStatusCode();
+		var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
+
+		Assert.Null(jsonResponse.errors);
+		string savedUrl = jsonResponse.data.confirmVideoUpload.videoUrl;
+		string savedType = jsonResponse.data.confirmVideoUpload.type;
+
+		Assert.Equal("https://pub-my-cool-url.r2.dev/myvid.mp4", savedUrl);
+		Assert.Equal("VIDEO", savedType);
+		mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<System.Threading.CancellationToken>()), Times.Once);
+		}
+		}

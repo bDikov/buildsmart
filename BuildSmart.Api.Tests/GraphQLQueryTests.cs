@@ -340,4 +340,34 @@ public class GraphQLQueryTests : IClassFixture<TestApplicationFactory>
         Assert.NotNull(jsonResponse["errors"]);
         Assert.Contains("not authorized", jsonResponse["errors"]![0]!["message"]!.ToString(), StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task GetFeedMedia_ReturnsActiveMedia()
+    {
+        // Arrange
+        var client = CreateClient();
+
+        var graphQLRequest = new
+        {
+            query = "{ feedMedia { id videoUrl type } }"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+        {
+            Content = new StringContent(
+                Newtonsoft.Json.JsonConvert.SerializeObject(graphQLRequest),
+                System.Text.Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        var response = await client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var jsonResponse = JObject.Parse(content);
+        Assert.Null(jsonResponse["errors"]);
+        Assert.NotNull(jsonResponse["data"]?["feedMedia"]);
+    }
 }

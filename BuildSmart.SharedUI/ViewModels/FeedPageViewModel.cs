@@ -45,6 +45,18 @@ namespace BuildSmart.SharedUI.ViewModels
 		[ObservableProperty]
 		private bool? _hasProjects;
 
+		public class CategoryItem
+		{
+			public Guid Id { get; set; }
+			public string Name { get; set; } = string.Empty;
+		}
+
+		[ObservableProperty]
+		private ObservableCollection<CategoryItem> _categories = new();
+
+		[ObservableProperty]
+		private Guid? _selectedCategoryId;
+
 		public FeedPageViewModel(IBuildSmartApiClient apiClient, IAuthService authService)
 		{
 			_apiClient = apiClient;
@@ -118,6 +130,13 @@ namespace BuildSmart.SharedUI.ViewModels
 		}
 
 		[RelayCommand]
+		public async Task SelectCategoryAsync(Guid? categoryId)
+		{
+			SelectedCategoryId = categoryId;
+			await LoadFeedMediaAsync();
+		}
+
+		[RelayCommand]
 		public async Task LoadFeedAsync()
 		{
 			if (IsLoading) return;
@@ -142,7 +161,8 @@ namespace BuildSmart.SharedUI.ViewModels
 				else
 				{
 					await LoadHomeownerProjectsAsync();
-					await LoadTradesmenAsync();
+					await LoadCategoriesAsync();
+					await LoadFeedMediaAsync();
 				}
 			}
 			catch (Exception ex)
@@ -152,6 +172,40 @@ namespace BuildSmart.SharedUI.ViewModels
 			finally
 			{
 				IsLoading = false;
+			}
+		}
+
+		private async Task LoadCategoriesAsync()
+		{
+			try
+			{
+				var result = await _apiClient.GetServiceCategories.ExecuteAsync();
+				if (result.Data?.ServiceCategories != null)
+				{
+					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+					{
+						Categories.Clear();
+						var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+						// Filter only Active categories
+						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active))
+						{
+							// Find translation for current culture, fallback to default English name
+							var translation = cat.Translations?.FirstOrDefault(t => string.Equals(t.LanguageCode, currentCulture, StringComparison.OrdinalIgnoreCase));
+							var displayName = translation?.Name ?? cat.Name;
+
+							Categories.Add(new CategoryItem 
+							{ 
+								Id = Guid.Parse(cat.Id.ToString()), 
+								Name = displayName 
+							});
+						}
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"[FeedPageViewModel] LoadCategories Error: {ex}");
 			}
 		}
 
@@ -186,11 +240,29 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
-		private async Task LoadTradesmenAsync()
+		private async Task LoadFeedMediaAsync()
 		{
 			try
 			{
-				var result = await _apiClient.GetTradesmanProfiles.ExecuteAsync();
+				// Build filter for HotChocolate
+				TradesmanMediaFilterInput? filter = null;
+				if (SelectedCategoryId.HasValue)
+				{
+					filter = new TradesmanMediaFilterInput
+					{
+						ServiceCategoryId = new UuidOperationFilterInput { Eq = SelectedCategoryId.Value },
+						Type = new MediaTypeOperationFilterInput { Eq = MediaType.Video }
+					};
+				}
+				else 
+				{
+					filter = new TradesmanMediaFilterInput
+					{
+						Type = new MediaTypeOperationFilterInput { Eq = MediaType.Video }
+					};
+				}
+
+				var result = await _apiClient.GetFeedMedia.ExecuteAsync(filter);
 
 				if (result.Errors?.Count > 0)
 				{
@@ -200,30 +272,24 @@ namespace BuildSmart.SharedUI.ViewModels
 
 				AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 				{
-					if (result.Data?.TradesmanProfiles is not null)
+					if (result.Data?.FeedMedia is not null)
 					{
-						Tradesmen.Clear();
 						FeedVideos.Clear();
-						foreach (var tradesman in result.Data.TradesmanProfiles)
+						foreach (var media in result.Data.FeedMedia)
 						{
-							// Populate Tradesmen for any other components
-							Tradesmen.Add(tradesman);
-							
-							if (tradesman != null && tradesman.Media != null && tradesman.Media.Any())
+							if (media != null)
 							{
-								foreach (var media in tradesman.Media.Where(m => m.IsActive))
+								FeedVideos.Add(new FeedMediaItem
 								{
-									FeedVideos.Add(new FeedMediaItem
-									{
-										TradesmanId = tradesman.Id.ToString(),
-										VideoUrl = media.VideoUrl,
-										Name = $"{tradesman.User?.FirstName} {tradesman.User?.LastName}",
-										Role = tradesman.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
-										Location = tradesman.User?.Location ?? "",
-										Rating = tradesman.AverageRating,
-										ProfilePictureUrl = tradesman.User?.ProfilePictureUrl ?? ""
-									});
-								}
+									Id = Guid.Parse(media.Id.ToString()),
+									TradesmanId = media.TradesmanId.ToString(),
+									VideoUrl = media.VideoUrl,
+									Name = $"{media.TradesmanProfile?.User?.FirstName} {media.TradesmanProfile?.User?.LastName}",
+									Role = media.ServiceCategory?.Name ?? media.TradesmanProfile?.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
+									Location = media.TradesmanProfile?.User?.Location ?? "",
+									Rating = media.TradesmanProfile?.AverageRating ?? 0,
+									ProfilePictureUrl = media.TradesmanProfile?.User?.ProfilePictureUrl ?? ""
+								});
 							}
 						}
 					}

@@ -43,27 +43,39 @@
         <div class="profile-actions" style="margin-top: 20px;">
         </div>
 
-        <div class="profile-tabs">
-            <div class="tab active">Photos</div>
-            <div class="tab">Likes</div>
+        <div class="bs-profile-tabs">
+            <button class="bs-tab @(ViewModel.IsShowingPictures ? "" : "active")" @onclick="() => ViewModel.ToggleMediaTypeCommand.Execute(false)">Videos</button>
+            <button class="bs-tab @(ViewModel.IsShowingPictures ? "active" : "")" @onclick="() => ViewModel.ToggleMediaTypeCommand.Execute(true)">Pictures</button>
         </div>
 
         <div class="photo-grid">
             @if (ViewModel.Tradesman.Media != null && ViewModel.Tradesman.Media.Any(m => m.IsActive))
             {
-                @foreach (var entry in ViewModel.Tradesman.Media.Where(m => m.IsActive))
+                var filteredMedia = ViewModel.IsShowingPictures 
+                    ? ViewModel.Tradesman.Media.Where(m => m.IsActive && m.Type == BuildSmart.SharedUI.GraphQL.MediaType.Picture) 
+                    : ViewModel.Tradesman.Media.Where(m => m.IsActive && m.Type == BuildSmart.SharedUI.GraphQL.MediaType.Video);
+
+                if (filteredMedia.Any())
                 {
-                    <div class="photo-item" @onclick="GoToReels">
-                        @if (!string.IsNullOrEmpty(entry.ThumbnailUrl))
-                        {
-                            <img src="@entry.ThumbnailUrl" />
-                        }
-                        else
-                        {
-                            <!-- Fallback: a video element can serve as a thumbnail if muted and paused -->
-                            <video src="@entry.VideoUrl" muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        }
-                    </div>
+                    @foreach (var entry in filteredMedia)
+                    {
+                        <div class="photo-item" @onclick="GoToReels">
+                            @if (entry.Type == BuildSmart.SharedUI.GraphQL.MediaType.Picture && !string.IsNullOrEmpty(entry.ImageUrl))
+                            {
+                                <img src="@entry.ImageUrl" />
+                            }
+                            else
+                            {
+                                <!-- Fallback: a video element can serve as a thumbnail if muted and paused -->
+                                <video src="@entry.VideoUrl" muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                                <div class="video-play-indicator">▶</div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state" style="grid-column: 1 / -1; padding: 2rem;">No @(ViewModel.IsShowingPictures ? "pictures" : "videos") available.</div>
                 }
             }
             else if (ViewModel.Tradesman.PortfolioEntries != null && ViewModel.Tradesman.PortfolioEntries.Any())

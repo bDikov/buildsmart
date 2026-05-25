@@ -107,23 +107,34 @@ window.reelsObserver = {
             let touchStartY = null;
             let isSwiping = false;
 
-            // Custom Tap Logic for Double Click (Play/Pause)
-            let lastTapTime = 0;
+            // Custom Tap Logic for Double Click (Play/Pause) and Triple Click (Theater Mode)
+            let tapCount = 0;
+            let tapTimer = null;
+
             element.addEventListener('click', (e) => {
                 // Ignore clicks on actual buttons or the plyr controls
                 if (e.target.closest('.bs-reel-action-btn') || e.target.closest('.plyr__controls')) return;
 
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTapTime;
-                
-                if (tapLength < 300 && tapLength > 0) {
-                    // Double Tap -> Play/Pause
+                tapCount++;
+
+                if (tapCount === 1) {
+                    tapTimer = setTimeout(() => {
+                        tapCount = 0;
+                    }, 400); // 400ms window for multi-taps
+                } else if (tapCount === 2) {
+                    // Execute double tap logic instantly for responsiveness
                     const player = window.reelsObserver.players[videoId];
                     if (player) player.togglePlay();
-                    lastTapTime = 0; // Reset
-                } else {
-                    // Single Tap -> Let Plyr natively wake up controls
-                    lastTapTime = currentTime;
+                } else if (tapCount === 3) {
+                    // Triple Tap -> Toggle Theater Mode
+                    element.classList.toggle('bs-theater-mode');
+                    
+                    // Since the 2nd tap just toggled the video state, toggle it back
+                    const player = window.reelsObserver.players[videoId];
+                    if (player) player.togglePlay();
+                    
+                    tapCount = 0;
+                    clearTimeout(tapTimer);
                 }
             });
 

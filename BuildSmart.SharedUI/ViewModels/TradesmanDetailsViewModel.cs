@@ -22,6 +22,15 @@ namespace BuildSmart.SharedUI.ViewModels
         [ObservableProperty]
         private bool _isLoading;
 
+        [ObservableProperty]
+        private bool _isShowingPictures = false;
+
+        [RelayCommand]
+        public void ToggleMediaType(bool showPictures)
+        {
+            IsShowingPictures = showPictures;
+        }
+
         public TradesmanDetailsViewModel(IBuildSmartApiClient apiClient)
         {
             _apiClient = apiClient;
