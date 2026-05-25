@@ -226,8 +226,6 @@
         background-color: var(--bg-card);
         border-radius: 16px;
         box-shadow: var(--elevation-08dp);
-        max-height: 150px; /* Limit height so the page itself doesn't scroll */
-        overflow-y: auto;  /* Add vertical scroller for the filter items */
     }
 
     .bs-chip {
@@ -582,6 +580,11 @@
             {
                 // Fire and forget
                 _ = ViewModel.LoadMoreFeedMediaAsync();
+            }
+            else if (ViewModel.FeedVideos.Count == 0 && !ViewModel.HasNextPage)
+            {
+                // We reached the absolute end of the feed. Restart from the local cache.
+                ViewModel.RestartFeedFromCacheCommand.Execute(null);
             }
 
             await InvokeAsync(StateHasChanged);

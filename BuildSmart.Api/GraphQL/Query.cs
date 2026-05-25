@@ -17,7 +17,7 @@ public class Query
 	[UseSorting]
 	public IQueryable<TradesmanMedia> GetFeedMedia([Service] AppDbContext context)
 	{
-		return context.TradesmanMedia.Where(m => m.IsActive);
+		return context.TradesmanMedia.Where(m => m.IsActive).OrderByDescending(m => m.CreatedAt);
 	}
 
 	[UseProjection]

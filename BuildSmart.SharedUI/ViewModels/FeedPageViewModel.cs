@@ -18,6 +18,9 @@ namespace BuildSmart.SharedUI.ViewModels
 		[ObservableProperty]
 		private ObservableCollection<FeedMediaItem> _feedVideos = new();
 
+		// Cache to hold all loaded videos for infinite looping
+		private List<FeedMediaItem> _cachedVideos = new();
+
 		public class FeedMediaItem
 		{
 			public Guid Id { get; set; } = Guid.NewGuid();
@@ -252,6 +255,7 @@ namespace BuildSmart.SharedUI.ViewModels
 		private int _currentSkip = 0;
 		private const int PageSize = 3;
 		public bool HasNextPage { get; private set; } = true;
+		private bool _isLoadingMore = false;
 
 		private async Task LoadFeedMediaAsync()
 		{
@@ -259,6 +263,7 @@ namespace BuildSmart.SharedUI.ViewModels
 			{
 				_currentSkip = 0;
 				HasNextPage = true;
+				_cachedVideos.Clear();
 				
 				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
 				if (result?.Items != null)
@@ -269,7 +274,12 @@ namespace BuildSmart.SharedUI.ViewModels
 						// Reverse the list when adding so the first item from the DB is at the end of the collection (Top of the Stack in UI)
 						foreach (var media in result.Items.Reverse())
 						{
-							if (media != null) AddVideoToFeed(media);
+							if (media != null)
+							{
+								var item = CreateFeedMediaItem(media);
+								_cachedVideos.Insert(0, item); // Keep original order in cache
+								FeedVideos.Add(item);
+							}
 						}
 					});
 					
@@ -285,47 +295,116 @@ namespace BuildSmart.SharedUI.ViewModels
 
 		public async Task LoadMoreFeedMediaAsync()
 		{
-			if (!HasNextPage) return;
+			if (_isLoadingMore) return;
 
 			try
 			{
-				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
-				if (result?.Items != null)
+				_isLoadingMore = true;
+				
+				if (HasNextPage)
 				{
+					var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
+					if (result?.Items != null)
+					{
+						AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+						{
+							// Insert at 0 so they appear at the bottom of the Tinder stack
+							foreach (var media in result.Items)
+							{
+								if (media != null)
+								{
+									var videoItem = CreateFeedMediaItem(media);
+									_cachedVideos.Add(videoItem);
+
+									// Strict deduplication check to prevent Blazor @key crashes
+									if (!FeedVideos.Any(v => v.Id == videoItem.Id))
+									{
+										FeedVideos.Insert(0, videoItem);
+									}
+								}
+							}
+
+							TrimFeedStack();
+						});
+
+						_currentSkip += PageSize;
+						HasNextPage = result.PageInfo.HasNextPage;
+					}
+				}
+				else if (_cachedVideos.Count > 0)
+				{
+					// We've exhausted the API, start looping from the cache
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
-						// Insert at 0 so they appear at the bottom of the Tinder stack
-						foreach (var media in result.Items)
+						// Calculate our virtual skip based on modulo
+						int virtualSkip = _currentSkip % _cachedVideos.Count;
+						var cachedBatch = _cachedVideos.Skip(virtualSkip).Take(PageSize).ToList();
+						
+						// If we reached the end of the cache mid-batch, wrap around to the start
+						if (cachedBatch.Count < PageSize)
 						{
-							if (media != null)
+							cachedBatch.AddRange(_cachedVideos.Take(PageSize - cachedBatch.Count));
+						}
+
+						foreach (var videoItem in cachedBatch)
+						{
+							// Create a fresh clone so Blazor @key and JS observer see it as a "new" DOM element in the stack
+							var clonedItem = new FeedMediaItem
 							{
-								var videoItem = CreateFeedMediaItem(media);
-								FeedVideos.Insert(0, videoItem);
-							}
+								Id = Guid.NewGuid(), // NEW ID for the loop
+								TradesmanId = videoItem.TradesmanId,
+								VideoUrl = videoItem.VideoUrl,
+								Name = videoItem.Name,
+								Role = videoItem.Role,
+								Location = videoItem.Location,
+								Rating = videoItem.Rating,
+								ProfilePictureUrl = videoItem.ProfilePictureUrl
+							};
+							
+							FeedVideos.Insert(0, clonedItem);
 						}
 
-						// Keep array size up to 10. Since new items are at 0, the oldest items we haven't seen yet are at the end (Top of stack).
-						// Wait, the user swipes the Top of the stack. We want to keep upcoming videos. 
-						// Actually, if we swipe, we remove from the top. So the array naturally shrinks. 
-						// If it exceeds 10, we should remove from the bottom (Index 0) to prevent memory leaks? 
-						// No, the bottom are the NEWEST videos we just fetched! The top are the ones about to be watched.
-						// To cap at 10, we remove from the top? No, that deletes the video the user is looking at!
-						// It's safer to just let the swipe logic remove the watched videos, and only load more when the array gets small.
-						while (FeedVideos.Count > 10)
-						{
-							// Remove the absolute bottom-most (furthest away) video if we somehow bloated
-							FeedVideos.RemoveAt(0);
-						}
+						TrimFeedStack();
+						_currentSkip += PageSize;
 					});
-
-					_currentSkip += PageSize;
-					HasNextPage = result.PageInfo.HasNextPage;
 				}
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error loading more videos: {ex.Message}");
 			}
+			finally 
+			{
+				_isLoadingMore = false;
+			}
+		}
+
+		private void TrimFeedStack()
+		{
+			while (FeedVideos.Count > 10)
+			{
+				// Remove the absolute bottom-most (furthest away) video if we somehow bloated
+				FeedVideos.RemoveAt(0);
+			}
+		}
+
+		[RelayCommand]
+		public void RestartFeedFromCache()
+		{
+			AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+			{
+				FeedVideos.Clear();
+				// Restore the initial set of videos from the cache, maintaining the reverse order logic for the stack
+				var initialBatch = _cachedVideos.Take(PageSize).Reverse().ToList();
+				foreach (var video in initialBatch)
+				{
+					FeedVideos.Add(video);
+				}
+				
+				// Reset pagination state so we can simulate fetching more from cache
+				_currentSkip = initialBatch.Count;
+				HasNextPage = _currentSkip < _cachedVideos.Count;
+			});
 		}
 
 		private async Task<IGetFeedMedia_FeedMedia?> FetchFeedMediaBatchAsync(int skip, int take)
