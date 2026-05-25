@@ -196,8 +196,8 @@ namespace BuildSmart.SharedUI.ViewModels
 						Categories.Clear();
 						var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
-						// Filter only Active categories
-						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active))
+						// Filter only Active categories and exclude Global category
+						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.IsGlobal != true))
 						{
 							// Find translation for current culture, fallback to default English name
 							var translation = cat.Translations?.FirstOrDefault(t => string.Equals(t.LanguageCode, currentCulture, StringComparison.OrdinalIgnoreCase));

@@ -267,7 +267,7 @@ public class AppDbContext : DbContext
                 var categoryName = kvp.Value.Name;
                 var isGlobal = kvp.Key == "global_category";
 
-                var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == categoryName);
+                var category = await ServiceCategories.Include(c => c.Translations).FirstOrDefaultAsync(c => c.Name == categoryName);
                 if (category == null)
                 {
                     category = new ServiceCategory
@@ -284,6 +284,27 @@ public class AppDbContext : DbContext
                 else
                 {
                     category.IsGlobal = isGlobal;
+                }
+
+                // Add or update BG translation for the UI
+                if (!category.Translations.Any(t => t.LanguageCode == "bg"))
+                {
+                    string bgName = categoryName switch {
+                        "Електрическа Инсталация" => "Електроуслуги",
+                        "ВиК Услуги (Plumbing)" => "ВиК Услуги",
+                        "Бояджийски и шпакловъчни услуги (Painting)" => "Боядисване",
+                        "Къртене и извозване (Demolition)" => "Къртене",
+                        "Сухо строителство (Drywall)" => "Сухо Строителство",
+                        "Подови и стенни настилки (Tiling)" => "Настилки",
+                        "Микроцимент (Microcement)" => "Микроцимент",
+                        _ => categoryName
+                    };
+                    
+                    category.Translations.Add(new ServiceCategoryTranslation 
+                    { 
+                        LanguageCode = "bg", 
+                        Name = bgName 
+                    });
                 }
                 
                 category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
