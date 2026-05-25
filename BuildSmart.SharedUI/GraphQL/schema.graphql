@@ -549,6 +549,15 @@ input TradesmanProfileSortInput {
   updatedAt: SortEnumType
 }
 
+"A segment of a collection."
+type FeedMediaCollectionSegment {
+  "Information to aid in pagination."
+  pageInfo: CollectionSegmentInfo!
+  "A flattened list of the items."
+  items: [TradesmanMedia!]
+  totalCount: Int!
+}
+
 input AmountSortInput {
   currency: SortEnumType
   subtotal: SortEnumType
@@ -924,8 +933,10 @@ type Mutation {
   requestVideoUploadUrl(fileName: String! contentType: String!): String!
   "Confirms a successful CDN upload and saves the media record to the tradesman's profile."
   confirmVideoUpload(tradesmanUserId: UUID! videoUrl: String! type: MediaType! serviceCategoryId: UUID): TradesmanMedia!
-  "Toggles the visibility\/active status of a tradesman's media reel."
+  "Toggles the visibility (IsActive) status of a tradesman's media reel."
   toggleTradesmanMediaStatus(mediaId: UUID! isActive: Boolean!): TradesmanMedia!
+  "Updates the category assigned to a tradesman's media reel."
+  updateTradesmanMediaCategory(mediaId: UUID! categoryId: UUID): TradesmanMedia!
   "Deletes a tradesman's media reel from the database."
   deleteTradesmanMedia(mediaId: UUID!): Boolean!
   updateUserLanguage(languageCode: String!): User!
@@ -942,15 +953,15 @@ type Mutation {
 "The root query object."
 type Query {
   "Gets a queryable list of active media for the public feed."
-  feedMedia(where: TradesmanMediaFilterInput order: [TradesmanMediaSortInput!]): [TradesmanMedia!]!
+  feedMedia(skip: Int take: Int where: TradesmanMediaFilterInput order: [TradesmanMediaSortInput!]): FeedMediaCollectionSegment
   "Gets a queryable list of tradesman profiles."
   tradesmanProfiles(where: TradesmanProfileFilterInput order: [TradesmanProfileSortInput!]): [TradesmanProfile!]!
   "Gets the currently authenticated user."
   currentUser: User
   "Gets a list of all active service categories."
-  serviceCategories: [ServiceCategory!]!
+  serviceCategories(where: ServiceCategoryFilterInput order: [ServiceCategorySortInput!]): [ServiceCategory!]!
   "Gets all service categories, regardless of status. (Admin only)"
-  allServiceCategories: [ServiceCategory!]!
+  allServiceCategories(where: ServiceCategoryFilterInput order: [ServiceCategorySortInput!]): [ServiceCategory!]!
   "Gets the projects created by the authenticated homeowner."
   myProjects: [Project!]!
   jobPostsForReview(where: JobPostFilterInput order: [JobPostSortInput!]): [JobPost!]!
@@ -1178,6 +1189,14 @@ input IntOperationFilterInput {
 
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
+
+"Information about the offset pagination."
+type CollectionSegmentInfo {
+  "Indicates whether more items exist following the set defined by the clients arguments."
+  hasNextPage: Boolean!
+  "Indicates whether more items exist prior the set defined by the clients arguments."
+  hasPreviousPage: Boolean!
+}
 
 input CertificationFilterInput {
   and: [CertificationFilterInput!]
@@ -1673,3 +1692,6 @@ scalar Upload
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
 directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
+
+"The purpose of the `@listSize` directive is to either inform the static analysis about the size of returned lists (if that information is statically available), or to point the analysis to where to find that information."
+directive @listSize("The `assumedSize` argument can be used to statically define the maximum length of a list returned by a field." assumedSize: Int "The `slicingArguments` argument can be used to define which of the field's arguments with numeric type are slicing arguments, so that their value determines the size of the list returned by that field. It may specify a list of multiple slicing arguments." slicingArguments: [String!] "The `slicingArgumentDefaultValue` argument can be used to define a default value for a slicing argument, which is used if the argument is not present in a query." slicingArgumentDefaultValue: Int "The `sizedFields` argument can be used to define that the value of the `assumedSize` argument or of a slicing argument does not affect the size of a list returned by a field itself, but that of a list returned by one of its sub-fields." sizedFields: [String!] "The `requireOneSlicingArgument` argument can be used to inform the static analysis that it should expect that exactly one of the defined slicing arguments is present in a query. If that is not the case (i.e., if none or multiple slicing arguments are present), the static analysis may throw an error." requireOneSlicingArgument: Boolean! = true) on FIELD_DEFINITION

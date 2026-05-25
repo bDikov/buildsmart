@@ -249,65 +249,133 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
+		private int _currentSkip = 0;
+		private const int PageSize = 3;
+		public bool HasNextPage { get; private set; } = true;
+
 		private async Task LoadFeedMediaAsync()
 		{
 			try
 			{
-				// Build filter for HotChocolate
-				TradesmanMediaFilterInput? filter = null;
-				if (SelectedCategoryId.HasValue)
+				_currentSkip = 0;
+				HasNextPage = true;
+				
+				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
+				if (result?.Items != null)
 				{
-					filter = new TradesmanMediaFilterInput
-					{
-						ServiceCategoryId = new UuidOperationFilterInput { Eq = SelectedCategoryId.Value },
-						Type = new MediaTypeOperationFilterInput { Eq = MediaType.Video }
-					};
-				}
-				else 
-				{
-					filter = new TradesmanMediaFilterInput
-					{
-						Type = new MediaTypeOperationFilterInput { Eq = MediaType.Video }
-					};
-				}
-
-				var result = await _apiClient.GetFeedMedia.ExecuteAsync(filter);
-
-				if (result.Errors?.Count > 0)
-				{
-					await AppServiceLocator.Alerts.DisplayAlert("Feed Error", result.Errors[0].Message, "OK");
-					return;
-				}
-
-				AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
-				{
-					if (result.Data?.FeedMedia is not null)
+					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
 						FeedVideos.Clear();
-						foreach (var media in result.Data.FeedMedia)
+						// Reverse the list when adding so the first item from the DB is at the end of the collection (Top of the Stack in UI)
+						foreach (var media in result.Items.Reverse())
 						{
-							if (media != null)
-							{
-								FeedVideos.Add(new FeedMediaItem
-								{
-									Id = Guid.Parse(media.Id.ToString()),
-									TradesmanId = media.TradesmanId.ToString(),
-									VideoUrl = media.VideoUrl,
-									Name = $"{media.TradesmanProfile?.User?.FirstName} {media.TradesmanProfile?.User?.LastName}",
-									Role = media.ServiceCategory?.Name ?? media.TradesmanProfile?.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
-									Location = media.TradesmanProfile?.User?.Location ?? "",
-									Rating = media.TradesmanProfile?.AverageRating ?? 0,
-									ProfilePictureUrl = media.TradesmanProfile?.User?.ProfilePictureUrl ?? ""
-								});
-							}
+							if (media != null) AddVideoToFeed(media);
 						}
-					}
-				});
+					});
+					
+					_currentSkip += PageSize;
+					HasNextPage = result.PageInfo.HasNextPage;
+				}
 			}
 			catch (Exception ex)
 			{
 				await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
 			}
+		}
+
+		public async Task LoadMoreFeedMediaAsync()
+		{
+			if (!HasNextPage) return;
+
+			try
+			{
+				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
+				if (result?.Items != null)
+				{
+					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+					{
+						// Insert at 0 so they appear at the bottom of the Tinder stack
+						foreach (var media in result.Items)
+						{
+							if (media != null)
+							{
+								var videoItem = CreateFeedMediaItem(media);
+								FeedVideos.Insert(0, videoItem);
+							}
+						}
+
+						// Keep array size up to 10. Since new items are at 0, the oldest items we haven't seen yet are at the end (Top of stack).
+						// Wait, the user swipes the Top of the stack. We want to keep upcoming videos. 
+						// Actually, if we swipe, we remove from the top. So the array naturally shrinks. 
+						// If it exceeds 10, we should remove from the bottom (Index 0) to prevent memory leaks? 
+						// No, the bottom are the NEWEST videos we just fetched! The top are the ones about to be watched.
+						// To cap at 10, we remove from the top? No, that deletes the video the user is looking at!
+						// It's safer to just let the swipe logic remove the watched videos, and only load more when the array gets small.
+						while (FeedVideos.Count > 10)
+						{
+							// Remove the absolute bottom-most (furthest away) video if we somehow bloated
+							FeedVideos.RemoveAt(0);
+						}
+					});
+
+					_currentSkip += PageSize;
+					HasNextPage = result.PageInfo.HasNextPage;
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error loading more videos: {ex.Message}");
+			}
+		}
+
+		private async Task<IGetFeedMedia_FeedMedia?> FetchFeedMediaBatchAsync(int skip, int take)
+		{
+			TradesmanMediaFilterInput? filter = null;
+			if (SelectedCategoryId.HasValue)
+			{
+				filter = new TradesmanMediaFilterInput
+				{
+					ServiceCategoryId = new UuidOperationFilterInput { Eq = SelectedCategoryId.Value },
+					Type = new MediaTypeOperationFilterInput { Eq = MediaType.Video }
+				};
+			}
+			else 
+			{
+				filter = new TradesmanMediaFilterInput
+				{
+					Type = new MediaTypeOperationFilterInput { Eq = MediaType.Video }
+				};
+			}
+
+			var result = await _apiClient.GetFeedMedia.ExecuteAsync(filter, skip, take);
+
+			if (result.Errors?.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Feed Error", result.Errors[0].Message, "OK");
+				return null;
+			}
+
+			return result.Data?.FeedMedia;
+		}
+
+		private void AddVideoToFeed(IGetFeedMedia_FeedMedia_Items media)
+		{
+			FeedVideos.Add(CreateFeedMediaItem(media));
+		}
+
+		private FeedMediaItem CreateFeedMediaItem(IGetFeedMedia_FeedMedia_Items media)
+		{
+			return new FeedMediaItem
+			{
+				Id = Guid.Parse(media.Id.ToString()),
+				TradesmanId = media.TradesmanId.ToString(),
+				VideoUrl = media.VideoUrl,
+				Name = $"{media.TradesmanProfile?.User?.FirstName} {media.TradesmanProfile?.User?.LastName}",
+				Role = media.ServiceCategory?.Name ?? media.TradesmanProfile?.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
+				Location = media.TradesmanProfile?.User?.Location ?? "",
+				Rating = media.TradesmanProfile?.AverageRating ?? 0,
+				ProfilePictureUrl = media.TradesmanProfile?.User?.ProfilePictureUrl ?? ""
+			};
 		}
 
 		[RelayCommand]

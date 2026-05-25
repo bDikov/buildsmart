@@ -35,6 +35,17 @@
             </div>
 
             <div class="form-group">
+                <label>Select Category (Tag):</label>
+                <select @bind="selectedCategoryId" class="bs-input">
+                    <option value="">-- Optional: Tag a Category --</option>
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label>Select Web-Optimized Video (.mp4):</label>
                 <InputFile OnChange="HandleFileSelected" accept="video/mp4,video/x-m4v,video/*" class="bs-input file-input" />
                 @if (selectedFile != null)
@@ -80,6 +91,13 @@
                             <div>
                                 <p style="margin:0;">Uploaded: @media.CreatedAt.DateTime.ToLocalTime().ToString("g")</p>
                                 <p style="margin:0;">Status: @(media.IsActive ? "Visible in Feed" : "Hidden")</p>
+                                <select class="bs-input form-select-sm mt-2" style="width: auto; padding: 2px 24px 2px 8px; font-size: 0.8rem;"
+                                        @onchange="(e) => ChangeMediaCategory(media.Id, e.Value?.ToString())">
+                                    <option value="">-- Untagged --</option>
+                                    @foreach(var c in categories) {
+                                        <option value="@c.Id" selected="@(media.ServiceCategory?.Name == c.Name)">@c.Name</option>
+                                    }
+                                </select>
                             </div>
                             <div style="display:flex; gap: 0.5rem;">
                                 <button class="bs-btn-dark" @onclick="() => ToggleMedia(media.Id, !media.IsActive)">
@@ -99,8 +117,10 @@
     private bool isLoading = true;
     private bool isUploading = false;
     private string selectedTradesmanUserId = "";
+    private string selectedCategoryId = "";
     private IBrowserFile? selectedFile;
     private List<IGetTradesmanProfiles_TradesmanProfiles> tradesmen = new();
+    private List<IGetServiceCategories_ServiceCategories> categories = new();
     private string statusMessage = "";
     private bool isError = false;
     private int uploadProgress = 0;
@@ -108,10 +128,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTradesmen();
+        await LoadData();
     }
 
-    private async Task LoadTradesmen()
+    private async Task LoadData()
     {
         try
         {
@@ -120,11 +140,17 @@
             {
                 tradesmen = result.Data.TradesmanProfiles.ToList();
             }
+
+            var catResult = await ApiClient.GetServiceCategories.ExecuteAsync();
+            if (catResult.Errors.Count == 0 && catResult.Data?.ServiceCategories != null)
+            {
+                categories = catResult.Data.ServiceCategories.Where(c => c.Status == CategoryStatus.Active && c.IsGlobal != true).ToList();
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            statusMessage = "Failed to load tradesmen.";
+            statusMessage = "Failed to load data.";
             isError = true;
         }
         finally
@@ -216,12 +242,14 @@
             var fileName = System.IO.Path.GetFileName(privateVideoUrl);
             var publicVideoUrl = $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
 
+            var categoryId = string.IsNullOrEmpty(selectedCategoryId) ? (Guid?)null : Guid.Parse(selectedCategoryId);
+
             // 3. Confirm with API
             var confirmResult = await ApiClient.ConfirmVideoUpload.ExecuteAsync(
                 Guid.Parse(selectedTradesmanUserId), 
                 publicVideoUrl,
                 BuildSmart.SharedUI.GraphQL.MediaType.Video,
-                null);
+                categoryId);
 
             if (confirmResult.Errors.Count > 0)
             {
@@ -234,7 +262,7 @@
             selectedFile = null; // Reset
             
             // Refresh the UI to show the newly added video in the Manage Videos section
-            await LoadTradesmen();
+            await LoadData();
         }
         catch (Exception ex)
         {
@@ -257,7 +285,7 @@
             var result = await ApiClient.ToggleTradesmanMediaStatus.ExecuteAsync(mediaId, isActive);
             if (result.Errors.Count == 0)
             {
-                await LoadTradesmen();
+                await LoadData();
             }
             else 
             {
@@ -268,6 +296,32 @@
         catch (Exception ex)
         {
             statusMessage = $"Error toggling media: {ex.Message}";
+            isError = true;
+        }
+    }
+
+    private async Task ChangeMediaCategory(object mediaIdObj, string? categoryIdStr)
+    {
+        if (!Guid.TryParse(mediaIdObj?.ToString(), out var mediaId)) return;
+
+        var categoryId = string.IsNullOrEmpty(categoryIdStr) ? (Guid?)null : Guid.Parse(categoryIdStr);
+
+        try
+        {
+            var result = await ApiClient.UpdateTradesmanMediaCategory.ExecuteAsync(mediaId, categoryId);
+            if (result.Errors.Count == 0)
+            {
+                await LoadData();
+            }
+            else 
+            {
+                statusMessage = "Failed to update category.";
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error updating category: {ex.Message}";
             isError = true;
         }
     }
@@ -284,7 +338,7 @@
             var result = await ApiClient.DeleteTradesmanMedia.ExecuteAsync(mediaId);
             if (result.Errors.Count == 0)
             {
-                await LoadTradesmen();
+                await LoadData();
             }
             else
             {

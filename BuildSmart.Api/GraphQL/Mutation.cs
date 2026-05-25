@@ -984,6 +984,26 @@ public class Mutation
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<TradesmanMedia> UpdateTradesmanMediaCategory(
+		Guid mediaId,
+		Guid? categoryId,
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)
+	{
+		if (dbContext == null) throw new GraphQLException("Database context not found.");
+
+		var media = await dbContext.TradesmanMedia.FirstOrDefaultAsync(m => m.Id == mediaId)
+			?? throw new GraphQLException("Media not found.");
+
+		media.ServiceCategoryId = categoryId;
+		media.UpdatedAt = DateTime.UtcNow;
+
+		dbContext.TradesmanMedia.Update(media);
+		await dbContext.SaveChangesAsync();
+
+		return media;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<bool> DeleteTradesmanMedia(
 		Guid mediaId,
 		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)

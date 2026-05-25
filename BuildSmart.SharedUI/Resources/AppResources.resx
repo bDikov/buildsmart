@@ -599,6 +599,12 @@
   <data name="Feed_All" xml:space="preserve">
     <value>All</value>
   </data>
+  <data name="Feed_ViewAll" xml:space="preserve">
+    <value>View All</value>
+  </data>
+  <data name="Feed_Collapse" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
   <data name="Feed_NoMediaFound" xml:space="preserve">
     <value>No media found for this category.</value>
   </data>

@@ -3,6 +3,7 @@ using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Infrastructure.Persistence;
 using BuildSmart.Api.GraphQL.Types;
 using HotChocolate.Authorization;
+using HotChocolate.Types;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace BuildSmart.Api.GraphQL;
 
 public class Query
 {
+	[UseOffsetPaging(IncludeTotalCount = true, DefaultPageSize = 3, MaxPageSize = 10)]
 	[UseProjection]
 	[UseFiltering]
 	[UseSorting]

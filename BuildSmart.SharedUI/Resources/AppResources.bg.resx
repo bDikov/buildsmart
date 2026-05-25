@@ -602,6 +602,12 @@
   <data name="Feed_All" xml:space="preserve">
     <value>Всички</value>
   </data>
+  <data name="Feed_ViewAll" xml:space="preserve">
+    <value>Виж Всички</value>
+  </data>
+  <data name="Feed_Collapse" xml:space="preserve">
+    <value>Скрий</value>
+  </data>
   <data name="Feed_NoMediaFound" xml:space="preserve">
     <value>Няма намерени медии за тази категория.</value>
   </data>

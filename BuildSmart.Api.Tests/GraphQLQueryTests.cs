@@ -349,9 +349,8 @@ public class GraphQLQueryTests : IClassFixture<TestApplicationFactory>
 
         var graphQLRequest = new
         {
-            query = "{ feedMedia { id videoUrl type } }"
+            query = "{ feedMedia { items { id videoUrl type } } }"
         };
-
         var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
         {
             Content = new StringContent(

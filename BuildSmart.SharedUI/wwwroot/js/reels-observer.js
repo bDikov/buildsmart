@@ -19,7 +19,11 @@ window.reelsObserver = {
                 const videoId = entry.target.getAttribute('data-video-id');
                 const player = this.players[videoId];
 
-                if (entry.isIntersecting) {
+                // The top card is the last child in the container
+                const isTopCard = !entry.target.nextElementSibling;
+                const isTheaterMode = entry.target.classList.contains('bs-theater-mode');
+
+                if (entry.isIntersecting && (isTopCard || isTheaterMode)) {
                     if (player) {
                         // Apply the global mute state chosen by the user
                         player.muted = window.reelsObserver.globalMuted;
@@ -27,6 +31,17 @@ window.reelsObserver = {
                             player.volume = 1;
                         }
                         
+                        // Force pause all other players to guarantee no audio overlap
+                        for (const id in window.reelsObserver.players) {
+                            if (id !== videoId) {
+                                const p = window.reelsObserver.players[id];
+                                if (p) {
+                                    p.muted = true;
+                                    window.reelsObserver.safePause(id, p);
+                                }
+                            }
+                        }
+
                         let playPromise = player.play();
                         if (playPromise !== undefined) {
                             window.reelsObserver.playPromises[videoId] = playPromise;
@@ -49,7 +64,8 @@ window.reelsObserver = {
                     if (player) {
                         // Prevent pausing if the user expanded the video to Theater Mode
                         // (position: fixed breaks it out of the IntersectionObserver's root container)
-                        if (!entry.target.classList.contains('bs-theater-mode')) {
+                        if (!isTheaterMode) {
+                            player.muted = true; // Instantly mute background videos
                             window.reelsObserver.safePause(videoId, player);
                         }
                     }
@@ -230,14 +246,22 @@ window.reelsObserver = {
             this.observer.disconnect();
             this.observer = null;
         }
+        this.clearAll();
+        this.dotNetRef = null;
+    },
 
-        // Destroy all Plyr instances
+    clearAll: function () {
+        // Destroy all Plyr instances to stop ghost audio when switching categories
         for (const videoId in this.players) {
-            this.players[videoId].destroy();
+            if (this.players[videoId]) {
+                try {
+                    this.players[videoId].pause();
+                    this.players[videoId].destroy();
+                } catch (e) { }
+            }
         }
         this.players = {};
-
-        this.dotNetRef = null;
+        this.playPromises = {};
     },
 
     togglePlayback: function (videoId) {

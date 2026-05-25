@@ -24,6 +24,9 @@ query GetTradesmanProfiles {
       thumbnailUrl
       isActive
       createdAt
+      serviceCategory {
+        name
+      }
     }
     milestoneMedia {
       id

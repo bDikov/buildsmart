@@ -10,3 +10,11 @@ mutation ConfirmVideoUpload($tradesmanUserId: UUID!, $videoUrl: String!, $type: 
     isActive
   }
 }
+mutation UpdateTradesmanMediaCategory($mediaId: UUID!, $categoryId: UUID) {
+  updateTradesmanMediaCategory(mediaId: $mediaId, categoryId: $categoryId) {
+    id
+    serviceCategory {
+      name
+    }
+  }
+}

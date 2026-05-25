@@ -1,27 +1,32 @@
-query GetFeedMedia($where: TradesmanMediaFilterInput) {
-  feedMedia(where: $where) {
-    id
-    tradesmanId
-    videoUrl
-    imageUrl
-    type
-    serviceCategoryId
-    serviceCategory {
-      name
-    }
-    tradesmanProfile {
-      averageRating
-      user {
-        firstName
-        lastName
-        location
-        profilePictureUrl
+query GetFeedMedia($where: TradesmanMediaFilterInput, $skip: Int, $take: Int) {
+  feedMedia(where: $where, skip: $skip, take: $take) {
+    items {
+      id
+      tradesmanId
+      videoUrl
+      imageUrl
+      type
+      serviceCategoryId
+      serviceCategory {
+        name
       }
-      skills {
-        serviceCategory {
-          name
+      tradesmanProfile {
+        averageRating
+        user {
+          firstName
+          lastName
+          location
+          profilePictureUrl
+        }
+        skills {
+          serviceCategory {
+            name
+          }
         }
       }
+    }
+    pageInfo {
+      hasNextPage
     }
   }
 }

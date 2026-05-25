@@ -51,7 +51,7 @@
                         <div class="bs-category-filters-container">
                             <div class="bs-category-filters @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed")">
                                 <button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")" 
-                                        @onclick="() => ViewModel.SelectCategoryCommand.ExecuteAsync(null)">
+                                        @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
                                     @Loc["Feed_All"]
                                 </button>
                                 
@@ -59,7 +59,7 @@
                                 @foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
                                 {
                                     <button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")" 
-                                            @onclick="() => ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id)">
+                                            @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
                                         @cat.Name
                                     </button>
                                 }
@@ -67,14 +67,14 @@
                                 @if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
                                 {
                                     <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-                                        @Loc["ProjectDetail_ViewMore"]
+                                        @Loc["Feed_ViewAll"]
                                     </button>
                                 }
                                 
                                 @if (ViewModel.IsFilterExpanded)
                                 {
                                     <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-                                        @Loc["ProjectDetail_ViewLess"]
+                                        @Loc["Feed_Collapse"]
                                     </button>
                                 }
                             </div>
@@ -197,7 +197,7 @@
         z-index: 10; 
         width: 100%;
         max-width: 600px;
-        margin: -10px auto 2.5rem auto; /* Negative top margin to move closer to nav, 2.5rem bottom margin to separate from videos */
+        margin: -10px auto 1rem auto; /* Reduced from 2.5rem to pull videos closer */
     }
 
     .bs-category-filters {
@@ -557,29 +557,17 @@
         // For the Feed, any significant swipe (left or right) dismisses the current video
         bool isSwipeAction = Math.Abs(deltaX) > 80 || (Math.Abs(deltaX) > 30 && Math.Abs(velocity) > 0.5);
 
-        if (isSwipeAction && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Count > 1)
+        if (isSwipeAction && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
         {
-            if (deltaX < 0)
-            {
-                // SWIPE LEFT -> Go to Next Video
-                // The top video (Last item) moves to the bottom of the stack (Index 0)
-                var videoToRemove = ViewModel.FeedVideos.Last();
-                ViewModel.FeedVideos.Remove(videoToRemove);
-                ViewModel.FeedVideos.Insert(0, videoToRemove);
-            }
-            else
-            {
-                // SWIPE RIGHT -> Go to Previous Video
-                // The bottom video (Index 0) moves to the top of the stack (Last item)
-                var previousVideo = ViewModel.FeedVideos.First();
-                ViewModel.FeedVideos.Remove(previousVideo);
-                ViewModel.FeedVideos.Add(previousVideo);
-            }
-                
             // Optional: Stop the old top video player
             try { await JSRuntime.InvokeVoidAsync("reelsObserver.pauseVideo", videoId); } catch { }
-            
-            await InvokeAsync(StateHasChanged);
+
+            // Permanently remove the swiped video from the top of the stack (Last item)
+            var videoToRemove = ViewModel.FeedVideos.LastOrDefault();
+            if (videoToRemove != null)
+            {
+                ViewModel.FeedVideos.Remove(videoToRemove);
+            }
             
             // Trigger the observer to play the NEW top video
             if (ViewModel.FeedVideos.Any())
@@ -588,6 +576,15 @@
                 var newTopVideoId = $"video_{newTopVideo.Id}";
                 try { await JSRuntime.InvokeVoidAsync("reelsObserver.playVideo", newTopVideoId); } catch { }
             }
+
+            // Lazy-load logic: If we are running low on videos, fetch the next batch in the background
+            if (ViewModel.FeedVideos.Count < 3 && ViewModel.HasNextPage)
+            {
+                // Fire and forget
+                _ = ViewModel.LoadMoreFeedMediaAsync();
+            }
+
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -598,6 +595,18 @@
     }
 
     private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-profile?TradesmanId={id}");
+
+    private async Task ClearVideos()
+    {
+        if (_isJsInitialized)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("reelsObserver.clearAll");
+            }
+            catch { /* ignore */ }
+        }
+    }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {

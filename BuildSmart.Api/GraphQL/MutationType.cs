@@ -152,7 +152,11 @@ public class MutationType : ObjectType<Mutation>
             .Authorize(roles: new[] { "Admin" });
 
         descriptor.Field(m => m.ToggleTradesmanMediaStatus(default!, default!, default!))
-            .Description("Toggles the visibility/active status of a tradesman's media reel.")
+            .Description("Toggles the visibility (IsActive) status of a tradesman's media reel.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.UpdateTradesmanMediaCategory(default!, default!, default!))
+            .Description("Updates the category assigned to a tradesman's media reel.")
             .Authorize(roles: new[] { "Admin" });
 
         descriptor.Field(m => m.DeleteTradesmanMedia(default!, default!))
