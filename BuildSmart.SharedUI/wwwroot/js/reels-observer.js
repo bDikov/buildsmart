@@ -47,7 +47,11 @@ window.reelsObserver = {
                     this.dotNetRef.invokeMethodAsync('OnVideoVisible', videoId);
                 } else {
                     if (player) {
-                        window.reelsObserver.safePause(videoId, player);
+                        // Prevent pausing if the user expanded the video to Theater Mode
+                        // (position: fixed breaks it out of the IntersectionObserver's root container)
+                        if (!entry.target.classList.contains('bs-theater-mode')) {
+                            window.reelsObserver.safePause(videoId, player);
+                        }
                     }
                 }
             });
