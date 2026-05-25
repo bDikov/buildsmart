@@ -116,4 +116,27 @@ Bind primary actions directly to the ViewModel's asynchronous RelayCommands:
 
 **STRICT RULE:** Hardcoded text in `.razor` components is strictly prohibited. 
 All static text, labels, button texts, and placeholders MUST be localized. Because the application targets multiple languages, you must always use the injected localization service (e.g., `@Loc["Your_Resource_Key"]`) or ensure the text is driven by a translatable resource. 
-When adding new text, define it in the appropriate `AppResources.resx` file and use the `@Loc` reference in the UI.
+## 7. Video Reels & Carousel Implementation
+
+The application uses a TikTok/Tinder-style vertical video stack (Reels) heavily reliant on Blazor + JavaScript Interop for high-performance gesture tracking and media playback. When maintaining or expanding this feature, adhere to the following architectural patterns:
+
+### DOM Stability via Circular Buffering
+**CRITICAL:** When looping a video feed infinitely, **do not clone `Guid`s or destroy DOM nodes.** 
+- Browsers aggressively clear their internal `<video>` buffer when a DOM element is destroyed or re-created, causing black-screen flickering and massive data re-downloading.
+- **The Fix:** Implement a **Circular Buffer**. When an item is swiped, `Remove()` the exact object from the top of the `ObservableCollection` and `Insert(0, item)` to move it to the bottom. Because the `Id` remains identical, Blazor simply moves the existing HTML node in the DOM, perfectly preserving the browser's downloaded media buffer and the initialized `Plyr` instance.
+- **CSS Stack Logic:** The stack uses `nth-last-child` selectors to arrange the cards. The active card is `nth-last-child(1)`, the next queued card is `nth-last-child(2)`, and the previous/bottom card is `nth-last-child(3)`.
+
+### Bi-Directional Swiping (2-Way Carousel)
+The swipe interaction (`ProcessSwipeEndFromJS`) is bi-directional:
+- **Swipe Left (`deltaX < 0`):** Moves forward in the queue. The current top card is removed and pushed to the bottom of the stack.
+- **Swipe Right (`deltaX > 0`):** Moves backward in the queue. The absolute bottom-most card is pulled directly to the top of the stack.
+
+### Browser Autoplay Policies & Synchronous Play
+Modern browsers (iOS Safari, Chrome) strictly block audio if a video is played programmatically without a direct, synchronous "trusted user gesture".
+- **The Trap:** If JavaScript waits for Blazor to re-render and trigger the next play state via an async SignalR/WebSocket message, the browser will classify the play command as "untrusted" and forcefully mute the video.
+- **The Solution:** The next video MUST be played synchronously inside the JavaScript `touchend` event loop (`window.reelsObserver.playVideo(nextVideoId);`). Only *after* the video starts playing should JS notify Blazor to update the underlying C# state.
+
+### Global Mute Synchronization
+The application maintains a `globalMuted` state so that unmuting one video unmutes all subsequent videos.
+- **Race Condition Prevention:** Because the browser's Autoplay Policy can aggressively force a video into a `muted` state if it detects a violation, this forced mute triggers a `volumechange` event that can accidentally overwrite the user's `globalMuted` preference.
+- **The Lock:** When programmatically changing the volume or falling back to a muted state, JS applies a temporary lock (`player.__ignoreVolumeChangeUntil = Date.now() + 200;`). The `volumechange` event listener must check this lock and ignore any changes made by the system within that window, ensuring only genuine user taps update the `globalMuted` state.

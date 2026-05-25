@@ -126,8 +126,62 @@ window.reelsObserver = {
             let tapCount = 0;
             let tapTimer = null;
 
+            // Wire up the new theater mode buttons
+            const closeBtn = element.querySelector('.bs-theater-close');
+            const prevBtn = element.querySelector('.bs-theater-prev');
+            const nextBtn = element.querySelector('.bs-theater-next');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    element.classList.remove('bs-theater-mode');
+                });
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Simulate a right swipe to go backwards
+                    endSwipe(touchStartX !== null ? touchStartX + 1000 : 1000, 0, true);
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Simulate a left swipe to go forwards
+                    endSwipe(touchStartX !== null ? touchStartX - 1000 : -1000, 0, true);
+                });
+            }
+
+            // Expose a function so background cards can force the center card to swipe
+            element.__triggerSwipe = (direction) => {
+                const flyDist = direction === 'left' ? -1000 : 1000;
+                endSwipe(flyDist, 0, true);
+            };
+
             element.addEventListener('click', (e) => {
-                if (e.target.closest('.bs-reel-action-btn') || e.target.closest('.plyr__controls')) return;
+                if (e.target.closest('.bs-reel-action-btn') || e.target.closest('.plyr__controls') || e.target.closest('.bs-theater-btn')) return;
+
+                const parent = element.parentElement;
+                const isCenterCard = parent.lastElementChild === element;
+
+                if (!isCenterCard) {
+                    // User clicked a blurry background card!
+                    const isRightCard = element.nextElementSibling === parent.lastElementChild;
+                    const centerCard = parent.lastElementChild;
+                    
+                    if (centerCard && centerCard.__triggerSwipe) {
+                        if (isRightCard) {
+                            // Clicked Right card (Next) -> Force center card to swipe left
+                            centerCard.__triggerSwipe('left');
+                        } else {
+                            // Clicked Left card (Previous) -> Force center card to swipe right
+                            centerCard.__triggerSwipe('right');
+                        }
+                    }
+                    return; // Prevent play/pause toggle for background cards
+                }
 
                 tapCount++;
                 if (tapCount === 1) {
@@ -144,6 +198,7 @@ window.reelsObserver = {
             });
 
             const startSwipe = (x, y) => {
+                // If it's in theater mode on desktop, maybe disable dragging completely? No, user requested swipe without animation.
                 touchStartX = x;
                 touchStartY = y;
                 isSwiping = true;
@@ -154,40 +209,54 @@ window.reelsObserver = {
                 if (!isSwiping || touchStartX === null) return;
                 const deltaX = x - touchStartX;
                 const deltaY = y - touchStartY;
+                
+                // Don't drag the card physically if we are in theater mode
+                if (element.classList.contains('bs-theater-mode')) return;
+
                 const currentX = deltaX * 0.85;
                 const currentY = deltaY * 0.85;
                 const currentRot = currentX * 0.05;
                 element.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) rotate(${currentRot}deg)`;
             };
 
-            const endSwipe = (x, y) => {
-                if (!isSwiping || touchStartX === null) return;
+            const endSwipe = (x, y, forceSwipe = false) => {
+                if (!forceSwipe && (!isSwiping || touchStartX === null)) return;
+                
+                const deltaX = forceSwipe ? x : x - touchStartX;
+                const deltaY = forceSwipe ? y : y - touchStartY;
                 isSwiping = false;
-                const deltaX = x - touchStartX;
-                const deltaY = y - touchStartY;
                 touchStartX = null;
 
-                if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
-                    const flyX = deltaX > 0 ? 1000 : -1000;
-                    const rotate = deltaX > 0 ? 25 : -25;
-                    
-                    element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
-                    element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
+                const isTheater = element.classList.contains('bs-theater-mode');
 
-                    // SYNCHRONOUS TRUSTED PLAY: Bypass browser autoplay block by playing the next video right here inside the touch event!
+                if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
+                    // SYNCHRONOUS TRUSTED PLAY: Bypass browser autoplay block by playing the next video right here!
                     let nextVideoId = null;
+                    let nextElementToTransferTheaterMode = null;
+                    
                     if (deltaX < 0) {
-                        // Swiping left (Next Video) -> next video is the one right underneath in the DOM
-                        const nextElement = element.previousElementSibling;
-                        if (nextElement) nextVideoId = nextElement.getAttribute('data-video-id');
+                        nextElementToTransferTheaterMode = element.previousElementSibling;
+                        if (nextElementToTransferTheaterMode) nextVideoId = nextElementToTransferTheaterMode.getAttribute('data-video-id');
                     } else {
-                        // Swiping right (Previous Video) -> next video is the absolute bottom card of the DOM
-                        const bottomElement = element.parentElement.firstElementChild;
-                        if (bottomElement) nextVideoId = bottomElement.getAttribute('data-video-id');
+                        nextElementToTransferTheaterMode = element.parentElement.firstElementChild;
+                        if (nextElementToTransferTheaterMode) nextVideoId = nextElementToTransferTheaterMode.getAttribute('data-video-id');
                     }
                     
                     if (nextVideoId) {
                         window.reelsObserver.playVideo(nextVideoId);
+                    }
+
+                    if (!isTheater) {
+                        const flyX = deltaX > 0 ? 1000 : -1000;
+                        const rotate = deltaX > 0 ? 25 : -25;
+                        element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
+                        element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
+                    } else {
+                        // Transfer the theater mode class to the next video so it stays fullscreen
+                        element.classList.remove('bs-theater-mode');
+                        if (nextElementToTransferTheaterMode) {
+                            nextElementToTransferTheaterMode.classList.add('bs-theater-mode');
+                        }
                     }
 
                     setTimeout(() => {
@@ -196,10 +265,12 @@ window.reelsObserver = {
                         }
                         element.style.transition = 'none';
                         element.style.transform = '';
-                    }, 400);
+                    }, isTheater ? 10 : 400); // Super fast 10ms execution if theater mode
                 } else {
-                    element.style.transition = 'transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)';
-                    element.style.transform = '';
+                    if (!isTheater) {
+                        element.style.transition = 'transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)';
+                        element.style.transform = '';
+                    }
                 }
             };
 
