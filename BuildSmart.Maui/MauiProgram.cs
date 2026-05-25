@@ -106,7 +106,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<CreateAccountPageViewModel>();
 
 		builder.Services.AddTransient<FeedPage>();
-		builder.Services.AddTransient<FeedPageViewModel>();
+		builder.Services.AddScoped<FeedPageViewModel>();
 
 		builder.Services.AddTransient<TradesmanDetailsViewModel>();
 

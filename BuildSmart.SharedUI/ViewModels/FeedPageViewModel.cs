@@ -259,6 +259,12 @@ namespace BuildSmart.SharedUI.ViewModels
 
 		private async Task LoadFeedMediaAsync()
 		{
+			if (_cachedVideos.Count > 0 && FeedVideos.Count > 0)
+			{
+				// Cache already exists (user navigated back to the page), do not re-fetch.
+				return;
+			}
+
 			try
 			{
 				_currentSkip = 0;

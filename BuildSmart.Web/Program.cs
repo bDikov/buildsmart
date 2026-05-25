@@ -105,7 +105,7 @@ builder.Services.AddBuildSmartApiClient()
 builder.Services.AddTransient<LoginPageViewModel>();
 builder.Services.AddTransient<DetailedViewPageViewModel>();
 builder.Services.AddTransient<CreateAccountPageViewModel>();
-builder.Services.AddTransient<FeedPageViewModel>();
+builder.Services.AddScoped<FeedPageViewModel>();
 builder.Services.AddTransient<TradesmanDetailsViewModel>();
 builder.Services.AddTransient<BookingPageViewModel>();
 builder.Services.AddTransient<JobWizardViewModel>();
