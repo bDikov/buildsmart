@@ -57,6 +57,15 @@ namespace BuildSmart.SharedUI.ViewModels
 		[ObservableProperty]
 		private Guid? _selectedCategoryId;
 
+		[ObservableProperty]
+		private bool _isFilterExpanded = false;
+
+		[RelayCommand]
+		public void ToggleFilter()
+		{
+			IsFilterExpanded = !IsFilterExpanded;
+		}
+
 		public FeedPageViewModel(IBuildSmartApiClient apiClient, IAuthService authService)
 		{
 			_apiClient = apiClient;

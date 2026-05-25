@@ -63,26 +63,43 @@
                     {
                         <!-- TikTok Style Interest Filters -->
                         <div class="bs-category-filters-container">
-                            <div class="bs-interest-header">
-                                <h1 class="bs-interest-title">Choose your<br/>Interest</h1>
-                                <button class="bs-interest-save" @onclick="() => ViewModel.LoadFeedCommand.ExecuteAsync(null)">Save</button>
-                            </div>
-                            
-                            <div class="bs-category-filters">
+                            <div class="bs-category-filters @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed")">
                                 <button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")" 
                                         @onclick="() => ViewModel.SelectCategoryCommand.ExecuteAsync(null)">
-                                    All
+                                    @Loc["Common_All"]
                                 </button>
-                                @foreach (var cat in ViewModel.Categories)
+                                
+                                @* If collapsed, only show first 4 categories. If expanded, show all. *@
+                                @foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
                                 {
                                     <button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")" 
                                             @onclick="() => ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id)">
                                         @cat.Name
                                     </button>
                                 }
-                                <button class="bs-chip-add">Add New</button>
+
+                                @if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
+                                {
+                                    <button class="bs-chip-view-more" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+                                        @Loc["Feed_ViewMore"]
+                                    </button>
+                                }
+                                
+                                @if (ViewModel.IsFilterExpanded)
+                                {
+                                    <button class="bs-chip-add">@Loc["Common_AddNew"]</button>
+                                }
                             </div>
-                            <p class="bs-interest-footer">Didn't find what you are looking for?</p>
+                            
+                            @if (ViewModel.IsFilterExpanded)
+                            {
+                                <div class="bs-interest-footer-wrapper">
+                                    <p class="bs-interest-footer">@Loc["Feed_CantFindCategory"]</p>
+                                    <button class="bs-interest-save" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+                                        @Loc["Feed_ViewLess"]
+                                    </button>
+                                </div>
+                            }
                         </div>
 
                         if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
