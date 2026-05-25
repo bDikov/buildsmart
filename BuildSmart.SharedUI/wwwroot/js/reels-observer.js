@@ -2,8 +2,8 @@ window.reelsObserver = {
     observer: null,
     dotNetRef: null,
     players: {},
-    playPromises: {}, // Track pending play promises to prevent AbortErrors
-    globalMuted: true, // Track user's mute intent across all videos
+    playPromises: {}, 
+    globalMuted: true,
 
     initialize: function (dotNetHelper, containerId) {
         this.dotNetRef = dotNetHelper;
@@ -11,7 +11,7 @@ window.reelsObserver = {
         let options = {
             root: document.getElementById(containerId),
             rootMargin: '0px',
-            threshold: 0.6 // Trigger when 60% of the video is visible
+            threshold: 0.6 
         };
 
         this.observer = new IntersectionObserver((entries) => {
@@ -19,23 +19,22 @@ window.reelsObserver = {
                 const videoId = entry.target.getAttribute('data-video-id');
                 const player = this.players[videoId];
 
-                // The top card is the last child in the container
                 const isTopCard = !entry.target.nextElementSibling;
                 const isTheaterMode = entry.target.classList.contains('bs-theater-mode');
 
                 if (entry.isIntersecting && (isTopCard || isTheaterMode)) {
                     if (player) {
-                        // Apply the global mute state chosen by the user
+                        player.__ignoreVolumeChangeUntil = Date.now() + 200;
                         player.muted = window.reelsObserver.globalMuted;
                         if (!window.reelsObserver.globalMuted) {
                             player.volume = 1;
                         }
                         
-                        // Force pause all other players to guarantee no audio overlap
                         for (const id in window.reelsObserver.players) {
                             if (id !== videoId) {
                                 const p = window.reelsObserver.players[id];
                                 if (p) {
+                                    p.__ignoreVolumeChangeUntil = Date.now() + 200;
                                     p.muted = true;
                                     window.reelsObserver.safePause(id, p);
                                 }
@@ -46,9 +45,10 @@ window.reelsObserver = {
                         if (playPromise !== undefined) {
                             window.reelsObserver.playPromises[videoId] = playPromise;
                             playPromise.catch(e => {
-                                // If the browser blocks unmuted autoplay, fallback to muted so the video still plays
                                 if (e.name !== 'AbortError' && !player.muted) {
+                                    player.__ignoreVolumeChangeUntil = Date.now() + 200;
                                     player.muted = true;
+                                    
                                     let fallbackPromise = player.play();
                                     if (fallbackPromise !== undefined) {
                                         window.reelsObserver.playPromises[videoId] = fallbackPromise;
@@ -58,14 +58,12 @@ window.reelsObserver = {
                             });
                         }
                     }
-                    // Notify Blazor that this video is now active
                     this.dotNetRef.invokeMethodAsync('OnVideoVisible', videoId);
                 } else {
                     if (player) {
-                        // Prevent pausing if the user expanded the video to Theater Mode
-                        // (position: fixed breaks it out of the IntersectionObserver's root container)
                         if (!isTheaterMode) {
-                            player.muted = true; // Instantly mute background videos
+                            player.__ignoreVolumeChangeUntil = Date.now() + 200;
+                            player.muted = true; 
                             window.reelsObserver.safePause(videoId, player);
                         }
                     }
@@ -79,10 +77,8 @@ window.reelsObserver = {
         if (playPromise !== undefined) {
             playPromise.then(_ => {
                 player.pause();
-                player.currentTime = 0; // Rewind to start
-            }).catch(e => {
-                // Play was already aborted or failed, safe to ignore
-            });
+                player.currentTime = 0;
+            }).catch(e => {});
         } else {
             player.pause();
             player.currentTime = 0;
@@ -94,20 +90,22 @@ window.reelsObserver = {
         const element = document.getElementById(wrapperId);
         const videoElement = document.getElementById(videoId);
 
-        // Initialize Plyr if not already initialized for this video
         if (videoElement && !this.players[videoId]) {
             this.players[videoId] = new Plyr(videoElement, {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
                 autoplay: false,
-                muted: true,
-                clickToPlay: false, // Disable single click to play/pause so we can use double-click
-                fullscreen: { enabled: false, fallback: false }, // Completely disable fullscreen to prevent double-click hijacking
-                doubleClick: { toggles: false } // Prevent Plyr from listening to double clicks natively
+                muted: window.reelsObserver.globalMuted, 
+                clickToPlay: false,
+                fullscreen: { enabled: false, fallback: false },
+                doubleClick: { toggles: false } 
             });
             
-            // Listen for user volume/mute changes to sync across all videos
+            this.players[videoId].__ignoreVolumeChangeUntil = Date.now() + 300;
+            
             this.players[videoId].on('volumechange', (e) => {
                 const p = e.detail.plyr;
+                if (p.__ignoreVolumeChangeUntil && Date.now() < p.__ignoreVolumeChangeUntil) return;
+                
                 if (!p.muted && p.volume > 0) {
                     window.reelsObserver.globalMuted = false;
                 } else {
@@ -120,32 +118,25 @@ window.reelsObserver = {
             this.observer.observe(element);
         }
 
-        // --- ADD TINDER-STYLE SWIPE LOGIC TO THE REEL WRAPPER ---
         if (element && !element.__swipeInitialized) {
             element.__swipeInitialized = true;
             let touchStartX = null;
             let touchStartY = null;
             let isSwiping = false;
-
-            // Custom Tap Logic for Single Click (Play/Pause) and Double Click (Theater Mode)
             let tapCount = 0;
             let tapTimer = null;
 
             element.addEventListener('click', (e) => {
-                // Ignore clicks on actual buttons or the plyr controls
                 if (e.target.closest('.bs-reel-action-btn') || e.target.closest('.plyr__controls')) return;
 
                 tapCount++;
-
                 if (tapCount === 1) {
                     tapTimer = setTimeout(() => {
-                        // Single Tap -> Play/Pause
                         const player = window.reelsObserver.players[videoId];
                         if (player) player.togglePlay();
                         tapCount = 0;
-                    }, 300); // 300ms window to wait and see if a second tap happens
+                    }, 300);
                 } else if (tapCount === 2) {
-                    // Double Tap -> Toggle Theater Mode
                     element.classList.toggle('bs-theater-mode');
                     tapCount = 0;
                     clearTimeout(tapTimer);
@@ -163,14 +154,9 @@ window.reelsObserver = {
                 if (!isSwiping || touchStartX === null) return;
                 const deltaX = x - touchStartX;
                 const deltaY = y - touchStartY;
-
-                // Add physical resistance
                 const currentX = deltaX * 0.85;
                 const currentY = deltaY * 0.85;
-                // Figma animation adds slight rotation as it drags
                 const currentRot = currentX * 0.05;
-
-                // Keep the -50% -50% centering from CSS, then add our drag transform
                 element.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) rotate(${currentRot}deg)`;
             };
 
@@ -181,39 +167,44 @@ window.reelsObserver = {
                 const deltaY = y - touchStartY;
                 touchStartX = null;
 
-                // If swiped far enough in any direction
                 if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
-                    // Determine direction based on where they swiped
                     const flyX = deltaX > 0 ? 1000 : -1000;
                     const rotate = deltaX > 0 ? 25 : -25;
                     
                     element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
                     element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
 
-                    // Tell Blazor to completely remove this element from the list
+                    // SYNCHRONOUS TRUSTED PLAY: Bypass browser autoplay block by playing the next video right here inside the touch event!
+                    let nextVideoId = null;
+                    if (deltaX < 0) {
+                        // Swiping left (Next Video) -> next video is the one right underneath in the DOM
+                        const nextElement = element.previousElementSibling;
+                        if (nextElement) nextVideoId = nextElement.getAttribute('data-video-id');
+                    } else {
+                        // Swiping right (Previous Video) -> next video is the absolute bottom card of the DOM
+                        const bottomElement = element.parentElement.firstElementChild;
+                        if (bottomElement) nextVideoId = bottomElement.getAttribute('data-video-id');
+                    }
+                    
+                    if (nextVideoId) {
+                        window.reelsObserver.playVideo(nextVideoId);
+                    }
+
                     setTimeout(() => {
                         if (window.reelsObserver.dotNetRef) {
                             window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', deltaX, 0, 0, 0, videoId);
                         }
-                        
-                        // IMPORTANT: Clear the fly-away styles!
-                        // When Blazor inserts this element back at the start of the list to loop it, 
-                        // we don't want it to remain 1000px off screen. 
                         element.style.transition = 'none';
                         element.style.transform = '';
-                        
                     }, 400);
                 } else {
-                    // Didn't swipe far enough, snap back to center
                     element.style.transition = 'transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)';
                     element.style.transform = '';
                 }
             };
 
-            // Bind Touch
             element.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
             element.addEventListener('touchmove', (e) => {
-                // Prevent vertical page scrolling while swiping cards, but only if the event can be canceled
                 if (isSwiping && e.cancelable) e.preventDefault();
                 moveSwipe(e.touches[0].clientX, e.touches[0].clientY);
             }, { passive: false });
@@ -221,7 +212,6 @@ window.reelsObserver = {
                 if (e.changedTouches.length > 0) endSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
             });
 
-            // Bind Mouse (for desktop testing)
             element.addEventListener('mousedown', (e) => startSwipe(e.clientX, e.clientY));
             window.addEventListener('mousemove', (e) => { if (isSwiping) moveSwipe(e.clientX, e.clientY); });
             window.addEventListener('mouseup', (e) => { if (isSwiping) endSwipe(e.clientX, e.clientY); });
@@ -233,8 +223,6 @@ window.reelsObserver = {
         if (element && this.observer) {
             this.observer.unobserve(element);
         }
-
-        // Optionally destroy Plyr instance to free memory
         if (this.players[videoId]) {
             this.players[videoId].destroy();
             delete this.players[videoId];
@@ -251,7 +239,6 @@ window.reelsObserver = {
     },
 
     clearAll: function () {
-        // Destroy all Plyr instances to stop ghost audio when switching categories
         for (const videoId in this.players) {
             if (this.players[videoId]) {
                 try {
@@ -269,7 +256,9 @@ window.reelsObserver = {
         if (player) {
             player.togglePlay();
             if (player.muted) {
-                player.muted = false; // Unmute on explicit user interaction
+                player.__ignoreVolumeChangeUntil = Date.now() + 200;
+                player.muted = false; 
+                window.reelsObserver.globalMuted = false;
             }
         }
     },
@@ -277,7 +266,7 @@ window.reelsObserver = {
     playVideo: function (videoId) {
         const player = this.players[videoId];
         if (player) {
-            // Respect the user's global mute choice
+            player.__ignoreVolumeChangeUntil = Date.now() + 200;
             player.muted = window.reelsObserver.globalMuted;
             if (!window.reelsObserver.globalMuted) {
                 player.volume = 1;
@@ -286,8 +275,8 @@ window.reelsObserver = {
             let playPromise = player.play();
             if (playPromise !== undefined) {
                 playPromise.catch(e => {
-                    // If the browser blocks unmuted autoplay, fallback to muted so the video still plays
                     if (!player.muted) {
+                        player.__ignoreVolumeChangeUntil = Date.now() + 200;
                         player.muted = true;
                         player.play();
                     }

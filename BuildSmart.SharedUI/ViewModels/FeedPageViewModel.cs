@@ -283,7 +283,7 @@ namespace BuildSmart.SharedUI.ViewModels
 						}
 					});
 					
-					_currentSkip += PageSize;
+					_currentSkip += result.Items.Count;
 					HasNextPage = result.PageInfo.HasNextPage;
 				}
 			}
@@ -295,78 +295,38 @@ namespace BuildSmart.SharedUI.ViewModels
 
 		public async Task LoadMoreFeedMediaAsync()
 		{
-			if (_isLoadingMore) return;
+			if (_isLoadingMore || !HasNextPage) return;
 
 			try
 			{
 				_isLoadingMore = true;
 				
-				if (HasNextPage)
+				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
+				if (result?.Items != null)
 				{
-					var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
-					if (result?.Items != null)
-					{
-						AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
-						{
-							// Insert at 0 so they appear at the bottom of the Tinder stack
-							foreach (var media in result.Items)
-							{
-								if (media != null)
-								{
-									var videoItem = CreateFeedMediaItem(media);
-									_cachedVideos.Add(videoItem);
-
-									// Strict deduplication check to prevent Blazor @key crashes
-									if (!FeedVideos.Any(v => v.Id == videoItem.Id))
-									{
-										FeedVideos.Insert(0, videoItem);
-									}
-								}
-							}
-
-							TrimFeedStack();
-						});
-
-						_currentSkip += PageSize;
-						HasNextPage = result.PageInfo.HasNextPage;
-					}
-				}
-				else if (_cachedVideos.Count > 0)
-				{
-					// We've exhausted the API, start looping from the cache
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
-						// Calculate our virtual skip based on modulo
-						int virtualSkip = _currentSkip % _cachedVideos.Count;
-						var cachedBatch = _cachedVideos.Skip(virtualSkip).Take(PageSize).ToList();
-						
-						// If we reached the end of the cache mid-batch, wrap around to the start
-						if (cachedBatch.Count < PageSize)
+						// Insert at 0 so they appear at the bottom of the Tinder stack
+						foreach (var media in result.Items)
 						{
-							cachedBatch.AddRange(_cachedVideos.Take(PageSize - cachedBatch.Count));
-						}
-
-						foreach (var videoItem in cachedBatch)
-						{
-							// Create a fresh clone so Blazor @key and JS observer see it as a "new" DOM element in the stack
-							var clonedItem = new FeedMediaItem
+							if (media != null)
 							{
-								Id = Guid.NewGuid(), // NEW ID for the loop
-								TradesmanId = videoItem.TradesmanId,
-								VideoUrl = videoItem.VideoUrl,
-								Name = videoItem.Name,
-								Role = videoItem.Role,
-								Location = videoItem.Location,
-								Rating = videoItem.Rating,
-								ProfilePictureUrl = videoItem.ProfilePictureUrl
-							};
-							
-							FeedVideos.Insert(0, clonedItem);
+								var videoItem = CreateFeedMediaItem(media);
+								_cachedVideos.Add(videoItem);
+
+								// Strict deduplication check to prevent Blazor @key crashes
+								if (!FeedVideos.Any(v => v.Id == videoItem.Id))
+								{
+									FeedVideos.Insert(0, videoItem);
+								}
+							}
 						}
 
 						TrimFeedStack();
-						_currentSkip += PageSize;
 					});
+
+					_currentSkip += result.Items.Count;
+					HasNextPage = result.PageInfo.HasNextPage;
 				}
 			}
 			catch (Exception ex)
@@ -379,6 +339,28 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
+		public void LoopNextVideoFromCache()
+		{
+			if (_cachedVideos.Count == 0) return;
+
+			AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+			{
+				int virtualIndex = _currentSkip % _cachedVideos.Count;
+				var nextVideoToLoop = _cachedVideos[virtualIndex];
+
+				// Reuse the EXACT same object. By doing this in the same render cycle as the remove,
+				// Blazor moves the existing DOM node instead of destroying it. This prevents the video 
+				// from buffering/re-downloading and perfectly preserves the Plyr instance!
+				if (!FeedVideos.Contains(nextVideoToLoop))
+				{
+					FeedVideos.Insert(0, nextVideoToLoop);
+				}
+				
+				_currentSkip++;
+				TrimFeedStack();
+			});
+		}
+
 		private void TrimFeedStack()
 		{
 			while (FeedVideos.Count > 10)
@@ -386,25 +368,6 @@ namespace BuildSmart.SharedUI.ViewModels
 				// Remove the absolute bottom-most (furthest away) video if we somehow bloated
 				FeedVideos.RemoveAt(0);
 			}
-		}
-
-		[RelayCommand]
-		public void RestartFeedFromCache()
-		{
-			AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
-			{
-				FeedVideos.Clear();
-				// Restore the initial set of videos from the cache, maintaining the reverse order logic for the stack
-				var initialBatch = _cachedVideos.Take(PageSize).Reverse().ToList();
-				foreach (var video in initialBatch)
-				{
-					FeedVideos.Add(video);
-				}
-				
-				// Reset pagination state so we can simulate fetching more from cache
-				_currentSkip = initialBatch.Count;
-				HasNextPage = _currentSkip < _cachedVideos.Count;
-			});
 		}
 
 		private async Task<IGetFeedMedia_FeedMedia?> FetchFeedMediaBatchAsync(int skip, int take)

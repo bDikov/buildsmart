@@ -363,7 +363,7 @@
             transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease;
         }
 
-        /* Center (Active) */
+        /* Center (Active - Top of Deck) */
         .bs-reel-item:nth-last-child(1) {
             z-index: 3;
             transform: translate(-50%, -50%) scale(1);
@@ -379,16 +379,19 @@
             opacity: 0.5;
         }
         /* Left Side (Previously viewed / Bottom of deck) */
-        .bs-reel-item:nth-child(1):not(:nth-last-child(1)):not(:nth-last-child(2)) {
+        .bs-reel-item:nth-last-child(3) {
             z-index: 1;
             transform: translate(calc(-50% - 360px), -50%) scale(0.85);
             filter: blur(4px);
             opacity: 0.5;
         }
-        /* Hidden (Any cards in the middle of the deck) */
-        .bs-reel-item:not(:nth-last-child(1)):not(:nth-last-child(2)):not(:nth-child(1)) {
+        /* Hidden (Any cards deeper in the deck staged on the right) */
+        .bs-reel-item:nth-last-child(n+4) {
+            z-index: 0;
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5);
+            transform: translate(calc(-50% + 420px), -50%) scale(0.75);
+            filter: blur(8px);
+            pointer-events: none;
         }
         
         /* Desktop Theater Mode Fix: Prevent aggressive zooming/cropping on wide screens */
@@ -552,19 +555,37 @@
     [JSInvokable]
     public async Task ProcessSwipeEndFromJS(double deltaX, double velocity, double currentX, double currentRot, string videoId)
     {
-        // For the Feed, any significant swipe (left or right) dismisses the current video
-        bool isSwipeAction = Math.Abs(deltaX) > 80 || (Math.Abs(deltaX) > 30 && Math.Abs(velocity) > 0.5);
-
-        if (isSwipeAction && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+        // JS already determined this is a valid swipe out, so we don't need to double-check deltaX.
+        if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
         {
             // Optional: Stop the old top video player
             try { await JSRuntime.InvokeVoidAsync("reelsObserver.pauseVideo", videoId); } catch { }
 
-            // Permanently remove the swiped video from the top of the stack (Last item)
-            var videoToRemove = ViewModel.FeedVideos.LastOrDefault();
-            if (videoToRemove != null)
+            if (deltaX < 0)
             {
-                ViewModel.FeedVideos.Remove(videoToRemove);
+                // Swiping LEFT: Move forward (Next Video)
+                // Take the top card (Last) and remove it. If the API is exhausted, put it at the bottom (First) to loop.
+                var topVideo = ViewModel.FeedVideos.LastOrDefault();
+                if (topVideo != null)
+                {
+                    ViewModel.FeedVideos.Remove(topVideo);
+                    
+                    if (!ViewModel.HasNextPage)
+                    {
+                        ViewModel.FeedVideos.Insert(0, topVideo);
+                    }
+                }
+            }
+            else 
+            {
+                // Swiping RIGHT: Move backward (Previous Video)
+                // Take the absolute bottom card (First) and move it to the top (Last)
+                var bottomVideo = ViewModel.FeedVideos.FirstOrDefault();
+                if (bottomVideo != null)
+                {
+                    ViewModel.FeedVideos.Remove(bottomVideo);
+                    ViewModel.FeedVideos.Add(bottomVideo);
+                }
             }
             
             // Trigger the observer to play the NEW top video
@@ -580,11 +601,6 @@
             {
                 // Fire and forget
                 _ = ViewModel.LoadMoreFeedMediaAsync();
-            }
-            else if (ViewModel.FeedVideos.Count == 0 && !ViewModel.HasNextPage)
-            {
-                // We reached the absolute end of the feed. Restart from the local cache.
-                ViewModel.RestartFeedFromCacheCommand.Execute(null);
             }
 
             await InvokeAsync(StateHasChanged);
