@@ -40,12 +40,18 @@ public class Query
 		return await userRepository.GetByIdAsync(userId);
 	}
 
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
 	public IQueryable<ServiceCategory> GetServiceCategories([Service] IServiceCategoryRepository categoryRepository)
 	{
 		return categoryRepository.GetQueryable().Where(c => c.Status == Core.Domain.Enums.CategoryStatus.Active);
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
 	public IQueryable<ServiceCategory> GetAllServiceCategories([Service] IServiceCategoryRepository categoryRepository)
 	{
 		return categoryRepository.GetQueryable();

@@ -107,7 +107,7 @@ window.reelsObserver = {
             let touchStartY = null;
             let isSwiping = false;
 
-            // Custom Tap Logic for Double Click (Play/Pause) and Triple Click (Theater Mode)
+            // Custom Tap Logic for Single Click (Play/Pause) and Double Click (Theater Mode)
             let tapCount = 0;
             let tapTimer = null;
 
@@ -119,20 +119,14 @@ window.reelsObserver = {
 
                 if (tapCount === 1) {
                     tapTimer = setTimeout(() => {
+                        // Single Tap -> Play/Pause
+                        const player = window.reelsObserver.players[videoId];
+                        if (player) player.togglePlay();
                         tapCount = 0;
-                    }, 400); // 400ms window for multi-taps
+                    }, 300); // 300ms window to wait and see if a second tap happens
                 } else if (tapCount === 2) {
-                    // Execute double tap logic instantly for responsiveness
-                    const player = window.reelsObserver.players[videoId];
-                    if (player) player.togglePlay();
-                } else if (tapCount === 3) {
-                    // Triple Tap -> Toggle Theater Mode
+                    // Double Tap -> Toggle Theater Mode
                     element.classList.toggle('bs-theater-mode');
-                    
-                    // Since the 2nd tap just toggled the video state, toggle it back
-                    const player = window.reelsObserver.players[videoId];
-                    if (player) player.togglePlay();
-                    
                     tapCount = 0;
                     clearTimeout(tapTimer);
                 }
