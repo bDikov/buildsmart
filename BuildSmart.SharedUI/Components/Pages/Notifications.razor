@@ -1,29 +1,31 @@
 @page "/notifications"
 @using BuildSmart.SharedUI.ViewModels
 @using System.ComponentModel
+@using Microsoft.Extensions.Localization
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
 @implements IDisposable
 @inject NotificationsViewModel ViewModel
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 
 <div class="notifications-container">
     <div class="header-section">
-        <h2 class="page-title">Notifications</h2>
+        <h2 class="page-title">@Loc["Notifications_Title"]</h2>
     </div>
 
     @if (ViewModel.IsBusy && ViewModel.Notifications.Count == 0)
     {
         <div class="loading-state">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">@Loc["Feed_Loading"]</span>
             </div>
-            <p>Loading notifications...</p>
+            <p>@Loc["Notifications_Loading"]</p>
         </div>
     }
     else if (ViewModel.Notifications.Count == 0)
     {
         <div class="empty-state">
-            <p class="empty-title">No notifications yet.</p>
-            <p class="empty-subtitle">Important updates will appear here.</p>
+            <p class="empty-title">@Loc["Notifications_EmptyTitle"]</p>
+            <p class="empty-subtitle">@Loc["Notifications_EmptySubtitle"]</p>
         </div>
     }
     else

@@ -596,4 +596,10 @@
   <data name="ProjectDetail_NextSteps_AskBtn" xml:space="preserve">
     <value>Ask Admin</value>
   </data>
+  <data name="Feed_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Feed_NoMediaFound" xml:space="preserve">
+    <value>No media found for this category.</value>
+  </data>
 </root>
