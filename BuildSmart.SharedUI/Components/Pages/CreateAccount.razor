@@ -38,7 +38,7 @@
             </div>
 
             <div class="form-group">
-                <label for="phoneNumber" class="form-label">Phone Number (Optional)</label>
+                <label for="phoneNumber" class="form-label">@Loc["CreateAccount_PhoneNumber"]</label>
                 <input type="tel" class="bs-input register-input" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
             </div>
 
@@ -52,7 +52,7 @@
             </button>
             
             <div class="login-prompt">
-                <span>Already have an account? <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault>Log In</a></span>
+                <span>@Loc["CreateAccount_AlreadyHaveAccount"] <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault>@Loc["CreateAccount_LogIn"]</a></span>
             </div>
         </form>
 

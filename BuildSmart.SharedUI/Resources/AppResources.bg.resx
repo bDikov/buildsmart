@@ -605,4 +605,13 @@
   <data name="Feed_NoMediaFound" xml:space="preserve">
     <value>Няма намерени медии за тази категория.</value>
   </data>
+  <data name="CreateAccount_PhoneNumber" xml:space="preserve">
+    <value>Телефонен номер</value>
+  </data>
+  <data name="CreateAccount_AlreadyHaveAccount" xml:space="preserve">
+    <value>Вече имате профил?</value>
+  </data>
+  <data name="CreateAccount_LogIn" xml:space="preserve">
+    <value>Влезте</value>
+  </data>
 </root>

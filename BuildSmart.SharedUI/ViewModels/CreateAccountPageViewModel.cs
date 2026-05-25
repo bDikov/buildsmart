@@ -10,6 +10,8 @@ namespace BuildSmart.SharedUI.ViewModels
     public partial class CreateAccountPageViewModel : ObservableObject
     {
         private readonly IBuildSmartApiClient _apiClient;
+        private readonly IAuthService _authService;
+        private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
         private string _firstName = string.Empty;
@@ -26,9 +28,11 @@ namespace BuildSmart.SharedUI.ViewModels
         [ObservableProperty]
         private string _password = string.Empty;
 
-        public CreateAccountPageViewModel(IBuildSmartApiClient apiClient)
+        public CreateAccountPageViewModel(IBuildSmartApiClient apiClient, IAuthService authService, IServiceProvider serviceProvider)
         {
             _apiClient = apiClient;
+            _authService = authService;
+            _serviceProvider = serviceProvider;
         }
 
         [RelayCommand]
@@ -62,7 +66,39 @@ namespace BuildSmart.SharedUI.ViewModels
 
             if (result.Errors.Count == 0)
             {
-                await AppServiceLocator.Navigation.NavigateToAsync("//LoginPage");
+                // Account created successfully. Automatically log in instead of redirecting to login.
+                try
+                {
+                    await _authService.ClearTokenAsync();
+                    
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    var loginResult = await _apiClient.Login.ExecuteAsync(Email, Password, cts.Token);
+
+                    if (loginResult.Errors.Count == 0 && !string.IsNullOrEmpty(loginResult.Data?.Login))
+                    {
+                        var token = loginResult.Data.Login;
+                        await _authService.SaveTokenAsync(token);
+
+                        // Notify Blazor that the user is now authenticated
+                        var authStateProvider = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+                        authStateProvider?.NotifyAuthenticationStateChanged();
+
+                        await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
+                        {
+                            await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+                        });
+                    }
+                    else
+                    {
+                        // Fallback if auto-login fails
+                        await AppServiceLocator.Navigation.NavigateToAsync("//LoginPage");
+                    }
+                }
+                catch
+                {
+                    // Fallback to login page on any exception during auto-login
+                    await AppServiceLocator.Navigation.NavigateToAsync("//LoginPage");
+                }
             }
             else
             {

@@ -602,4 +602,13 @@
   <data name="Feed_NoMediaFound" xml:space="preserve">
     <value>No media found for this category.</value>
   </data>
+  <data name="CreateAccount_PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="CreateAccount_AlreadyHaveAccount" xml:space="preserve">
+    <value>Already have an account?</value>
+  </data>
+  <data name="CreateAccount_LogIn" xml:space="preserve">
+    <value>Log In</value>
+  </data>
 </root>
