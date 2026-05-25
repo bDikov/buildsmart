@@ -24,6 +24,10 @@ type TradesmanMedia {
   isActive: Boolean!
   createdAt: DateTime!
   tradesmanProfile: TradesmanProfile!
+  imageUrl: String
+  type: MediaType!
+  serviceCategoryId: UUID
+  serviceCategory: ServiceCategory
   updatedAt: DateTime!
 }
 
@@ -88,6 +92,21 @@ type JobPost {
   lastQueuedJobDetails: String
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+input TradesmanMediaSortInput {
+  tradesmanId: SortEnumType
+  tradesmanProfile: TradesmanProfileSortInput
+  videoUrl: SortEnumType
+  imageUrl: SortEnumType
+  thumbnailUrl: SortEnumType
+  type: SortEnumType
+  serviceCategoryId: SortEnumType
+  serviceCategory: ServiceCategorySortInput
+  isActive: SortEnumType
+  id: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
 }
 
 "Represents the input for submitting a bid against standardized job tasks."
@@ -224,6 +243,11 @@ input JobTaskFilterInput {
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
+}
+
+enum MediaType {
+  VIDEO
+  PICTURE
 }
 
 input AmountFilterInput {
@@ -491,6 +515,13 @@ input PortfolioEntryFilterInput {
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
+}
+
+input MediaTypeOperationFilterInput {
+  eq: MediaType
+  neq: MediaType
+  in: [MediaType!]
+  nin: [MediaType!]
 }
 
 input BidItemFilterInput {
@@ -891,8 +922,8 @@ type Mutation {
   restoreAuction(jobId: UUID!): Boolean!
   "Generates a secure, time-limited Pre-signed URL for direct video uploads to the CDN."
   requestVideoUploadUrl(fileName: String! contentType: String!): String!
-  "Confirms a successful CDN upload and saves the video record to the tradesman's profile."
-  confirmVideoUpload(tradesmanUserId: UUID! videoUrl: String!): TradesmanMedia!
+  "Confirms a successful CDN upload and saves the media record to the tradesman's profile."
+  confirmVideoUpload(tradesmanUserId: UUID! videoUrl: String! type: MediaType! serviceCategoryId: UUID): TradesmanMedia!
   "Toggles the visibility\/active status of a tradesman's media reel."
   toggleTradesmanMediaStatus(mediaId: UUID! isActive: Boolean!): TradesmanMedia!
   "Deletes a tradesman's media reel from the database."
@@ -910,8 +941,10 @@ type Mutation {
 
 "The root query object."
 type Query {
+  "Gets a queryable list of active media for the public feed."
+  feedMedia(where: TradesmanMediaFilterInput order: [TradesmanMediaSortInput!]): [TradesmanMedia!]!
   "Gets a queryable list of tradesman profiles."
-  tradesmanProfiles: [TradesmanProfile!]!
+  tradesmanProfiles(where: TradesmanProfileFilterInput order: [TradesmanProfileSortInput!]): [TradesmanProfile!]!
   "Gets the currently authenticated user."
   currentUser: User
   "Gets a list of all active service categories."
@@ -980,7 +1013,11 @@ input TradesmanMediaFilterInput {
   tradesmanId: UuidOperationFilterInput
   tradesmanProfile: TradesmanProfileFilterInput
   videoUrl: StringOperationFilterInput
+  imageUrl: StringOperationFilterInput
   thumbnailUrl: StringOperationFilterInput
+  type: MediaTypeOperationFilterInput
+  serviceCategoryId: UuidOperationFilterInput
+  serviceCategory: ServiceCategoryFilterInput
   isActive: BooleanOperationFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput

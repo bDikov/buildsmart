@@ -10,6 +10,9 @@ public class QueryType : ObjectType<Query>
 	{
 		descriptor.Description("The root query object.");
 
+		descriptor.Field(q => q.GetFeedMedia(default!))
+			.Description("Gets a queryable list of active media for the public feed.");
+
 		descriptor.Field(q => q.GetTradesmanProfiles(default!))
 			.Description("Gets a queryable list of tradesman profiles.")
 			.Authorize(roles: new[] { "Homeowner", "Tradesman", "Admin" }); // Explicitly authorize for these roles

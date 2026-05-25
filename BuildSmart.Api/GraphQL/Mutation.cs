@@ -921,6 +921,8 @@ public class Mutation
 	public async Task<TradesmanMedia> ConfirmVideoUpload(
 		Guid tradesmanUserId,
 		string videoUrl,
+        BuildSmart.Core.Domain.Enums.MediaType type,
+        Guid? serviceCategoryId,
 		[Service] IUnitOfWork unitOfWork,
 		[Service] Microsoft.Extensions.Configuration.IConfiguration config)
 	{
@@ -938,7 +940,10 @@ public class Mutation
 		{
 			Id = Guid.NewGuid(),
 			TradesmanId = profile.Id, 
-			VideoUrl = videoUrl,
+			VideoUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Video ? videoUrl : string.Empty,
+            ImageUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Picture ? videoUrl : null,
+            Type = type,
+            ServiceCategoryId = serviceCategoryId,
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow,
 			IsActive = true

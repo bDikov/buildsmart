@@ -10,6 +10,17 @@ namespace BuildSmart.Api.GraphQL;
 
 public class Query
 {
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
+	public IQueryable<TradesmanMedia> GetFeedMedia([Service] AppDbContext context)
+	{
+		return context.TradesmanMedia.Where(m => m.IsActive);
+	}
+
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
 	public IQueryable<TradesmanProfile> GetTradesmanProfiles([Service] ITradesmanProfileRepository tradesmanProfileRepository)
 	{
 		return tradesmanProfileRepository.GetQueryable();

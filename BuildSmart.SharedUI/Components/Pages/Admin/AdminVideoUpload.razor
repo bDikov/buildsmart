@@ -217,7 +217,12 @@
             var publicVideoUrl = $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
 
             // 3. Confirm with API
-            var confirmResult = await ApiClient.ConfirmVideoUpload.ExecuteAsync(Guid.Parse(selectedTradesmanUserId), publicVideoUrl);
+            var confirmResult = await ApiClient.ConfirmVideoUpload.ExecuteAsync(
+                Guid.Parse(selectedTradesmanUserId), 
+                publicVideoUrl,
+                BuildSmart.SharedUI.GraphQL.MediaType.Video,
+                null);
+
             if (confirmResult.Errors.Count > 0)
             {
                 var errorMsg = string.Join(", ", confirmResult.Errors.Select(e => e.Message));
