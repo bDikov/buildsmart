@@ -8,6 +8,15 @@
 <div class="register-container">
     <div class="register-card bs-card">
         
+        <div class="logo-block">
+            <div class="logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+            <span class="logo-text">BuildSmart</span>
+        </div>
+
         <h2 class="register-title">@Loc["CreateAccount_Title"]</h2>
 
         <form @onsubmit="HandleSubmit" class="register-form">
@@ -105,8 +114,36 @@
             max-width: 100%;
         }
         .register-title {
-            margin-top: 20px;
+            margin-top: 0; /* Remove top margin since logo is there now */
         }
+    }
+
+    .logo-block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        background-color: var(--color-primary);
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .logo-text {
+        font-family: var(--font-heading);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
     }
 
     .register-title {
