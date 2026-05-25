@@ -26,7 +26,7 @@
                 @if (ViewModel.IsHomeowner && ViewModel.HasProjects == false)
                 {
                     <div class="feed-header-action">
-                        <button class="bs-btn-primary w-100 feed-action-btn" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
+                        <button class="bs-btn-primary feed-action-btn" @onclick="() => ViewModel.NavigateToWizardCommand.Execute(null)">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feed-action-icon">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -229,6 +229,23 @@
             top: 10px;
             left: auto;
             right: 90px; /* Safely to the left of the mobile menu/bell so it doesn't overlap the logo */
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .feed-action-text {
+            display: none !important;
+        }
+        
+        .feed-header-action .bs-btn-primary {
+            width: 40px !important;
+            height: 40px !important;
+            padding: 0 !important;
+            justify-content: center;
+        }
+
+        .feed-action-icon {
+            margin-right: 0 !important;
         }
     }
 

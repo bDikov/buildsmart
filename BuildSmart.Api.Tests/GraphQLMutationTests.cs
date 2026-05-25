@@ -622,7 +622,8 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 
 		var configValues = new Dictionary<string, string>
 		{
-		{"CloudflareR2:PublicUrl", "https://pub-my-cool-url.r2.dev"}
+		{"CloudflareR2:PublicUrl", "https://pub-my-cool-url.r2.dev"},
+		{"CloudflareR2:BucketName", "buildsmart-media"}
 		};
 		// Add custom configuration builder on top of existing ones
 		var newConfig = new ConfigurationBuilder()

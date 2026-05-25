@@ -931,9 +931,17 @@ public class Mutation
 
 		// Remap the internal S3 URL to the Public CDN URL if configured
 		var publicBaseUrl = config["CloudflareR2:PublicUrl"];
+		var bucketName = config["CloudflareR2:BucketName"];
+		
 		if (!string.IsNullOrEmpty(publicBaseUrl) && Uri.TryCreate(videoUrl, UriKind.Absolute, out var parsedUri))
 		{
-			videoUrl = $"{publicBaseUrl.TrimEnd('/')}{parsedUri.AbsolutePath}";
+			var path = parsedUri.AbsolutePath;
+			// Strip the bucket name from the path if it's present (S3 URLs include it, public R2 domains usually map the bucket to root)
+			if (!string.IsNullOrEmpty(bucketName) && path.StartsWith($"/{bucketName}/"))
+			{
+				path = path.Substring($"/{bucketName}".Length);
+			}
+			videoUrl = $"{publicBaseUrl.TrimEnd('/')}{path}";
 		}
 
 		var media = new TradesmanMedia
