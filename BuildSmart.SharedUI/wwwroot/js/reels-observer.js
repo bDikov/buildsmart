@@ -249,6 +249,15 @@ window.reelsObserver = {
                         const rotate = deltaX > 0 ? 25 : -25;
                         element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
                         element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
+                        
+                        // OPTIMISTIC UI: Instantly start animating the next card into the center 
+                        // so the user doesn't feel the network delay waiting for Blazor to update the DOM!
+                        if (nextElementToTransferTheaterMode) {
+                            nextElementToTransferTheaterMode.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease';
+                            nextElementToTransferTheaterMode.style.transform = 'translate(-50%, -50%) scale(1)';
+                            nextElementToTransferTheaterMode.style.filter = 'blur(0px)';
+                            nextElementToTransferTheaterMode.style.opacity = '1';
+                        }
                     } else {
                         // Transfer the theater mode class to the next video so it stays fullscreen
                         element.classList.remove('bs-theater-mode');
@@ -265,18 +274,22 @@ window.reelsObserver = {
                         }
                         
                         // Fix for Live Server Latency: 
-                        // Blazor 'Move' preserves the DOM node. If we instantly clear the transform, 
-                        // it teleports back to the center of the screen before Blazor's CSS rules take over.
-                        // We temporarily hide it, clear the transform, and let CSS handle the rest.
                         if (!isTheater) {
                             element.style.opacity = '0';
                         }
                         element.style.transition = 'none';
                         element.style.transform = '';
                         
-                        // Remove the inline opacity override after Blazor has had time to apply the proper CSS classes
+                        // Remove the inline opacity override and the Optimistic UI styles
+                        // after Blazor has had time to apply the proper CSS classes
                         setTimeout(() => {
                             element.style.opacity = '';
+                            if (nextElementToTransferTheaterMode && !isTheater) {
+                                nextElementToTransferTheaterMode.style.transition = '';
+                                nextElementToTransferTheaterMode.style.transform = '';
+                                nextElementToTransferTheaterMode.style.filter = '';
+                                nextElementToTransferTheaterMode.style.opacity = '';
+                            }
                         }, 100);
                         
                     }, isTheater ? 10 : 400); // Super fast 10ms execution if theater mode
