@@ -263,8 +263,22 @@ window.reelsObserver = {
                                 await window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', deltaX, 0, 0, 0, videoId);
                             } catch (e) { console.error(e); }
                         }
+                        
+                        // Fix for Live Server Latency: 
+                        // Blazor 'Move' preserves the DOM node. If we instantly clear the transform, 
+                        // it teleports back to the center of the screen before Blazor's CSS rules take over.
+                        // We temporarily hide it, clear the transform, and let CSS handle the rest.
+                        if (!isTheater) {
+                            element.style.opacity = '0';
+                        }
                         element.style.transition = 'none';
                         element.style.transform = '';
+                        
+                        // Remove the inline opacity override after Blazor has had time to apply the proper CSS classes
+                        setTimeout(() => {
+                            element.style.opacity = '';
+                        }, 100);
+                        
                     }, isTheater ? 10 : 400); // Super fast 10ms execution if theater mode
                 } else {
                     if (!isTheater) {
