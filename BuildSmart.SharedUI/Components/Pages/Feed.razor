@@ -538,7 +538,8 @@
         justify-content: center;
         cursor: pointer;
         backdrop-filter: blur(4px);
-        transition: background 0.2s ease, transform 0.2s ease;
+        transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
+        opacity: 1;
     }
 
     .bs-theater-btn:hover {
@@ -549,6 +550,12 @@
     /* Only show these buttons when theater mode is active */
     .bs-theater-mode .bs-theater-btn {
         display: flex;
+    }
+
+    /* Hide theater buttons when Plyr auto-hides controls */
+    .bs-theater-mode .plyr.plyr--hide-controls ~ .bs-theater-btn {
+        opacity: 0;
+        pointer-events: none;
     }
 
     .bs-theater-close {

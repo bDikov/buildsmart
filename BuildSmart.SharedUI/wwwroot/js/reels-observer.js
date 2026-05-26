@@ -77,11 +77,9 @@ window.reelsObserver = {
         if (playPromise !== undefined) {
             playPromise.then(_ => {
                 player.pause();
-                player.currentTime = 0;
             }).catch(e => {});
         } else {
             player.pause();
-            player.currentTime = 0;
         }
         delete this.playPromises[videoId];
     },
