@@ -18,8 +18,44 @@ namespace BuildSmart.SharedUI.ViewModels
 		[ObservableProperty]
 		private ObservableCollection<FeedMediaItem> _feedVideos = new();
 
-		// Cache to hold all loaded videos for infinite looping
-		private List<FeedMediaItem> _cachedVideos = new();
+		// --- CATEGORY LRU CACHE SYSTEM ---
+		public class CategoryCacheState
+		{
+			public Guid CategoryId { get; set; }
+			public List<FeedMediaItem> CachedVideos { get; set; } = new();
+			public int CurrentSkip { get; set; } = 0;
+			public bool HasNextPage { get; set; } = true;
+			public DateTime LastAccessed { get; set; } = DateTime.UtcNow;
+		}
+
+		private const int MaxCachedCategories = 5;
+		// Use Guid.Empty for the "All" category (when SelectedCategoryId is null)
+		private Dictionary<Guid, CategoryCacheState> _categoryCaches = new();
+
+		private CategoryCacheState GetActiveCacheState()
+		{
+			Guid key = SelectedCategoryId ?? Guid.Empty;
+			
+			if (!_categoryCaches.ContainsKey(key))
+			{
+				// Memory Management: Enforce LRU Limit before adding a new one
+				if (_categoryCaches.Count >= MaxCachedCategories)
+				{
+					var oldestKey = _categoryCaches.OrderBy(c => c.Value.LastAccessed).First().Key;
+					_categoryCaches.Remove(oldestKey);
+				}
+
+				_categoryCaches[key] = new CategoryCacheState { CategoryId = key };
+			}
+
+			// Update access time for LRU priority
+			var state = _categoryCaches[key];
+			state.LastAccessed = DateTime.UtcNow;
+			return state;
+		}
+
+		public bool HasNextPage => GetActiveCacheState().HasNextPage;
+		// -----------------------------------
 
 		public class FeedMediaItem
 		{
@@ -252,14 +288,14 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
-		private int _currentSkip = 0;
 		private const int PageSize = 3;
-		public bool HasNextPage { get; private set; } = true;
 		private bool _isLoadingMore = false;
 
 		private async Task LoadFeedMediaAsync()
 		{
-			if (_cachedVideos.Count > 0 && FeedVideos.Count > 0)
+			var state = GetActiveCacheState();
+
+			if (state.CachedVideos.Count > 0 && FeedVideos.Count > 0)
 			{
 				// Cache already exists (user navigated back to the page), do not re-fetch.
 				return;
@@ -267,11 +303,11 @@ namespace BuildSmart.SharedUI.ViewModels
 
 			try
 			{
-				_currentSkip = 0;
-				HasNextPage = true;
-				_cachedVideos.Clear();
+				state.CurrentSkip = 0;
+				state.HasNextPage = true;
+				state.CachedVideos.Clear();
 				
-				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
+				var result = await FetchFeedMediaBatchAsync(state.CurrentSkip, PageSize);
 				if (result?.Items != null)
 				{
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
@@ -283,14 +319,14 @@ namespace BuildSmart.SharedUI.ViewModels
 							if (media != null)
 							{
 								var item = CreateFeedMediaItem(media);
-								_cachedVideos.Insert(0, item); // Keep original order in cache
+								state.CachedVideos.Insert(0, item); // Keep original order in cache
 								FeedVideos.Add(item);
 							}
 						}
 					});
 					
-					_currentSkip += result.Items.Count;
-					HasNextPage = result.PageInfo.HasNextPage;
+					state.CurrentSkip += result.Items.Count;
+					state.HasNextPage = result.PageInfo.HasNextPage;
 				}
 			}
 			catch (Exception ex)
@@ -301,13 +337,14 @@ namespace BuildSmart.SharedUI.ViewModels
 
 		public async Task LoadMoreFeedMediaAsync()
 		{
-			if (_isLoadingMore || !HasNextPage) return;
+			var state = GetActiveCacheState();
+			if (_isLoadingMore || !state.HasNextPage) return;
 
 			try
 			{
 				_isLoadingMore = true;
 				
-				var result = await FetchFeedMediaBatchAsync(_currentSkip, PageSize);
+				var result = await FetchFeedMediaBatchAsync(state.CurrentSkip, PageSize);
 				if (result?.Items != null)
 				{
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
@@ -318,7 +355,7 @@ namespace BuildSmart.SharedUI.ViewModels
 							if (media != null)
 							{
 								var videoItem = CreateFeedMediaItem(media);
-								_cachedVideos.Add(videoItem);
+								state.CachedVideos.Add(videoItem);
 
 								// Strict deduplication check to prevent Blazor @key crashes
 								if (!FeedVideos.Any(v => v.Id == videoItem.Id))
@@ -331,8 +368,8 @@ namespace BuildSmart.SharedUI.ViewModels
 						TrimFeedStack();
 					});
 
-					_currentSkip += result.Items.Count;
-					HasNextPage = result.PageInfo.HasNextPage;
+					state.CurrentSkip += result.Items.Count;
+					state.HasNextPage = result.PageInfo.HasNextPage;
 				}
 			}
 			catch (Exception ex)
@@ -347,12 +384,13 @@ namespace BuildSmart.SharedUI.ViewModels
 
 		public void LoopNextVideoFromCache()
 		{
-			if (_cachedVideos.Count == 0) return;
+			var state = GetActiveCacheState();
+			if (state.CachedVideos.Count == 0) return;
 
 			AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 			{
-				int virtualIndex = _currentSkip % _cachedVideos.Count;
-				var nextVideoToLoop = _cachedVideos[virtualIndex];
+				int virtualIndex = state.CurrentSkip % state.CachedVideos.Count;
+				var nextVideoToLoop = state.CachedVideos[virtualIndex];
 
 				// Reuse the EXACT same object. By doing this in the same render cycle as the remove,
 				// Blazor moves the existing DOM node instead of destroying it. This prevents the video 
@@ -362,7 +400,7 @@ namespace BuildSmart.SharedUI.ViewModels
 					FeedVideos.Insert(0, nextVideoToLoop);
 				}
 				
-				_currentSkip++;
+				state.CurrentSkip++;
 				TrimFeedStack();
 			});
 		}

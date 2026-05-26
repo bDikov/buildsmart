@@ -532,14 +532,15 @@
         color: white;
         border: none;
         border-radius: 50%;
-        width: 48px;
-        height: 48px;
+        width: 56px; /* Increased for better mobile tap target */
+        height: 56px;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         backdrop-filter: blur(4px);
         transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
         opacity: 1;
+        pointer-events: auto;
     }
 
     .bs-theater-btn:hover {
@@ -552,10 +553,11 @@
         display: flex;
     }
 
-    /* Hide theater buttons when Plyr auto-hides controls */
+    /* Hide theater buttons when Plyr auto-hides controls, but add a delay so they don't vanish too fast */
     .bs-theater-mode .plyr.plyr--hide-controls ~ .bs-theater-btn {
         opacity: 0;
-        pointer-events: none;
+        /* Removed pointer-events: none; to fix the desktop hover flickering bug */
+        transition: opacity 0.5s ease 0.5s; /* 0.5s delay before fading out */
     }
 
     .bs-theater-close {

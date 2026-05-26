@@ -124,33 +124,39 @@ window.reelsObserver = {
             let tapCount = 0;
             let tapTimer = null;
 
-            // Wire up the new theater mode buttons
+            // Wire up the new theater mode buttons to aggressively block Plyr from capturing the touch
             const closeBtn = element.querySelector('.bs-theater-close');
             const prevBtn = element.querySelector('.bs-theater-prev');
             const nextBtn = element.querySelector('.bs-theater-next');
 
-            if (closeBtn) {
-                closeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    element.classList.remove('bs-theater-mode');
-                });
-            }
+            const handleTheaterBtn = (e, action) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Ensure the action only runs once per interaction
+                if (e.type === 'touchstart' || e.type === 'mousedown') {
+                    action();
+                }
+            };
 
-            if (prevBtn) {
-                prevBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    // Simulate a right swipe to go backwards
-                    endSwipe(touchStartX !== null ? touchStartX + 1000 : 1000, 0, true);
-                });
-            }
+            const bindButton = (btn, action) => {
+                if (!btn) return;
+                // Block all possible touch/mouse events from reaching Plyr
+                btn.addEventListener('touchstart', (e) => handleTheaterBtn(e, action), { passive: false });
+                btn.addEventListener('mousedown', (e) => handleTheaterBtn(e, action));
+                btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
+            };
 
-            if (nextBtn) {
-                nextBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    // Simulate a left swipe to go forwards
-                    endSwipe(touchStartX !== null ? touchStartX - 1000 : -1000, 0, true);
-                });
-            }
+            bindButton(closeBtn, () => {
+                element.classList.remove('bs-theater-mode');
+            });
+
+            bindButton(prevBtn, () => {
+                endSwipe(touchStartX !== null ? touchStartX + 1000 : 1000, 0, true);
+            });
+
+            bindButton(nextBtn, () => {
+                endSwipe(touchStartX !== null ? touchStartX - 1000 : -1000, 0, true);
+            });
 
             // Expose a function so background cards can force the center card to swipe
             element.__triggerSwipe = (direction) => {
@@ -185,7 +191,20 @@ window.reelsObserver = {
                 if (tapCount === 1) {
                     tapTimer = setTimeout(() => {
                         const player = window.reelsObserver.players[videoId];
-                        if (player) player.togglePlay();
+                        if (player) {
+                            // User wants a single tap to both play/pause AND toggle UI controls visibility.
+                            player.togglePlay();
+                            
+                            const plyrContainer = document.getElementById(videoId).closest('.plyr');
+                            if (plyrContainer) {
+                                const areControlsHidden = plyrContainer.classList.contains('plyr--hide-controls');
+                                if (areControlsHidden) {
+                                    player.toggleControls(true); // Wake up and show controls
+                                } else {
+                                    player.toggleControls(false); // Force hide controls
+                                }
+                            }
+                        }
                         tapCount = 0;
                     }, 300);
                 } else if (tapCount === 2) {

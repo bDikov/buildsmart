@@ -32,12 +32,26 @@ namespace BuildSmart.Maui.Tests
         }
 
         [Fact]
-        public async Task LoadFeedAsync_AsHomeowner_PopulatesFeedVideosWithActiveMedia()
+        public void LoopNextVideoFromCache_WithEmptyCache_DoesNothing()
+        {
+            // Arrange
+            Assert.Empty(_viewModel.FeedVideos);
+            
+            // Act
+            _viewModel.LoopNextVideoFromCache();
+
+            // Assert
+            Assert.Empty(_viewModel.FeedVideos); // Should not crash
+        }
+
+        [Fact]
+        public async Task LoadFeedMediaAsync_OnCacheHit_DoesNotHitApiAgain()
         {
             // Arrange
             _mockAuthService.Setup(a => a.GetTokenAsync()).ReturnsAsync("fake_token");
             _mockAuthService.Setup(a => a.GetUserRoleFromToken(It.IsAny<string>())).Returns("Homeowner");
 
+            // Mock the MyProjects query to prevent errors
             var mockMyProjectsResult = new Mock<IOperationResult<IGetMyProjectsResult>>();
             var mockProjectsData = new Mock<IGetMyProjectsResult>();
             mockProjectsData.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects>());
@@ -49,51 +63,56 @@ namespace BuildSmart.Maui.Tests
                 .ReturnsAsync(mockMyProjectsResult.Object);
             _mockApiClient.Setup(api => api.GetMyProjects).Returns(mockGetMyProjectsQuery.Object);
 
-            var mockTradesmanProfilesResult = new Mock<IOperationResult<IGetTradesmanProfilesResult>>();
-            var mockProfilesData = new Mock<IGetTradesmanProfilesResult>();
+            // Mock the GetServiceCategories query
+            var mockCategoriesResult = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+            var mockCategoriesData = new Mock<IGetServiceCategoriesResult>();
+            mockCategoriesData.Setup(d => d.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories>());
+            mockCategoriesResult.Setup(r => r.Data).Returns(mockCategoriesData.Object);
+            mockCategoriesResult.Setup(r => r.Errors).Returns(new List<IClientError>());
             
-            var tradesmanId = Guid.NewGuid().ToString(); // Fix Guid to String
-            var activeMedia = new Mock<IGetTradesmanProfiles_TradesmanProfiles_Media>();
-            activeMedia.Setup(m => m.Id).Returns(Guid.NewGuid().ToString()); // Fix Guid to String
-            activeMedia.Setup(m => m.IsActive).Returns(true);
-            activeMedia.Setup(m => m.VideoUrl).Returns("https://cdn.example.com/video1.mp4");
+            var mockGetCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+            mockGetCategoriesQuery.Setup(q => q.ExecuteAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockCategoriesResult.Object);
+            _mockApiClient.Setup(api => api.GetServiceCategories).Returns(mockGetCategoriesQuery.Object);
 
-            var inactiveMedia = new Mock<IGetTradesmanProfiles_TradesmanProfiles_Media>();
-            inactiveMedia.Setup(m => m.IsActive).Returns(false);
+            // Mock the GetFeedMedia query to return exactly 1 video
+            var mockFeedResult = new Mock<IOperationResult<IGetFeedMediaResult>>();
+            var mockFeedData = new Mock<IGetFeedMediaResult>();
+            
+            var mockFeedMediaConnection = new Mock<IGetFeedMedia_FeedMedia>();
+            var mockItem = new Mock<IGetFeedMedia_FeedMedia_Items>();
+            var mediaId = Guid.NewGuid().ToString(); // Ensure this matches the expected ID type (string)
+            mockItem.Setup(i => i.Id).Returns(mediaId);
+            mockItem.Setup(i => i.TradesmanId).Returns(Guid.NewGuid().ToString());
+            mockItem.Setup(i => i.VideoUrl).Returns("test.mp4");
+            
+            var mockPageInfo = new Mock<IGetFeedMedia_FeedMedia_PageInfo>();
+            mockPageInfo.Setup(p => p.HasNextPage).Returns(false);
 
-            var mockUser = new Mock<IGetTradesmanProfiles_TradesmanProfiles_User>();
-            mockUser.Setup(u => u.FirstName).Returns("John");
-            mockUser.Setup(u => u.LastName).Returns("Doe");
-            mockUser.Setup(u => u.Location).Returns("Sofia");
+            mockFeedMediaConnection.Setup(m => m.Items).Returns(new List<IGetFeedMedia_FeedMedia_Items> { mockItem.Object });
+            mockFeedMediaConnection.Setup(m => m.PageInfo).Returns(mockPageInfo.Object);
 
-            var mockProfile = new Mock<IGetTradesmanProfiles_TradesmanProfiles>();
-            mockProfile.Setup(p => p.Id).Returns(tradesmanId);
-            mockProfile.Setup(p => p.User).Returns(mockUser.Object);
-            mockProfile.Setup(p => p.AverageRating).Returns(4.5);
-            mockProfile.Setup(p => p.Media).Returns(new List<IGetTradesmanProfiles_TradesmanProfiles_Media> { activeMedia.Object, inactiveMedia.Object });
+            mockFeedData.Setup(d => d.FeedMedia).Returns(mockFeedMediaConnection.Object);
+            mockFeedResult.Setup(r => r.Data).Returns(mockFeedData.Object);
+            mockFeedResult.Setup(r => r.Errors).Returns(new List<IClientError>());
 
-            mockProfilesData.Setup(d => d.TradesmanProfiles).Returns(new List<IGetTradesmanProfiles_TradesmanProfiles> { mockProfile.Object });
-            mockTradesmanProfilesResult.Setup(r => r.Data).Returns(mockProfilesData.Object);
-            mockTradesmanProfilesResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+            var mockGetFeedMediaQuery = new Mock<IGetFeedMediaQuery>();
+            mockGetFeedMediaQuery.Setup(q => q.ExecuteAsync(It.IsAny<TradesmanMediaFilterInput>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockFeedResult.Object);
+            _mockApiClient.Setup(api => api.GetFeedMedia).Returns(mockGetFeedMediaQuery.Object);
 
-            var mockGetProfilesQuery = new Mock<IGetTradesmanProfilesQuery>();
-            mockGetProfilesQuery.Setup(q => q.ExecuteAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockTradesmanProfilesResult.Object);
-            _mockApiClient.Setup(api => api.GetTradesmanProfiles).Returns(mockGetProfilesQuery.Object);
-
-            // Act
+            // Act 1: Initial Load
             await _viewModel.LoadFeedCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.True(_viewModel.IsHomeowner);
-            Assert.Single(_viewModel.FeedVideos); // Should only load the 1 active media, ignoring the inactive one
+            // Assert 1
+            Assert.Single(_viewModel.FeedVideos);
+            
+            // Act 2: Second Load (simulating navigating back to page)
+            // If the cache shield works, it will NOT execute the query again
+            await _viewModel.LoadFeedCommand.ExecuteAsync(null);
 
-            var videoItem = _viewModel.FeedVideos.First();
-            Assert.Equal(tradesmanId, videoItem.TradesmanId);
-            Assert.Equal("https://cdn.example.com/video1.mp4", videoItem.VideoUrl);
-            Assert.Equal("John Doe", videoItem.Name);
-            Assert.Equal("Sofia", videoItem.Location);
-            Assert.Equal(4.5, videoItem.Rating);
+            // Assert 2: Verify the API was only called exactly ONE time during the first load
+            mockGetFeedMediaQuery.Verify(q => q.ExecuteAsync(It.IsAny<TradesmanMediaFilterInput>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         // Mock implementation to bypass MAUI MainThread dispatching in unit tests
