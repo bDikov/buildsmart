@@ -36,12 +36,10 @@ jobs:
         run: dotnet restore BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj
 
       - name: Run API Tests
-        # TODO: Uncomment when automated tests are ready to be re-enabled.
-        run: echo "Tests disabled temporarily." # dotnet test BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj --no-restore --verbosity normal -c Release
+        run: dotnet test BuildSmart.Api.Tests/BuildSmart.Api.Tests.csproj --no-restore --verbosity normal -c Release
 
       - name: Run Domain Tests
-        # TODO: Uncomment when automated tests are ready to be re-enabled.
-        run: echo "Tests disabled temporarily." # dotnet test BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj --no-restore --verbosity normal -c Release
+        run: dotnet test BuildSmart.Core.Domain.Tests/BuildSmart.Core.Domain.Tests.csproj --no-restore --verbosity normal -c Release
 
   e2e-test:
     name: Run E2E Tests

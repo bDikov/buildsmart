@@ -131,6 +131,11 @@ The swipe interaction (`ProcessSwipeEndFromJS`) is bi-directional:
 - **Swipe Left (`deltaX < 0`):** Moves forward in the queue. The current top card is removed and pushed to the bottom of the stack.
 - **Swipe Right (`deltaX > 0`):** Moves backward in the queue. The absolute bottom-most card is pulled directly to the top of the stack.
 
+### Optimistic UI & Live Latency Management
+Due to the delay of SignalR messages traveling to a live Blazor Server (e.g., 50-100ms), waiting for the server to re-order the DOM creates a sluggish UI. 
+- **Optimistic Injection:** The JavaScript instantly applies `transform`, `scale`, and `opacity` inline styles to the incoming cards (e.g., animating the bottom card to the center on a right swipe, and moving the right card to the left) so the user perceives a 0ms response time.
+- **Latency Handover:** Because Blazor's `.Move()` preserves DOM nodes, the JavaScript must temporarily set `opacity: 0` on the old card and wait ~100ms before clearing the optimistic inline styles. This ensures the card doesn't visually teleport/flash back to the center of the screen while Blazor is finalizing the CSS classes.
+
 ### Browser Autoplay Policies & Synchronous Play
 Modern browsers (iOS Safari, Chrome) strictly block audio if a video is played programmatically without a direct, synchronous "trusted user gesture".
 - **The Trap:** If JavaScript waits for Blazor to re-render and trigger the next play state via an async SignalR/WebSocket message, the browser will classify the play command as "untrusted" and forcefully mute the video.
