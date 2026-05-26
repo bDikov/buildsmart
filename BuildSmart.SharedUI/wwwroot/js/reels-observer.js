@@ -231,6 +231,7 @@ window.reelsObserver = {
                     // SYNCHRONOUS TRUSTED PLAY: Bypass browser autoplay block by playing the next video right here!
                     let nextVideoId = null;
                     let nextElementToTransferTheaterMode = null;
+                    let rightCardToMoveLeft = null;
                     
                     if (deltaX < 0) {
                         nextElementToTransferTheaterMode = element.previousElementSibling;
@@ -238,6 +239,11 @@ window.reelsObserver = {
                     } else {
                         nextElementToTransferTheaterMode = element.parentElement.firstElementChild;
                         if (nextElementToTransferTheaterMode) nextVideoId = nextElementToTransferTheaterMode.getAttribute('data-video-id');
+                        
+                        // If swiping right, the current Right card needs to visually slide to the Left slot
+                        if (element.previousElementSibling && element.previousElementSibling !== nextElementToTransferTheaterMode) {
+                            rightCardToMoveLeft = element.previousElementSibling;
+                        }
                     }
                     
                     if (nextVideoId) {
@@ -251,12 +257,17 @@ window.reelsObserver = {
                         element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
                         
                         // OPTIMISTIC UI: Instantly start animating the next card into the center 
-                        // so the user doesn't feel the network delay waiting for Blazor to update the DOM!
                         if (nextElementToTransferTheaterMode) {
                             nextElementToTransferTheaterMode.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease';
                             nextElementToTransferTheaterMode.style.transform = 'translate(-50%, -50%) scale(1)';
                             nextElementToTransferTheaterMode.style.filter = 'blur(0px)';
                             nextElementToTransferTheaterMode.style.opacity = '1';
+                        }
+                        
+                        // OPTIMISTIC UI: When swiping right, move the current Right card to the Left slot
+                        if (rightCardToMoveLeft) {
+                            rightCardToMoveLeft.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease';
+                            rightCardToMoveLeft.style.transform = 'translate(calc(-50% - 360px), -50%) scale(0.85)';
                         }
                     } else {
                         // Transfer the theater mode class to the next video so it stays fullscreen
@@ -281,7 +292,6 @@ window.reelsObserver = {
                         element.style.transform = '';
                         
                         // Remove the inline opacity override and the Optimistic UI styles
-                        // after Blazor has had time to apply the proper CSS classes
                         setTimeout(() => {
                             element.style.opacity = '';
                             if (nextElementToTransferTheaterMode && !isTheater) {
@@ -289,6 +299,10 @@ window.reelsObserver = {
                                 nextElementToTransferTheaterMode.style.transform = '';
                                 nextElementToTransferTheaterMode.style.filter = '';
                                 nextElementToTransferTheaterMode.style.opacity = '';
+                            }
+                            if (rightCardToMoveLeft && !isTheater) {
+                                rightCardToMoveLeft.style.transition = '';
+                                rightCardToMoveLeft.style.transform = '';
                             }
                         }, 100);
                         
