@@ -435,11 +435,23 @@ window.reelsObserver = {
                 if (videoId) {
                     const videoEl = document.getElementById(videoId);
                     if (videoEl && videoEl.readyState >= 1) { // HAVE_METADATA or better
-                        // Silently load the first frame by setting currentTime
-                        // This forces the browser to decode it without actually playing audio
+                        // Silently nudge the time to force a frame decode, then instantly put it back
                         const originalTime = videoEl.currentTime;
-                        videoEl.currentTime = 0.001; 
-                        // We do not call .play() here because we don't want to trigger autoplay policy violations
+                        
+                        // Only nudge if the video is currently at the very beginning (0)
+                        // If the user already watched some of it, the frame is already cached!
+                        if (originalTime === 0) {
+                            videoEl.currentTime = 0.001; 
+                        } else {
+                            // If they already watched it, nudge it forward slightly and back to force a refresh
+                            // without losing their spot.
+                            videoEl.currentTime = originalTime + 0.001;
+                            setTimeout(() => {
+                                if (videoEl.paused) {
+                                    videoEl.currentTime = originalTime;
+                                }
+                            }, 50);
+                        }
                     }
                 }
             };
