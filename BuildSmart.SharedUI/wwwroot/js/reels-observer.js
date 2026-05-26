@@ -257,9 +257,11 @@ window.reelsObserver = {
                         }
                     }
 
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         if (window.reelsObserver.dotNetRef) {
-                            window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', deltaX, 0, 0, 0, videoId);
+                            try {
+                                await window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', deltaX, 0, 0, 0, videoId);
+                            } catch (e) { console.error(e); }
                         }
                         element.style.transition = 'none';
                         element.style.transform = '';
