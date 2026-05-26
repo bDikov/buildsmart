@@ -337,6 +337,13 @@
     }
 
     /* --- THEATER MODE (TRIPLE CLICK) --- */
+    .bs-reels-container.in-theater-mode .bs-reel-item:not(.bs-theater-mode) {
+        opacity: 0.001 !important; /* Keep in render tree for pre-decoding, but invisible */
+        pointer-events: none !important;
+        transition: none !important;
+        z-index: -1 !important;
+    }
+
     .bs-reel-item.bs-theater-mode {
         position: fixed !important; /* Break out of relative container */
         top: 0 !important;
@@ -350,6 +357,8 @@
         border: none !important;
         z-index: 9999 !important; /* Float above everything including navbars */
         pointer-events: auto !important;
+        background-color: black !important;
+        opacity: 1 !important;
     }
 
     /* --- MOBILE VIEW: Tinder Stack --- */
@@ -414,7 +423,7 @@
         /* Hidden (Any cards deeper in the deck staged on the right) */
         .bs-reel-item:not(:nth-last-child(1)):not(:nth-last-child(2)):not(:nth-child(1)) {
             z-index: 0;
-            opacity: 0;
+            opacity: 0.001;
             transform: translate(calc(-50% + 420px), -50%) scale(0.75);
             filter: blur(8px);
             pointer-events: none;

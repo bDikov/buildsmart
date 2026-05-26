@@ -148,6 +148,8 @@ window.reelsObserver = {
 
             bindButton(closeBtn, () => {
                 element.classList.remove('bs-theater-mode');
+                const container = element.closest('.bs-reels-container');
+                if (container) container.classList.remove('in-theater-mode');
             });
 
             bindButton(prevBtn, () => {
@@ -211,7 +213,15 @@ window.reelsObserver = {
                         tapCount = 0;
                     }, 300);
                 } else if (tapCount === 2) {
-                    element.classList.toggle('bs-theater-mode');
+                    const container = element.closest('.bs-reels-container');
+                    const isEntering = !element.classList.contains('bs-theater-mode');
+                    if (isEntering) {
+                        element.classList.add('bs-theater-mode');
+                        if (container) container.classList.add('in-theater-mode');
+                    } else {
+                        element.classList.remove('bs-theater-mode');
+                        if (container) container.classList.remove('in-theater-mode');
+                    }
                     tapCount = 0;
                     clearTimeout(tapTimer);
                 }
@@ -279,13 +289,19 @@ window.reelsObserver = {
                             nextElementToTransferTheaterMode.style.transform = 'translate(-50%, -50%) scale(1)';
                             nextElementToTransferTheaterMode.style.filter = 'blur(0px)';
                             nextElementToTransferTheaterMode.style.opacity = '1';
+                            nextElementToTransferTheaterMode.style.zIndex = '4'; // Boost above the whole stack
                         }
                     } else {
                         // Transfer the theater mode class to the next video so it stays fullscreen
                         element.classList.remove('bs-theater-mode');
+                        // No need to set opacity: 0 manually; the .in-theater-mode container class handles this
                         if (nextElementToTransferTheaterMode) {
                             nextElementToTransferTheaterMode.classList.add('bs-theater-mode');
                         }
+                    }
+
+                    if (nextElementToTransferTheaterMode) {
+                        window.reelsObserver.preDecodeAdjacent(nextElementToTransferTheaterMode);
                     }
 
                     setTimeout(async () => {
@@ -305,12 +321,15 @@ window.reelsObserver = {
                         // Remove the inline opacity override and the Optimistic UI styles
                         // after Blazor has had time to apply the proper CSS classes
                         setTimeout(() => {
-                            element.style.opacity = '';
+                            if (!isTheater) {
+                                element.style.opacity = '';
+                            }
                             if (nextElementToTransferTheaterMode && !isTheater) {
                                 nextElementToTransferTheaterMode.style.transition = '';
                                 nextElementToTransferTheaterMode.style.transform = '';
                                 nextElementToTransferTheaterMode.style.filter = '';
                                 nextElementToTransferTheaterMode.style.opacity = '';
+                                nextElementToTransferTheaterMode.style.zIndex = '';
                             }
                         }, 100);
                         
@@ -403,6 +422,44 @@ window.reelsObserver = {
                     console.log('Autoplay prevented by browser, falling back to muted', e);
                 });
             }
+        }
+    },
+
+    preDecodeAdjacent: function(centerElement) {
+        if (!centerElement) return;
+        
+        try {
+            const tryPreDecode = (element) => {
+                if (!element) return;
+                const videoId = element.getAttribute('data-video-id');
+                if (videoId) {
+                    const videoEl = document.getElementById(videoId);
+                    if (videoEl && videoEl.readyState >= 1) { // HAVE_METADATA or better
+                        // Silently load the first frame by setting currentTime
+                        // This forces the browser to decode it without actually playing audio
+                        const originalTime = videoEl.currentTime;
+                        videoEl.currentTime = 0.001; 
+                        // We do not call .play() here because we don't want to trigger autoplay policy violations
+                    }
+                }
+            };
+
+            // Previous video (wrap to bottom of stack if needed)
+            let prev = centerElement.nextElementSibling;
+            if (!prev) {
+                prev = centerElement.parentElement.firstElementChild;
+            }
+            tryPreDecode(prev);
+
+            // Next video (wrap to top of stack if needed)
+            let next = centerElement.previousElementSibling;
+            if (!next) {
+                next = centerElement.parentElement.lastElementChild;
+            }
+            tryPreDecode(next);
+            
+        } catch (e) {
+            console.error("Failed to pre-decode adjacent videos", e);
         }
     },
 
