@@ -165,7 +165,10 @@ window.reelsObserver = {
             };
 
             element.addEventListener('click', (e) => {
-                if (e.target.closest('.bs-reel-action-btn') || e.target.closest('.plyr__controls') || e.target.closest('.bs-theater-btn')) return;
+                if (e.target.closest('.bs-reel-action-btn') || 
+                    e.target.closest('.plyr__controls') || 
+                    e.target.closest('.plyr__control--overlaid') || 
+                    e.target.closest('.bs-theater-btn')) return;
 
                 const parent = element.parentElement;
                 const isCenterCard = parent.lastElementChild === element;

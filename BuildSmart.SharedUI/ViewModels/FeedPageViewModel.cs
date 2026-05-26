@@ -181,6 +181,14 @@ namespace BuildSmart.SharedUI.ViewModels
 		public async Task SelectCategoryAsync(Guid? categoryId)
 		{
 			SelectedCategoryId = categoryId;
+			
+			// Visually wipe the UI stack so we don't accidentally display the old category's videos
+			// while the new category cache is being resolved
+			AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+			{
+				FeedVideos.Clear();
+			});
+			
 			await LoadFeedMediaAsync();
 		}
 
