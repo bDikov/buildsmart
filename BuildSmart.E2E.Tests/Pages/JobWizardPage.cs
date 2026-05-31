@@ -75,6 +75,15 @@ public class JobWizardPage : BasePage
     public async Task SelectChoiceOptionAsync(string partialQuestionText, string optionText)
     {
         var questionWrapper = _page.Locator($".mb-4:has(label.form-label:has-text('{partialQuestionText}'))");
-        await questionWrapper.Locator($"label.form-check-label:has-text('{optionText}')").ClickAsync();
+        // Click the visible label (standard Blazor/Bootstrap pattern) to avoid hidden checkbox issues
+        await questionWrapper.Locator($"label:has-text('{optionText}')").First.ClickAsync();
         await _page.WaitForTimeoutAsync(500); // Wait for Blazor binding to evaluate subsequential questions
+    }
+    
+    public async Task FillNumberInputAsync(string partialQuestionText, string numberValue)
+    {
+        var questionWrapper = _page.Locator($".mb-4:has(label.form-label:has-text('{partialQuestionText}'))");
+        var input = questionWrapper.Locator("input[type='number']").First;
+        await input.FillAsync(numberValue);
+        await _page.WaitForTimeoutAsync(500); // Wait for Blazor binding
     }}

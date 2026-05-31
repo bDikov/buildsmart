@@ -16,7 +16,7 @@ public abstract class TestBase : PageTest
     protected string BaseUrl => Environment.GetEnvironmentVariable("BaseUrl") 
         ?? Environment.GetEnvironmentVariable("BASEURL") 
         ?? Environment.GetEnvironmentVariable("BASE_URL") 
-        ?? "http://web:8080";
+        ?? "https://localhost:7212";
 
     [OneTimeSetUp]
     public async Task GlobalSetup()

@@ -1,0 +1,40 @@
+{
+  "categoryName": "Къртене, Чистене и Извозване",
+  "skus": [
+    {
+      "skuCode": "DEMO-BATH-FULL",
+      "name": "Цялостно къртене на баня",
+      "description": "Къртене на стари плочки, замазка, санитария и събиране в чували.",
+      "basePrice": 750.00,
+      "unitType": "pcs"
+    },
+    {
+      "skuCode": "DEMO-WALL-BRICK",
+      "name": "Къртене на тухлена стена",
+      "description": "Събаряне на вътрешни преградни тухлени стени.",
+      "basePrice": 20.00,
+      "unitType": "sqm"
+    },
+    {
+      "skuCode": "DEMO-WALL-CONC",
+      "name": "Къртене на бетонна стена/панел",
+      "description": "Изрязване и къртене на носещи или панелни стени (изисква становище).",
+      "basePrice": 50.00,
+      "unitType": "sqm"
+    },
+    {
+      "skuCode": "DEMO-FLOOR-TILE",
+      "name": "Къртене на подови настилки/замазка",
+      "description": "Премахване на стар теракот, мозайка или дебела замазка.",
+      "basePrice": 15.00,
+      "unitType": "sqm"
+    },
+    {
+      "skuCode": "DEMO-DISPOSAL",
+      "name": "Извозване с контейнер",
+      "description": "Наемане на строителен контейнер, изнасяне и такса смет.",
+      "basePrice": 250.00,
+      "unitType": "pcs"
+    }
+  ]
+}

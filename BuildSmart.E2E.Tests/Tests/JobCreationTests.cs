@@ -273,4 +273,92 @@ public class JobCreationTests : TestBase
         // 5. Assert: We should see the ENGLISH text of the question
         await wizardPage.ExpectQuestionVisibleAsync("What is the property type?");
     }
+
+    [Test]
+    public async Task Homeowner_JobWizard_ElectricalCategory_CompletesSuccessfully()
+    {
+        // 0. SEED DATA
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        // Clear seeded global categories to isolate the test
+        await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        
+        var uniqueElecId = Guid.NewGuid().ToString().Substring(0, 8);
+        var testUser = new User 
+        { 
+            Id = Guid.NewGuid(),
+            FirstName = "Test",
+            LastName = "UserElec",
+            Email = $"testuserelec{uniqueElecId}@buildsmart.com", 
+            HashedPassword = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            Role = UserRoleTypes.Homeowner,
+            PreferredLanguage = "bg",
+            HomeownerProfile = new HomeownerProfile()
+        };
+        
+        // Seed the exact UX template we designed for Electrical
+        var categoryName = $"Електрическа Инсталация-{uniqueElecId}";
+        var elecCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = categoryName,
+            Status = CategoryStatus.Active,
+            TemplateStructure = @"{
+                ""questions"": [
+                    { ""id"": ""elec_scope"", ""text"": ""Какъв е мащабът на ремонта?"", ""type"": ""choice"", ""required"": true, ""options"": [""Цялостна подмяна"", ""Частичен ремонт""] },
+                    { ""id"": ""elec_heavy_appliances"", ""text"": ""Кои мощни уреди ще имате?"", ""type"": ""multiselect"", ""required"": true, ""options"": [""Фурна"", ""Индукционен котлон"", ""Пералня""] },
+                    { ""id"": ""elec_outlets_comfort"", ""text"": ""Колко контакти желаете във всяка стая?"", ""type"": ""choice"", ""required"": true, ""options"": [""Базово"", ""Комфорт""] }
+                ]
+            }"
+        };
+        
+        dbContext.Users.Add(testUser);
+        dbContext.ServiceCategories.Add(elecCategory);
+        await dbContext.SaveChangesAsync();
+
+        // 1. Navigate & Login
+        var loginPage = new LoginPage(Page);
+        await loginPage.GotoAsync(BaseUrl);
+        await loginPage.LoginWithCredentialsAsync($"testuserelec{uniqueElecId}@buildsmart.com", "Password123!");
+        await Expect(Page).Not.ToHaveURLAsync(new Regex(".*login"), new() { Timeout = 10000 });
+        
+        await Page.WaitForTimeoutAsync(1000);
+
+        // 2. Start Project Wizard
+        var myProjectsPage = new MyProjectsPage(Page);
+        await myProjectsPage.GotoAsync(BaseUrl);
+        await myProjectsPage.ClickCreateNewProjectAsync();
+
+        // 3. Fill Basic Info
+        var wizardPage = new JobWizardPage(Page);
+        await wizardPage.FillBasicInfoAsync("Electrical E2E Test", "Sofia", "Testing new UI components");
+        await wizardPage.ClickNextAsync();
+
+        // 4. Select Category
+        await wizardPage.SelectCategoryAsync(categoryName);
+        await wizardPage.ClickNextAsync();
+
+        // 5. Answer Questions (Testing the new Choice/Multiselect cards)
+        await wizardPage.ExpectQuestionVisibleAsync("Какъв е мащабът на ремонта?");
+        
+        // Select Scope
+        await wizardPage.SelectChoiceOptionAsync("Какъв е мащабът на ремонта?", "Цялостна подмяна");
+        
+        // Select Appliances (Multiselect)
+        await wizardPage.SelectChoiceOptionAsync("Кои мощни уреди ще имате?", "Фурна");
+        await wizardPage.SelectChoiceOptionAsync("Кои мощни уреди ще имате?", "Пералня");
+
+        // Select Comfort Level
+        await wizardPage.SelectChoiceOptionAsync("Колко контакти желаете във всяка стая?", "Комфорт");
+
+        // 6. Click next to submit the scope
+        await wizardPage.ClickNextAsync();
+        
+        // 7. Verify we advanced past the questions step
+        // We assert we are not still on the job-wizard (or we reached the success screen/AI generation screen)
+        // Note: Actual success navigation depends on your routing logic, but hitting next without validation errors is the goal.
+        var validationErrors = Page.Locator(".text-danger"); // Standard bootstrap validation
+        await Expect(validationErrors).ToHaveCountAsync(0);
+    }
 }

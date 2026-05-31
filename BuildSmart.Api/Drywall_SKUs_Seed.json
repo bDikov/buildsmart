@@ -1,0 +1,40 @@
+{
+  "categoryName": "Сухо строителство (Гипсокартон)",
+  "skus": [
+    {
+      "skuCode": "DRYW-CEILING-STD",
+      "name": "Окачен таван (Едно ниво)",
+      "description": "Монтаж на метална конструкция и гипсокартон на таван.",
+      "basePrice": 45.00,
+      "unitType": "sqm"
+    },
+    {
+      "skuCode": "DRYW-WALL-PARTITION",
+      "name": "Преградна стена (Двуслойна)",
+      "description": "Изграждане на стена с профили и по 2 слоя картон от всяка страна.",
+      "basePrice": 65.00,
+      "unitType": "sqm"
+    },
+    {
+      "skuCode": "DRYW-WALL-LINING",
+      "name": "Предстенна обшивка",
+      "description": "Облицоване на съществуваща стена с картон на конструкция (за изправяне или изолация).",
+      "basePrice": 40.00,
+      "unitType": "sqm"
+    },
+    {
+      "skuCode": "DRYW-BOX",
+      "name": "Изграждане на куфари (Кутии)",
+      "description": "Обличане на тръби или скриване на трегери с картон.",
+      "basePrice": 40.00,
+      "unitType": "m"
+    },
+    {
+      "skuCode": "DRYW-INSULATION",
+      "name": "Монтаж на вата (Топло/Шумо)",
+      "description": "Поставяне на минерална или каменна вата в конструкцията.",
+      "basePrice": 10.00,
+      "unitType": "sqm"
+    }
+  ]
+}
