@@ -13,5 +13,8 @@ public class ServiceSku : BaseEntity
     public decimal BasePrice { get; set; }
     public string UnitType { get; set; } = "Flat"; // e.g., Flat, Hourly, SqFt
     
+    // The mathematical formula used by the C# Pricing Engine (e.g., "global_total_sqm * 3.5")
+    public string CalculationFormula { get; set; } = string.Empty; 
+    
     public ICollection<ServiceSkuTranslation> Translations { get; set; } = new List<ServiceSkuTranslation>();
 }

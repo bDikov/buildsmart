@@ -40,6 +40,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         var mockHubContext = new Mock<IHubContext<JobProcessingHub>>();
         var mockHubClients = new Mock<IHubClients>();
         var mockClientProxy = new Mock<IClientProxy>();
+        var mockPricingEngine = new Mock<IPricingEngine>();
 
         mockHubContext.Setup(x => x.Clients).Returns(mockHubClients.Object);
         mockHubClients.Setup(x => x.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
@@ -94,6 +95,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         services.AddScoped(sp => mockNotificationService.Object);
         services.AddScoped(sp => mockQueue.Object);
         services.AddScoped(sp => mockHubContext.Object);
+        services.AddScoped(sp => mockPricingEngine.Object);
         
         var serviceProvider = services.BuildServiceProvider();
         

@@ -247,6 +247,7 @@ public class ScopeGenerationWorker
 		using var scope = _serviceProvider.CreateScope();
 		var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 		var aiService = scope.ServiceProvider.GetRequiredService<IAiService>();
+		var pricingEngine = scope.ServiceProvider.GetRequiredService<IPricingEngine>();
 		var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
 		var jobPost = await unitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId);
@@ -390,7 +391,26 @@ public class ScopeGenerationWorker
 								continue;
 							}
 
-							var skuEstimatedPrice = matchedSku.BasePrice * skuDto.Quantity;
+							// 🚀 STRIPPING MATH FROM AI:
+							// Pass the calculation formula from the DB and the user's raw answers to the C# Pricing Engine.
+							var computedQuantity = pricingEngine.CalculateQuantity(matchedSku.CalculationFormula, jobPost.JobDetails);
+							
+							decimal finalQuantity = skuDto.Quantity;
+
+							// If the engine computed a valid quantity based on the formula, override the AI's guess.
+							// (If the formula was empty, CalculateQuantity returns 0m, so we fallback to the AI's "1" boolean map).
+							if (computedQuantity > 0 || !string.IsNullOrWhiteSpace(matchedSku.CalculationFormula))
+							{
+								finalQuantity = computedQuantity;
+							}
+
+							if (finalQuantity <= 0)
+							{
+								_logger.LogDebug("SKU {SkuCode} skipped for Task {TaskId} because PricingEngine computed 0 quantity.", matchedSku.SkuCode, parsedGuid);
+								continue;
+							}
+
+							var skuEstimatedPrice = matchedSku.BasePrice * finalQuantity;
 							taskTotal += skuEstimatedPrice;
 
 							calcTask.SkuItems.Add(new AiCalculationSkuItem
@@ -398,11 +418,11 @@ public class ScopeGenerationWorker
 								Id = Guid.NewGuid(),
 								AiCalculationTaskId = calcTask.Id,
 								ServiceSkuId = matchedSku.Id,
-								Quantity = skuDto.Quantity,
+								Quantity = finalQuantity,
 								EstimatedPrice = skuEstimatedPrice
 							});
 							
-							_logger.LogDebug("Mapped SKU {SkuCode} x {Quantity} to Task {TaskId}.", matchedSku.SkuCode, skuDto.Quantity, parsedGuid);
+							_logger.LogDebug("Mapped SKU {SkuCode} x {Quantity} to Task {TaskId}.", matchedSku.SkuCode, finalQuantity, parsedGuid);
 						}
 					}
 					else

@@ -32,18 +32,18 @@ class Program {
         // Electrical
         var elecKey = "Електрическа Инсталация";
         if (categories.TryGetValue(elecKey, out var elecId)) {
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-CABLE-LAY", "Полагане на силов кабел", "Издърпване и фиксиране на кабел.", 2m, "m"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-CABLE-HEAVY", "Полагане на мощен кабел", "Дебел кабел за проточни бойлери.", 5m, "m"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-CHASE-CONC", "Къртене на канал в бетон", "Изкопаване на канал в бетон.", 15m, "m"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-CHASE-BRICK", "Къртене на канал в тухла", "Изкопаване на канал в тухла.", 8m, "m"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-LAY-TUBE", "Полагане на гофре", "Полагане на гофрирана тръба.", 4m, "m"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-PANEL-MOD", "Сглобяване на табло (на модул)", "Подреждане на предпазители.", 15m, "module"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-PANEL-NICHE", "Изкопаване на ниша за вградено табло", "Скрит монтаж.", 95m, "pcs"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-STD", "Изграждане на излазна точка", "Труд за 1 брой контакт/ключ.", 35m, "pcs"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-LV", "Слаботокова точка", "LAN/TV/СОТ.", 30m, "pcs"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-DEV", "Девиаторна точка", "Девиаторни ключове.", 55m, "pcs"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-SPEC", "Извод за щори/вентилатор", "Вентилатори или щори.", 40m, "pcs"));
-            skusToInsert.Add(new SkuDef(elecId, "ELEC-LED-TRAFO", "Монтаж на захранващ блок (Траф) за LED", "Трансформатор.", 30m, "pcs"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-CABLE-LAY", "Полагане на силов кабел", "Издърпване и фиксиране на кабел.", 2m, "m", "if(Contains(elec_scope, 'Цялостна'), global_total_sqm * 3.5, if(Contains(elec_scope, 'Частичен'), global_total_sqm * 1.0, 0))"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-CABLE-HEAVY", "Полагане на мощен кабел", "Дебел кабел за проточни бойлери.", 5m, "m", "(Count(elec_heavy_appliances) + elec_ac_count) * 10"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-CHASE-CONC", "Къртене на канал в бетон", "Изкопаване на канал в бетон.", 15m, "m", "if(Contains(elec_walls, 'Бетон') && Contains(elec_scope, 'Цялостна'), global_total_sqm * 3.5, 0)"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-CHASE-BRICK", "Къртене на канал в тухла", "Изкопаване на канал в тухла.", 8m, "m", "if(Contains(elec_walls, 'Тухла') && Contains(elec_scope, 'Цялостна'), global_total_sqm * 3.5, 0)"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-LAY-TUBE", "Полагане на гофре", "Полагане на гофрирана тръба.", 4m, "m", "if(Contains(elec_scope, 'Цялостна'), global_total_sqm * 3.5, 0)"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-PANEL-MOD", "Сглобяване на табло (на модул)", "Подреждане на предпазители.", 15m, "module", "12 + Count(elec_heavy_appliances) + elec_ac_count"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-PANEL-NICHE", "Изкопаване на ниша за вградено табло", "Скрит монтаж.", 95m, "pcs", "if(Contains(elec_panel, 'скрито'), 1, 0)"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-STD", "Изграждане на излазна точка", "Труд за 1 брой контакт/ключ.", 35m, "pcs", "if(Contains(elec_outlets_comfort, 'Базово'), (global_room_count * 3) + 4, if(Contains(elec_outlets_comfort, 'Комфорт'), (global_room_count * 5) + 6, if(Contains(elec_outlets_comfort, 'Премиум'), (global_room_count * 8) + 10, 0)))"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-LV", "Слаботокова точка", "LAN/TV/СОТ.", 30m, "pcs", "1"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-DEV", "Девиаторна точка", "Девиаторни ключове.", 55m, "pcs", "1"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-POINT-SPEC", "Извод за щори/вентилатор", "Вентилатори или щори.", 40m, "pcs", "1"));
+            skusToInsert.Add(new SkuDef(elecId, "ELEC-LED-TRAFO", "Монтаж на захранващ блок (Траф) за LED", "Трансформатор.", 30m, "pcs", "if(Contains(elec_lighting, 'LED'), 1, 0)"));
         }
 
         // Painting
@@ -122,8 +122,8 @@ class Program {
 
             if (!exists) {
                 using (var insCmd = new NpgsqlCommand(
-                    "INSERT INTO \"ServiceSkus\" (\"Id\", \"ServiceCategoryId\", \"SkuCode\", \"Name\", \"Description\", \"BasePrice\", \"UnitType\", \"CreatedAt\", \"UpdatedAt\") " +
-                    "VALUES (@id, @catId, @code, @name, @desc, @price, @unit, @time, @time);", conn)) {
+                    "INSERT INTO \"ServiceSkus\" (\"Id\", \"ServiceCategoryId\", \"SkuCode\", \"Name\", \"Description\", \"BasePrice\", \"UnitType\", \"CalculationFormula\", \"CreatedAt\", \"UpdatedAt\") " +
+                    "VALUES (@id, @catId, @code, @name, @desc, @price, @unit, @formula, @time, @time);", conn)) {
                     insCmd.Parameters.AddWithValue("id", Guid.NewGuid());
                     insCmd.Parameters.AddWithValue("catId", sku.CategoryId);
                     insCmd.Parameters.AddWithValue("code", sku.SkuCode);
@@ -131,9 +131,19 @@ class Program {
                     insCmd.Parameters.AddWithValue("desc", sku.Description);
                     insCmd.Parameters.AddWithValue("price", sku.Price);
                     insCmd.Parameters.AddWithValue("unit", sku.Unit);
+                    insCmd.Parameters.AddWithValue("formula", sku.Formula);
                     insCmd.Parameters.AddWithValue("time", DateTime.UtcNow);
                     insCmd.ExecuteNonQuery();
                     inserted++;
+                }
+            } else {
+                using (var updCmd = new NpgsqlCommand(
+                    "UPDATE \"ServiceSkus\" SET \"CalculationFormula\" = @formula, \"BasePrice\" = @price, \"UpdatedAt\" = @time WHERE \"SkuCode\" = @code;", conn)) {
+                    updCmd.Parameters.AddWithValue("formula", sku.Formula);
+                    updCmd.Parameters.AddWithValue("price", sku.Price);
+                    updCmd.Parameters.AddWithValue("time", DateTime.UtcNow);
+                    updCmd.Parameters.AddWithValue("code", sku.SkuCode);
+                    updCmd.ExecuteNonQuery();
                 }
             }
         }
@@ -148,14 +158,16 @@ class Program {
         public string Description { get; }
         public decimal Price { get; }
         public string Unit { get; }
+        public string Formula { get; }
 
-        public SkuDef(Guid categoryId, string skuCode, string name, string description, decimal price, string unit) {
+        public SkuDef(Guid categoryId, string skuCode, string name, string description, decimal price, string unit, string formula = "1") {
             CategoryId = categoryId;
             SkuCode = skuCode;
             Name = name;
             Description = description;
             Price = price;
             Unit = unit;
+            Formula = formula;
         }
     }
 }

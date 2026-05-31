@@ -135,6 +135,7 @@ public partial class Program
 		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
 		builder.Services.AddScoped<IMediaService, BuildSmart.Infrastructure.Services.CloudflareR2MediaService>();
 		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+		builder.Services.AddScoped<IPricingEngine, PricingEngine>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
