@@ -270,8 +270,10 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine("3. Assume a quantity of 1 for every SKU you map to indicate that the SKU is required for the task.");
 			prompt.AppendLine("4. NO MADE-UP SKUS: Use ONLY SkuCodes from the provided 'ALLOWED SKUS' list. If no exact match, use the most logically related one.");
 			prompt.AppendLine("5. GUID CONSISTENCY: You MUST return the EXACT TaskId GUID provided in the 'USER TASKS TO PRICE' list. Do not alter even one character.");
-			prompt.AppendLine("6. LANGUAGE NEUTRAL MAPPING: The USER Q&A and TASKS are likely in Bulgarian. The SKUs are likely in English/Codes. Translate conceptually. (e.g., 'Контакт' -> 'ELEC-POINT-STD', 'Шпакловка' -> 'PANT').");
-			prompt.AppendLine($"7. OUTPUT LANGUAGE: Output the `taskTitle` in the language of code '{languageCode.ToUpper()}'.");
+			prompt.AppendLine("6. LANGUAGE NEUTRAL MAPPING: The USER Q&A and TASKS are likely in Bulgarian. The SKUs are likely in English/Codes. Translate conceptually.");
+			prompt.AppendLine("7. LABOR IS ALWAYS BILLABLE: Even if a user states they will 'provide/buy the materials' (e.g., sinks, toilets, tiles), you MUST STILL map the Labor Installation SKUs (e.g., PLMB-SINK-INSTALL, PLMB-WC-STD). Tradesmen always charge for labor.");
+			prompt.AppendLine("8. IGNORE EXTERNAL TRADES: If a task says 'Demolition' but you don't have a 'DEMO' SKU in the ALLOWED SKUS list, leave it empty. Do not guess.");
+			prompt.AppendLine($"9. OUTPUT LANGUAGE: Output the `taskTitle` in the language of code '{languageCode.ToUpper()}'.");
 			prompt.AppendLine();
 			prompt.AppendLine("### OUTPUT FORMAT (STRICT JSON ONLY):");
 			prompt.AppendLine("{");
