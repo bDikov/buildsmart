@@ -103,7 +103,7 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           rm: true
           # Exclude heavy Android/MAUI, Test, and Git folders from the server payload to speed up transfer
-          source: "docker-compose.prod.yml,Caddyfile,BuildSmart.sln,BuildSmart.Api,BuildSmart.Web,BuildSmart.Core.Domain,BuildSmart.Core.Application,BuildSmart.Infrastructure,BuildSmart.SharedUI"
+          source: "docker-compose.prod.yml,Caddyfile,BuildSmart.sln,BuildSmart.Api,BuildSmart.Web,BuildSmart.Core.Domain,BuildSmart.Core.Application,BuildSmart.Infrastructure,BuildSmart.SharedUI,SeedLiveCategories.sql"
           target: "/opt/buildsmart"
           
       - name: Deploy via SSH
@@ -134,7 +134,11 @@ jobs:
             # Force a clean update to ensure JSON files and new code are active
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build --no-cache
-            docker compose -f docker-compose.prod.yml up -d --force-recreate api web caddy
+            docker compose -f docker-compose.prod.yml up -d --force-recreate db api web caddy
+            
+            # Wait for database to initialize before injecting the SKUs
+            sleep 5
+            docker compose -f docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} < SeedLiveCategories.sql
             
             # Clean up old images to save space
             docker image prune -f
