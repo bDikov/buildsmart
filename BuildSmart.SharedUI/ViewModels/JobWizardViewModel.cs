@@ -1023,7 +1023,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			// Jobs are now individually submitted to the AI when the user clicks 'Next' on their respective question pages.
 			// No need to batch submit them here again.
 
-			await AppServiceLocator.Navigation.NavigateToAsync($"/ai-processing?ProjectId={_currentProjectId}");
+			bool isBg = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase);
+
+			string title = isBg ? "Обработка" : "Processing";
+			string message = isBg 
+				? "Това може да отнеме няколко минути. Желаете ли да получите офертата по имейл?" 
+				: "This may take a few minutes. Do you want to receive the offer via email?";
+			string yes = isBg ? "Да" : "Yes";
+			string no = isBg ? "Не" : "No";
+
+			await AppServiceLocator.Alerts.DisplayAlert(title, message, yes, no);
+
+			await AppServiceLocator.Navigation.NavigateToAsync("..");
 		}
 		catch (Exception ex)
 		{
