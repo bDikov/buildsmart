@@ -977,7 +977,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					cat.Category.Name,
 					answersJson,
 					ProjectLocation,
-					null, "USD", new List<string>(), PreferredSiteVisitDate
+					null, "EUR", new List<string>(), PreferredSiteVisitDate
 				);
 
 				if (jobResult.Errors.Count > 0)
@@ -997,7 +997,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					answersJson,
 					ProjectDescription,
 					ProjectLocation,
-					null, "USD"
+					null, "EUR"
 				);
 			}
 		}

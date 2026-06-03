@@ -1,0 +1,5 @@
+
+-- COMPLETE DATABASE SEED SCRIPT (CATEGORIES AND SKUS AND EURO PRICING)
+
+UPDATE "ServiceSkus" SET "BasePrice" = ROUND("BasePrice" / 1.95583, 2) WHERE "BasePrice" > 0;
+        
