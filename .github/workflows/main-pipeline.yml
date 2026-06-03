@@ -119,7 +119,7 @@ jobs:
             # Create an environment file from GitHub Secrets to be used by docker-compose
             echo "POSTGRES_USER=${{ secrets.DB_USER }}" > .env
             echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            echo "POSTGRES_DB=${{ secrets.DB_NAME }}" >> .env
+            echo "POSTGRES_DB=buildsmart_db" >> .env
             echo "DOMAIN_WEB=${{ secrets.DOMAIN_WEB }}" >> .env
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
@@ -138,7 +138,7 @@ jobs:
             
             # Wait for database to initialize before injecting the SKUs
             sleep 5
-            docker compose -f docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} < SeedLiveCategories.sql
+            docker compose -f docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d buildsmart_db < SeedLiveCategories.sql
             
             # Clean up old images to save space
             docker image prune -f
