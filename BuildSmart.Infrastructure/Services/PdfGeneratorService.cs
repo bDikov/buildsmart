@@ -63,13 +63,28 @@ namespace BuildSmart.Infrastructure.Services
 				// We avoid Networkidle0 because external assets (Tailwind, Fonts) might redirect
 				// and cause PuppeteerSharp to throw 'Response body is unavailable for redirect responses'
 				// on internal background tasks.
+
+				// Intercept requests to prevent redirect crashes on scripts/fonts
+				await page.SetRequestInterceptionAsync(true);
+				page.Request += (sender, e) =>
+				{
+				    if (e.Request.ResourceType == ResourceType.Script || e.Request.ResourceType == ResourceType.Font)
+				    {
+				        e.Request.ContinueAsync(); // Allow, but if it fails we just want to avoid crashing the whole page
+				    }
+				    else
+				    {
+				        e.Request.ContinueAsync();
+				    }
+				};
+
 				try
 				{
-					await page.SetContentAsync(populatedHtml, new NavigationOptions 
-					{ 
-						WaitUntil = new[] { WaitUntilNavigation.Load }, 
-						Timeout = 30000 
-					});
+				        await page.SetContentAsync(populatedHtml, new NavigationOptions 
+				        { 
+				                WaitUntil = new[] { WaitUntilNavigation.Load, WaitUntilNavigation.DOMContentLoaded },
+				                Timeout = 30000
+				        });
 				}
 				catch (Exception contentEx)
 				{
