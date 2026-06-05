@@ -49,66 +49,66 @@ class Program {
         // Painting
         var pantKey = "Бояджийски и шпакловъчни услуги (Painting)";
         if (categories.TryGetValue(pantKey, out var pantId)) {
-            skusToInsert.Add(new SkuDef(pantId, "PANT-PRIMER", "Дълбокопроникващ грунд", "Грундиране на стени и тавани.", 3m, "sqm"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-SPACKLE-STD", "Шпакловка (Стандартна 2 ръце)", "Цялостна шпакловка.", 14m, "sqm"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-SPACKLE-Q5", "Фина шпакловка (Перфектна Q5)", "Шитрок за идеално гладка повърхност.", 20m, "sqm"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-PAINT-WHITE", "Боядисване в бяло (2 ръце)", "Боядисване с бял латекс.", 6.50m, "sqm"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-PAINT-COLOR", "Боядисване в цвят (2 ръце)", "Боядисване с цветен латекс.", 8.50m, "sqm"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-TAPE-CORNER", "Поставяне на ъглохранители", "Алуминиеви или PVC ъгли.", 6m, "m"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-TRIM", "Боядисване на врати / первази", "Боядисване на декоративни елементи.", 45m, "pcs"));
-            skusToInsert.Add(new SkuDef(pantId, "PANT-WALLPAPER-REMOVE", "Сваляне на стари тапети", "Сваляне на стари тапети.", 4.50m, "sqm"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-PRIMER", "Дълбокопроникващ грунд", "Грундиране на стени и тавани.", 3m, "sqm", "if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5)"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-SPACKLE-STD", "Шпакловка (Стандартна 2 ръце)", "Цялостна шпакловка.", 14m, "sqm", "if(Contains(paint_tasks, 'Цялостна шпакловка') || Contains(paint_tasks, 'Сваляне на тапети'), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-SPACKLE-Q5", "Фина шпакловка (Перфектна Q5)", "Шитрок за идеално гладка повърхност.", 20m, "sqm", "if(Contains(paint_finish_level, 'Q5') || Contains(paint_finish_level, 'Перфектно'), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-PAINT-WHITE", "Боядисване в бяло (2 ръце)", "Боядисване с бял латекс.", 6.50m, "sqm", "if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5)"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-PAINT-COLOR", "Боядисване в цвят (2 ръце)", "Боядисване с цветен латекс.", 8.50m, "sqm", "if(Contains(paint_colors, 'цвят') && !Contains(paint_colors, 'бяло'), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm * 1.2), 0)"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-TAPE-CORNER", "Поставяне на ъглохранители", "Алуминиеви или PVC ъгли.", 6m, "m", "if(paint_sqm > 0, paint_sqm * 0.1, global_total_sqm * 0.25)"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-TRIM", "Боядисване на врати / первази", "Боядисване на декоративни елементи.", 45m, "pcs", "if(Contains(paint_trim_doors_count, '4+'), 4, if(Contains(paint_trim_doors_count, '3'), 3, if(Contains(paint_trim_doors_count, '2'), 2, if(Contains(paint_trim_doors_count, '1'), 1, 0))))"));
+            skusToInsert.Add(new SkuDef(pantId, "PANT-WALLPAPER-REMOVE", "Сваляне на стари тапети", "Сваляне на стари тапети.", 4.50m, "sqm", "if(Contains(paint_tasks, 'Сваляне на тапети'), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)"));
         }
 
         // Drywall
         var drywKey = "Сухо строителство (Drywall)";
         if (categories.TryGetValue(drywKey, out var drywId)) {
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-CEILING-STD", "Окачен таван (Едно ниво)", "Монтаж на окачен таван.", 45m, "sqm"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-PARTITION", "Преградна стена (Двуслойна)", "Изграждане на преградна стена.", 65m, "sqm"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-LINING", "Предстенна обшивка", "Монтаж на предстенна обшивка.", 40m, "sqm"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-BOX", "Изграждане на куфари (Кутии)", "Обличане на тръби.", 40m, "m"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSULATION", "Монтаж на вата (Топло/Шумо)", "Поставяне на минерална или каменна вата.", 10m, "sqm"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-CEILING-STD", "Окачен таван (Едно ниво)", "Монтаж на окачен таван.", 45m, "sqm", "if(Contains(drywall_type, 'Окачен таван'), if(Contains(drywall_rooms, '1 стая'), 15, if(Contains(drywall_rooms, '2-3 стаи'), 40, global_total_sqm)), 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-PARTITION", "Преградна стена (Двуслойна)", "Изграждане на преградна стена.", 65m, "sqm", "if(Contains(drywall_type, 'Преградни стени'), if(Contains(drywall_rooms, '1 стая'), 12, if(Contains(drywall_rooms, '2-3 стаи'), 25, global_total_sqm * 0.5)), 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-LINING", "Предстенна обшивка", "Монтаж на предстенна обшивка.", 40m, "sqm", "if(Contains(drywall_type, 'Предстенна обшивка'), if(Contains(drywall_rooms, '1 стая'), 15, if(Contains(drywall_rooms, '2-3 стаи'), 35, global_total_sqm * 0.8)), 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-BOX", "Изграждане на куфари (Кутии)", "Обличане на тръби.", 40m, "m", "if(Contains(drywall_type, 'Куфари'), global_bathroom_count * 3, 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSULATION", "Монтаж на вата (Топло/Шумо)", "Поставяне на минерална или каменна вата.", 10m, "sqm", "if(Contains(drywall_insulation, 'Да'), if(Contains(drywall_rooms, '1 стая'), 15, if(Contains(drywall_rooms, '2-3 стаи'), 40, global_total_sqm)), 0)"));
         }
 
         // Tiling
         var tileKey = "Подови и стенни настилки (Tiling)";
         if (categories.TryGetValue(tileKey, out var tileId)) {
-            skusToInsert.Add(new SkuDef(tileId, "TILE-STD", "Лепене на стандартни плочки", "Полагане на фаянс или теракот.", 60m, "sqm"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-LARGE", "Лепене на голямоформатен гранитогрес", "Плочи над 60х120 см.", 95m, "sqm"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-LEVEL", "Саморазливна замазка", "Изравняване на пода.", 22m, "sqm"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-HYDRO", "Полагане на хидроизолация (с лента)", "Запечатване на мокри помещения.", 30m, "sqm"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-LAMINATE", "Монтаж на ламинат", "Полагане на ламиниран паркет.", 12m, "sqm"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-STD", "Лепене на стандартни плочки", "Полагане на фаянс или теракот.", 60m, "sqm", "if(Contains(tile_type, 'Стандартни плочки'), if(Contains(tile_rooms, 'Баня'), global_bathroom_count * 20, 0) + if(Contains(tile_rooms, 'Кухня'), 10, 0) + if(Contains(tile_rooms, 'Коридор'), 8, 0), 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-LARGE", "Лепене на голямоформатен гранитогрес", "Плочи над 60х120 см.", 95m, "sqm", "if(Contains(tile_type, 'Голямоформатен'), if(Contains(tile_rooms, 'Баня'), global_bathroom_count * 20, 0) + if(Contains(tile_rooms, 'Кухня'), 15, 0) + if(Contains(tile_rooms, 'Спални') || Contains(tile_rooms, 'Хол'), global_total_sqm * 0.5, 0), 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-LEVEL", "Саморазливна замазка", "Изравняване на пода.", 22m, "sqm", "if(Contains(tile_prep, 'Саморазливна замазка'), global_total_sqm * 0.8, 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-HYDRO", "Полагане на хидроизолация (с лента)", "Запечатване на мокри помещения.", 30m, "sqm", "if(Contains(tile_prep, 'Хидроизолация'), global_bathroom_count * 15, 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-LAMINATE", "Монтаж на ламинат", "Полагане на ламиниран паркет.", 12m, "sqm", "if(Contains(tile_type, 'Ламиниран паркет'), global_total_sqm * 0.7, 0)"));
         }
 
         // Microcement
         var micoKey = "Микроцимент (Microcement)";
         if (categories.TryGetValue(micoKey, out var micoId)) {
-            skusToInsert.Add(new SkuDef(micoId, "MICRO-STD", "Полагане на микроцимент (сухи зони)", "Полагане на микроцимент.", 140m, "sqm"));
-            skusToInsert.Add(new SkuDef(micoId, "MICRO-BATH", "Полагане на микроцимент в мокри зони (Баня)", "Микроцимент за баня.", 180m, "sqm"));
+            skusToInsert.Add(new SkuDef(micoId, "MICRO-STD", "Полагане на микроцимент (сухи зони)", "Полагане на микроцимент.", 140m, "sqm", "if(Contains(mico_area, 'Сухи зони'), if(Contains(mico_rooms, '1-2 стаи'), 30, global_total_sqm * 0.8), 0)"));
+            skusToInsert.Add(new SkuDef(micoId, "MICRO-BATH", "Полагане на микроцимент в мокри зони (Баня)", "Микроцимент за баня.", 180m, "sqm", "if(Contains(mico_area, 'Мокри зони'), global_bathroom_count * 20, 0)"));
         }
 
         // Plumbing
         var plmbKey = "ВиК Услуги (Plumbing)";
         if (categories.TryGetValue(plmbKey, out var plmbId)) {
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-POINT-NEW", "Изграждане на нова ВиК точка", "Тръби за топла, студена вода и канал.", 70m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-RISER-REPLACE", "Смяна на вертикален щранг", "Подмяна на основните метални тръби.", 240m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-SINK-INSTALL", "Монтаж на мивка със смесител и сифон", "Монтаж на мивки.", 90m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-WC-STD", "Монтаж на стандартна тоалетна (моноблок)", "Монтаж на тоалетна.", 140m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-WC-BUILTIN", "Монтаж на структура за вграждане", "Конзолна тоалетна.", 190m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-SHOWER-CABIN", "Монтаж на душ кабина или стъклен параван", "Душ кабина.", 330m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-SHOWER-FIXTURE", "Монтаж на душ система", "Душ батерия.", 70m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-BOILER", "Монтаж на електрически бойлер", "Бойлер до 100л.", 140m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-APPLIANCE", "Свързване на пералня / съдомиялна", "Уреди.", 80m, "pcs"));
-            skusToInsert.Add(new SkuDef(plmbId, "PLMB-METER-REPLACE", "Смяна на водомер", "Нов водомер.", 60m, "pcs"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-POINT-NEW", "Изграждане на нова ВиК точка", "Тръби за топла, студена вода и канал.", 70m, "pcs", "if(Contains(plumb_scope, 'Цялостна'), (global_bathroom_count * 5) + 3, if(Contains(plumb_scope, 'извеждане'), 3, 0))"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-RISER-REPLACE", "Смяна на вертикален щранг", "Подмяна на основните метални тръби.", 240m, "pcs", "if(Contains(plumb_riser, 'Да'), global_bathroom_count, 0)"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-SINK-INSTALL", "Монтаж на мивка със смесител и сифон", "Монтаж на мивки.", 90m, "pcs", "if(Contains(plumb_sink_count, '3+'), 3, if(Contains(plumb_sink_count, '2'), 2, if(Contains(plumb_sink_count, '1'), 1, 0)))"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-WC-STD", "Монтаж на стандартна тоалетна (моноблок)", "Монтаж на тоалетна.", 140m, "pcs", "if(Contains(plumb_wc_type, 'Стандартна'), global_bathroom_count, 0)"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-WC-BUILTIN", "Монтаж на структура за вграждане", "Конзолна тоалетна.", 190m, "pcs", "if(Contains(plumb_wc_type, 'Вградена'), global_bathroom_count, 0)"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-SHOWER-CABIN", "Монтаж на душ кабина или стъклен параван", "Душ кабина.", 330m, "pcs", "if(Contains(plumb_shower_type, 'кабина') || Contains(plumb_shower_type, 'Вана'), global_bathroom_count, 0)"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-SHOWER-FIXTURE", "Монтаж на душ система", "Душ батерия.", 70m, "pcs", "if(Contains(plumb_shower_type, 'Само') || Contains(plumb_shower_type, 'кабина') || Contains(plumb_shower_type, 'Вана'), global_bathroom_count, 0)"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-BOILER", "Монтаж на електрически бойлер", "Бойлер до 100л.", 140m, "pcs", "if(Contains(plumb_appliances, 'бойлер'), 1, 0)"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-APPLIANCE", "Свързване на пералня / съдомиялна", "Уреди.", 80m, "pcs", "if(Contains(plumb_appliances, 'Пералня') && Contains(plumb_appliances, 'Съдомиялна'), 2, if(Contains(plumb_appliances, 'Пералня') || Contains(plumb_appliances, 'Съдомиялна'), 1, 0))"));
+            skusToInsert.Add(new SkuDef(plmbId, "PLMB-METER-REPLACE", "Смяна на водомер", "Нов водомер.", 60m, "pcs", "global_bathroom_count * 2"));
         }
 
         // Demolition
         var demoKey = "Къртене и извозване (Demolition)";
         if (categories.TryGetValue(demoKey, out var demoId)) {
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-BATH-FULL", "Цялостно къртене на баня", "Къртене на баня.", 750m, "pcs"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-BRICK", "Къртене на тухлена стена", "Събаряне на тухлени стени.", 20m, "sqm"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-CONC", "Къртене на бетонна стена/панел", "Къртене на бетон.", 50m, "sqm"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-FLOOR-TILE", "Къртене на подови настилки/замазка", "Премахване на настилки.", 15m, "sqm"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-DISPOSAL", "Извозване с контейнер", "Наемане на строителен контейнер.", 250m, "pcs"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-BATH-FULL", "Цялостно къртене на баня", "Къртене на баня.", 750m, "pcs", "if(Contains(demo_what, 'Цяла баня'), global_bathroom_count, 0)"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-BRICK", "Къртене на тухлена стена", "Събаряне на тухлени стени.", 20m, "sqm", "if(Contains(demo_what, 'тухлени стени'), if(Contains(demo_rooms, '1-2 стаи'), 15, 35), 0)"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-CONC", "Къртене на бетонна стена/панел", "Къртене на бетон.", 50m, "sqm", "if(Contains(demo_what, 'Бетонни'), if(Contains(demo_rooms, '1-2 стаи'), 10, 20), 0)"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-FLOOR-TILE", "Къртене на подови настилки/замазка", "Премахване на настилки.", 15m, "sqm", "if(Contains(demo_what, 'подови настилки'), if(Contains(demo_rooms, '1-2 стаи'), 20, global_total_sqm * 0.8), 0)"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-DISPOSAL", "Извозване с контейнер", "Наемане на строителен контейнер.", 250m, "pcs", "if(Contains(demo_disposal, 'Да'), 1, 0)"));
         }
 
         int inserted = 0;

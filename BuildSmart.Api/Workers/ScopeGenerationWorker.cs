@@ -431,8 +431,18 @@ public class ScopeGenerationWorker
 					}
 
 					calcTask.EstimatedPrice = taskTotal;
-					grandTotal += taskTotal;
-					aiCalc.Tasks.Add(calcTask);
+					
+					// Only add the task to the final calculation if it has a non-zero price
+					// This prevents the PDF from being cluttered with €0.00 tasks that were hallucinated by the AI
+					if (taskTotal > 0)
+					{
+						grandTotal += taskTotal;
+						aiCalc.Tasks.Add(calcTask);
+					}
+					else
+					{
+						_logger.LogDebug("Task {TaskId} ('{TaskTitle}') was dropped because its total estimated price is 0.", parsedGuid, matchedTask.Title);
+					}
 				}
 
 				aiCalc.TotalEstimatedPrice = grandTotal;
