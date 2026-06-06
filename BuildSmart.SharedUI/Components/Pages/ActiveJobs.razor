@@ -63,11 +63,11 @@
                             <div class="financial-brief">
                                 <div class="financial-item">
                                     <span class="financial-label">Agreed Bid</span>
-                                    <span class="financial-value-agreed">$@(booking.AgreedBidAmount?.Total.ToString("F2") ?? "0.00")</span>
+                                    <span class="financial-value-agreed">€@(booking.AgreedBidAmount?.Total.ToString("F2") ?? "0.00")</span>
                                 </div>
                                 <div class="financial-item" style="text-align: right;">
                                     <span class="financial-label">Net Payout</span>
-                                    <span class="financial-value-payout">$@(booking.TotalEscrowAmount?.Total.ToString("F2") ?? "0.00")</span>
+                                    <span class="financial-value-payout">€@(booking.TotalEscrowAmount?.Total.ToString("F2") ?? "0.00")</span>
                                 </div>
                             </div>
                         </div>

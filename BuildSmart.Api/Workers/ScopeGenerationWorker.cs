@@ -9,6 +9,8 @@ using Microsoft.Extensions.Localization;
 using BuildSmart.Core.Application.Resources;
 using System.Globalization;
 using Microsoft.AspNetCore.SignalR;
+using System.Linq;
+using System.Threading;
 
 namespace BuildSmart.Api.Workers;
 
@@ -18,6 +20,7 @@ public class ScopeGenerationWorker
 	internal static Func<TimeSpan, Task> DelayTask = Task.Delay;
 	internal static Func<DateTime> UtcNowProvider = () => DateTime.UtcNow;
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> _pdfLocks = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTime> _lastNotifiedTimes = new();
 
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<ScopeGenerationWorker> _logger;
@@ -453,18 +456,42 @@ public class ScopeGenerationWorker
 				await saveUnitOfWork.SaveChangesAsync();
 				_logger.LogDebug("Successfully saved AiCalculation for Job {JobId}. Grand Total: {GrandTotal}", jobPostId, grandTotal);
 
-				// ==========================================
-				// PDF AGGREGATION LOGIC (Incremental Updates)
-				// ==========================================
+				// =======================================================
+				// PDF AGGREGATION LOGIC (Only when all categories ready)
+				// =======================================================
 				try
 				{
-					// Layer 4
-					await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 4, "Applying finishes and generating master offer...", 85);
+					// 1. Get all job posts for this project to check if we are truly done with all categories
+					var projectJobPosts = await saveUnitOfWork.JobPosts.GetJobsByProjectIdAsync(freshJobPost.ProjectId);
+					var activeJobPosts = projectJobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled && jp.Status != JobPostStatus.Draft).ToList();
 
-					await GenerateMasterProjectPdf(freshJobPost.ProjectId, saveScope.ServiceProvider);
-					
-					// Layer 5
-					await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 5, "Complete", 100);
+					// 2. Get all current calculations for this project
+					var projectCalcs = (await saveUnitOfWork.AiCalculations.GetByProjectWithTasksAsync(freshJobPost.ProjectId)).ToList();
+
+					// 3. Are all active job posts fully done? 
+					// We check if every active job post has a matching calculation entry
+					bool allPriced = activeJobPosts.All(jp => projectCalcs.Any(c => c.ServiceCategoryId == jp.ServiceCategoryId));
+
+					if (allPriced)
+					{
+						_logger.LogInformation("All {Count} categories priced for Project {ProjectId}. Generating Master PDF...", activeJobPosts.Count, freshJobPost.ProjectId);
+
+						// Layer 4
+						await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 4, "Applying finishes and generating master offer...", 85);
+
+						await GenerateMasterProjectPdf(freshJobPost.ProjectId, saveScope.ServiceProvider);
+
+						// Layer 5
+						await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 5, "Complete", 100);
+					}
+					else
+					{
+						_logger.LogDebug("Skipping PDF generation for Project {ProjectId}. {PricedCount}/{TotalCount} categories priced. Waiting for others...",
+							freshJobPost.ProjectId, projectCalcs.Count, activeJobPosts.Count);
+
+						// Update progress to show we are waiting for other categories
+						await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 3, $"Category complete. Waiting for others ({projectCalcs.Count}/{activeJobPosts.Count})...", 70);
+					}
 				}
 				catch (Exception pdfEx)
 				{
@@ -542,7 +569,7 @@ public class ScopeGenerationWorker
 				var categoriesData = new List<dynamic>();
 				decimal grandTotal = 0;
 
-				string currencySymbol = CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "€" : "$";
+				string currencySymbol = "€";
 
 				foreach (var calc in allCalculations)
 				{
@@ -617,7 +644,7 @@ public class ScopeGenerationWorker
 					Label_PricingBreakdown = localizer["Label_PricingBreakdown"].Value,
 					Label_TC = localizer["Label_TC"].Value,
 
-					CurrencySymbol = "€",
+					CurrencySymbol = currencySymbol,
 
 					// Dynamic Data
 					JobTitle = projectWithUser.Title,
@@ -646,16 +673,21 @@ public class ScopeGenerationWorker
 				var hubContext = pdfScope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<BuildSmart.Api.Hubs.NotificationHub>>();
 				await hubContext.Clients.All.SendAsync("OfferRegenerated", projectId);
 
-				// Notify the Homeowner that the offer is fully complete
-				var notificationService = pdfScope.ServiceProvider.GetRequiredService<INotificationService>();
-				await notificationService.SendLocalizedNotificationAsync(
-					projectWithUser.HomeownerId,
-					"Title_OfferReady",
-					"Msg_OfferReady",
-					new object[] { projectWithUser.Title },
-					projectWithUser.Id,
-					"Project"
-				);
+				// Notify the Homeowner (with 2-minute debounce to prevent spam)
+				var now = DateTime.UtcNow;
+				if (!_lastNotifiedTimes.TryGetValue(projectId, out var lastTime) || (now - lastTime).TotalMinutes > 2)
+				{
+					_lastNotifiedTimes[projectId] = now;
+					var notificationService = pdfScope.ServiceProvider.GetRequiredService<INotificationService>();
+					await notificationService.SendLocalizedNotificationAsync(
+						projectWithUser.HomeownerId,
+						"Title_OfferReady",
+						"Msg_OfferReady",
+						new object[] { projectWithUser.Title },
+						projectWithUser.Id,
+						"Project"
+					);
+				}
 			}
 			finally
 			{

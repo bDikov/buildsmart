@@ -121,4 +121,50 @@ public class PricingEngineTests
         // (3 rooms * 5) + 6 = 21
         result.Should().Be(21m);
     }
+
+    [Fact]
+    public void CalculateQuantity_ShouldCalculateGerung_BasedOnBathroomCount()
+    {
+        var json = @"{ ""global_bathroom_count"": 2, ""tile_gerung"": ""Да, за всички външни ъгли"" }";
+        var formula = "if(Contains(tile_gerung, 'Да'), global_bathroom_count * 6.0, 0)";
+        
+        var result = _engine.CalculateQuantity(formula, json);
+        
+        result.Should().Be(12.0m);
+    }
+
+    [Fact]
+    public void CalculateQuantity_ShouldSumInsulation_Intelligently()
+    {
+        var json = @"{ 
+            ""global_total_sqm"": 100, 
+            ""drywall_type"": ""Окачен таван, Предстенна обшивка"",
+            ""drywall_rooms"": ""В целия обект"",
+            ""drywall_insulation"": ""Да, стандартна вата""
+        }";
+        
+        // Formula sums ceiling (100) + lining (100 * 0.8) = 180
+        var formula = "if(Contains(drywall_insulation, 'Не'), 0, (if(Contains(drywall_type, 'Окачен таван'), 100, 0) + if(Contains(drywall_type, 'Предстенна обшивка'), 100 * 0.8, 0)))";
+        
+        var result = _engine.CalculateQuantity(formula, json);
+        
+        result.Should().Be(180m);
+    }
+
+    [Fact]
+    public void CalculateQuantity_ShouldApplyDemolitionFloorMultiplier_WhenNoElevator()
+    {
+        var json = @"{ 
+            ""demo_disposal"": ""Да, искам контейнер и извозване"", 
+            ""global_logistics"": ""Няма асансьор (качване по стълби)"",
+            ""global_floor"": 5
+        }";
+        
+        // 1 + (5 floors * 0.15) = 1.75 containers equivalent cost
+        var formula = "if(Contains(demo_disposal, 'Да'), if(Contains(global_logistics, 'Няма асансьор'), 1 + (global_floor * 0.15), 1), 0)";
+        
+        var result = _engine.CalculateQuantity(formula, json);
+        
+        result.Should().Be(1.75m);
+    }
 }
