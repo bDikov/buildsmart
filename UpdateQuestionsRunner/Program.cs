@@ -70,13 +70,13 @@ class Program {
         }
 
         // Tiling
-        var tileKey = "Подови и стенни настилки (Tiling)";
+        var tileKey = "Подови и стенни настилки";
         if (categories.TryGetValue(tileKey, out var tileId)) {
-            skusToInsert.Add(new SkuDef(tileId, "TILE-STD", "Лепене на стандартни плочки", "Полагане на фаянс или теракот.", 60m, "sqm", "if(Contains(tile_type, 'Стандартни плочки'), if(Contains(tile_rooms, 'Баня'), global_bathroom_count * 20, 0) + if(Contains(tile_rooms, 'Кухня'), 10, 0) + if(Contains(tile_rooms, 'Коридор'), 8, 0), 0)"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-LARGE", "Лепене на голямоформатен гранитогрес", "Плочи над 60х120 см.", 95m, "sqm", "if(Contains(tile_type, 'Голямоформатен'), if(Contains(tile_rooms, 'Баня'), global_bathroom_count * 20, 0) + if(Contains(tile_rooms, 'Кухня'), 15, 0) + if(Contains(tile_rooms, 'Спални') || Contains(tile_rooms, 'Хол'), global_total_sqm * 0.5, 0), 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-STD", "Лепене на стандартни плочки", "Полагане на фаянс или теракот.", 60m, "sqm", "tile_std_sqm"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-LARGE", "Лепене на голямоформатен гранитогрес", "Плочи над 60х120 см.", 95m, "sqm", "tile_large_sqm"));
             skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-LEVEL", "Саморазливна замазка", "Изравняване на пода.", 22m, "sqm", "if(Contains(tile_prep, 'Саморазливна замазка'), global_total_sqm * 0.8, 0)"));
             skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-HYDRO", "Полагане на хидроизолация (с лента)", "Запечатване на мокри помещения.", 30m, "sqm", "if(Contains(tile_prep, 'Хидроизолация'), global_bathroom_count * 15, 0)"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-LAMINATE", "Монтаж на ламинат", "Полагане на ламиниран паркет.", 12m, "sqm", "if(Contains(tile_type, 'Ламиниран паркет'), global_total_sqm * 0.7, 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-LAMINATE", "Монтаж на ламинат", "Полагане на ламиниран паркет.", 6m, "sqm", "tile_laminate_sqm"));
         }
 
         // Microcement

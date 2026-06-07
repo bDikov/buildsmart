@@ -309,7 +309,7 @@
     <value>See Tasks Breakdowns</value>
   </data>
   <data name="GeneratedOffer_TotalTaskCost" xml:space="preserve">
-    <value>Total Task Cost: ${0}</value>
+    <value>Total Task Cost: €{0}</value>
   </data>
   <data name="GeneratedOffer_BillableSKUs" xml:space="preserve">
     <value>Billable SKUs &amp; Materials</value>
