@@ -459,6 +459,30 @@
           ]
         },
         {
+          "id": "tile_std_sqm",
+          "text": "Колко кв.м. са стандартните плочки (до 60х60)?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "tile_type",
+          "dependsOnValue": "Стандартни плочки (до 60х60)"
+        },
+        {
+          "id": "tile_large_sqm",
+          "text": "Колко кв.м. е голямоформатният гранитогрес?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "tile_type",
+          "dependsOnValue": "Голямоформатен гранитогрес (над 60х120)"
+        },
+        {
+          "id": "tile_laminate_sqm",
+          "text": "Колко кв.м. е ламинираният паркет?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "tile_type",
+          "dependsOnValue": "Ламиниран паркет"
+        },
+        {
           "id": "tile_rooms",
           "text": "Къде ще се полагат настилките?",
           "type": "multiselect",
