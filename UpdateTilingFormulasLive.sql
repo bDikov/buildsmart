@@ -1,11 +1,11 @@
 -- RUN THIS SCRIPT ON THE LIVE (PRODUCTION) DATABASE --
 
 UPDATE "ServiceSkus" 
-SET "CalculationFormula" = 'tile_std_sqm', "UpdatedAt" = now() 
+SET "CalculationFormula" = 'tile_std_sqm', "BasePrice" = 60.00, "UpdatedAt" = now() 
 WHERE "SkuCode" = 'TILE-STD';
 
 UPDATE "ServiceSkus" 
-SET "CalculationFormula" = 'tile_large_sqm', "UpdatedAt" = now() 
+SET "CalculationFormula" = 'tile_large_sqm', "BasePrice" = 95.00, "UpdatedAt" = now() 
 WHERE "SkuCode" = 'TILE-LARGE';
 
 UPDATE "ServiceSkus" 

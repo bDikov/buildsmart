@@ -167,17 +167,29 @@ dotnet ef migrations add AddJobPostFeedback --project BuildSmart.Infrastructure 
 dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
 ```
 
-## Database Seeding (Questions & SKUs)
+## Pipeline: Adding Conditional Questions & Exact Formulas
 
-If you ever need to re-seed or manually update the Smart Blueprint questions or Service SKUs without wiping the database, use the dedicated Console Runner.
+To ensure generated offers are 100% accurate, the AI AI calculation engine must use **exact user inputs** (e.g., specific square meters) rather than guessing via room-count heuristics. 
 
-Because questions are stored as a raw JSON string inside the `"ServiceCategories"."TemplateStructure"` column (and not in a separate table), standard Entity Framework seeding can be difficult.
+When adding subsequential (conditional) questions to a category, you MUST follow this exact 4-step pipeline to ensure both Local and Live environments are synchronized:
 
-1. **The JSON Data**: 
-   - `Categories_Seed_Templates.json` (Contains the raw JSON for Global and Electrical questions).
-   - `Electrical_SKUs_Seed.json` (Contains the detailed pricing items).
-2. **The SQL Script**: 
-   - `UpdateQuestions.sql` safely updates the exact Guids for the Global and Electrical categories (`ec7af4e8-16cb-4ec1-b618-35c739be9408` and `e69f9926-d576-4515-a438-e80a850af656`).
-3. **The Execution**: 
-   - A standalone C# console app is located in `BuildSmart/UpdateQuestionsRunner/`.
-   - Run `dotnet run` inside that folder to instantly inject the `.sql` and JSON files directly into the PostgreSQL container, bypassing any Visual Studio/Docker locks.
+### 1. Update the JSON Templates
+- Open `Categories_Seed_Templates.json`.
+- Add the new question(s). To make a question conditional, you **must** provide:
+  - `"dependsOn"`: The exact `"id"` of the parent question.
+  - `"dependsOnValue"`: The string value that triggers the question. For multiple triggers, separate them with a pipe (e.g., `"Value 1 | Value 2"`). 
+  - *Note: The system fully supports triggering off of `multiselect` parent arrays.*
+
+### 2. Map the Exact Formula (C#)
+- Open `UpdateQuestionsRunner/Program.cs`.
+- Locate the relevant category and find the `SkuDef` entries.
+- Replace any old heuristic logic (e.g., `global_total_sqm * 0.8`) with the exact `"id"` of your newly added JSON question (e.g., `"tile_std_sqm"`).
+
+### 3. Update the Local Native Database (Bypass Windows Defender)
+Because Windows Application Control policy blocks `UpdateQuestionsRunner.exe` on this machine, you cannot simply use `dotnet run`.
+- Instead, use a `.csx` script (like `UpdateLocalTemplates.csx`) via `dotnet script` to parse the JSON and execute the `UPSERT` commands directly against the native `buildsmart_db` (Port 5432, user: postgres).
+- This ensures the UI reflects the changes instantly for local testing.
+
+### 4. Generate & Sync the Live SQL
+- Run `node GenerateSql.js` from the project root. This automatically parses `Categories_Seed_Templates.json` and builds secure `ON CONFLICT DO UPDATE` blocks for the categories inside `SeedLiveCategories.sql`.
+- **CRITICAL:** `GenerateSql.js` *only* updates the Category Templates. To push the new SKU `CalculationFormula` values (and BasePrices) to production, you MUST also add the corresponding `UPDATE "ServiceSkus"` SQL commands to `SeedLiveCategories.sql` (or run them manually on the live database).
