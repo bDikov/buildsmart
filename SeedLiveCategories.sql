@@ -332,15 +332,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-LAMINATE') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 6.14, 
-            "CalculationFormula" = '1', 
-            "UnitType" = 'sqm', 
-            "Description" = 'Полагане на ламиниран паркет.', 
-            "UpdatedAt" = now()
+          SET "BasePrice" = 6.00, 
+              "CalculationFormula" = 'tile_laminate_sqm', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Полагане на ламиниран паркет.', 
+              "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-LAMINATE';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-LAMINATE', 'Монтаж на ламинат', 'Полагане на ламиниран паркет.', 6.14, 'sqm', '1', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-LAMINATE', 'Монтаж на ламинат', 'Полагане на ламиниран паркет.', 6.00, 'sqm', 'tile_laminate_sqm', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
@@ -1607,15 +1607,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-STD') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 30.68, 
-            "CalculationFormula" = '1', 
-            "UnitType" = 'sqm', 
-            "Description" = 'Полагане на фаянс или теракот.', 
-            "UpdatedAt" = now()
+          SET "BasePrice" = 60.00, 
+              "CalculationFormula" = 'tile_std_sqm', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Полагане на фаянс или теракот.', 
+              "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-STD';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-STD', 'Лепене на стандартни плочки', 'Полагане на фаянс или теракот.', 30.68, 'sqm', '1', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-STD', 'Лепене на стандартни плочки', 'Полагане на фаянс или теракот.', 60.00, 'sqm', 'tile_std_sqm', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
@@ -3137,15 +3137,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-LARGE') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 48.57, 
-            "CalculationFormula" = '1', 
-            "UnitType" = 'sqm', 
-            "Description" = 'Плочи над 60х120 см.', 
-            "UpdatedAt" = now()
+          SET "BasePrice" = 95.00, 
+              "CalculationFormula" = 'tile_large_sqm', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Плочи над 60х120 см.', 
+              "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-LARGE';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-LARGE', 'Лепене на голямоформатен гранитогрес', 'Плочи над 60х120 см.', 48.57, 'sqm', '1', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-LARGE', 'Лепене на голямоформатен гранитогрес', 'Плочи над 60х120 см.', 95.00, 'sqm', 'tile_large_sqm', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
