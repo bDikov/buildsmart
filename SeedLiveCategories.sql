@@ -29,7 +29,7 @@ UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "q2f
 UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "drywall_type", "text": "Какво ще се изгражда от гипсокартон?", "type": "multiselect", "options": ["Окачен таван", "Преградни стени", "Предстенна обшивка (на конструкция)", "Куфари (обличане на тръби)"], "required": true}, {"id": "drywall_rooms", "text": "В колко помещения ще се прави гипсокартон?", "type": "choice", "options": ["Само в банята (влагоустойчив)", "В 1 стая", "В 2-3 стаи", "В целия обект"], "required": true}, {"id": "drywall_insulation", "text": "Желаете ли поставяне на изолация (вата) зад картона?", "type": "choice", "options": ["Да, стандартна вата", "Да, специална шумоизолация", "Не"], "required": true}]}', "UpdatedAt" = now() WHERE "Name" = 'Сухо строителство';
 UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "mico_area", "text": "Къде ще се полага микроциментът?", "type": "multiselect", "options": ["Сухи зони (подове и стени в стаи)", "Мокри зони (Баня)"], "required": true}, {"id": "mico_rooms", "text": "В колко помещения?", "type": "choice", "options": ["Само в банята", "В 1-2 стаи", "В целия обект"], "required": true}]}', "UpdatedAt" = now() WHERE "Name" = 'Микроцимент';
 UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "demo_what", "text": "Какво точно трябва да се кърти?", "type": "multiselect", "options": ["Цяла баня (стари плочки и санитария)", "Вътрешни тухлени стени", "Бетонни/Панелни стени", "Стари подови настилки (замазка/мозайка)"], "required": true}, {"id": "demo_rooms", "text": "В колко помещения ще се извършва къртене?", "type": "choice", "options": ["Само в банята", "В 1-2 стаи", "В целия обект"], "required": true}, {"id": "demo_disposal", "text": "Желаете ли извозване на строителните отпадъци?", "type": "choice", "options": ["Да, искам контейнер и извозване", "Не, ще се справя сам"], "required": true}]}', "UpdatedAt" = now() WHERE "Name" = 'Къртене и извозване';
-UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions":[{"id":"tile_type","text":"Какъв тип настилки ще се полагат?","type":"multiselect","required":true,"options":["Стандартни плочки (до 60х60)","Голямоформатен гранитогрес (над 60х120)","Ламиниран паркет"]},{"id":"tile_std_sqm","text":"Колко кв.м. са стандартните плочки (до 60х60)?","type":"number","required":true,"dependsOn":"tile_type","dependsOnValue":"Стандартни плочки (до 60х60)"},{"id":"tile_large_sqm","text":"Колко кв.м. е голямоформатният гранитогрес?","type":"number","required":true,"dependsOn":"tile_type","dependsOnValue":"Голямоформатен гранитогрес (над 60х120)"},{"id":"tile_laminate_sqm","text":"Колко кв.м. е ламинираният паркет?","type":"number","required":true,"dependsOn":"tile_type","dependsOnValue":"Ламиниран паркет"},{"id":"tile_rooms","text":"Къде ще се полагат настилките?","type":"multiselect","required":true,"options":["Баня / Мокри помещения","Кухня / Коридор","Спални / Хол"]},{"id":"tile_prep","text":"Каква подготовка на пода е нужна?","type":"multiselect","required":true,"options":["Саморазливна замазка (за изравняване)","Хидроизолация (за бани)","Не знам (майсторът да прецени)"]},{"id":"tile_gerung","text":"Желаете ли 45-градусово изрязване на ъглите (Герунг)?","type":"choice","required":true,"options":["Да, за всички външни ъгли","Не, ще ползвам лайсни"]}]}'::jsonb, "UpdatedAt" = now() WHERE "Name" = 'Подови и стенни настилки';
+UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions":[{"id":"tile_type","text":"Какъв тип настилки ще се полагат?","type":"multiselect","required":true,"options":["Стандартни плочки (до 60х60)","Голямоформатен гранитогрес (над 60х120)","Ламиниран паркет"]},{"id":"tile_std_sqm","text":"Колко кв.м. са стандартните плочки (до 60х60)?","type":"number","required":true,"dependsOn":"tile_type","dependsOnValue":"Стандартни плочки (до 60х60)"},{"id":"tile_large_sqm","text":"Колко кв.м. е голямоформатният гранитогрес?","type":"number","required":true,"dependsOn":"tile_type","dependsOnValue":"Голямоформатен гранитогрес (над 60х120)"},{"id":"tile_laminate_sqm","text":"Колко кв.м. е ламинираният паркет?","type":"number","required":true,"dependsOn":"tile_type","dependsOnValue":"Ламиниран паркет"},{"id":"tile_rooms","text":"Къде ще се полагат настилките?","type":"multiselect","required":true,"options":["Баня / Мокри помещения","Кухня / Коридор","Спални / Хол"]},{"id":"tile_prep","text":"Каква подготовка на пода е нужна?","type":"multiselect","required":true,"options":["Саморазливна замазка (за изравняване)","Хидроизолация (за бани)","Не знам (майсторът да прецени)"]},{"id":"tile_prep_level_sqm","text":"Колко кв.м. саморазливна замазка ще бъде нужна приблизително?","type":"number","required":true,"dependsOn":"tile_prep","dependsOnValue":"Саморазливна замазка (за изравняване)"},{"id":"tile_prep_hydro_sqm","text":"Колко кв.м. хидроизолация ще бъде нужна приблизително?","type":"number","required":true,"dependsOn":"tile_prep","dependsOnValue":"Хидроизолация (за бани)"},{"id":"tile_gerung","text":"Желаете ли 45-градусово изрязване на ъглите (Герунг)?","type":"choice","required":true,"options":["Да, за всички външни ъгли","Не, ще ползвам лайсни"]}]}'::jsonb, "UpdatedAt" = now() WHERE "Name" = 'Подови и стенни настилки';
 UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "paint_tasks", "text": "Какви дейности са необходими?", "type": "multiselect", "options": ["Цялостна шпакловка", "Само боядисване", "Сваляне на тапети"], "required": true}, {"id": "paint_sqm", "text": "Каква е общата площ на стените и таваните (кв.м.)?", "type": "number", "required": true}, {"id": "paint_trim_doors", "text": "Ще се боядисват ли интериорни врати или декоративни первази?", "type": "boolean", "required": true}, {"id": "paint_colors", "text": "Колко различни цвята ще се използват?", "type": "choice", "options": ["Един цвят", "2-3 цвята (акцентни стени)", "Множество цветове"], "required": true}, {"id": "paint_finish_level", "text": "Какво е очакваното ниво на завършеност на стените?", "type": "choice", "options": ["Стандартно (Q3/Q4)", "Перфектно гладко (Q5 - изисква специална шпакловка)"], "required": true}]}', "UpdatedAt" = now() WHERE "Name" = 'Painting';
 UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "global_property_type", "text": "Какъв е типът на имота?", "type": "choice", "options": ["Апартамент", "Къща / Вила", "Офис / Търговско помещение"], "required": true}, {"id": "global_total_sqm", "text": "Каква е общата квадратура (подова площ) на обекта в кв.м.?", "type": "number", "required": true}, {"id": "global_ceiling_height", "text": "Каква е височината на таваните?", "type": "choice", "options": ["Стандартна (между 2.50м и 2.70м)", "Висока (над 2.70м)"], "required": true}, {"id": "global_room_count", "text": "Общ брой сухи помещения (спални, хол, кухня, кабинет)?", "type": "number", "required": true}, {"id": "global_bathroom_count", "text": "Колко на брой са мокрите помещения (бани и тоалетни)?", "type": "number", "required": true}, {"id": "global_current_state", "text": "Какво е текущото състояние на обекта?", "type": "choice", "options": ["Ново строителство (на шпакловка и замазка / БДС)", "Празно жилище за основен ремонт", "Обзаведено жилище (изисква местене и покриване)"], "required": true}, {"id": "global_logistics", "text": "Има ли осигурен достъп и паркомясто за бус/контейнер, както и работещ асансьор за качване на материали?", "type": "choice", "options": ["Да, има лесен достъп и асансьор", "Няма асансьор (качване по стълби)", "Труден достъп/Няма паркинг"], "required": true}, {"id": "global_materials_supply", "text": "Кой ще осигури видимите материали (плочки, санитария, ламинат, осветителни тела)?", "type": "choice", "options": ["Аз ще ги купя (търся само труд)", "Искам майсторът да ги достави (по каталог)", "Смесено (ще се уговорим допълнително)"], "required": true}, {"id": "global_protection", "text": "Изисква ли се ежедневно почистване и специално покриване/защита на общите части на сградата?", "type": "boolean", "required": true}]}', "UpdatedAt" = now() WHERE "Name" = 'Global Questions';
 UPDATE "ServiceCategories" SET "TemplateStructure" = '{"questions": [{"id": "paint_scope", "text": "Какво е текущото състояние на стените и какво желаете да се направи?", "type": "choice", "options": ["Освежаване (Само боядисване върху здрава основа)", "Стандартен ремонт (Шпакловка и боядисване)", "Сваляне на тапети, шпакловка и боядисване"], "hintText": "💡 Ако имате пукнатини или грапавини, изберете ''Стандартен ремонт'', за да се изгладят.", "required": true}, {"id": "paint_rooms", "text": "Кои помещения ще се боядисват?", "type": "multiselect", "options": ["Всички стаи", "Хол / Всекидневна", "Спални", "Коридор / Антре", "Само тавани (в мокри помещения)"], "required": true}, {"id": "paint_colors", "text": "Какви цветове ще използвате?", "type": "choice", "options": ["Всичко в бяло (най-бързо и бюджетно)", "Светли цветове", "Тъмни или наситени цветове", "Смесено (бял таван, цветни стени)"], "required": true}, {"id": "paint_finish_level", "text": "Какво е очакваното ниво на гладкост?", "type": "choice", "options": ["Стандартно (добро за матови и светли бои)", "Перфектно гладко (Q5 - задължително за тъмни бои и силно осветление)"], "hintText": "💡 Q5 изисква специални готови смеси и перфектно машинно шлайфане.", "required": true, "dependsOn": "paint_scope", "dependsOnValue": "Стандартен ремонт (Шпакловка и боядисване)|Сваляне на тапети, шпакловка и боядисване"}, {"id": "paint_trim_doors_count", "text": "Имате ли стари интериорни врати, които искате майсторът да реставрира и пребоядиса?", "type": "choice", "options": ["0", "1", "2", "3", "4+"], "required": true}]}', "UpdatedAt" = now() WHERE "Name" = 'Бояджийски и шпакловъчни услуги';
@@ -60,15 +60,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-PREP-HYDRO') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 15.34, 
-            "CalculationFormula" = '1', 
-            "UnitType" = 'sqm', 
-            "Description" = 'Запечатване на мокри помещения.', 
+        SET "BasePrice" = 30.00,
+            "CalculationFormula" = 'tile_prep_hydro_sqm',
+            "UnitType" = 'sqm',
+            "Description" = 'Запечатване на мокри помещения.',
             "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-PREP-HYDRO';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-PREP-HYDRO', 'Полагане на хидроизолация (с лента)', 'Запечатване на мокри помещения.', 15.34, 'sqm', '1', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-PREP-HYDRO', 'Полагане на хидроизолация (с лента)', 'Запечатване на мокри помещения.', 30.00, 'sqm', 'tile_prep_hydro_sqm', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
@@ -332,15 +332,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-LAMINATE') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 6.00,
-            "CalculationFormula" = 'tile_laminate_sqm',
-            "UnitType" = 'sqm',
-            "Description" = 'Полагане на ламиниран паркет.',
+        SET "BasePrice" = 6.14, 
+            "CalculationFormula" = '1', 
+            "UnitType" = 'sqm', 
+            "Description" = 'Полагане на ламиниран паркет.', 
             "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-LAMINATE';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-LAMINATE', 'Монтаж на ламинат', 'Полагане на ламиниран паркет.', 6.00, 'sqm', 'tile_laminate_sqm', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-LAMINATE', 'Монтаж на ламинат', 'Полагане на ламиниран паркет.', 6.14, 'sqm', '1', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
@@ -1607,15 +1607,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-STD') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 60.00,
-            "CalculationFormula" = 'tile_std_sqm',
-            "UnitType" = 'sqm',
-            "Description" = 'Полагане на фаянс или теракот.',
+        SET "BasePrice" = 30.68, 
+            "CalculationFormula" = '1', 
+            "UnitType" = 'sqm', 
+            "Description" = 'Полагане на фаянс или теракот.', 
             "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-STD';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-STD', 'Лепене на стандартни плочки', 'Полагане на фаянс или теракот.', 60.00, 'sqm', 'tile_std_sqm', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-STD', 'Лепене на стандартни плочки', 'Полагане на фаянс или теракот.', 30.68, 'sqm', '1', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
@@ -1998,15 +1998,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-PREP-LEVEL') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 11.25, 
-            "CalculationFormula" = '1', 
-            "UnitType" = 'sqm', 
-            "Description" = 'Изравняване на пода.', 
+        SET "BasePrice" = 22.00,
+            "CalculationFormula" = 'tile_prep_level_sqm',
+            "UnitType" = 'sqm',
+            "Description" = 'Изравняване на пода.',
             "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-PREP-LEVEL';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-PREP-LEVEL', 'Саморазливна замазка', 'Изравняване на пода.', 11.25, 'sqm', '1', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-PREP-LEVEL', 'Саморазливна замазка', 'Изравняване на пода.', 22.00, 'sqm', 'tile_prep_level_sqm', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;
@@ -3137,15 +3137,15 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'TILE-LARGE') THEN
         UPDATE "ServiceSkus" 
-        SET "BasePrice" = 95.00,
-            "CalculationFormula" = 'tile_large_sqm',
-            "UnitType" = 'sqm',
-            "Description" = 'Плочи над 60х120 см.',
+        SET "BasePrice" = 48.57, 
+            "CalculationFormula" = '1', 
+            "UnitType" = 'sqm', 
+            "Description" = 'Плочи над 60х120 см.', 
             "UpdatedAt" = now()
         WHERE "SkuCode" = 'TILE-LARGE';
     ELSE
         INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-        SELECT gen_random_uuid(), "Id", 'TILE-LARGE', 'Лепене на голямоформатен гранитогрес', 'Плочи над 60х120 см.', 95.00, 'sqm', 'tile_large_sqm', now(), now()
+        SELECT gen_random_uuid(), "Id", 'TILE-LARGE', 'Лепене на голямоформатен гранитогрес', 'Плочи над 60х120 см.', 48.57, 'sqm', '1', now(), now()
         FROM "ServiceCategories" WHERE "Name" = 'Подови и стенни настилки';
     END IF;
 END $$;

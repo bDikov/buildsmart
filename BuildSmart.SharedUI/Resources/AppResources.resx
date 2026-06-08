@@ -312,7 +312,7 @@
     <value>Total Task Cost: €{0}</value>
   </data>
   <data name="GeneratedOffer_BillableSKUs" xml:space="preserve">
-    <value>Billable SKUs &amp; Materials</value>
+    <value>Billable Labor</value>
   </data>
   <data name="GeneratedOffer_NoSKUs" xml:space="preserve">
     <value>No SKUs mapped for this task.</value>

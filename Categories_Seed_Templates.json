@@ -505,6 +505,22 @@
           ]
         },
         {
+          "id": "tile_prep_level_sqm",
+          "text": "Колко кв.м. саморазливна замазка ще бъде нужна приблизително?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "tile_prep",
+          "dependsOnValue": "Саморазливна замазка (за изравняване)"
+        },
+        {
+          "id": "tile_prep_hydro_sqm",
+          "text": "Колко кв.м. хидроизолация ще бъде нужна приблизително?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "tile_prep",
+          "dependsOnValue": "Хидроизолация (за бани)"
+        },
+        {
           "id": "tile_gerung",
           "text": "Желаете ли 45-градусово изрязване на ъглите (Герунг)?",
           "type": "choice",

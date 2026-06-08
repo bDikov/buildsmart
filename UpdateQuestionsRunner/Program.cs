@@ -74,8 +74,8 @@ class Program {
         if (categories.TryGetValue(tileKey, out var tileId)) {
             skusToInsert.Add(new SkuDef(tileId, "TILE-STD", "Лепене на стандартни плочки", "Полагане на фаянс или теракот.", 60m, "sqm", "tile_std_sqm"));
             skusToInsert.Add(new SkuDef(tileId, "TILE-LARGE", "Лепене на голямоформатен гранитогрес", "Плочи над 60х120 см.", 95m, "sqm", "tile_large_sqm"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-LEVEL", "Саморазливна замазка", "Изравняване на пода.", 22m, "sqm", "if(Contains(tile_prep, 'Саморазливна замазка'), global_total_sqm * 0.8, 0)"));
-            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-HYDRO", "Полагане на хидроизолация (с лента)", "Запечатване на мокри помещения.", 30m, "sqm", "if(Contains(tile_prep, 'Хидроизолация'), global_bathroom_count * 15, 0)"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-LEVEL", "Саморазливна замазка", "Изравняване на пода.", 22m, "sqm", "tile_prep_level_sqm"));
+            skusToInsert.Add(new SkuDef(tileId, "TILE-PREP-HYDRO", "Полагане на хидроизолация (с лента)", "Запечатване на мокри помещения.", 30m, "sqm", "tile_prep_hydro_sqm"));
             skusToInsert.Add(new SkuDef(tileId, "TILE-LAMINATE", "Монтаж на ламинат", "Полагане на ламиниран паркет.", 6m, "sqm", "tile_laminate_sqm"));
         }
 

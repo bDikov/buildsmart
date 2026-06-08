@@ -312,7 +312,7 @@
     <value>Обща стойност на задачата: €{0}</value>
   </data>
   <data name="GeneratedOffer_BillableSKUs" xml:space="preserve">
-    <value>Включени материали и труд (SKU)</value>
+    <value>Включен труд</value>
   </data>
   <data name="GeneratedOffer_NoSKUs" xml:space="preserve">
     <value>Няма свързани артикули за тази задача.</value>
