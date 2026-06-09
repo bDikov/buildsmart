@@ -60,13 +60,13 @@ class Program {
         }
 
         // Drywall
-        var drywKey = "Сухо строителство (Drywall)";
+        var drywKey = "Сухо строителство";
         if (categories.TryGetValue(drywKey, out var drywId)) {
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-CEILING-STD", "Окачен таван (Едно ниво)", "Монтаж на окачен таван.", 45m, "sqm", "if(Contains(drywall_type, 'Окачен таван'), if(Contains(drywall_rooms, '1 стая'), 15, if(Contains(drywall_rooms, '2-3 стаи'), 40, global_total_sqm)), 0)"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-PARTITION", "Преградна стена (Двуслойна)", "Изграждане на преградна стена.", 65m, "sqm", "if(Contains(drywall_type, 'Преградни стени'), if(Contains(drywall_rooms, '1 стая'), 12, if(Contains(drywall_rooms, '2-3 стаи'), 25, global_total_sqm * 0.5)), 0)"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-LINING", "Предстенна обшивка", "Монтаж на предстенна обшивка.", 40m, "sqm", "if(Contains(drywall_type, 'Предстенна обшивка'), if(Contains(drywall_rooms, '1 стая'), 15, if(Contains(drywall_rooms, '2-3 стаи'), 35, global_total_sqm * 0.8)), 0)"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-BOX", "Изграждане на куфари (Кутии)", "Обличане на тръби.", 40m, "m", "if(Contains(drywall_type, 'Куфари'), global_bathroom_count * 3, 0)"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSULATION", "Монтаж на вата (Топло/Шумо)", "Поставяне на минерална или каменна вата.", 10m, "sqm", "if(Contains(drywall_insulation, 'Да'), if(Contains(drywall_rooms, '1 стая'), 15, if(Contains(drywall_rooms, '2-3 стаи'), 40, global_total_sqm)), 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-CEILING-STD", "Окачен таван (Едно ниво)", "Монтаж на окачен таван.", 45m, "sqm", "dryw_ceiling_sqm"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-PARTITION", "Преградна стена (Двуслойна)", "Изграждане на преградна стена.", 65m, "sqm", "dryw_partition_sqm"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-LINING", "Предстенна обшивка", "Монтаж на предстенна обшивка.", 40m, "sqm", "dryw_lining_sqm"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-BOX", "Изграждане на куфари (Кутии)", "Обличане на тръби.", 40m, "m", "dryw_box_m"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSULATION", "Монтаж на вата (Топло/Шумо)", "Поставяне на минерална или каменна вата.", 10m, "sqm", "if(Contains(drywall_insulation, 'Да'), (if(Contains(dryw_insulation_areas, 'тавани'), dryw_ceiling_sqm, 0) + if(Contains(dryw_insulation_areas, 'стените'), dryw_partition_sqm + dryw_lining_sqm, 0) + if(Contains(dryw_insulation_areas, 'куфарите'), dryw_box_m, 0)), 0)"));
         }
 
         // Tiling
@@ -102,13 +102,14 @@ class Program {
         }
 
         // Demolition
-        var demoKey = "Къртене и извозване (Demolition)";
+        var demoKey = "Къртене и извозване";
         if (categories.TryGetValue(demoKey, out var demoId)) {
             skusToInsert.Add(new SkuDef(demoId, "DEMO-BATH-FULL", "Цялостно къртене на баня", "Къртене на баня.", 750m, "pcs", "if(Contains(demo_what, 'Цяла баня'), global_bathroom_count, 0)"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-BRICK", "Къртене на тухлена стена", "Събаряне на тухлени стени.", 20m, "sqm", "if(Contains(demo_what, 'тухлени стени'), if(Contains(demo_rooms, '1-2 стаи'), 15, 35), 0)"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-CONC", "Къртене на бетонна стена/панел", "Къртене на бетон.", 50m, "sqm", "if(Contains(demo_what, 'Бетонни'), if(Contains(demo_rooms, '1-2 стаи'), 10, 20), 0)"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-FLOOR-TILE", "Къртене на подови настилки/замазка", "Премахване на настилки.", 15m, "sqm", "if(Contains(demo_what, 'подови настилки'), if(Contains(demo_rooms, '1-2 стаи'), 20, global_total_sqm * 0.8), 0)"));
-            skusToInsert.Add(new SkuDef(demoId, "DEMO-DISPOSAL", "Извозване с контейнер", "Наемане на строителен контейнер.", 250m, "pcs", "if(Contains(demo_disposal, 'Да'), 1, 0)"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-BRICK", "Къртене на тухлена стена", "Събаряне на тухлени стени.", 20m, "sqm", "demo_brick_sqm"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-WALL-CONC", "Къртене на бетонна стена/панел", "Къртене на бетон.", 50m, "sqm", "demo_conc_sqm"));  
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-FLOOR-TILE", "Къртене на подови настилки/замазка", "Премахване на настилки.", 15m, "sqm", "demo_floor_sqm"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-DISPOSAL", "Контейнер за строителни отпадъци", "Наемане на строителен контейнер и такса смет.", 150m, "pcs", "if(Contains(demo_disposal, 'Да'), Ceiling((if(Contains(demo_what, 'Цяла баня'), global_bathroom_count * 20, 0) + demo_brick_sqm + demo_conc_sqm) / 15 + (demo_floor_sqm / 35)), 0)"));
+            skusToInsert.Add(new SkuDef(demoId, "DEMO-LABOR-STAIRS", "Сваляне на отпадъци по стълби", "Ръчен труд при липса на асансьор (цена на етаж за всеки контейнер).", 10m, "floors", "if(Contains(demo_disposal, 'Да') && Contains(global_logistics, 'Няма асансьор'), Ceiling((if(Contains(demo_what, 'Цяла баня'), global_bathroom_count * 20, 0) + demo_brick_sqm + demo_conc_sqm) / 15 + (demo_floor_sqm / 35)) * global_floor, 0)"));
         }
 
         int inserted = 0;

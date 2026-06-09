@@ -192,4 +192,5 @@ Because Windows Application Control policy blocks `UpdateQuestionsRunner.exe` on
 
 ### 4. Generate & Sync the Live SQL
 - Run `node GenerateSql.js` from the project root. This automatically parses `Categories_Seed_Templates.json` and builds secure `ON CONFLICT DO UPDATE` blocks for the categories inside `SeedLiveCategories.sql`.
-- **CRITICAL:** `GenerateSql.js` *only* updates the Category Templates. To push the new SKU `CalculationFormula` values (and BasePrices) to production, you MUST also add the corresponding `UPDATE "ServiceSkus"` SQL commands to `SeedLiveCategories.sql` (or run them manually on the live database).
+- **CRITICAL CI/CD OVERWRITE WARNING:** The GitHub Actions CI/CD pipeline (`main-pipeline.yml`) executes `SeedLiveCategories.sql` against the live production database on **every single deployment**. 
+- Because `GenerateSql.js` *only* updates the Category Templates, you **MUST manually update** the corresponding `UPDATE "ServiceSkus"` SQL commands inside `SeedLiveCategories.sql` to change formulas or prices. If you perform a manual SQL update directly on the live database but fail to commit it to `SeedLiveCategories.sql`, your changes will be instantly overwritten the next time you deploy!

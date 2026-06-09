@@ -377,15 +377,28 @@
           ]
         },
         {
-          "id": "demo_rooms",
-          "text": "В колко помещения ще се извършва къртене?",
-          "type": "choice",
+          "id": "demo_brick_sqm",
+          "text": "Колко кв.м. приблизително са тухлените стени за събаряне?",
+          "type": "number",
           "required": true,
-          "options": [
-            "Само в банята",
-            "В 1-2 стаи",
-            "В целия обект"
-          ]
+          "dependsOn": "demo_what",
+          "dependsOnValue": "Вътрешни тухлени стени"
+        },
+        {
+          "id": "demo_conc_sqm",
+          "text": "Колко кв.м. приблизително са бетонните/панелните стени за къртене?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "demo_what",
+          "dependsOnValue": "Бетонни/Панелни стени"
+        },
+        {
+          "id": "demo_floor_sqm",
+          "text": "Колко кв.м. приблизително са старите подови настилки за премахване?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "demo_what",
+          "dependsOnValue": "Стари подови настилки (замазка/мозайка)"
         },
         {
           "id": "demo_disposal",
@@ -418,16 +431,36 @@
           ]
         },
         {
-          "id": "drywall_rooms",
-          "text": "В колко помещения ще се прави гипсокартон?",
-          "type": "choice",
+          "id": "dryw_ceiling_sqm",
+          "text": "Колко кв.м. приблизително ще бъдат окачените тавани?",
+          "type": "number",
           "required": true,
-          "options": [
-            "Само в банята (влагоустойчив)",
-            "В 1 стая",
-            "В 2-3 стаи",
-            "В целия обект"
-          ]
+          "dependsOn": "drywall_type",
+          "dependsOnValue": "Окачен таван"
+        },
+        {
+          "id": "dryw_partition_sqm",
+          "text": "Колко кв.м. приблизително ще са преградните стени?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "drywall_type",
+          "dependsOnValue": "Преградни стени"
+        },
+        {
+          "id": "dryw_lining_sqm",
+          "text": "Колко кв.м. приблизително е предстенната обшивка?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "drywall_type",
+          "dependsOnValue": "Предстенна обшивка (на конструкция)"
+        },
+        {
+          "id": "dryw_box_m",
+          "text": "Колко линейни метра (л.м.) ще бъдат куфарите/скритото осветление?",
+          "type": "number",
+          "required": true,
+          "dependsOn": "drywall_type",
+          "dependsOnValue": "Куфари (обличане на тръби) | Скрито осветление (L-образни/U-образни куфари)"
         },
         {
           "id": "drywall_insulation",
@@ -438,6 +471,19 @@
             "Да, стандартна вата",
             "Да, специална шумоизолация",
             "Не"
+          ]
+        },
+        {
+          "id": "dryw_insulation_areas",
+          "text": "Къде ще се поставя изолацията?",
+          "type": "multiselect",
+          "required": true,
+          "dependsOn": "drywall_insulation",
+          "dependsOnValue": "Да, стандартна вата | Да, специална шумоизолация",
+          "options": [
+            "В окачените тавани",
+            "В стените (преградни/обшивки)",
+            "В куфарите"
           ]
         }
       ]
