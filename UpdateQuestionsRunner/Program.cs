@@ -66,7 +66,9 @@ class Program {
             skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-PARTITION", "Преградна стена (Двуслойна)", "Изграждане на преградна стена.", 65m, "sqm", "dryw_partition_sqm"));
             skusToInsert.Add(new SkuDef(drywId, "DRYW-WALL-LINING", "Предстенна обшивка", "Монтаж на предстенна обшивка.", 40m, "sqm", "dryw_lining_sqm"));
             skusToInsert.Add(new SkuDef(drywId, "DRYW-BOX", "Изграждане на куфари (Кутии)", "Обличане на тръби.", 40m, "m", "dryw_box_m"));
-            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSULATION", "Монтаж на вата (Топло/Шумо)", "Поставяне на минерална или каменна вата.", 10m, "sqm", "if(Contains(drywall_insulation, 'Да'), (if(Contains(dryw_insulation_areas, 'тавани'), dryw_ceiling_sqm, 0) + if(Contains(dryw_insulation_areas, 'стените'), dryw_partition_sqm + dryw_lining_sqm, 0) + if(Contains(dryw_insulation_areas, 'куфарите'), dryw_box_m, 0)), 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSUL-CEILING", "Монтаж на вата (Тавани)", "Поставяне на минерална или каменна вата в окачен таван.", 10m, "sqm", "if(Contains(drywall_insulation, 'Да') && Contains(dryw_insulation_areas, 'тавани'), dryw_ceiling_sqm, 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSUL-WALL", "Монтаж на вата (Стени)", "Поставяне на минерална или каменна вата в преградни стени/обшивки.", 10m, "sqm", "if(Contains(drywall_insulation, 'Да') && Contains(dryw_insulation_areas, 'стените'), dryw_partition_sqm + dryw_lining_sqm, 0)"));
+            skusToInsert.Add(new SkuDef(drywId, "DRYW-INSUL-BOX", "Монтаж на вата (Куфари)", "Поставяне на минерална или каменна вата в куфари.", 10m, "m", "if(Contains(drywall_insulation, 'Да') && Contains(dryw_insulation_areas, 'куфарите'), dryw_box_m, 0)"));
         }
 
         // Tiling
