@@ -65,6 +65,74 @@ DO UPDATE SET
 
   DO $$
   BEGIN
+      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-CEILING-STD') THEN
+          UPDATE "ServiceSkus" 
+          SET "BasePrice" = 45.00, 
+              "CalculationFormula" = 'dryw_ceiling_sqm', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Монтаж на окачен таван.', 
+              "UpdatedAt" = now()
+          WHERE "SkuCode" = 'DRYW-CEILING-STD';
+      ELSE
+          INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
+          SELECT gen_random_uuid(), "Id", 'DRYW-CEILING-STD', 'Окачен таван (Едно ниво)', 'Монтаж на окачен таван.', 45.00, 'sqm', 'dryw_ceiling_sqm', now(), now()
+          FROM "ServiceCategories" WHERE "Name" = 'Сухо строителство';
+      END IF;
+  END $$;
+
+  DO $$
+  BEGIN
+      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-WALL-PARTITION') THEN
+          UPDATE "ServiceSkus" 
+          SET "BasePrice" = 65.00, 
+              "CalculationFormula" = 'dryw_partition_sqm', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Изграждане на преградна стена.', 
+              "UpdatedAt" = now()
+          WHERE "SkuCode" = 'DRYW-WALL-PARTITION';
+      ELSE
+          INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
+          SELECT gen_random_uuid(), "Id", 'DRYW-WALL-PARTITION', 'Преградна стена (Двуслойна)', 'Изграждане на преградна стена.', 65.00, 'sqm', 'dryw_partition_sqm', now(), now()
+          FROM "ServiceCategories" WHERE "Name" = 'Сухо строителство';
+      END IF;
+  END $$;
+
+  DO $$
+  BEGIN
+      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-WALL-LINING') THEN
+          UPDATE "ServiceSkus" 
+          SET "BasePrice" = 40.00, 
+              "CalculationFormula" = 'dryw_lining_sqm', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Монтаж на предстенна обшивка.', 
+              "UpdatedAt" = now()
+          WHERE "SkuCode" = 'DRYW-WALL-LINING';
+      ELSE
+          INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
+          SELECT gen_random_uuid(), "Id", 'DRYW-WALL-LINING', 'Предстенна обшивка', 'Монтаж на предстенна обшивка.', 40.00, 'sqm', 'dryw_lining_sqm', now(), now()
+          FROM "ServiceCategories" WHERE "Name" = 'Сухо строителство';
+      END IF;
+  END $$;
+
+  DO $$
+  BEGIN
+      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-BOX') THEN
+          UPDATE "ServiceSkus" 
+          SET "BasePrice" = 40.00, 
+              "CalculationFormula" = 'dryw_box_m', 
+              "UnitType" = 'm', 
+              "Description" = 'Обличане на тръби.', 
+              "UpdatedAt" = now()
+          WHERE "SkuCode" = 'DRYW-BOX';
+      ELSE
+          INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
+          SELECT gen_random_uuid(), "Id", 'DRYW-BOX', 'Изграждане на куфари (Кутии)', 'Обличане на тръби.', 40.00, 'm', 'dryw_box_m', now(), now()
+          FROM "ServiceCategories" WHERE "Name" = 'Сухо строителство';
+      END IF;
+  END $$;
+
+  DO $$
+  BEGIN
       IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-INSUL-CEILING') THEN
           UPDATE "ServiceSkus" 
           SET "BasePrice" = 10.00, 
@@ -82,17 +150,34 @@ DO UPDATE SET
 
   DO $$
   BEGIN
-      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-INSUL-WALL') THEN
+      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-INSUL-PARTITION') THEN
           UPDATE "ServiceSkus" 
           SET "BasePrice" = 10.00, 
-              "CalculationFormula" = 'if(Contains(drywall_insulation, ''Да'') && Contains(dryw_insulation_areas, ''стените''), dryw_partition_sqm + dryw_lining_sqm, 0)', 
+              "CalculationFormula" = 'if(Contains(drywall_insulation, ''Да'') && Contains(dryw_insulation_areas, ''стените''), dryw_partition_sqm, 0)', 
               "UnitType" = 'sqm', 
-              "Description" = 'Поставяне на минерална или каменна вата в преградни стени/обшивки.', 
+              "Description" = 'Поставяне на минерална или каменна вата в преградни стени.', 
               "UpdatedAt" = now()
-          WHERE "SkuCode" = 'DRYW-INSUL-WALL';
+          WHERE "SkuCode" = 'DRYW-INSUL-PARTITION';
       ELSE
           INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-          SELECT gen_random_uuid(), "Id", 'DRYW-INSUL-WALL', 'Монтаж на вата (Стени)', 'Поставяне на минерална или каменна вата в преградни стени/обшивки.', 10.00, 'sqm', 'if(Contains(drywall_insulation, ''Да'') && Contains(dryw_insulation_areas, ''стените''), dryw_partition_sqm + dryw_lining_sqm, 0)', now(), now()
+          SELECT gen_random_uuid(), "Id", 'DRYW-INSUL-PARTITION', 'Монтаж на вата (Преградни стени)', 'Поставяне на минерална или каменна вата в преградни стени.', 10.00, 'sqm', 'if(Contains(drywall_insulation, ''Да'') && Contains(dryw_insulation_areas, ''стените''), dryw_partition_sqm, 0)', now(), now()
+          FROM "ServiceCategories" WHERE "Name" = 'Сухо строителство';
+      END IF;
+  END $$;
+
+  DO $$
+  BEGIN
+      IF EXISTS (SELECT 1 FROM "ServiceSkus" WHERE "SkuCode" = 'DRYW-INSUL-LINING') THEN
+          UPDATE "ServiceSkus" 
+          SET "BasePrice" = 10.00, 
+              "CalculationFormula" = 'if(Contains(drywall_insulation, ''Да'') && Contains(dryw_insulation_areas, ''стените''), dryw_lining_sqm, 0)', 
+              "UnitType" = 'sqm', 
+              "Description" = 'Поставяне на минерална или каменна вата в предстенни обшивки.', 
+              "UpdatedAt" = now()
+          WHERE "SkuCode" = 'DRYW-INSUL-LINING';
+      ELSE
+          INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
+          SELECT gen_random_uuid(), "Id", 'DRYW-INSUL-LINING', 'Монтаж на вата (Предстенна обшивка)', 'Поставяне на минерална или каменна вата в предстенни обшивки.', 10.00, 'sqm', 'if(Contains(drywall_insulation, ''Да'') && Contains(dryw_insulation_areas, ''стените''), dryw_lining_sqm, 0)', now(), now()
           FROM "ServiceCategories" WHERE "Name" = 'Сухо строителство';
       END IF;
   END $$;
