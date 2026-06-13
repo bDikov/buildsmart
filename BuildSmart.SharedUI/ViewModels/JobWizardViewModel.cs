@@ -216,6 +216,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private Guid? _targetJobPostId;
 	private Guid? _targetCategoryId;
 	private Dictionary<Guid, Guid> _currentJobPostIds = new();
+	private Dictionary<Guid, string> _lastSubmittedJobHashes = new();
 
 	// Legacy property for backward compatibility if needed, but we use _masterAnswerKey now
 	public Dictionary<string, object> WizardAnswers { get; private set; } = new();
@@ -494,10 +495,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						// Trigger AI Generation immediately for this category
 						if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
 						{
-							var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
-							if (submitResult.Errors.Count > 0)
+							var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
+							if (!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash)
 							{
-								await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {categoryName}: {submitResult.Errors[0].Message}", "OK");
+								var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+								if (submitResult.Errors.Count > 0)
+								{
+									await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {categoryName}: {submitResult.Errors[0].Message}", "OK");
+								}
+								else
+								{
+									_lastSubmittedJobHashes[jobId] = answersHash;
+								}
 							}
 						}
 					}
@@ -558,6 +567,15 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		if (CurrentStep > 0)
 		{
+			if (CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Questions)
+			{
+				foreach (var q in Questions)
+				{
+					if (q.Id != null)
+						_masterAnswerKey[q.Id] = q.Answer ?? "";
+				}
+			}
+
 			CurrentStep--;
 			LoadStepData(CurrentStep);
 		}
@@ -945,6 +963,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		if (_currentProjectId == null)
 		{
+			if (string.IsNullOrWhiteSpace(ProjectTitle)) return;
+
 			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
 			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
 			var userId = userResult.Data.CurrentUser.Id;

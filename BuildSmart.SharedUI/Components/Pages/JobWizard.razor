@@ -557,6 +557,7 @@
     {
         if (ViewModel != null)
         {
+            try { await ViewModel.SaveDraftAsync(); } catch { }
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
 
