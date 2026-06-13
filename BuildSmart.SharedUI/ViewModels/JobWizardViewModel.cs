@@ -545,11 +545,16 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 			foreach (var jobId in jobsToRegenerate)
 			{
-				var result = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
-				if (result.Errors.Count > 0)
+				var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
+				if (!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash)
 				{
-					await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-					return;
+					var result = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+					if (result.Errors.Count > 0)
+					{
+						await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+						return;
+					}
+					_lastSubmittedJobHashes[jobId] = answersHash;
 				}
 			}
 
