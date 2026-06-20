@@ -455,7 +455,7 @@ public class AppDbContext : DbContext
                                     SkuCode = skuCode,
                                     Name = marketTask.Name,
                                     Description = $"{marketTask.Name} ({marketTask.Unit})",
-                                    BasePrice = marketTask.MaxPrice,
+                                    BasePrice = Math.Round(marketTask.MaxPrice / 1.95583m, 2),
                                     UnitType = MapMarketUnitToUnitType(marketTask.Unit),
                                     CreatedAt = DateTime.UtcNow,
                                     UpdatedAt = DateTime.UtcNow
@@ -487,58 +487,110 @@ public class AppDbContext : DbContext
             SentrySdk.CaptureException(ex);
         }
 
-        // 2. Seed from Electrical_SKUs_Seed.json
-        try
+        // 2. Seed from Category SKU JSON files
+        var seedFiles = new[]
         {
-            var json = await ReadEmbeddedResourceAsync("Electrical_SKUs_Seed.json");
-            var elecData = System.Text.Json.JsonSerializer.Deserialize<ElectricalSeedDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            
-            if (elecData != null)
+            new { FileName = "Global_SKUs_Seed.json", CategoryName = "Global Questions" },
+            new { FileName = "Electrical_SKUs_Seed.json", CategoryName = "Електрическа Инсталация" },
+            new { FileName = "Painting_SKUs_Seed.json", CategoryName = "Бояджийски и шпакловъчни услуги" },
+            new { FileName = "Drywall_SKUs_Seed.json", CategoryName = "Сухо строителство" },
+            new { FileName = "Tiling_SKUs_Seed.json", CategoryName = "Подови и стенни настилки" },
+            new { FileName = "Microcement_SKUs_Seed.json", CategoryName = "Микроцимент" },
+            new { FileName = "Plumbing_SKUs_Seed.json", CategoryName = "ВиК Услуги" },
+            new { FileName = "Demolition_SKUs_Seed.json", CategoryName = "Къртене и извозване" }
+        };
+
+        foreach (var seed in seedFiles)
+        {
+            try
             {
-                var category = allDbCategories.FirstOrDefault(c => c.Name == "Електрическа Инсталация" || c.Name == "Electrical");
-                if (category != null)
+                var json = await ReadEmbeddedResourceAsync(seed.FileName);
+                var data = System.Text.Json.JsonSerializer.Deserialize<ElectricalSeedDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                
+                if (data != null)
                 {
-                    foreach (var skuDto in elecData.Skus)
+                    var category = allDbCategories.FirstOrDefault(c => c.Name == seed.CategoryName);
+                    if (category != null)
                     {
-                        var existing = await ServiceSkus.AnyAsync(s => s.SkuCode == skuDto.SkuCode);
-                        if (!existing)
+                        foreach (var skuDto in data.Skus)
                         {
-                            var skuId = Guid.NewGuid();
-                            var newSku = new ServiceSku
+                            var eurPrice = Math.Round(skuDto.BasePrice / 1.95583m, 2);
+                            var existing = await ServiceSkus.Include(s => s.Translations).FirstOrDefaultAsync(s => s.SkuCode == skuDto.SkuCode);
+                            
+                            if (existing == null)
                             {
-                                Id = skuId,
-                                ServiceCategoryId = category.Id,
-                                SkuCode = skuDto.SkuCode,
-                                Name = skuDto.Name,
-                                Description = skuDto.Description,
-                                BasePrice = skuDto.BasePrice,
-                                UnitType = skuDto.UnitType,
-                                CreatedAt = DateTime.UtcNow,
-                                UpdatedAt = DateTime.UtcNow
-                            };
+                                var skuId = Guid.NewGuid();
+                                var newSku = new ServiceSku
+                                {
+                                    Id = skuId,
+                                    ServiceCategoryId = category.Id,
+                                    SkuCode = skuDto.SkuCode,
+                                    Name = skuDto.Name,
+                                    Description = skuDto.Description,
+                                    BasePrice = eurPrice,
+                                    UnitType = skuDto.UnitType,
+                                    CalculationFormula = skuDto.CalculationFormula,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
 
-                            newSku.Translations.Add(new ServiceSkuTranslation
+                                newSku.Translations.Add(new ServiceSkuTranslation
+                                {
+                                    Id = Guid.NewGuid(),
+                                    SkuId = skuId,
+                                    LanguageCode = "bg",
+                                    Name = skuDto.Name,
+                                    Description = skuDto.Description,
+                                    UnitType = skuDto.UnitType,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                });
+
+                                await ServiceSkus.AddAsync(newSku);
+                            }
+                            else
                             {
-                                Id = Guid.NewGuid(),
-                                SkuId = skuId,
-                                LanguageCode = "bg",
-                                Name = skuDto.Name,
-                                Description = skuDto.Description,
-                                UnitType = skuDto.UnitType,
-                                CreatedAt = DateTime.UtcNow,
-                                UpdatedAt = DateTime.UtcNow
-                            });
+                                // Sync properties and formula
+                                existing.ServiceCategoryId = category.Id;
+                                existing.Name = skuDto.Name;
+                                existing.Description = skuDto.Description;
+                                existing.BasePrice = eurPrice;
+                                existing.UnitType = skuDto.UnitType;
+                                existing.CalculationFormula = skuDto.CalculationFormula;
+                                existing.UpdatedAt = DateTime.UtcNow;
 
-                            await ServiceSkus.AddAsync(newSku);
+                                var translation = existing.Translations.FirstOrDefault(t => t.LanguageCode == "bg");
+                                if (translation != null)
+                                {
+                                    translation.Name = skuDto.Name;
+                                    translation.Description = skuDto.Description;
+                                    translation.UnitType = skuDto.UnitType;
+                                    translation.UpdatedAt = DateTime.UtcNow;
+                                }
+                                else
+                                {
+                                    existing.Translations.Add(new ServiceSkuTranslation
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        SkuId = existing.Id,
+                                        LanguageCode = "bg",
+                                        Name = skuDto.Name,
+                                        Description = skuDto.Description,
+                                        UnitType = skuDto.UnitType,
+                                        CreatedAt = DateTime.UtcNow,
+                                        UpdatedAt = DateTime.UtcNow
+                                    });
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error seeding electrical SKUs: {ex.Message}");
-            SentrySdk.CaptureException(ex);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error seeding SKUs from file '{seed.FileName}': {ex.Message}");
+                SentrySdk.CaptureException(ex);
+            }
         }
 
         await SaveChangesAsync();
@@ -612,5 +664,6 @@ public class AppDbContext : DbContext
         public string Description { get; set; } = string.Empty;
         public decimal BasePrice { get; set; }
         public string UnitType { get; set; } = string.Empty;
+        public string CalculationFormula { get; set; } = string.Empty;
     }
 }

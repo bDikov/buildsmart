@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -24,7 +24,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Templates\OfferTemplate.html" />
     <EmbeddedResource Include="Categories_Seed_Templates.json" />
-    <EmbeddedResource Include="Electrical_SKUs_Seed.json" />
+    <EmbeddedResource Include="*_SKUs_Seed.json" />
     <EmbeddedResource Include="MarketData_Sofia_Seed.json" />
   </ItemGroup>
 

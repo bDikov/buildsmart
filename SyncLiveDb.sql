@@ -21,10 +21,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -51,10 +52,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -81,10 +83,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -111,10 +114,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -141,10 +145,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -171,10 +176,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -201,10 +207,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -231,10 +238,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -261,10 +269,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -291,10 +300,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -321,10 +331,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -351,10 +362,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
@@ -381,10 +393,11 @@ BEGIN
             UPDATE "ServiceSkus" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             
             -- Merge TradesmanSkills (ignore duplicates)
-            INSERT INTO "TradesmanSkills" ("TradesmanProfileId", "ServiceCategoryId")
-            SELECT "TradesmanProfileId", clean_id FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id
-            ON CONFLICT DO NOTHING;
-            
+            UPDATE "TradesmanSkills" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now()
+            WHERE "ServiceCategoryId" = suffix_id
+              AND "TradesmanProfileId" NOT IN (
+                  SELECT "TradesmanProfileId" FROM "TradesmanSkills" WHERE "ServiceCategoryId" = clean_id
+              );
             DELETE FROM "TradesmanSkills" WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "TradesmanMedia" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;
             UPDATE "JobPosts" SET "ServiceCategoryId" = clean_id, "UpdatedAt" = now() WHERE "ServiceCategoryId" = suffix_id;

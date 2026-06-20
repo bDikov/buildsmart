@@ -1,0 +1,29 @@
+{
+  "categoryName": "Global Questions",
+  "skus": [
+    {
+      "skuCode": "GEN-001",
+      "name": "Site Prep \u0026 Protection",
+      "description": "Preparation, protection, and logistics.",
+      "basePrice": 50,
+      "unitType": "Flat",
+      "calculationFormula": "1"
+    },
+    {
+      "skuCode": "GEN-002",
+      "name": "Final Cleaning",
+      "description": "Complete final cleaning after works.",
+      "basePrice": 2,
+      "unitType": "sqm",
+      "calculationFormula": "1"
+    },
+    {
+      "skuCode": "GEN-003",
+      "name": "Daily Cleaning",
+      "description": "Daily site cleaning.",
+      "basePrice": 30,
+      "unitType": "Flat",
+      "calculationFormula": "1"
+    }
+  ]
+}
