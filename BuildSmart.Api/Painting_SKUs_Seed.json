@@ -1,61 +1,69 @@
 {
-  "categoryName": "Бояджийски и Шпакловъчни Услуги",
+  "categoryName": "Бояджийски и шпакловъчни услуги",
   "skus": [
     {
       "skuCode": "PANT-PRIMER",
       "name": "Дълбокопроникващ грунд",
-      "description": "Грундиране на основата преди шпакловка или боядисване за по-добра адхезия.",
-      "basePrice": 3.00,
-      "unitType": "sqm"
+      "description": "Грундиране на стени и тавани.",
+      "basePrice": 3,
+      "unitType": "sqm",
+      "calculationFormula": "if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5)"
     },
     {
       "skuCode": "PANT-SPACKLE-STD",
       "name": "Шпакловка (Стандартна 2 ръце)",
-      "description": "Шпакловане с гипсова шпакловка и шкурене (подходящо за светли бои и стандартни тапети).",
-      "basePrice": 14.00,
-      "unitType": "sqm"
+      "description": "Цялостна шпакловка.",
+      "basePrice": 14,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(paint_tasks, \u0027Цялостна шпакловка\u0027) || Contains(paint_tasks, \u0027Сваляне на тапети\u0027), if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5), 0)"
     },
     {
       "skuCode": "PANT-SPACKLE-Q5",
       "name": "Фина шпакловка (Перфектна Q5)",
-      "description": "Шитрок/готови смеси за идеално гладка повърхност без драскотини. Задължително при тъмни бои и силно осветление.",
-      "basePrice": 20.00,
-      "unitType": "sqm"
+      "description": "Шитрок за идеално гладка повърхност.",
+      "basePrice": 20,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(paint_finish_level, \u0027Q5\u0027) || Contains(paint_finish_level, \u0027Перфектно\u0027), if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5), 0)"
     },
     {
       "skuCode": "PANT-PAINT-WHITE",
       "name": "Боядисване в бяло (2 ръце)",
-      "description": "Машинно или ръчно боядисване с бял латекс.",
+      "description": "Боядисване с бял латекс.",
       "basePrice": 6.50,
-      "unitType": "sqm"
+      "unitType": "sqm",
+      "calculationFormula": "if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5)"
     },
     {
       "skuCode": "PANT-PAINT-COLOR",
       "name": "Боядисване в цвят (2 ръце)",
-      "description": "Боядисване с цветен латекс, изискващо по-прецизно отсичане на ъгли.",
+      "description": "Боядисване с цветен латекс.",
       "basePrice": 8.50,
-      "unitType": "sqm"
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(paint_colors, \u0027цвят\u0027) \u0026\u0026 !Contains(paint_colors, \u0027бяло\u0027), if(paint_sqm \u003E 0, paint_sqm * 0.5, global_total_sqm * 1.2), 0)"
     },
     {
       "skuCode": "PANT-TAPE-CORNER",
       "name": "Поставяне на ъглохранители",
-      "description": "Монтаж на алуминиеви или PVC ъгли с шпакловка за предпазване на външните ръбове.",
-      "basePrice": 6.00,
-      "unitType": "m"
+      "description": "Алуминиеви или PVC ъгли.",
+      "basePrice": 6,
+      "unitType": "m",
+      "calculationFormula": "if(paint_sqm \u003E 0, paint_sqm * 0.1, global_total_sqm * 0.25)"
     },
     {
       "skuCode": "PANT-TRIM",
       "name": "Боядисване на врати / первази",
-      "description": "Реставрация и боядисване на интериорни врати или дълги первази с блажна/акрилна боя.",
-      "basePrice": 45.00,
-      "unitType": "pcs"
+      "description": "Боядисване на декоративни елементи.",
+      "basePrice": 45,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(paint_trim_doors_count, \u00274\u002B\u0027), 4, if(Contains(paint_trim_doors_count, \u00273\u0027), 3, if(Contains(paint_trim_doors_count, \u00272\u0027), 2, if(Contains(paint_trim_doors_count, \u00271\u0027), 1, 0))))"
     },
     {
       "skuCode": "PANT-WALLPAPER-REMOVE",
       "name": "Сваляне на стари тапети",
-      "description": "Накисване и премахване на стари тапети до основа.",
+      "description": "Сваляне на стари тапети.",
       "basePrice": 4.50,
-      "unitType": "sqm"
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(paint_tasks, \u0027Сваляне на тапети\u0027), if(paint_sqm \u003E 0, paint_sqm * 0.5, global_total_sqm), 0)"
     }
   ]
 }

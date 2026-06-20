@@ -1,40 +1,45 @@
 {
-  "categoryName": "Подови и стенни настилки (Плочки)",
+  "categoryName": "Подови и стенни настилки",
   "skus": [
     {
       "skuCode": "TILE-STD",
       "name": "Лепене на стандартни плочки",
-      "description": "Полагане на фаянс или теракот със стандартен размер (до 60х60).",
-      "basePrice": 60.00,
-      "unitType": "sqm"
+      "description": "Полагане на фаянс или теракот.",
+      "basePrice": 60,
+      "unitType": "sqm",
+      "calculationFormula": "tile_std_sqm"
     },
     {
       "skuCode": "TILE-LARGE",
       "name": "Лепене на голямоформатен гранитогрес",
-      "description": "Полагане на плочи над 60х120 см.",
-      "basePrice": 95.00,
-      "unitType": "sqm"
+      "description": "Плочи над 60х120 см.",
+      "basePrice": 95,
+      "unitType": "sqm",
+      "calculationFormula": "tile_large_sqm"
     },
     {
       "skuCode": "TILE-PREP-LEVEL",
       "name": "Саморазливна замазка",
-      "description": "Изравняване на пода преди лепене на настилки.",
-      "basePrice": 22.00,
-      "unitType": "sqm"
+      "description": "Изравняване на пода.",
+      "basePrice": 22,
+      "unitType": "sqm",
+      "calculationFormula": "tile_prep_level_sqm"
     },
     {
       "skuCode": "TILE-PREP-HYDRO",
       "name": "Полагане на хидроизолация (с лента)",
-      "description": "Запечатване на мокри помещения (бани) преди плочките.",
-      "basePrice": 30.00,
-      "unitType": "sqm"
+      "description": "Запечатване на мокри помещения.",
+      "basePrice": 30,
+      "unitType": "sqm",
+      "calculationFormula": "tile_prep_hydro_sqm"
     },
     {
       "skuCode": "TILE-LAMINATE",
       "name": "Монтаж на ламинат",
-      "description": "Полагане на ламиниран паркет с подложка.",
-      "basePrice": 12.00,
-      "unitType": "sqm"
+      "description": "Полагане на ламиниран паркет.",
+      "basePrice": 6,
+      "unitType": "sqm",
+      "calculationFormula": "tile_laminate_sqm"
     }
   ]
 }

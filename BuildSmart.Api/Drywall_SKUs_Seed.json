@@ -1,40 +1,69 @@
 {
-  "categoryName": "Сухо строителство (Гипсокартон)",
+  "categoryName": "Сухо строителство",
   "skus": [
     {
       "skuCode": "DRYW-CEILING-STD",
       "name": "Окачен таван (Едно ниво)",
-      "description": "Монтаж на метална конструкция и гипсокартон на таван.",
-      "basePrice": 45.00,
-      "unitType": "sqm"
+      "description": "Монтаж на окачен таван.",
+      "basePrice": 45,
+      "unitType": "sqm",
+      "calculationFormula": "dryw_ceiling_sqm"
     },
     {
       "skuCode": "DRYW-WALL-PARTITION",
-      "name": "Преградна стена (Двуслойна)",
-      "description": "Изграждане на стена с профили и по 2 слоя картон от всяка страна.",
-      "basePrice": 65.00,
-      "unitType": "sqm"
+      "name": "Преградадка стена (Двуслойна)",
+      "description": "Изграждане на преградадка стена.",
+      "basePrice": 65,
+      "unitType": "sqm",
+      "calculationFormula": "dryw_partition_sqm"
     },
     {
       "skuCode": "DRYW-WALL-LINING",
       "name": "Предстенна обшивка",
-      "description": "Облицоване на съществуваща стена с картон на конструкция (за изправяне или изолация).",
-      "basePrice": 40.00,
-      "unitType": "sqm"
+      "description": "Монтаж на предстенна обшивка.",
+      "basePrice": 40,
+      "unitType": "sqm",
+      "calculationFormula": "dryw_lining_sqm"
     },
     {
       "skuCode": "DRYW-BOX",
       "name": "Изграждане на куфари (Кутии)",
-      "description": "Обличане на тръби или скриване на трегери с картон.",
-      "basePrice": 40.00,
-      "unitType": "m"
+      "description": "Обличане на тръби.",
+      "basePrice": 40,
+      "unitType": "m",
+      "calculationFormula": "dryw_box_m"
     },
     {
-      "skuCode": "DRYW-INSULATION",
-      "name": "Монтаж на вата (Топло/Шумо)",
-      "description": "Поставяне на минерална или каменна вата в конструкцията.",
-      "basePrice": 10.00,
-      "unitType": "sqm"
+      "skuCode": "DRYW-INSUL-CEILING",
+      "name": "Монтаж на вата (Тавани)",
+      "description": "Поставяне на минерална или каменна вата в окачен таван.",
+      "basePrice": 10,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(drywall_insulation, \u0027Да\u0027) \u0026\u0026 Contains(dryw_insulation_areas, \u0027тавани\u0027), dryw_ceiling_sqm, 0)"
+    },
+    {
+      "skuCode": "DRYW-INSUL-PARTITION",
+      "name": "Монтаж на вата (Преградни стени)",
+      "description": "Поставяне на минерална или каменна вата в преградни стени.",
+      "basePrice": 10,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(drywall_insulation, \u0027Да\u0027) \u0026\u0026 Contains(dryw_insulation_areas, \u0027стените\u0027), dryw_partition_sqm, 0)"
+    },
+    {
+      "skuCode": "DRYW-INSUL-LINING",
+      "name": "Монтаж на вата (Предстенна обшивка)",
+      "description": "Поставяне на минерална или каменна вата в предстенни обшивки.",
+      "basePrice": 10,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(drywall_insulation, \u0027Да\u0027) \u0026\u0026 Contains(dryw_insulation_areas, \u0027стените\u0027), dryw_lining_sqm, 0)"
+    },
+    {
+      "skuCode": "DRYW-INSUL-BOX",
+      "name": "Монтаж на вата (Куфари)",
+      "description": "Поставяне на минерална или каменна вата в куфари.",
+      "basePrice": 10,
+      "unitType": "m",
+      "calculationFormula": "if(Contains(drywall_insulation, \u0027Да\u0027) \u0026\u0026 Contains(dryw_insulation_areas, \u0027куфарите\u0027), dryw_box_m, 0)"
     }
   ]
 }

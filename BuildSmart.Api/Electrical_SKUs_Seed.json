@@ -1,96 +1,101 @@
 {
-  "categoryName": "Електроинсталации",
+  "categoryName": "Електрическа Инсталация",
   "skus": [
     {
+      "skuCode": "ELEC-CABLE-LAY",
+      "name": "Полагане на силов кабел",
+      "description": "Издърпване и фиксиране на кабел.",
+      "basePrice": 2,
+      "unitType": "m",
+      "calculationFormula": "if(Contains(elec_scope, \u0027Цялостна\u0027), global_total_sqm * 3.5, if(Contains(elec_scope, \u0027Частичен\u0027), global_total_sqm * 1.0, 0))"
+    },
+    {
+      "skuCode": "ELEC-CABLE-HEAVY",
+      "name": "Полагане на мощен кабел",
+      "description": "Дебел кабел за проточни бойлери.",
+      "basePrice": 5,
+      "unitType": "m",
+      "calculationFormula": "(Count(elec_heavy_appliances) \u002B elec_ac_count) * 10"
+    },
+    {
       "skuCode": "ELEC-CHASE-CONC",
-      "name": "Къртене на канал в бетон/панел",
-      "description": "Изкопаване на канал за полагане на кабели в твърд стоманобетон. Най-трудният и бавен процес.",
-      "basePrice": 12.00,
-      "unitType": "m"
+      "name": "Къртене на канал в бетон",
+      "description": "Изкопаване на канал в бетон.",
+      "basePrice": 15,
+      "unitType": "m",
+      "calculationFormula": "if(Contains(global_wall_material, \u0027Бетон\u0027) \u0026\u0026 Contains(elec_scope, \u0027Цялостна\u0027), global_total_sqm * 3.5, 0)"
     },
     {
       "skuCode": "ELEC-CHASE-BRICK",
       "name": "Къртене на канал в тухла",
-      "description": "Изкопаване на канал за полагане на кабели в тухлена зидария.",
-      "basePrice": 6.00,
-      "unitType": "m"
+      "description": "Изкопаване на канал в тухла.",
+      "basePrice": 8,
+      "unitType": "m",
+      "calculationFormula": "if(Contains(global_wall_material, \u0027Тухла\u0027) \u0026\u0026 Contains(elec_scope, \u0027Цялостна\u0027), global_total_sqm * 3.5, 0)"
     },
     {
       "skuCode": "ELEC-LAY-TUBE",
-      "name": "Полагане на кабел в гофре (под/гипсокартон)",
-      "description": "Полагане на гофрирана тръба с кабел по под (преди замазка) или зад окачен таван/гипсокартон. Не изисква къртене.",
-      "basePrice": 3.00,
-      "unitType": "m"
+      "name": "Полагане на гофре",
+      "description": "Полагане на гофрирана тръба.",
+      "basePrice": 4,
+      "unitType": "m",
+      "calculationFormula": "if(Contains(elec_scope, \u0027Цялостна\u0027), global_total_sqm * 3.5, 0)"
     },
     {
-      "skuCode": "ELEC-CABLE-LAY",
-      "name": "Полагане на силов кабел (до 4мм2)",
-      "description": "Издърпване и фиксиране на кабел СВТ/ПВВ-МБ1 (напр. 3х1.5, 3х2.5, 3х4).",
-      "basePrice": 1.50,
-      "unitType": "m"
-    },
-    {
-      "skuCode": "ELEC-CABLE-HEAVY",
-      "name": "Полагане на мощен/трифазен кабел (6мм2+)",
-      "description": "Издърпване на дебел кабел за проточни бойлери или трифазни консуматори.",
-      "basePrice": 3.00,
-      "unitType": "m"
-    },
-    {
-      "skuCode": "ELEC-POINT-STD",
-      "name": "Изграждане на излазна точка (контакт/ключ/лампа)",
-      "description": "Труд за оформяне на конзолна кутия, заголване и подготовка на кабелите за 1 брой контакт, ключ или лампа.",
-      "basePrice": 30.00,
-      "unitType": "pcs"
-    },
-    {
-      "skuCode": "ELEC-POINT-DEV",
-      "name": "Изграждане на девиаторна/кръстата точка",
-      "description": "Специфично опроводяване за управление на едно осветление от 2 или повече места.",
-      "basePrice": 45.00,
-      "unitType": "pcs"
-    },
-    {
-      "skuCode": "ELEC-POINT-SPEC",
-      "name": "Извод за щори / вентилатор",
-      "description": "Изграждане на захранваща точка за специфични моторизирани уреди (вентилатор в баня, външни ролетни щори).",
-      "basePrice": 35.00,
-      "unitType": "pcs"
-    },
-    {
-      "skuCode": "ELEC-POINT-LV",
-      "name": "Изграждане на слаботокова точка (LAN/TV/СОТ)",
-      "description": "Полагане на FTP/Коаксиален кабел и подготовка на конзола за интернет, телевизия или охранителна техника.",
-      "basePrice": 25.00,
-      "unitType": "pcs"
+      "skuCode": "ELEC-PANEL-MOD",
+      "name": "Сглобяване на табло (на модул)",
+      "description": "Подреждане на предпазители.",
+      "basePrice": 15,
+      "unitType": "module",
+      "calculationFormula": "12 \u002B Count(elec_heavy_appliances) \u002B elec_ac_count"
     },
     {
       "skuCode": "ELEC-PANEL-NICHE",
       "name": "Изкопаване на ниша за вградено табло",
-      "description": "Къртене на голям отвор в стената за скрит монтаж на апартаментно електрическо табло.",
-      "basePrice": 80.00,
-      "unitType": "pcs"
+      "description": "Скрит монтаж.",
+      "basePrice": 95,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(elec_panel, \u0027скрито\u0027), 1, 0)"
     },
     {
-      "skuCode": "ELEC-PANEL-MOD",
-      "name": "Сглобяване и подвързване на табло (на модул)",
-      "description": "Подреждане на предпазители, ДТЗ и гребени. Цената е за 1 модул (1 предпазител = 1 модул).",
-      "basePrice": 12.00,
-      "unitType": "module"
+      "skuCode": "ELEC-POINT-STD",
+      "name": "Изграждане на излазна точка",
+      "description": "Труд за 1 брой контакт/ключ.",
+      "basePrice": 35,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(elec_outlets_comfort, \u0027Базово\u0027), (global_room_count * 3) \u002B 4, if(Contains(elec_outlets_comfort, \u0027Комфорт\u0027), (global_room_count * 5) \u002B 6, if(Contains(elec_outlets_comfort, \u0027Премиум\u0027), (global_room_count * 8) \u002B 10, 0)))"
     },
     {
-      "skuCode": "ELEC-RCD-INSTALL",
-      "name": "Монтаж на Дефектнотокова защита (ДТЗ)",
-      "description": "Специфично подвързване на ДТЗ за влажни зони и токови кръгове.",
-      "basePrice": 35.00,
-      "unitType": "pcs"
+      "skuCode": "ELEC-POINT-LV",
+      "name": "Слаботокова точка",
+      "description": "LAN/TV/СОТ.",
+      "basePrice": 30,
+      "unitType": "pcs",
+      "calculationFormula": "elec_lv_count"
+    },
+    {
+      "skuCode": "ELEC-POINT-DEV",
+      "name": "Девиаторна точка",
+      "description": "Девиаторни ключове.",
+      "basePrice": 55,
+      "unitType": "pcs",
+      "calculationFormula": "elec_dev_count"
+    },
+    {
+      "skuCode": "ELEC-POINT-SPEC",
+      "name": "Извод за щори/вентилатор",
+      "description": "Вентилатори или щори.",
+      "basePrice": 40,
+      "unitType": "pcs",
+      "calculationFormula": "elec_spec_count"
     },
     {
       "skuCode": "ELEC-LED-TRAFO",
       "name": "Монтаж на захранващ блок (Траф) за LED",
-      "description": "Монтаж и подвързване на трансформатор за скрито LED осветление.",
-      "basePrice": 25.00,
-      "unitType": "pcs"
+      "description": "Трансформатор.",
+      "basePrice": 30,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(elec_lighting, \u0027LED\u0027), 1, 0)"
     }
   ]
 }

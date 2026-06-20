@@ -1,40 +1,53 @@
 {
-  "categoryName": "Къртене, Чистене и Извозване",
+  "categoryName": "Къртене и извозване",
   "skus": [
     {
       "skuCode": "DEMO-BATH-FULL",
       "name": "Цялостно къртене на баня",
-      "description": "Къртене на стари плочки, замазка, санитария и събиране в чували.",
-      "basePrice": 750.00,
-      "unitType": "pcs"
+      "description": "Къртене на баня.",
+      "basePrice": 750,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(demo_what, \u0027Цяла баня\u0027), global_bathroom_count, 0)"
     },
     {
       "skuCode": "DEMO-WALL-BRICK",
       "name": "Къртене на тухлена стена",
-      "description": "Събаряне на вътрешни преградни тухлени стени.",
-      "basePrice": 20.00,
-      "unitType": "sqm"
+      "description": "Събаряне на тухлени стени.",
+      "basePrice": 20,
+      "unitType": "sqm",
+      "calculationFormula": "demo_brick_sqm"
     },
     {
       "skuCode": "DEMO-WALL-CONC",
       "name": "Къртене на бетонна стена/панел",
-      "description": "Изрязване и къртене на носещи или панелни стени (изисква становище).",
-      "basePrice": 50.00,
-      "unitType": "sqm"
+      "description": "Къртене на бетон.",
+      "basePrice": 50,
+      "unitType": "sqm",
+      "calculationFormula": "demo_conc_sqm"
     },
     {
       "skuCode": "DEMO-FLOOR-TILE",
       "name": "Къртене на подови настилки/замазка",
-      "description": "Премахване на стар теракот, мозайка или дебела замазка.",
-      "basePrice": 15.00,
-      "unitType": "sqm"
+      "description": "Премахване на настилки.",
+      "basePrice": 15,
+      "unitType": "sqm",
+      "calculationFormula": "demo_floor_sqm"
     },
     {
       "skuCode": "DEMO-DISPOSAL",
-      "name": "Извозване с контейнер",
-      "description": "Наемане на строителен контейнер, изнасяне и такса смет.",
-      "basePrice": 250.00,
-      "unitType": "pcs"
+      "name": "Контейнер за строителни отпадъци",
+      "description": "Наемане на строителен контейнер и такса смет.",
+      "basePrice": 150,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(demo_disposal, \u0027Да\u0027), Ceiling((if(Contains(demo_what, \u0027Цяла баня\u0027), global_bathroom_count * 20, 0) \u002B demo_brick_sqm \u002B demo_conc_sqm) / 15 \u002B (demo_floor_sqm / 35)), 0)"
+    },
+    {
+      "skuCode": "DEMO-LABOR-STAIRS",
+      "name": "Сваляне на отпадъци по стълби",
+      "description": "Ръчен труд при липса на асансьор (цена на етаж за всеки контейнер).",
+      "basePrice": 10,
+      "unitType": "floors",
+      "calculationFormula": "if(Contains(demo_disposal, \u0027Да\u0027) \u0026\u0026 Contains(global_logistics, \u0027Няма асансьор\u0027), Ceiling((if(Contains(demo_what, \u0027Цяла баня\u0027), global_bathroom_count * 20, 0) \u002B demo_brick_sqm \u002B demo_conc_sqm) / 15 \u002B (demo_floor_sqm / 35)) * global_floor, 0)"
     }
   ]
 }

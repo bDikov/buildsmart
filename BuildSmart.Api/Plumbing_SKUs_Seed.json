@@ -1,75 +1,85 @@
 {
-  "categoryName": "ВиК Услуги (Водопровод и канализация)",
+  "categoryName": "ВиК Услуги",
   "skus": [
     {
       "skuCode": "PLMB-POINT-NEW",
-      "name": "Изграждане на нова ВиК точка (чиста и мръсна вода)",
-      "description": "Прокарване на тръби за топла, студена вода и канал до 1 бр. консуматор (мивка, душ, тоалетна).",
+      "name": "Изграждане на нова ВиК точка",
+      "description": "Тръби за топла, студена вода и канал.",
       "basePrice": 70,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_scope, \u0027Цялостна\u0027), (global_bathroom_count * 5) \u002B 3, if(Contains(plumb_scope, \u0027извеждане\u0027), 3, 0))"
     },
     {
       "skuCode": "PLMB-RISER-REPLACE",
       "name": "Смяна на вертикален щранг",
-      "description": "Подмяна на основните метални тръби с полипропилен (в рамките на апартамента).",
+      "description": "Подмяна на основните метални тръби.",
       "basePrice": 240,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_riser, \u0027Да\u0027), global_bathroom_count, 0)"
     },
     {
       "skuCode": "PLMB-SINK-INSTALL",
       "name": "Монтаж на мивка със смесител и сифон",
-      "description": "Пълен монтаж и свързване на мивка за баня или кухня.",
+      "description": "Монтаж на мивки.",
       "basePrice": 90,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_sink_count, \u00273\u002B\u0027), 3, if(Contains(plumb_sink_count, \u00272\u0027), 2, if(Contains(plumb_sink_count, \u00271\u0027), 1, 0)))"
     },
     {
       "skuCode": "PLMB-WC-STD",
       "name": "Монтаж на стандартна тоалетна (моноблок)",
-      "description": "Монтаж, фиксиране към пода и свързване към канализацията.",
+      "description": "Монтаж на тоалетна.",
       "basePrice": 140,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_wc_type, \u0027Стандартна\u0027), global_bathroom_count, 0)"
     },
     {
       "skuCode": "PLMB-WC-BUILTIN",
       "name": "Монтаж на структура за вграждане",
-      "description": "Фиксиране на рамката, свързване на казанчето и монтаж на висяща тоалетна чиния с бутон.",
+      "description": "Конзолна тоалетна.",
       "basePrice": 190,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_wc_type, \u0027Вградена\u0027), global_bathroom_count, 0)"
     },
     {
       "skuCode": "PLMB-SHOWER-CABIN",
       "name": "Монтаж на душ кабина или стъклен параван",
-      "description": "Сглобяване, нивелиране и силикониране на душ кабина/параван.",
+      "description": "Душ кабина.",
       "basePrice": 330,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_shower_type, \u0027кабина\u0027) || Contains(plumb_shower_type, \u0027Вана\u0027), global_bathroom_count, 0)"
     },
     {
       "skuCode": "PLMB-SHOWER-FIXTURE",
-      "name": "Монтаж на душ система / тръбно окачване",
-      "description": "Свързване на душ батерия и монтаж на слушалка/пита на стената.",
+      "name": "Монтаж на душ система",
+      "description": "Душ батерия.",
       "basePrice": 70,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_shower_type, \u0027Само\u0027) || Contains(plumb_shower_type, \u0027кабина\u0027) || Contains(plumb_shower_type, \u0027Вана\u0027), global_bathroom_count, 0)"
     },
     {
       "skuCode": "PLMB-BOILER",
       "name": "Монтаж на електрически бойлер",
-      "description": "Окачване на стена и свързване към ВиК изводи (до 100 литра).",
+      "description": "Бойлер до 100л.",
       "basePrice": 140,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_appliances, \u0027бойлер\u0027), 1, 0)"
     },
     {
       "skuCode": "PLMB-APPLIANCE",
       "name": "Свързване на пералня / съдомиялна",
-      "description": "Включване към готов кран за чиста вода и сифон за мръсна.",
+      "description": "Уреди.",
       "basePrice": 80,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(plumb_appliances, \u0027Пералня\u0027) \u0026\u0026 Contains(plumb_appliances, \u0027Съдомиялна\u0027), 2, if(Contains(plumb_appliances, \u0027Пералня\u0027) || Contains(plumb_appliances, \u0027Съдомиялна\u0027), 1, 0))"
     },
     {
       "skuCode": "PLMB-METER-REPLACE",
       "name": "Смяна на водомер",
-      "description": "Демонтаж на стар водомер и монтаж на нов (без такса пломбиране от Софийска вода).",
+      "description": "Нов водомер.",
       "basePrice": 60,
-      "unitType": "pcs"
+      "unitType": "pcs",
+      "calculationFormula": "global_bathroom_count * 2"
     }
   ]
 }

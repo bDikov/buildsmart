@@ -4,16 +4,18 @@
     {
       "skuCode": "MICRO-STD",
       "name": "Полагане на микроцимент (сухи зони)",
-      "description": "Многослойно нанасяне, шлайфане и запечатване на подове/стени.",
-      "basePrice": 140.00,
-      "unitType": "sqm"
+      "description": "Полагане на микроцимент.",
+      "basePrice": 140,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(mico_area, \u0027Сухи зони\u0027), if(Contains(mico_rooms, \u00271-2 стаи\u0027), 30, global_total_sqm * 0.8), 0)"
     },
     {
       "skuCode": "MICRO-BATH",
       "name": "Полагане на микроцимент в мокри зони (Баня)",
-      "description": "Включва допълнителна хидроизолация и специализиран лак за вода.",
-      "basePrice": 180.00,
-      "unitType": "sqm"
+      "description": "Микроцимент за баня.",
+      "basePrice": 180,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(mico_area, \u0027Мокри зони\u0027), global_bathroom_count * 20, 0)"
     }
   ]
 }
