@@ -3,13 +3,18 @@
 @if (Project != null)
 {
     bool hasJobWaitingForUserReview = Project.JobPosts != null && Project.JobPosts.Any(j => j.Status == JobPostStatus.WaitingForUserReview);
+    bool isMasterOfferReady = Project.HasOfferPdf && Project.JobPosts != null && Project.JobPosts.Any() &&
+        !Project.JobPosts.Any(jp => 
+            jp.Status == JobPostStatus.Draft || 
+            jp.Status == JobPostStatus.GeneratingScope || 
+            jp.Status == JobPostStatus.Rejected);
 
-    @if (hasJobWaitingForUserReview || Project.Status == ProjectStatus.UnderReview || Project.HasOfferPdf)
+    @if (hasJobWaitingForUserReview || Project.Status == ProjectStatus.UnderReview || isMasterOfferReady)
     {
         <h3 class="section-title mt-4">@Loc["ProjectDetail_NextSteps_Title"]</h3>
         
         <div class="next-steps-grid">
-            @if (Project.HasOfferPdf)
+            @if (isMasterOfferReady)
             {
                 <!-- Download Offer Card -->
                 <div class="bs-card next-step-card" style="border-left: 4px solid var(--color-primary);">
