@@ -1,6 +1,6 @@
 ---
 name: add_question
-description: Guide and instructions for adding a new question to an existing category, mapping it to SKUs, updating formulas, and synchronizing local and live databases.
+description: Guide and instructions for adding a new question to an existing category, mapping it to SKUs, updating formulas, and synchronizing local and live databases using the automated startup seeding pipeline.
 ---
 
 # Workspace Skill: Adding Questions, SKUs, and Formulas
@@ -9,7 +9,7 @@ Use this skill whenever the user requests to add a new question to a category, c
 
 ## Step-by-Step Pipeline
 
-Follow this 5-step pipeline without exception:
+Follow this 4-step pipeline without exception:
 
 ### 1. Requirements Gathering (Clarifying with the User)
 Before modifying files, ask the user to clarify:
@@ -19,7 +19,7 @@ Before modifying files, ask the user to clarify:
   - What is the SKU code (e.g., `PANT-MESH`), name, description, unit type (e.g. `sqm`, `m`, `pcs`), and base price?
 - **Formula**: How should the SKU quantity be calculated using the new answer? (e.g., `if(tile_gerung == 'Да', bathroom_count * 6.0, 0)`).
 
-### 2. Update the JSON Templates
+### 2. Update the JSON templates for Categories
 - Open `Categories_Seed_Templates.json` (in the root directory).
 - Locate the target category and add the new question.
 - **For conditional (subsequential) questions**, include:
@@ -31,22 +31,25 @@ Before modifying files, ask the user to clarify:
 > 1. `BuildSmart.Infrastructure/Categories_Seed_Templates.json`
 > 2. `BuildSmart.Api/Categories_Seed_Templates.json`
 
-### 3. Update the SKU definitions & Formulas in the Sync Scripts
-- Open [SyncDbSchemaAndFormulas.csx](file:///C:/Users/bonch/source/repos/BuildSmart/SyncDbSchemaAndFormulas.csx) and [GenerateLiveSql.csx](file:///C:/Users/bonch/.gemini/antigravity/brain/3aff7c08-ebab-4fde-9973-991d0f0dee4c/scratch/GenerateLiveSql.csx) (or wherever the generator script is located).
-- Locate the relevant category section (e.g., `// Electrical`, `// Tiling`) in both scripts.
-- Add or update the `SkuDef` or `WriteSkuBlock` entry with the SKU code, name, description, base price, unit, and the exact algebraic formula referencing the new question ID.
-
-### 4. Update the Local Database
-- Run the local database updater script in the project root to apply the new template structures, SKUs, and formulas locally:
-  ```powershell
-  dotnet script SyncDbSchemaAndFormulas.csx
+### 3. Update the Category SKU JSON Seed Files
+Category SKU JSON files inside [BuildSmart.Infrastructure](file:///C:/Users/bonch/source/repos/BuildSmart/BuildSmart.Infrastructure) are the **single source of truth** for SKU metadata, base prices (in BGN), and calculation formulas.
+- Locate the corresponding JSON file in the infrastructure project (e.g., `Painting_SKUs_Seed.json`, `Plumbing_SKUs_Seed.json`, etc.).
+- Add or update the SKU block inside the `"skus"` array:
+  ```json
+  {
+    "skuCode": "PANT-NEW-SKU",
+    "name": "New SKU Name",
+    "description": "SKU Description",
+    "basePrice": 15.00,
+    "unitType": "sqm",
+    "calculationFormula": "if(paint_scope == 'Стандартен', global_total_sqm * 2.5, 0)"
+  }
   ```
+- Also, synchronize the updated file to the [BuildSmart.Api](file:///C:/Users/bonch/source/repos/BuildSmart/BuildSmart.Api) project to keep templates aligned across folders.
 
-### 5. Generate and Sync the Live SQL
-- Run the SQL generator script to rebuild the database-agnostic update file:
-  ```powershell
-  dotnet script scratch/GenerateLiveSql.csx
-  ```
-  *(Note: This creates `SyncLiveDb.sql` in the project root).*
-- Provide the generated `SyncLiveDb.sql` file to the user so they can execute it directly on the Live PostgreSQL database using pgAdmin or DBeaver.
-- Commit the updated C# and JSON files.
+### 4. Build and Push (Automated Synchronization)
+No manual SQL execution or runner script is needed on the Live DB. 
+- Run `dotnet build` locally to compile the solution and verify that the embedded resources load properly.
+- Push the changes to the `main` branch. 
+- The CI/CD deployment pipeline will build and run the updated API.
+- Upon startup, [AppDbContext.cs](file:///C:/Users/bonch/source/repos/BuildSmart/BuildSmart.Infrastructure/Persistence/AppDbContext.cs) will read the embedded JSON seed files, automatically convert base prices from BGN to EUR (by dividing by `1.95583`), insert any new SKUs, and update the properties and calculation formulas for all existing SKUs.

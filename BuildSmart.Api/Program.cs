@@ -337,12 +337,46 @@ public partial class Program
 				{
 					context.Database.Migrate(); // Apply any pending migrations
 				}
-				await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
-				await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
-				await context.SeedSkusAsync(); // Seed the SKUs from JSON data
-				await context.SeedAdminUser(); // Seed the admin user
-				await context.SeedHomeownerUser(); // Seed the homeowner user
-				await context.SeedTradesmanUser(); // Seed the painter tradesman
+
+				if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.PostgreSQL" ||
+				    context.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+				{
+					using (var transaction = await context.Database.BeginTransactionAsync())
+					{
+						// Acquire a transaction-level advisory lock. 748291 is our arbitrary key.
+						await context.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(748291);");
+
+						await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
+						context.ChangeTracker.Clear();
+						await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
+						context.ChangeTracker.Clear();
+						await context.SeedSkusAsync(); // Seed the SKUs from JSON data
+						context.ChangeTracker.Clear();
+						await context.SeedAdminUser(); // Seed the admin user
+						context.ChangeTracker.Clear();
+						await context.SeedHomeownerUser(); // Seed the homeowner user
+						context.ChangeTracker.Clear();
+						await context.SeedTradesmanUser(); // Seed the painter tradesman
+						context.ChangeTracker.Clear();
+
+						await transaction.CommitAsync();
+					}
+				}
+				else
+				{
+					await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
+					context.ChangeTracker.Clear();
+					await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
+					context.ChangeTracker.Clear();
+					await context.SeedSkusAsync(); // Seed the SKUs from JSON data
+					context.ChangeTracker.Clear();
+					await context.SeedAdminUser(); // Seed the admin user
+					context.ChangeTracker.Clear();
+					await context.SeedHomeownerUser(); // Seed the homeowner user
+					context.ChangeTracker.Clear();
+					await context.SeedTradesmanUser(); // Seed the painter tradesman
+					context.ChangeTracker.Clear();
+				}
 			}
 			catch (Exception ex)
 			{

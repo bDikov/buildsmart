@@ -393,8 +393,10 @@ public class AppDbContext : DbContext
                         _ => categoryName
                     };
                     
-                    category.Translations.Add(new ServiceCategoryTranslation 
+                    await ServiceCategoryTranslations.AddAsync(new ServiceCategoryTranslation 
                     { 
+                        Id = Guid.NewGuid(),
+                        CategoryId = category.Id,
                         LanguageCode = "bg", 
                         Name = bgName 
                     });
@@ -569,7 +571,7 @@ public class AppDbContext : DbContext
                                 }
                                 else
                                 {
-                                    existing.Translations.Add(new ServiceSkuTranslation
+                                    await ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
                                     {
                                         Id = Guid.NewGuid(),
                                         SkuId = existing.Id,
