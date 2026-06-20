@@ -51,11 +51,27 @@ namespace BuildSmart.Infrastructure.Services
 					Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu" }
 				};
 
-				_logger.LogInformation("Downloading Chromium into safe Temp folder...");
-				var fetcherOptions = new BrowserFetcherOptions { Path = Path.GetTempPath() };
-				var fetcher = new BrowserFetcher(fetcherOptions);
-				var installedBrowser = await fetcher.DownloadAsync();
-				launchOptions.ExecutablePath = installedBrowser.GetExecutablePath();
+				string localChromePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe";
+				string localEdgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
+
+				if (OperatingSystem.IsWindows() && File.Exists(localChromePath))
+				{
+					_logger.LogInformation($"Using local Chrome installation: {localChromePath}");
+					launchOptions.ExecutablePath = localChromePath;
+				}
+				else if (OperatingSystem.IsWindows() && File.Exists(localEdgePath))
+				{
+					_logger.LogInformation($"Using local Edge installation: {localEdgePath}");
+					launchOptions.ExecutablePath = localEdgePath;
+				}
+				else
+				{
+					_logger.LogInformation("Downloading Chromium into safe Temp folder...");
+					var fetcherOptions = new BrowserFetcherOptions { Path = Path.GetTempPath() };
+					var fetcher = new BrowserFetcher(fetcherOptions);
+					var installedBrowser = await fetcher.DownloadAsync();
+					launchOptions.ExecutablePath = installedBrowser.GetExecutablePath();
+				}
 
 				using var browser = await Puppeteer.LaunchAsync(launchOptions);
 				using var page = await browser.NewPageAsync();

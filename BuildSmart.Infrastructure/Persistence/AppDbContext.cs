@@ -129,13 +129,13 @@ public class AppDbContext : DbContext
 
     public async Task SeedTradesmanUser()
     {
-        var paintingCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Бояджийски и шпакловъчни услуги (Painting)");
+        var paintingCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Бояджийски и шпакловъчни услуги");
         if (paintingCategory == null)
         {
             paintingCategory = new ServiceCategory
             {
                 Id = Guid.NewGuid(),
-                Name = "Бояджийски и шпакловъчни услуги (Painting)",
+                Name = "Бояджийски и шпакловъчни услуги",
                 Description = "Interior and exterior painting services",
                 Status = CategoryStatus.Active,
                 CreatedAt = DateTime.UtcNow,
@@ -252,6 +252,84 @@ public class AppDbContext : DbContext
         return await reader.ReadToEndAsync();
     }
 
+    public async Task CleanupAndMergeCategoriesAsync()
+    {
+        var suffixMap = new Dictionary<string, string>
+        {
+            { "ВиК Услуги (Plumbing)", "ВиК Услуги" },
+            { "Бояджийски и шпакловъчни услуги (Painting)", "Бояджийски и шпакловъчни услуги" },
+            { "Къртене и извозване (Demolition)", "Къртене и извозване" },
+            { "Сухо строителство (Drywall)", "Сухо строителство" },
+            { "Подови и стенни настилки (Tiling)", "Подови и стенни настилки" },
+            { "Микроцимент (Microcement)", "Микроцимент" }
+        };
+
+        foreach (var entry in suffixMap)
+        {
+            var suffixName = entry.Key;
+            var cleanName = entry.Value;
+
+            var suffixCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == suffixName);
+            if (suffixCategory == null) continue;
+
+            var cleanCategory = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == cleanName);
+            if (cleanCategory == null)
+            {
+                suffixCategory.Name = cleanName;
+                suffixCategory.UpdatedAt = DateTime.UtcNow;
+                await SaveChangesAsync();
+                Console.WriteLine($"Renamed category '{suffixName}' to '{cleanName}'");
+            }
+            else
+            {
+                Console.WriteLine($"Merging category '{suffixName}' into '{cleanName}'...");
+
+                // ServiceSkus
+                var skus = await ServiceSkus.Where(s => s.ServiceCategoryId == suffixCategory.Id).ToListAsync();
+                foreach (var sku in skus)
+                {
+                    var existingSku = await ServiceSkus.FirstOrDefaultAsync(s => s.ServiceCategoryId == cleanCategory.Id && s.SkuCode == sku.SkuCode);
+                    if (existingSku == null)
+                    {
+                        sku.ServiceCategoryId = cleanCategory.Id;
+                        sku.UpdatedAt = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        ServiceSkus.Remove(sku);
+                    }
+                }
+
+                // TradesmanSkills
+                var skills = await TradesmanSkills.Where(ts => ts.ServiceCategoryId == suffixCategory.Id).ToListAsync();
+                foreach (var skill in skills)
+                {
+                    var exists = await TradesmanSkills.AnyAsync(ts => ts.TradesmanProfileId == skill.TradesmanProfileId && ts.ServiceCategoryId == cleanCategory.Id);
+                    if (!exists)
+                    {
+                        skill.ServiceCategoryId = cleanCategory.Id;
+                    }
+                    else
+                    {
+                        TradesmanSkills.Remove(skill);
+                    }
+                }
+
+                // JobPosts
+                var jobs = await JobPosts.Where(jp => jp.ServiceCategoryId == suffixCategory.Id).ToListAsync();
+                foreach (var job in jobs)
+                {
+                    job.ServiceCategoryId = cleanCategory.Id;
+                    job.UpdatedAt = DateTime.UtcNow;
+                }
+
+                ServiceCategories.Remove(suffixCategory);
+                await SaveChangesAsync();
+                Console.WriteLine($"Merged and removed category '{suffixName}'");
+            }
+        }
+    }
+
     public async Task SeedCategoriesAndQuestionsAsync()
     {
         try
@@ -291,12 +369,12 @@ public class AppDbContext : DbContext
                 {
                     string bgName = categoryName switch {
                         "Електрическа Инсталация" => "Електроуслуги",
-                        "ВиК Услуги (Plumbing)" => "ВиК Услуги",
-                        "Бояджийски и шпакловъчни услуги (Painting)" => "Боядисване",
-                        "Къртене и извозване (Demolition)" => "Къртене",
-                        "Сухо строителство (Drywall)" => "Сухо Строителство",
-                        "Подови и стенни настилки (Tiling)" => "Настилки",
-                        "Микроцимент (Microcement)" => "Микроцимент",
+                        "ВиК Услуги" => "ВиК Услуги",
+                        "Бояджийски и шпакловъчни услуги" => "Боядисване",
+                        "Къртене и извозване" => "Къртене",
+                        "Сухо строителство" => "Сухо Строителство",
+                        "Подови и стенни настилки" => "Настилки",
+                        "Микроцимент" => "Микроцимент",
                         _ => categoryName
                     };
                     
@@ -457,23 +535,23 @@ public class AppDbContext : DbContext
 
     private string MapMarketCategoryToDbName(string marketName)
     {
-        if (marketName.Contains("Demolition")) return "Къртене и извозване (Demolition)";
-        if (marketName.Contains("Drywall")) return "Сухо строителство (Drywall)";
-        if (marketName.Contains("Painting")) return "Бояджийски и шпакловъчни услуги (Painting)";
-        if (marketName.Contains("Tiling")) return "Подови и стенни настилки (Tiling)";
-        if (marketName.Contains("Plumbing")) return "ВиК Услуги (Plumbing)";
+        if (marketName.Contains("Demolition")) return "Къртене и извозване";
+        if (marketName.Contains("Drywall")) return "Сухо строителство";
+        if (marketName.Contains("Painting")) return "Бояджийски и шпакловъчни услуги";
+        if (marketName.Contains("Tiling")) return "Подови и стенни настилки";
+        if (marketName.Contains("Plumbing")) return "ВиК Услуги";
         if (marketName.Contains("Electrical")) return "Електрическа Инсталация";
         return marketName;
     }
 
     private string GetCategoryPrefix(string dbName)
     {
-        if (dbName.Contains("Demolition")) return "DEMO";
-        if (dbName.Contains("Drywall")) return "DRYW";
-        if (dbName.Contains("Painting")) return "PANT";
-        if (dbName.Contains("Tiling")) return "TILE";
-        if (dbName.Contains("Plumbing")) return "PLMB";
-        if (dbName.Contains("Electrical")) return "ELEC";
+        if (dbName.Contains("Demolition") || dbName.Contains("Къртене")) return "DEMO";
+        if (dbName.Contains("Drywall") || dbName.Contains("Сухо")) return "DRYW";
+        if (dbName.Contains("Painting") || dbName.Contains("Бояджийски")) return "PANT";
+        if (dbName.Contains("Tiling") || dbName.Contains("настилки")) return "TILE";
+        if (dbName.Contains("Plumbing") || dbName.Contains("ВиК")) return "PLMB";
+        if (dbName.Contains("Electrical") || dbName.Contains("Електрическа")) return "ELEC";
         return "GEN";
     }
 

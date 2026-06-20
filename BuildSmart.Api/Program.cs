@@ -337,6 +337,7 @@ public partial class Program
 				{
 					context.Database.Migrate(); // Apply any pending migrations
 				}
+				await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
 				await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
 				await context.SeedSkusAsync(); // Seed the SKUs from JSON data
 				await context.SeedAdminUser(); // Seed the admin user

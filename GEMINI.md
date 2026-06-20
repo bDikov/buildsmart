@@ -153,6 +153,12 @@ If the update fails with `error HTTP_ERROR: No connection could be made because 
 5. Exclusions
 **Tone**: Technical, Professional, Objective.
 
+### UI Optimization: Preventing Duplicate AI Calls
+**CRITICAL RULE:** In `JobWizardViewModel.cs`, the submission to the AI engine (`SubmitJobForScopeGeneration`) **MUST ALWAYS** be guarded by a hash comparison of the user's answers. 
+- You must use `_lastSubmittedJobHashes` to store the serialized `_masterAnswerKey` when a job is submitted.
+- Before calling `ExecuteAsync(jobId)`, you must verify that `!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash`.
+- **NEVER** remove or bypass this caching logic during refactoring. It is critical for saving API costs and preventing redundant loading states when a user navigates "Back" and "Next" without modifying data.
+
 ### Project Proposals & Offer Documents
 **Format**: Generated dynamically as PDFs matching the "Project Proposal Template (Community)" Figma design.
 **Multilingual & T&C Support**: All generated offer PDFs, including their Terms and Conditions, formatting, and AI-generated pricing breakdowns, must be fully multilingual and dynamic based on the project's selected language code. Hardcoded T&Cs should be extracted and driven by the backend localization engine or passed down appropriately.
