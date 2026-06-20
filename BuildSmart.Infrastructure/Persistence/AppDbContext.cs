@@ -256,6 +256,13 @@ public class AppDbContext : DbContext
     {
         var suffixMap = new Dictionary<string, string>
         {
+            { "Electrical", "Електрическа Инсталация" },
+            { "Painting", "Бояджийски и шпакловъчни услуги" },
+            { "Plumbing", "ВиК Услуги" },
+            { "Demolition", "Къртене и извозване" },
+            { "Drywall", "Сухо строителство" },
+            { "Tiling", "Подови и стенни настилки" },
+            { "Microcement", "Микроцимент" },
             { "ВиК Услуги (Plumbing)", "ВиК Услуги" },
             { "Бояджийски и шпакловъчни услуги (Painting)", "Бояджийски и шпакловъчни услуги" },
             { "Къртене и извозване (Demolition)", "Къртене и извозване" },
@@ -313,6 +320,14 @@ public class AppDbContext : DbContext
                     {
                         TradesmanSkills.Remove(skill);
                     }
+                }
+
+                // TradesmanMedia
+                var mediaList = await TradesmanMedia.Where(tm => tm.ServiceCategoryId == suffixCategory.Id).ToListAsync();
+                foreach (var media in mediaList)
+                {
+                    media.ServiceCategoryId = cleanCategory.Id;
+                    media.UpdatedAt = DateTime.UtcNow;
                 }
 
                 // JobPosts

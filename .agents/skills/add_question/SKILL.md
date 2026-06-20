@@ -31,24 +31,22 @@ Before modifying files, ask the user to clarify:
 > 1. `BuildSmart.Infrastructure/Categories_Seed_Templates.json`
 > 2. `BuildSmart.Api/Categories_Seed_Templates.json`
 
-### 3. Update the C# SKU definitions & Formulas
-- Open `UpdateQuestionsRunner/Program.cs`.
-- Locate the relevant category section (e.g., `// Electrical`, `// Tiling`).
-- Add or update the `SkuDef` entries using the correct formula mapping that references the new question ID.
-- Compile the runner project to ensure there are no syntax errors.
+### 3. Update the SKU definitions & Formulas in the Sync Scripts
+- Open [SyncDbSchemaAndFormulas.csx](file:///C:/Users/bonch/source/repos/BuildSmart/SyncDbSchemaAndFormulas.csx) and [GenerateLiveSql.csx](file:///C:/Users/bonch/.gemini/antigravity/brain/3aff7c08-ebab-4fde-9973-991d0f0dee4c/scratch/GenerateLiveSql.csx) (or wherever the generator script is located).
+- Locate the relevant category section (e.g., `// Electrical`, `// Tiling`) in both scripts.
+- Add or update the `SkuDef` or `WriteSkuBlock` entry with the SKU code, name, description, base price, unit, and the exact algebraic formula referencing the new question ID.
 
 ### 4. Update the Local Database
-Run the local database updater to verify the changes:
-- If a `.csx` script (like `UpdateLocalTemplates.csx` or `UpdateLocalElec.csx`) exists, run it via:
+- Run the local database updater script in the project root to apply the new template structures, SKUs, and formulas locally:
   ```powershell
-  dotnet script UpdateLocalTemplates.csx
+  dotnet script SyncDbSchemaAndFormulas.csx
   ```
-- Or run `UpdateQuestionsRunner` (if Windows Application Control is not blocking it) to apply the SKUs and formulas to the local database.
 
 ### 5. Generate and Sync the Live SQL
-- Run the SQL generation script from the project root:
+- Run the SQL generator script to rebuild the database-agnostic update file:
   ```powershell
-  node GenerateSql.js
+  dotnet script scratch/GenerateLiveSql.csx
   ```
-  This reads the updated `Categories_Seed_Templates.json` and rebuilds the `ON CONFLICT DO UPDATE` blocks inside `SeedLiveCategories.sql`.
-- Commit the updated `SeedLiveCategories.sql` and updated code files.
+  *(Note: This creates `SyncLiveDb.sql` in the project root).*
+- Provide the generated `SyncLiveDb.sql` file to the user so they can execute it directly on the Live PostgreSQL database using pgAdmin or DBeaver.
+- Commit the updated C# and JSON files.

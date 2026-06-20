@@ -29,6 +29,13 @@ using (var conn = new NpgsqlConnection(connString)) {
         // Clean up suffix categories if any exist and merge them
         Console.WriteLine("Running category suffix cleanup and merge...");
         var suffixMap = new Dictionary<string, string> {
+            { "Electrical", "Електрическа Инсталация" },
+            { "Painting", "Бояджийски и шпакловъчни услуги" },
+            { "Plumbing", "ВиК Услуги" },
+            { "Demolition", "Къртене и извозване" },
+            { "Drywall", "Сухо строителство" },
+            { "Tiling", "Подови и стенни настилки" },
+            { "Microcement", "Микроцимент" },
             { "ВиК Услуги (Plumbing)", "ВиК Услуги" },
             { "Бояджийски и шпакловъчни услуги (Painting)", "Бояджийски и шпакловъчни услуги" },
             { "Къртене и извозване (Demolition)", "Къртене и извозване" },
@@ -86,6 +93,13 @@ using (var conn = new NpgsqlConnection(connString)) {
                         cmd.ExecuteNonQuery();
                     }
                     using (var cmd = new NpgsqlCommand("DELETE FROM \"TradesmanSkills\" WHERE \"ServiceCategoryId\" = @suffixId;", conn)) {
+                        cmd.Parameters.AddWithValue("suffixId", suffixId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Update TradesmanMedia
+                    using (var cmd = new NpgsqlCommand("UPDATE \"TradesmanMedia\" SET \"ServiceCategoryId\" = @cleanId, \"UpdatedAt\" = now() WHERE \"ServiceCategoryId\" = @suffixId;", conn)) {
+                        cmd.Parameters.AddWithValue("cleanId", cleanId);
                         cmd.Parameters.AddWithValue("suffixId", suffixId);
                         cmd.ExecuteNonQuery();
                     }
