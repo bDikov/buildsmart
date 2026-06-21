@@ -34,8 +34,8 @@ public class OffersControllerTests
         _unitOfWorkMock.Setup(u => u.Projects).Returns(_projectRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.AiCalculations).Returns(_aiCalcRepoMock.Object);
 
-        var mockLocalized = new LocalizedString("Label_Subtotal", "Subtotal for {0}");
-        _localizerMock.Setup(l => l["Label_Subtotal"]).Returns(mockLocalized);
+        _localizerMock.Setup(l => l[It.IsAny<string>()])
+            .Returns((string name) => new LocalizedString(name, name == "Label_Subtotal" ? "Subtotal for {0}" : $"Mocked {name}"));
 
         _controller = new OffersController(
             _unitOfWorkMock.Object,
@@ -107,5 +107,91 @@ public class OffersControllerTests
         fileResult.ContentType.Should().Be("application/pdf");
         fileResult.FileDownloadName.Should().Be($"{projectTitle}_Offer.pdf");
         fileResult.FileContents.Should().BeEquivalentTo(pdfBytes);
+    }
+
+    [Fact]
+    public async Task DownloadOfferPdf_ShouldGenerateAndReturnPdf_WhenProjectHasCalculationsButNoPdf()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        
+        var project = new Project
+        {
+            Id = projectId,
+            Title = "Bathroom Renovation",
+            LanguageCode = "bg",
+            HomeownerId = homeownerId,
+            Description = "Initial description",
+            MasterOfferPdf = null
+        };
+
+        var homeowner = new User
+        {
+            Id = homeownerId,
+            FirstName = "Ivan",
+            LastName = "Ivanov",
+            Location = "Sofia"
+        };
+
+        var category = new ServiceCategory
+        {
+            Id = categoryId,
+            Name = "Bathroom",
+            Translations = new List<ServiceCategoryTranslation>
+            {
+                new ServiceCategoryTranslation { LanguageCode = "bg", Name = "Баня" }
+            }
+        };
+
+        var calculation = new AiCalculation
+        {
+            ProjectId = projectId,
+            ServiceCategoryId = categoryId,
+            TotalEstimatedPrice = 1200.50m,
+            Tasks = new List<AiCalculationTask>
+            {
+                new AiCalculationTask
+                {
+                    Title = "Install Sink",
+                    SequenceOrder = 1,
+                    EstimatedPrice = 300m,
+                    AcceptanceCriteria = new List<AiCalculationCriteria>
+                    {
+                        new AiCalculationCriteria { Description = "Must be leveled" }
+                    }
+                }
+            }
+        };
+
+        var dummyPdfBytes = new byte[] { 9, 8, 7 };
+
+        _projectRepoMock.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _aiCalcRepoMock.Setup(r => r.GetByProjectWithTasksAsync(projectId))
+            .ReturnsAsync(new List<AiCalculation> { calculation });
+        
+        var categoryRepoMock = new Mock<IServiceCategoryRepository>();
+        categoryRepoMock.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync(category);
+        _unitOfWorkMock.Setup(u => u.ServiceCategories).Returns(categoryRepoMock.Object);
+
+        var userRepoMock = new Mock<IUserRepository>();
+        userRepoMock.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(homeowner);
+        _unitOfWorkMock.Setup(u => u.Users).Returns(userRepoMock.Object);
+
+        _pdfGeneratorServiceMock.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>()))
+            .ReturnsAsync(dummyPdfBytes);
+
+        // Act
+        var result = await _controller.DownloadOfferPdf(projectId);
+
+        // Assert
+        var fileResult = result.Should().BeOfType<FileContentResult>().Subject;
+        fileResult.ContentType.Should().Be("application/pdf");
+        fileResult.FileDownloadName.Should().Be("Bathroom Renovation_Offer.pdf");
+        fileResult.FileContents.Should().BeEquivalentTo(dummyPdfBytes);
+
+        project.MasterOfferPdf.Should().BeEquivalentTo(dummyPdfBytes);
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }
