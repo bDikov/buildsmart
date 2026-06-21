@@ -7,6 +7,8 @@
 @implements IDisposable
 @inject ProjectDetailViewModel ViewModel
 @inject NavigationManager NavManager
+@inject BuildSmart.SharedUI.Services.SignalRService SignalRService
+@inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 
 <ErrorBoundary>
     <ChildContent>
@@ -143,12 +145,24 @@
     protected override async Task OnInitializedAsync()
     {
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        SignalRService.NotificationReceived += OnNotificationReceived;
         
         var query = new Dictionary<string, object>();
         if (ProjectId.HasValue) query["ProjectId"] = ProjectId.Value;
         if (JobId.HasValue) query["JobId"] = JobId.Value;
         
         ViewModel.ApplyQueryAttributes(query);
+    }
+
+    private void OnNotificationReceived(string title, string msg, object? data)
+    {
+        if (ViewModel.Project == null) return;
+        InvokeAsync(async () =>
+        {
+            try { StoreAccessor.OperationStore.Clear(); } catch { }
+            await ViewModel.LoadProjectAsync(ViewModel.Project.Id);
+            StateHasChanged();
+        });
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -167,5 +181,6 @@
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
+        SignalRService.NotificationReceived -= OnNotificationReceived;
     }
 }

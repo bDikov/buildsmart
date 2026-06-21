@@ -6,6 +6,7 @@
 @implements IDisposable
 @inject NotificationsViewModel ViewModel
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject BuildSmart.SharedUI.Services.SignalRService SignalRService
 
 <div class="notifications-container">
     <div class="header-section">
@@ -277,8 +278,19 @@
     protected override async Task OnInitializedAsync()
     {
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        SignalRService.NotificationReceived += OnNotificationReceived;
         await ViewModel.LoadNotificationsCommand.ExecuteAsync(null);
         await ViewModel.MarkAllAsReadCommand.ExecuteAsync(null);
+    }
+
+    private void OnNotificationReceived(string title, string msg, object? data)
+    {
+        InvokeAsync(async () =>
+        {
+            await ViewModel.LoadNotificationsCommand.ExecuteAsync(null);
+            await ViewModel.MarkAllAsReadCommand.ExecuteAsync(null);
+            StateHasChanged();
+        });
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -309,5 +321,6 @@
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
+        SignalRService.NotificationReceived -= OnNotificationReceived;
     }
 }

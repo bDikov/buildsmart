@@ -7,6 +7,9 @@
 @inject NavigationManager NavManager
 @inject IBuildSmartApiClient ApiClient
 @inject IJSRuntime JSRuntime
+@implements IDisposable
+@inject BuildSmart.SharedUI.Services.SignalRService SignalRService
+@inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 
 <div class="admin-container">
     <div class="header-section">
@@ -286,10 +289,21 @@
 
     protected override async Task OnInitializedAsync()
     {
+        SignalRService.NotificationReceived += OnNotificationReceived;
         if (ViewModel.Projects.Count == 0)
         {
             await TriggerSearch();
         }
+    }
+
+    private void OnNotificationReceived(string title, string msg, object? data)
+    {
+        InvokeAsync(async () =>
+        {
+            try { StoreAccessor.OperationStore.Clear(); } catch { }
+            await TriggerSearch();
+            StateHasChanged();
+        });
     }
 
     private async Task HandleSearchEnter(KeyboardEventArgs e)
@@ -352,8 +366,9 @@
             }
         }
     }
-}led to delete job: {ex.Message}");
-            }
-        }
+
+    public void Dispose()
+    {
+        SignalRService.NotificationReceived -= OnNotificationReceived;
     }
 }

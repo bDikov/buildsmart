@@ -3,6 +3,9 @@
 @using BuildSmart.SharedUI.GraphQL
 @inject MyProjectsViewModel ViewModel
 @inject NavigationManager NavManager
+@implements IDisposable
+@inject BuildSmart.SharedUI.Services.SignalRService SignalRService
+@inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 
 <div class="projects-container">
     <div class="header-section">
@@ -391,10 +394,21 @@
 
     protected override async Task OnInitializedAsync()
     {
+        SignalRService.NotificationReceived += OnNotificationReceived;
         if (ViewModel.Projects.Count == 0)
         {
             await ViewModel.LoadProjectsAsync();
         }
+    }
+
+    private void OnNotificationReceived(string title, string msg, object? data)
+    {
+        InvokeAsync(async () =>
+        {
+            try { StoreAccessor.OperationStore.Clear(); } catch { }
+            await ViewModel.LoadProjectsAsync();
+            StateHasChanged();
+        });
     }
 
     private int CalculateProgress(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)
@@ -436,5 +450,10 @@
         {
             NavManager.NavigateTo($"/project-detail?projectId={project.Id}");
         }
+    }
+
+    public void Dispose()
+    {
+        SignalRService.NotificationReceived -= OnNotificationReceived;
     }
 }
