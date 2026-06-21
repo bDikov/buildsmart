@@ -103,4 +103,7 @@
 
   <data name="Title_PricingUpdated" xml:space="preserve"><value>Pricing Updated</value></data>
   <data name="Msg_PricingUpdated" xml:space="preserve"><value>The AI has finished calculating task prices for '{0}'.</value></data>
+
+  <data name="Title_OfferReady" xml:space="preserve"><value>Offer Ready</value></data>
+  <data name="Msg_OfferReady" xml:space="preserve"><value>Your project offer for '{0}' is ready for download.</value></data>
 </root>

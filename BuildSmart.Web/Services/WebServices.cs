@@ -179,12 +179,46 @@ public class WebNavigationBridge : INavigationBridge
     public Task NavigateToAsync(string route, IDictionary<string, object>? parameters = null)
     {
         var url = route;
-        
-        // Map old Page-based routes to new kebab-case routes for backward compatibility
-        if (url.EndsWith("Page"))
+
+        if (url == "..")
         {
-            var pageName = url.Replace("Page", "");
-            url = pageName switch
+            var path = new Uri(_navigationManager.Uri).AbsolutePath.ToLower();
+            if (path.Contains("/category-detail"))
+            {
+                _navigationManager.NavigateTo("/category-management");
+                return Task.CompletedTask;
+            }
+            if (path.Contains("/user-edit"))
+            {
+                _navigationManager.NavigateTo("/user-management");
+                return Task.CompletedTask;
+            }
+            
+            try { _jsRuntime.InvokeVoidAsync("history.back"); } catch { }
+            return Task.CompletedTask;
+        }
+
+        if (url == "../..")
+        {
+            try { _jsRuntime.InvokeVoidAsync("history.go", -2); } catch { }
+            return Task.CompletedTask;
+        }
+
+        // Parse query string if present inside url to perform EndsWith("Page") check correctly
+        string pathPart = url;
+        string queryPart = "";
+        int qIndex = url.IndexOf('?');
+        if (qIndex >= 0)
+        {
+            pathPart = url.Substring(0, qIndex);
+            queryPart = url.Substring(qIndex);
+        }
+
+        // Map old Page-based routes to new kebab-case routes for backward compatibility
+        if (pathPart.EndsWith("Page"))
+        {
+            var pageName = pathPart.Replace("Page", "");
+            var mappedPath = pageName switch
             {
                 "CreateAccount" => "/create-account",
                 "JobWizard" => "/job-wizard",
@@ -203,8 +237,12 @@ public class WebNavigationBridge : INavigationBridge
                 "BookingDashboard" => "/booking-dashboard",
                 "LoginPage" => "/login",
                 "BlazorHost" => "/",
-                _ => url
+                "CategoryManagement" => "/category-management",
+                "CategoryDetail" => "/category-detail",
+                "AdminCategorySkus" => "/admin-category-skus",
+                _ => pathPart
             };
+            url = mappedPath + queryPart;
         }
 
         // Intercept native MAUI shell routes and translate them to Web routes

@@ -988,7 +988,25 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		if (_currentProjectId == null)
 		{
-			if (string.IsNullOrWhiteSpace(ProjectTitle)) return;
+			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+			if (string.IsNullOrWhiteSpace(ProjectTitle))
+			{
+				ProjectTitle = selectedCategories.Count > 0 
+					? $"Build - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: "Build - Renovation";
+			}
+
+			if (string.IsNullOrWhiteSpace(ProjectLocation))
+			{
+				ProjectLocation = "Sofia";
+			}
+
+			if (string.IsNullOrWhiteSpace(ProjectDescription))
+			{
+				ProjectDescription = selectedCategories.Count > 0 
+					? $"Renovation project for {string.Join(", ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: "Renovation project";
+			}
 
 			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
 			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
@@ -1058,11 +1076,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			IsBusy = true;
 
 			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
-			if (string.IsNullOrWhiteSpace(ProjectTitle))
+			if (string.IsNullOrWhiteSpace(ProjectTitle) || ProjectTitle == "Renovation Project" || ProjectTitle.StartsWith("Build -"))
 			{
 				ProjectTitle = selectedCategories.Count > 0 
-					? $"{selectedCategories.First().Category.Name} Project"
-					: "Renovation Project";
+					? $"Build - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: "Build - Renovation";
 			}
 			if (string.IsNullOrWhiteSpace(ProjectLocation))
 			{
@@ -1070,7 +1088,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 			if (string.IsNullOrWhiteSpace(ProjectDescription))
 			{
-				ProjectDescription = $"Renovation project for {string.Join(", ", selectedCategories.Select(c => c.Category.Name))}";
+				ProjectDescription = selectedCategories.Count > 0 
+					? $"Renovation project for {string.Join(", ", selectedCategories.Select(c => c.Category.Name))}"
+					: "Renovation project";
 			}
 
 			// Ensure everything is saved
@@ -1156,6 +1176,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			return false;
 		}
+	}
+
+	private string GetLocalizedCategoryName(IGetServiceCategories_ServiceCategories category)
+	{
+		var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+		var translation = category.Translations?.FirstOrDefault(t => t.LanguageCode.Equals(currentLang, StringComparison.OrdinalIgnoreCase));
+		return translation?.Name ?? category.Name;
 	}
 
 	public class WizardStep

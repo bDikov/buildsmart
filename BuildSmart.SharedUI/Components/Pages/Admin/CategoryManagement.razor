@@ -63,6 +63,9 @@
                         <span class="status-badge @category.Status.ToString().ToLower()">@Loc[$"Status_{category.Status}"]</span>
                     </div>
                     <div class="category-actions">
+                        <button class="bs-btn-primary edit-btn" @onclick='() => NavManager.NavigateTo($"/category-detail?id={category.Id}")'>
+                            Edit
+                        </button>
                         <button class="bs-btn-secondary toggle-btn" @onclick="() => ViewModel.UpdateStatusCommand.ExecuteAsync(category.Id)" @onclick:stopPropagation="true">
                             Toggle Status
                         </button>
@@ -74,6 +77,11 @@
 </div>
 
 <style>
+    .edit-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-right: 8px;
+    }
     .admin-container {
         padding: 40px 20px;
         max-width: 1200px;

@@ -554,6 +554,12 @@ public class ScopeGenerationWorker
 			var project = await unitOfWork.Projects.GetByIdAsync(projectId);
 			if (project == null) return;
 
+			if (project.MasterOfferPdf != null && project.MasterOfferPdf.Length > 0)
+			{
+				_logger.LogInformation("Master PDF already generated for Project {ProjectId}. Skipping regeneration and duplicate notification.", projectId);
+				return;
+			}
+
 			// Store original culture and safely switch to project language
 			var originalCulture = CultureInfo.CurrentUICulture;
 			try

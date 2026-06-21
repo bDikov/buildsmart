@@ -103,4 +103,7 @@
 
   <data name="Title_PricingUpdated" xml:space="preserve"><value>Цените са Актуализирани</value></data>
   <data name="Msg_PricingUpdated" xml:space="preserve"><value>AI приключи изчисляването на цените за '{0}'.</value></data>
+
+  <data name="Title_OfferReady" xml:space="preserve"><value>Офертата е Готова</value></data>
+  <data name="Msg_OfferReady" xml:space="preserve"><value>Вашата оферта за '{0}' е готова за изтегляне.</value></data>
 </root>

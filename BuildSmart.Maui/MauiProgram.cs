@@ -154,11 +154,8 @@ public static class MauiProgram
 		builder.Services.AddTransient<PassedAuctionsViewModel>();
 
 		// Admin Pages
-		builder.Services.AddTransient<CategoryManagementPage>();
 		builder.Services.AddTransient<CategoryManagementViewModel>();
-		builder.Services.AddTransient<CategoryDetailPage>();
 		builder.Services.AddTransient<CategoryDetailViewModel>();
-		builder.Services.AddTransient<AdminCategorySkusPage>();
 		builder.Services.AddTransient<AdminCategorySkusViewModel>();
 
 		builder.Services.AddTransient<AdminJobReviewPage>();
@@ -170,14 +167,11 @@ public static class MauiProgram
 		builder.Services.AddTransient<UserEditViewModel>();
 		builder.Services.AddTransient<AdminProjectsViewModel>();
 
-		Routing.RegisterRoute(nameof(CategoryManagementPage), typeof(CategoryManagementPage));
 		Routing.RegisterRoute(nameof(Views.Admin.UserManagementPage), typeof(Views.Admin.UserManagementPage));
 		Routing.RegisterRoute(nameof(Views.Admin.AdminJobReviewPage), typeof(Views.Admin.AdminJobReviewPage));
 
 		Routing.RegisterRoute(nameof(CreateAccountPage), typeof(CreateAccountPage));
 		Routing.RegisterRoute(nameof(BookingPage), typeof(BookingPage));
-		Routing.RegisterRoute(nameof(CategoryDetailPage), typeof(CategoryDetailPage));
-		Routing.RegisterRoute(nameof(AdminCategorySkusPage), typeof(AdminCategorySkusPage));
 		Routing.RegisterRoute(nameof(UserEditPage), typeof(UserEditPage));
 		Routing.RegisterRoute(nameof(ScopeReviewPage), typeof(ScopeReviewPage));
 		Routing.RegisterRoute(nameof(AuctionHubPage), typeof(AuctionHubPage));

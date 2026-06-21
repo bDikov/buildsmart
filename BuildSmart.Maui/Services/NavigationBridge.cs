@@ -24,11 +24,36 @@ public class NavigationBridge : INavigationBridge
             {
                 var blazorUrl = url;
 
-                // Map old Page-based routes to new kebab-case routes
-                if (blazorUrl.EndsWith("Page") && !blazorUrl.StartsWith("//"))
+                if (blazorUrl == "..")
                 {
-                    var pageName = blazorUrl.Replace("Page", "");
-                    blazorUrl = pageName switch
+                    var path = new Uri(_blazorNavigationRegistry.CurrentManager.Uri).AbsolutePath.ToLower();
+                    if (path.Contains("/category-detail"))
+                    {
+                        _blazorNavigationRegistry.CurrentManager.NavigateTo("/category-management");
+                        return;
+                    }
+                    if (path.Contains("/user-edit"))
+                    {
+                        _blazorNavigationRegistry.CurrentManager.NavigateTo("/user-management");
+                        return;
+                    }
+                }
+
+                // Parse query string if present inside blazorUrl to perform EndsWith("Page") check correctly
+                string pathPart = blazorUrl;
+                string queryPart = "";
+                int qIndex = blazorUrl.IndexOf('?');
+                if (qIndex >= 0)
+                {
+                    pathPart = blazorUrl.Substring(0, qIndex);
+                    queryPart = blazorUrl.Substring(qIndex);
+                }
+
+                // Map old Page-based routes to new kebab-case routes
+                if (pathPart.EndsWith("Page") && !pathPart.StartsWith("//"))
+                {
+                    var pageName = pathPart.Replace("Page", "");
+                    var mappedPath = pageName switch
                     {
                         "JobWizard" => "/job-wizard",
                         "ProjectDetail" => "/project-detail",
@@ -44,8 +69,12 @@ public class NavigationBridge : INavigationBridge
                         "TradesmanBookingDashboard" => "/tradesman-booking-dashboard",
                         "Checkout" => "/checkout",
                         "BookingDashboard" => "/booking-dashboard",
-                        _ => blazorUrl
+                        "CategoryManagement" => "/category-management",
+                        "CategoryDetail" => "/category-detail",
+                        "AdminCategorySkus" => "/admin-category-skus",
+                        _ => pathPart
                     };
+                    blazorUrl = mappedPath + queryPart;
                 }
 
                 if (blazorUrl.StartsWith("/") && !blazorUrl.StartsWith("//"))
