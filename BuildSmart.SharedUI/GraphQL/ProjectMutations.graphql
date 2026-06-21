@@ -40,3 +40,10 @@ mutation SubmitJobForScopeGeneration($jobPostId: UUID!) {
 mutation ApproveJobScope($jobPostId: UUID!, $finalScope: String!) {
     approveJobScope(jobPostId: $jobPostId, finalScope: $finalScope)
 }
+
+mutation UpdateProjectDetails($projectId: UUID!, $title: String!, $description: String!) {
+    updateProjectDetails(projectId: $projectId, title: $title, description: $description) {
+        id
+        title
+    }
+}

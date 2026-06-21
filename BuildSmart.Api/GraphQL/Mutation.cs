@@ -345,6 +345,38 @@ public class Mutation
 	}
 
 	[Authorize]
+	public async Task<Project> UpdateProjectDetails(
+		Guid projectId,
+		string title,
+		string description,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Unauthorized");
+		}
+
+		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
+		if (project == null) throw new GraphQLException("Project not found.");
+
+		if (project.HomeownerId != userId)
+		{
+			throw new GraphQLException("Unauthorized");
+		}
+
+		project.Title = title;
+		project.Description = description;
+		project.UpdatedAt = DateTime.UtcNow;
+
+		unitOfWork.Projects.Update(project);
+		await unitOfWork.SaveChangesAsync();
+
+		return project;
+	}
+
+	[Authorize]
 	public async Task<bool> DeleteProject(
 		Guid projectId,
 		ClaimsPrincipal claimsPrincipal,

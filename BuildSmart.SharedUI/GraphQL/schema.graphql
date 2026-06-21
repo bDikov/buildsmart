@@ -885,6 +885,8 @@ type Mutation {
   deleteServiceSku(id: UUID!): Boolean!
   "Creates a new project for a homeowner."
   createProject(homeownerId: UUID! title: String! description: String! languageCode: String): Project!
+  "Updates project details like title and description."
+  updateProjectDetails(projectId: UUID! title: String! description: String!): Project!
   "Adds a sub-job to a project using the Wizard output."
   addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! location: String estimatedSubtotal: Decimal currency: String! imageUrls: [String!]! preferredSiteVisitDate: DateTime): JobPost!
   saveJobPostDraft(jobPostId: UUID! jobDetailsJson: String! description: String location: String estimatedSubtotal: Decimal currency: String!): Boolean!

@@ -240,12 +240,12 @@
                                         @Loc[ViewModel.NextButtonText]
                                     </button>
                                     
-                                    @if (!ViewModel.IsEditing)
-                                    {
-                                        <button class="bs-btn-dark w-100 fw-bold" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary);" disabled="@ViewModel.IsBusy" @onclick="HandlePreviousClick">
-                                            @Loc["JobWizard_Back"]
-                                        </button>
-                                    }
+                                     @if (!ViewModel.IsEditing || ViewModel.CurrentStep > 0)
+                                     {
+                                         <button class="bs-btn-dark w-100 fw-bold" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary);" disabled="@ViewModel.IsBusy" @onclick="HandlePreviousClick">
+                                             @Loc["JobWizard_Back"]
+                                         </button>
+                                     }
                                 </div>
                             </div>
                         }
@@ -441,7 +441,7 @@
             
             ViewModel.GoToNextStepCommand.Execute(null);
         }
-        else if (isSwipeRight && ViewModel.CurrentStepNumber > 1 && ViewModel.WizardSteps[ViewModel.CurrentStep].Type != WizardStepType.Info && ViewModel.GoToPreviousStepCommand.CanExecute(null) && !ViewModel.IsEditing)
+        else if (isSwipeRight && ViewModel.CurrentStepNumber > 1 && ViewModel.WizardSteps[ViewModel.CurrentStep].Type != WizardStepType.Info && ViewModel.GoToPreviousStepCommand.CanExecute(null))
         {
             // Allow swiping right to go back, but only if not editing single job and NOT on the very first step
             _hasUserSwiped = true;

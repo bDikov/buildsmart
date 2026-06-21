@@ -80,6 +80,36 @@ public partial class CategoryDetailViewModel : ObservableObject
 
 
 
+    private static string GetLocalizedValue(JsonNode? node, string lang, string fallbackLang = "bg")
+    {
+        if (node == null) return string.Empty;
+        if (node is JsonObject obj)
+        {
+            return obj[lang]?.GetValue<string>() ?? obj[fallbackLang]?.GetValue<string>() ?? string.Empty;
+        }
+        return node.GetValue<string>() ?? string.Empty;
+    }
+
+    private static List<string> GetLocalizedOptions(JsonNode? node, string lang, string fallbackLang = "bg")
+    {
+        var list = new List<string>();
+        if (node == null) return list;
+
+        if (node is JsonObject obj)
+        {
+            var array = obj[lang] as JsonArray ?? obj[fallbackLang] as JsonArray;
+            if (array != null)
+            {
+                list.AddRange(array.Select(o => o?.GetValue<string>() ?? string.Empty));
+            }
+        }
+        else if (node is JsonArray array)
+        {
+            list.AddRange(array.Select(o => o?.GetValue<string>() ?? string.Empty));
+        }
+        return list;
+    }
+
     public async Task LoadCategoryDetailsAsync(Guid id)
     {
         try
@@ -104,20 +134,20 @@ public partial class CategoryDetailViewModel : ObservableObject
                         IsProjectDetails = template?["isProjectDetails"]?.GetValue<bool>() ?? false;
                         if (template?["questions"] is JsonArray questionNodes)
                         {
+                            string currentLang = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "bg" : "en";
                             Questions.Clear();
                             foreach (var qNode in questionNodes)
                             {
                                 if (qNode is JsonObject qObj)
                                 {
+                                    var qOptions = GetLocalizedOptions(qObj["options"], currentLang);
                                     Questions.Add(new QuestionViewModel
                                     {
                                         Id = qObj["id"]?.GetValue<string>() ?? string.Empty,
-                                        Text = qObj["text"]?.GetValue<string>() ?? string.Empty,
+                                        Text = GetLocalizedValue(qObj["text"], currentLang),
                                         Type = qObj["type"]?.GetValue<string>() ?? "text",
                                         IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
-                                        Options = qObj["options"] is JsonArray opts 
-                                            ? new ObservableCollection<OptionViewModel>(opts.Select(o => new OptionViewModel(o?.GetValue<string>() ?? string.Empty)))
-                                            : new ObservableCollection<OptionViewModel>()
+                                        Options = new ObservableCollection<OptionViewModel>(qOptions.Select(o => new OptionViewModel(o)))
                                     });
                                 }
                             }

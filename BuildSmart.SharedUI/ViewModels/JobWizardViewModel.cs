@@ -12,6 +12,8 @@ namespace BuildSmart.SharedUI.ViewModels;
 public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 {
 	private readonly IBuildSmartApiClient _apiClient;
+	private readonly System.Threading.SemaphoreSlim _saveLock = new(1, 1);
+	private System.Threading.CancellationTokenSource? _saveDebounceCts;
 
 	// --- Steps & Visibility ---
 	private List<WizardStep> _wizardSteps = new();
@@ -316,30 +318,38 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					// Generate Dynamic Steps based on loaded categories
 					await GenerateDynamicSteps();
 
-					// Pre-fill answers
-					if (firstJob != null && !string.IsNullOrEmpty(firstJob.JobDetails))
+					// Pre-fill answers from all jobs in the project
+					_masterAnswerKey.Clear();
+					foreach (var job in project.JobPosts)
 					{
-						try
+						if (!string.IsNullOrEmpty(job.JobDetails))
 						{
-							var flatAnswers = JsonSerializer.Deserialize<Dictionary<string, string>>(firstJob.JobDetails);
-							if (flatAnswers != null)
+							try
 							{
-								foreach (var kvp in flatAnswers)
+								var flatAnswers = JsonSerializer.Deserialize<Dictionary<string, string>>(job.JobDetails);
+								if (flatAnswers != null)
 								{
-									if (kvp.Key != null)
+									foreach (var kvp in flatAnswers)
 									{
-										_masterAnswerKey[kvp.Key] = kvp.Value ?? "";
+										if (kvp.Key != null)
+										{
+											_masterAnswerKey[kvp.Key] = kvp.Value ?? "";
+										}
 									}
 								}
 							}
+							catch { /* Ignore legacy format */ }
 						}
-						catch { /* Ignore legacy format */ }
 					}
 
 					// Position at the correct step
 					if (_targetCategoryId != null)
 					{
 						CurrentStep = 0; // The only step in single-edit mode
+					}
+					else if (project.Status == ProjectStatus.Draft)
+					{
+						CurrentStep = 0; // Start draft projects at Category Selection step
 					}
 					else if (selectedCategoryIds.Any() && _wizardSteps.Count > 2)
 					{
@@ -397,6 +407,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						if (e.PropertyName == nameof(SelectableCategoryViewModel.IsSelected))
 						{
 							OnPropertyChanged(nameof(ProgressPercentage));
+							TriggerDebouncedSave();
 						}
 					};
 					
@@ -630,7 +641,44 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			EvaluateQuestionVisibility();
 			OnPropertyChanged(nameof(ProgressPercentage));
+
+			if (sender is WizardQuestionViewModel q && !string.IsNullOrEmpty(q.Id))
+			{
+				_masterAnswerKey[q.Id] = q.Answer ?? "";
+				TriggerDebouncedSave();
+			}
 		}
+	}
+
+	private void TriggerDebouncedSave()
+	{
+		_saveDebounceCts?.Cancel();
+		_saveDebounceCts = new System.Threading.CancellationTokenSource();
+		var token = _saveDebounceCts.Token;
+
+		Task.Run(async () =>
+		{
+			try
+			{
+				await Task.Delay(500, token);
+				if (token.IsCancellationRequested) return;
+
+				await _saveLock.WaitAsync(token);
+				try
+				{
+					await InternalSaveDraftAsync(null, false);
+				}
+				finally
+				{
+					_saveLock.Release();
+				}
+			}
+			catch (TaskCanceledException) { /* Ignored */ }
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"[JobWizard] Debounced save failed: {ex.Message}");
+			}
+		});
 	}
 
 	private void EvaluateQuestionVisibility()
@@ -986,14 +1034,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private async Task InternalSaveDraftAsync(SelectableCategoryViewModel? specificCategory = null, bool projectOnly = false)
 	{
+		var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+		var prefix = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Проект" : "Project";
+		var fallbackTitle = $"{prefix} - {(currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Ремонт" : "Renovation")}";
+
 		if (_currentProjectId == null)
 		{
 			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
 			if (string.IsNullOrWhiteSpace(ProjectTitle))
 			{
 				ProjectTitle = selectedCategories.Count > 0 
-					? $"Build - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
-					: "Build - Renovation";
+					? $"{prefix} - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: fallbackTitle;
 			}
 
 			if (string.IsNullOrWhiteSpace(ProjectLocation))
@@ -1004,15 +1056,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (string.IsNullOrWhiteSpace(ProjectDescription))
 			{
 				ProjectDescription = selectedCategories.Count > 0 
-					? $"Renovation project for {string.Join(", ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
-					: "Renovation project";
+					? $"{(currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Ремонт за" : "Renovation project for")} {string.Join(", ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: (currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Проект за ремонт" : "Renovation project");
 			}
 
 			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
 			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
 			var userId = userResult.Data.CurrentUser.Id;
 
-			var currentLang = System.Globalization.CultureInfo.CurrentUICulture.Name;
 			var projectResult = await _apiClient.CreateProject.ExecuteAsync(Guid.Parse(userId), ProjectTitle, ProjectDescription, currentLang);
 			if (projectResult.Errors.Count > 0)
 			{
@@ -1021,8 +1072,37 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 			_currentProjectId = projectResult.Data.CreateProject.Id;
 		}
+		else
+		{
+			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+			if (ProjectTitle == "Renovation Project" || ProjectTitle.StartsWith("Project -") || ProjectTitle.StartsWith("Проект -") || ProjectTitle.StartsWith("Build -"))
+			{
+				ProjectTitle = selectedCategories.Count > 0 
+					? $"{prefix} - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: fallbackTitle;
+
+				await _apiClient.UpdateProjectDetails.ExecuteAsync(_currentProjectId.Value, ProjectTitle, ProjectDescription);
+			}
+		}
 
 		if (projectOnly) return;
+
+		// Delete any deselected categories from the project draft
+		if (specificCategory == null)
+		{
+			var deselectedCategories = SelectableCategories.Where(c => !c.IsSelected).ToList();
+			foreach (var cat in deselectedCategories)
+			{
+				if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
+				{
+					var deleteResult = await _apiClient.DeleteJobPost.ExecuteAsync(jobId);
+					if (deleteResult.Errors.Count == 0)
+					{
+						_currentJobPostIds.Remove(cat.Category.Id);
+					}
+				}
+			}
+		}
 
 		var selected = specificCategory != null 
 			? new List<SelectableCategoryViewModel> { specificCategory }
@@ -1076,11 +1156,15 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			IsBusy = true;
 
 			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
-			if (string.IsNullOrWhiteSpace(ProjectTitle) || ProjectTitle == "Renovation Project" || ProjectTitle.StartsWith("Build -"))
+			if (string.IsNullOrWhiteSpace(ProjectTitle) || ProjectTitle == "Renovation Project" || ProjectTitle.StartsWith("Project -") || ProjectTitle.StartsWith("Проект -") || ProjectTitle.StartsWith("Build -"))
 			{
+				var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+				var prefix = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Проект" : "Project";
+				var fallbackTitle = $"{prefix} - {(currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Ремонт" : "Renovation")}";
+
 				ProjectTitle = selectedCategories.Count > 0 
-					? $"Build - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
-					: "Build - Renovation";
+					? $"{prefix} - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
+					: fallbackTitle;
 			}
 			if (string.IsNullOrWhiteSpace(ProjectLocation))
 			{
