@@ -31,6 +31,12 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[NotifyPropertyChangedFor(nameof(ProgressPercentage))]
 	private int _currentStep = 0;
 
+	partial void OnCurrentStepChanged(int value)
+	{
+		if (IsBusy) return;
+		TriggerDebouncedSave();
+	}
+
 	public int TotalSteps => _wizardSteps.Count;
 	public int CurrentStepNumber => CurrentStep + 1;
 
@@ -349,7 +355,15 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					}
 					else if (project.Status == ProjectStatus.Draft)
 					{
-						CurrentStep = 0; // Start draft projects at Category Selection step
+						var lastStep = project.LastVisitedStep ?? 0;
+						if (lastStep >= 0 && lastStep < _wizardSteps.Count)
+						{
+							CurrentStep = lastStep;
+						}
+						else
+						{
+							CurrentStep = 0;
+						}
 					}
 					else if (selectedCategoryIds.Any() && _wizardSteps.Count > 2)
 					{
@@ -1080,9 +1094,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				ProjectTitle = selectedCategories.Count > 0 
 					? $"{prefix} - {string.Join(" & ", selectedCategories.Select(c => GetLocalizedCategoryName(c.Category)))}"
 					: fallbackTitle;
-
-				await _apiClient.UpdateProjectDetails.ExecuteAsync(_currentProjectId.Value, ProjectTitle, ProjectDescription);
 			}
+
+			await _apiClient.UpdateProjectDetails.ExecuteAsync(_currentProjectId.Value, ProjectTitle, ProjectDescription, CurrentStep);
 		}
 
 		if (projectOnly) return;

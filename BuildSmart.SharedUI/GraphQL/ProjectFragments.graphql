@@ -182,6 +182,7 @@ fragment ProjectDetails on Project {
   createdAt
   generalSummary
   hasOfferPdf
+  lastVisitedStep
   homeowner {
     id
     firstName

@@ -349,6 +349,7 @@ public class Mutation
 		Guid projectId,
 		string title,
 		string description,
+		int? lastVisitedStep,
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUnitOfWork unitOfWork)
 	{
@@ -368,6 +369,10 @@ public class Mutation
 
 		project.Title = title;
 		project.Description = description;
+		if (lastVisitedStep.HasValue)
+		{
+			project.LastVisitedStep = lastVisitedStep.Value;
+		}
 		project.UpdatedAt = DateTime.UtcNow;
 
 		unitOfWork.Projects.Update(project);

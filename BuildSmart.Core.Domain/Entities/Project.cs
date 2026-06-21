@@ -32,6 +32,8 @@ public class Project : BaseEntity
     // Overall status of the project
     public ProjectStatus Status { get; private set; } = ProjectStatus.Draft;
 
+    public int? LastVisitedStep { get; set; }
+
     public void SubmitForReview()
     {
         // Allow transition from Draft to UnderReview
