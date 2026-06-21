@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using BuildSmart.Core.Application.Interfaces;
+using BuildSmart.Core.Application.Resources;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Localization;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BuildSmart.Api.Controllers;
@@ -11,10 +16,20 @@ namespace BuildSmart.Api.Controllers;
 public class OffersController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPdfGeneratorService _pdfGeneratorService;
+    private readonly IStringLocalizer<OfferResources> _localizer;
+    private readonly IAiService _aiService;
 
-    public OffersController(IUnitOfWork unitOfWork)
+    public OffersController(
+        IUnitOfWork unitOfWork,
+        IPdfGeneratorService pdfGeneratorService,
+        IStringLocalizer<OfferResources> localizer,
+        IAiService aiService)
     {
         _unitOfWork = unitOfWork;
+        _pdfGeneratorService = pdfGeneratorService;
+        _localizer = localizer;
+        _aiService = aiService;
     }
 
     [HttpGet("{projectId}/download")]
@@ -22,12 +37,126 @@ public class OffersController : ControllerBase
     public async Task<IActionResult> DownloadOfferPdf(Guid projectId)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(projectId);
-        
-        if (project == null || project.MasterOfferPdf == null || project.MasterOfferPdf.Length == 0)
+        if (project == null)
         {
-            return NotFound("Offer PDF not found for this project.");
+            return NotFound("Project not found.");
+        }
+
+        if (project.MasterOfferPdf == null || project.MasterOfferPdf.Length == 0)
+        {
+            // Dynamically generate the PDF
+            var projectCalcs = (await _unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId)).ToList();
+            if (projectCalcs.Count == 0)
+            {
+                return BadRequest("No categories have been priced yet for this project. Please run calculations first.");
+            }
+
+            string currencySymbol = "€";
+            decimal grandTotal = 0;
+            var categoriesData = new List<object>();
+
+            foreach (var calc in projectCalcs)
+            {
+                grandTotal += calc.TotalEstimatedPrice;
+                var category = await _unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
+                var categoryName = category?.Name ?? "General";
+                if (project.LanguageCode == "bg" && category != null)
+                {
+                    var translation = category.Translations.FirstOrDefault(t => t.LanguageCode == "bg");
+                    if (translation != null)
+                    {
+                        categoryName = translation.Name;
+                    }
+                }
+
+                var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
+                {
+                    Description = task.Title,
+                    Amount = task.EstimatedPrice.ToString("N2"),
+                    AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => c.Description).ToList() ?? new List<string>()
+                }).ToList();
+
+                categoriesData.Add(new
+                {
+                    CategoryName = categoryName,
+                    Subtotal = calc.TotalEstimatedPrice.ToString("N2"),
+                    SubtotalLabel = string.Format(_localizer["Label_Subtotal"].Value, categoryName),
+                    Tasks = tasksForCategory
+                });
+            }
+
+            var homeowner = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId);
+            var clientName = homeowner != null ? $"{homeowner.FirstName} {homeowner.LastName}" : "Valued Client";
+            var clientAddress = project.JobPosts.FirstOrDefault()?.Location ?? homeowner?.Location ?? "TBD";
+
+            var combinedScope = new StringBuilder();
+            foreach (var jp in project.JobPosts.Where(j => !string.IsNullOrWhiteSpace(j.GeneratedScope)))
+            {
+                combinedScope.AppendLine($"## {jp.Title}");
+                combinedScope.AppendLine(jp.GeneratedScope);
+                combinedScope.AppendLine();
+            }
+
+            string finalScopeDescription = project.Description;
+            if (combinedScope.Length > 0)
+            {
+                try
+                {
+                    finalScopeDescription = await _aiService.GenerateExecutiveSummaryAsync(combinedScope.ToString(), project.LanguageCode ?? "bg");
+                }
+                catch (Exception)
+                {
+                    // Fallback to default description if AI generation fails or rate-limits
+                }
+            }
+
+            var offerData = new
+            {
+                Header_Hello = _localizer["Header_Hello"].Value,
+                Header_ProjectProposal = _localizer["Header_ProjectProposal"].Value,
+                Header_Overview = _localizer["Header_Overview"].Value,
+                Header_PreparedFor = _localizer["Header_PreparedFor"].Value,
+                Header_Fees = _localizer["Header_Fees"].Value,
+                Label_FeesDescription = _localizer["Label_FeesDescription"].Value,
+                Label_GrandTotal = _localizer["Label_GrandTotal"].Value,
+                Header_Terms = _localizer["Header_Terms"].Value,
+
+                Terms_Intro = _localizer["Terms_Intro"].Value,
+                Terms_Point1 = _localizer["Terms_Point1"].Value,
+                Terms_Point2 = _localizer["Terms_Point2"].Value,
+                Terms_Point3 = _localizer["Terms_Point3"].Value,
+                Terms_Point4 = _localizer["Terms_Point4"].Value,
+                Terms_Point5 = _localizer["Terms_Point5"].Value,
+
+                Footer_Validity = _localizer["Footer_Validity"].Value,
+                Label_ProjectBrief = _localizer["Label_ProjectBrief"].Value,
+                Label_PricingBreakdown = _localizer["Label_PricingBreakdown"].Value,
+                Label_TC = _localizer["Label_TC"].Value,
+
+                CurrencySymbol = currencySymbol,
+
+                JobTitle = project.Title,
+                JobId = project.Id.ToString().Substring(0, 8),
+                TradesmanName = _localizer["Label_SystemEstimate"].Value,
+                Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
+                ClientName = clientName,
+                ClientAddress = clientAddress,
+                ScopeDescription = finalScopeDescription,
+                Categories = categoriesData,
+                SubtotalAmount = grandTotal.ToString("N2"),
+                TotalAmount = grandTotal.ToString("N2")
+            };
+
+            byte[] pdfBytes = await _pdfGeneratorService.GenerateOfferPdfAsync(offerData);
+
+            project.MasterOfferPdf = pdfBytes;
+            project.GeneralSummary = finalScopeDescription;
+            project.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Projects.Update(project);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         return File(project.MasterOfferPdf, "application/pdf", $"{project.Title}_Offer.pdf");
     }
 }
+
