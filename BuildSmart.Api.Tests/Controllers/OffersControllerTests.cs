@@ -4,6 +4,7 @@ using BuildSmart.Api.Controllers;
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Application.Resources;
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Domain.Enums;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -110,7 +111,7 @@ public class OffersControllerTests
     }
 
     [Fact]
-    public async Task DownloadOfferPdf_ShouldGenerateAndReturnPdf_WhenProjectHasCalculationsButNoPdf()
+    public async Task DownloadOfferPdf_ShouldGenerateAndReturnPdf_AndCacheIt_WhenAllActiveCategoriesArePriced()
     {
         // Arrange
         var projectId = Guid.NewGuid();
@@ -126,6 +127,18 @@ public class OffersControllerTests
             Description = "Initial description",
             MasterOfferPdf = null
         };
+
+        var jobPost = new JobPost
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = projectId,
+            ServiceCategoryId = categoryId,
+            Title = "Bathroom"
+        };
+        jobPost.SubmitForScopeGeneration();
+        jobPost.SetGeneratedScope("Bathroom Scope");
+        jobPost.CompletePricing();
+        project.JobPosts.Add(jobPost);
 
         var homeowner = new User
         {
@@ -193,5 +206,95 @@ public class OffersControllerTests
 
         project.MasterOfferPdf.Should().BeEquivalentTo(dummyPdfBytes);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DownloadOfferPdf_ShouldGenerateAndReturnPdf_ButNotCacheIt_WhenSomeActiveCategoriesAreNotPriced()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var categoryId1 = Guid.NewGuid();
+        var categoryId2 = Guid.NewGuid();
+        
+        var project = new Project
+        {
+            Id = projectId,
+            Title = "Bathroom Renovation",
+            LanguageCode = "bg",
+            HomeownerId = homeownerId,
+            Description = "Initial description",
+            MasterOfferPdf = null
+        };
+
+        // Two active job posts (WaitingForUserReview)
+        var jobPost1 = new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, ServiceCategoryId = categoryId1, Title = "Bath" };
+        jobPost1.SubmitForScopeGeneration();
+        jobPost1.SetGeneratedScope("Bath Scope");
+        jobPost1.CompletePricing();
+
+        var jobPost2 = new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, ServiceCategoryId = categoryId2, Title = "Elec" };
+        jobPost2.SubmitForScopeGeneration();
+        jobPost2.SetGeneratedScope("Elec Scope");
+        jobPost2.CompletePricing();
+
+        project.JobPosts.Add(jobPost1);
+        project.JobPosts.Add(jobPost2);
+
+        var homeowner = new User
+        {
+            Id = homeownerId,
+            FirstName = "Ivan",
+            LastName = "Ivanov",
+            Location = "Sofia"
+        };
+
+        var category1 = new ServiceCategory
+        {
+            Id = categoryId1,
+            Name = "Bathroom",
+            Translations = new List<ServiceCategoryTranslation> { new ServiceCategoryTranslation { LanguageCode = "bg", Name = "Баня" } }
+        };
+
+        // Only one of them is priced (has AiCalculation)
+        var calculation1 = new AiCalculation
+        {
+            ProjectId = projectId,
+            ServiceCategoryId = categoryId1,
+            TotalEstimatedPrice = 1200.50m,
+            Tasks = new List<AiCalculationTask>
+            {
+                new AiCalculationTask { Title = "Install Sink", SequenceOrder = 1, EstimatedPrice = 300m }
+            }
+        };
+
+        var dummyPdfBytes = new byte[] { 9, 8, 7 };
+
+        _projectRepoMock.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _aiCalcRepoMock.Setup(r => r.GetByProjectWithTasksAsync(projectId))
+            .ReturnsAsync(new List<AiCalculation> { calculation1 });
+        
+        var categoryRepoMock = new Mock<IServiceCategoryRepository>();
+        categoryRepoMock.Setup(r => r.GetByIdAsync(categoryId1)).ReturnsAsync(category1);
+        _unitOfWorkMock.Setup(u => u.ServiceCategories).Returns(categoryRepoMock.Object);
+
+        var userRepoMock = new Mock<IUserRepository>();
+        userRepoMock.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(homeowner);
+        _unitOfWorkMock.Setup(u => u.Users).Returns(userRepoMock.Object);
+
+        _pdfGeneratorServiceMock.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>()))
+            .ReturnsAsync(dummyPdfBytes);
+
+        // Act
+        var result = await _controller.DownloadOfferPdf(projectId);
+
+        // Assert
+        var fileResult = result.Should().BeOfType<FileContentResult>().Subject;
+        fileResult.ContentType.Should().Be("application/pdf");
+        fileResult.FileDownloadName.Should().Be("Bathroom Renovation_Offer.pdf");
+        fileResult.FileContents.Should().BeEquivalentTo(dummyPdfBytes);
+
+        project.MasterOfferPdf.Should().BeNull(); // Should NOT be cached
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never); // Should NOT save changes
     }
 }

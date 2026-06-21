@@ -412,6 +412,13 @@ public class Mutation
 			throw new GraphQLException(new Error("Homeowners cannot delete a job while its parent project is Active.", "PROJECT_IS_ACTIVE"));
 		}
 
+		if (jobPost.Project != null)
+		{
+			jobPost.Project.MasterOfferPdf = null;
+			jobPost.Project.GeneralSummary = null;
+			unitOfWork.Projects.Update(jobPost.Project);
+		}
+
 		unitOfWork.JobPosts.Delete(jobPost);
 		await unitOfWork.SaveChangesAsync();
 		return true;
@@ -693,6 +700,10 @@ public class Mutation
 	{
 		var project = await unitOfWork.Projects.GetByIdAsync(projectId);
 		if (project == null) throw new GraphQLException("Project not found.");
+
+		project.MasterOfferPdf = null;
+		project.GeneralSummary = null;
+		unitOfWork.Projects.Update(project);
 
 		foreach (var job in project.JobPosts)
 		{

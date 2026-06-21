@@ -594,12 +594,75 @@ public class AppDbContext : DbContext
                 SentrySdk.CaptureException(ex);
             }
         }
+        
+        await HealLegacySkuFormulasAsync();
 
         await SaveChangesAsync();
         
         var finalCount = await ServiceSkus.CountAsync();
         Console.WriteLine($"--- SKU SEEDING FINISHED. Total SKUs: {finalCount} ---");
         SentrySdk.CaptureMessage($"Seeding Complete. Total SKUs: {finalCount}", SentryLevel.Info);
+    }
+
+    private async Task HealLegacySkuFormulasAsync()
+    {
+        Console.WriteLine("--- HEALING LEGACY SKU FORMULAS START ---");
+        
+        // Define formulas for legacy SKUs
+        var legacySkuFormulas = new Dictionary<string, (string Formula, string UnitType, decimal? BasePrice)>
+        {
+            // Painting
+            { "PANT-001", ("if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5)", "sqm", 1.53m) },
+            { "PANT-002", ("if(Contains(paint_tasks, 'Цялостна шпакловка') || Contains(paint_tasks, 'Сваляне на тапети'), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)", "sqm", 4.09m) },
+            { "PANT-003", ("if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5)", "sqm", 3.32m) },
+            { "PANT-004", ("if(Contains(paint_tasks, 'Цялостна шпакловка') || Contains(paint_tasks, 'Сваляне на тапети'), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)", "sqm", 1.02m) },
+            { "PANT-005", ("if(Contains(paint_trim_doors_count, '4+'), 4, if(Contains(paint_trim_doors_count, '3'), 3, if(Contains(paint_trim_doors_count, '2'), 2, if(Contains(paint_trim_doors_count, '1'), 1, 0))))", "pcs", 23.01m) },
+            { "PANT-006", ("if(Contains(paint_finish_level, 'Q5') || Contains(paint_finish_level, 'Перфектно'), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)", "sqm", 7.67m) },
+            
+            // Tiling
+            { "TILE-001", ("if(tile_std_sqm > 0, tile_std_sqm, global_total_sqm * 0.3)", "sqm", null) },
+            { "TILE-003", ("if(tile_laminate_sqm > 0, tile_laminate_sqm, global_total_sqm * 0.7)", "sqm", null) },
+            { "TILE-004", ("if(tile_prep_level_sqm > 0, tile_prep_level_sqm, global_total_sqm * 0.5)", "sqm", null) },
+            
+            // Demolition
+            { "DEMO-001", ("if(demo_floor_sqm > 0, demo_floor_sqm, global_total_sqm * 0.3)", "sqm", null) },
+            { "DEMO-002", ("if(demo_conc_sqm > 0, demo_conc_sqm, global_total_sqm * 0.2)", "sqm", null) }
+        };
+
+        foreach (var entry in legacySkuFormulas)
+        {
+            var skuCode = entry.Key;
+            var (formula, unitType, basePrice) = entry.Value;
+
+            var sku = await ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == skuCode);
+            if (sku != null)
+            {
+                bool modified = false;
+                if (sku.CalculationFormula != formula)
+                {
+                    sku.CalculationFormula = formula;
+                    modified = true;
+                }
+                if (sku.UnitType != unitType)
+                {
+                    sku.UnitType = unitType;
+                    modified = true;
+                }
+                if (basePrice.HasValue && sku.BasePrice != basePrice.Value)
+                {
+                    sku.BasePrice = basePrice.Value;
+                    modified = true;
+                }
+
+                if (modified)
+                {
+                    sku.UpdatedAt = DateTime.UtcNow;
+                    Console.WriteLine($"Healed legacy SKU formula/properties for: {skuCode}");
+                }
+            }
+        }
+        
+        Console.WriteLine("--- HEALING LEGACY SKU FORMULAS FINISHED ---");
     }
 
     private string MapMarketCategoryToDbName(string marketName)

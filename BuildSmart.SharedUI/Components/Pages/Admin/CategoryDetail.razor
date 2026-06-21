@@ -48,6 +48,17 @@
             </div>
         }
 
+        <div class="form-section row-layout mt-3">
+            <div>
+                <label class="section-label mb-0">Is Project Details Questionnaire?</label>
+                <p class="help-text mb-0">Project Details questions appear post-submission to capture marketing/business details.</p>
+            </div>
+            <div class="toggle-switch">
+                <input type="checkbox" id="projectDetailsToggle" @bind="ViewModel.IsProjectDetails" />
+                <label for="projectDetailsToggle"></label>
+            </div>
+        </div>
+
         <div class="form-section mt-3">
             <label class="section-label">Status</label>
             <select class="bs-select" @bind="ViewModel.Status">

@@ -46,28 +46,31 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (_wizardSteps.Count == 0) return 0;
 			
 			var stepType = _wizardSteps[CurrentStep].Type;
-			if (stepType == WizardStepType.Review) return 100;
-			
-			if (stepType == WizardStepType.Info)
-			{
-				double mandatoryProgress = 0;
-				mandatoryProgress += GetTextProgress(ProjectTitle, 15, 3.75);
-				mandatoryProgress += GetTextProgress(ProjectLocation, 10, 3.75);
-				mandatoryProgress += GetTextProgress(ProjectDescription, 40, 3.75);
-				
-				double infoProgress = mandatoryProgress;
-				if (mandatoryProgress > 0 && PreferredSiteVisitDate.HasValue)
-				{
-					infoProgress += 3.75;
-				}
-				return infoProgress; // Max 15
-			}
+			if (stepType == WizardStepType.Review) return 70;
 			
 			if (stepType == WizardStepType.CategorySelection)
 			{
-				double baseCat = 15;
-				if (SelectableCategories != null && SelectableCategories.Any(c => c.IsSelected)) return 30;
-				return baseCat;
+				if (SelectableCategories != null && SelectableCategories.Any(c => c.IsSelected)) return 15;
+				return 0;
+			}
+
+			if (stepType == WizardStepType.Info)
+			{
+				var visibleQuestionsInfo = Questions?.Where(q => q.IsVisible).ToList() ?? new List<WizardQuestionViewModel>();
+				int totalQInfo = visibleQuestionsInfo.Count;
+				double answeredQInfo = 0;
+				if (totalQInfo > 0)
+				{
+					foreach (var q in visibleQuestionsInfo)
+					{
+						if (!string.IsNullOrWhiteSpace(q.Answer) && q.Answer != "False")
+						{
+							answeredQInfo += 1.0;
+						}
+					}
+					return 70.0 + (30.0 * (answeredQInfo / totalQInfo));
+				}
+				return 70.0;
 			}
 			
 			int questionStartIdx = _wizardSteps.FindIndex(s => s.Type == WizardStepType.Questions);
@@ -83,13 +86,17 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			
 			int currentQuestionStep = CurrentStep - questionStartIdx;
 			
-			double baseProgress = 30.0;
+			double baseProgress = 15.0;
 			if (_wizardSteps.Count == 1 || questionStartIdx == 0) 
 			{
 			    baseProgress = 0.0; // Single step edit mode
 			}
 
-			double remainingProgress = 100.0 - baseProgress;
+			double remainingProgress = 70.0 - baseProgress;
+			if (_wizardSteps.Count == 1 || questionStartIdx == 0)
+			{
+				remainingProgress = 100.0; // Single step mode
+			}
 			
 			// Calculate fraction of questions answered in this step
 			var visibleQuestions = Questions?.Where(q => q.IsVisible).ToList() ?? new List<WizardQuestionViewModel>();
@@ -109,7 +116,6 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					}
 					else if (q.IsBoolean)
 					{
-					    // Checkboxes default to "False", so they should only count as progress if actually checked
 					    qProg = q.Answer == "True" ? 1.0 : 0.0;
 					}
 					else if (!string.IsNullOrWhiteSpace(q.Answer))
@@ -129,13 +135,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			
 			if (hasMandatory && mandatoryAnswered == 0)
 			{
-				// If there are mandatory questions but NONE have been answered, don't count optional progress
 				answeredQ = 0;
 			}
 			
 			double stepFraction = totalQ > 0 ? answeredQ / totalQ : 1.0;
 			
-			int denominator = totalQuestionSteps + (reviewIdx != -1 ? 1 : 0);
+			int denominator = totalQuestionSteps;
+			if (denominator <= 0) denominator = 1;
 			double fraction = (currentQuestionStep + stepFraction) / denominator;
 			
 			return baseProgress + (remainingProgress * fraction);
@@ -199,6 +205,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private bool _isEditing;
 
+	[ObservableProperty]
+	private bool _isOfferBuilding;
+
 	public ObservableCollection<KeyValuePair<string, string>> AnswersList { get; } = new();
 
 	private void RefreshAnswersList()
@@ -233,10 +242,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private void InitializeSteps()
 	{
 		_wizardSteps.Clear();
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = "Basic Info" });
 		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
-		// Default placeholder
 		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = "Project Details" });
 	}
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -394,7 +402,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					
 					_allCategories.Add(viewModel);
 
-					if (!cat.IsGlobal)
+					if (!cat.IsGlobal && !IsProjectDetailsCategory(cat.TemplateStructure))
 					{
 						SelectableCategories.Add(viewModel);
 					}
@@ -428,7 +436,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		if (CurrentStep >= _wizardSteps.Count) return false;
 		var currentStepType = _wizardSteps[CurrentStep].Type;
-		if (currentStepType == WizardStepType.Info) return ValidateInfoStep();
+		if (currentStepType == WizardStepType.Info) return ValidateQuestionsStep();
 		if (currentStepType == WizardStepType.CategorySelection) return ValidateCategoryStep();
 		if (currentStepType == WizardStepType.Questions) return ValidateQuestionsStep();
 		return true;
@@ -590,8 +598,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		var step = _wizardSteps[stepIndex];
 
-		// Always refresh questions if it's a question step
-		if (step.Type == WizardStepType.Questions)
+		// Always refresh questions if it's a question step or project details info step
+		if (step.Type == WizardStepType.Questions || step.Type == WizardStepType.Info)
 		{
 			foreach (var q in Questions)
 			{
@@ -762,7 +770,6 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 
 		// Normal Project Creation Flow
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = "Basic Info" });
 		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
 
 		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
@@ -808,6 +815,19 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
 		}
+
+		// 4. Project Details Step (Post-submission marketing/location questions)
+		var projectDetailsCategory = _allCategories.FirstOrDefault(c => IsProjectDetailsCategory(c.Category.TemplateStructure));
+		var projectDetailsQuestions = projectDetailsCategory != null
+			? ExtractQuestions(new List<SelectableCategoryViewModel> { projectDetailsCategory })
+			: new List<WizardQuestionViewModel>();
+
+		_wizardSteps.Add(new WizardStep
+		{
+			Type = WizardStepType.Info,
+			Title = "Project Details",
+			Questions = projectDetailsQuestions
+		});
 		
 		System.Diagnostics.Debug.WriteLine($"[JobWizard] Rebuilt steps. Total steps: {_wizardSteps.Count}");
 	}
@@ -1036,6 +1056,23 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		try
 		{
 			IsBusy = true;
+
+			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+			if (string.IsNullOrWhiteSpace(ProjectTitle))
+			{
+				ProjectTitle = selectedCategories.Count > 0 
+					? $"{selectedCategories.First().Category.Name} Project"
+					: "Renovation Project";
+			}
+			if (string.IsNullOrWhiteSpace(ProjectLocation))
+			{
+				ProjectLocation = "Sofia";
+			}
+			if (string.IsNullOrWhiteSpace(ProjectDescription))
+			{
+				ProjectDescription = $"Renovation project for {string.Join(", ", selectedCategories.Select(c => c.Category.Name))}";
+			}
+
 			// Ensure everything is saved
 			await InternalSaveDraftAsync();
 
@@ -1045,21 +1082,23 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				return;
 			}
 
-			// Jobs are now individually submitted to the AI when the user clicks 'Next' on their respective question pages.
-			// No need to batch submit them here again.
+			// Trigger AI Generation immediately for all selected jobs
+			foreach (var cat in selectedCategories)
+			{
+				if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
+				{
+					var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
+					var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+					_lastSubmittedJobHashes[jobId] = answersHash;
+				}
+			}
 
-			bool isBg = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase);
-
-			string title = isBg ? "Обработка" : "Processing";
-			string message = isBg 
-				? "Това може да отнеме няколко минути. Желаете ли да получите офертата по имейл?" 
-				: "This may take a few minutes. Do you want to receive the offer via email?";
-			string yes = isBg ? "Да" : "Yes";
-			string no = isBg ? "Не" : "No";
-
-			await AppServiceLocator.Alerts.DisplayAlert(title, message, yes, no);
-
-			await AppServiceLocator.Navigation.NavigateToAsync("..");
+			// Increment step to the Project Details Info step (Step N)
+			if (CurrentStep < _wizardSteps.Count - 1)
+			{
+				CurrentStep++;
+				LoadStepData(CurrentStep);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -1068,6 +1107,54 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		finally
 		{
 			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	public async Task SaveProjectDetails()
+	{
+		if (IsBusy) return;
+
+		try
+		{
+			IsBusy = true;
+
+			// Validate questions on Project Details questionnaire step
+			if (!ValidateQuestionsStep()) return;
+
+			// Save questions to master key
+			foreach (var q in Questions)
+			{
+				if (q.Id != null && !string.IsNullOrEmpty(q.Answer))
+					_masterAnswerKey[q.Id] = q.Answer;
+			}
+
+			// Save draft (updates dynamic questions on the server)
+			await InternalSaveDraftAsync();
+
+			IsOfferBuilding = true;
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	private static bool IsProjectDetailsCategory(string? templateStructure)
+	{
+		if (string.IsNullOrWhiteSpace(templateStructure)) return false;
+		try
+		{
+			var node = System.Text.Json.Nodes.JsonNode.Parse(templateStructure);
+			return node?["isProjectDetails"]?.GetValue<bool>() ?? false;
+		}
+		catch
+		{
+			return false;
 		}
 	}
 

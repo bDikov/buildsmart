@@ -62,3 +62,11 @@ DO UPDATE SET
     "IsGlobal" = EXCLUDED."IsGlobal",
     "UpdatedAt" = now();
 
+INSERT INTO "ServiceCategories" ("Id", "Name", "Status", "IsGlobal", "TemplateStructure", "CreatedAt", "UpdatedAt")
+VALUES (gen_random_uuid(), 'Project Details', 1, false, '{"isProjectDetails":true,"questions":[{"id":"proj_location","text":{"bg":"Къде се намира обектът (Град, Квартал)?","en":"Where is the project located (City, District)?"},"type":"text","required":true},{"id":"proj_start_timeline","text":{"bg":"Кога планирате да започнете ремонта?","en":"When do you plan to start the renovation?"},"type":"choice","required":true,"options":{"bg":["Възможно най-скоро","До 1 месец","До 3 месеца","Само проучвам"],"en":["As soon as possible","Within 1 month","Within 3 months","Just researching"]}},{"id":"proj_referral","text":{"bg":"Как разбрахте за нас?","en":"How did you hear about us?"},"type":"choice","required":false,"options":{"bg":["Препоръка","Google търсене","Социални мрежи (Facebook, Instagram)","Друго"],"en":["Recommendation","Google search","Social media","Other"]}},{"id":"proj_budget","text":{"bg":"Какъв е ориентировъчният ви бюджет?","en":"What is your estimated budget?"},"type":"choice","required":false,"options":{"bg":["Под 5,000 лв","5,000 - 15,000 лв","15,000 - 30,000 лв","Над 30,000 лв"],"en":["Under 5,000 BGN","5,000 - 15,000 BGN","15,000 - 30,000 BGN","Over 30,000 BGN"]}},{"id":"proj_contractor_experience","text":{"bg":"Работили ли сте с професионални строители / майстори досега?","en":"Have you worked with a professional contractor before?"},"type":"choice","required":false,"options":{"bg":["Да, имам опит","Не, за първи път ми е"],"en":["Yes, I have experience","No, it''s my first time"]}}]}'::jsonb, now(), now())
+ON CONFLICT ("Name") 
+DO UPDATE SET 
+    "TemplateStructure" = EXCLUDED."TemplateStructure",
+    "IsGlobal" = EXCLUDED."IsGlobal",
+    "UpdatedAt" = now();
+

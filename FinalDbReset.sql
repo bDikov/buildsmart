@@ -51,13 +51,13 @@ BEGIN
     -- PAINTING (Based on Sofia Low-End Market Rates: €1/m primer, €6/m spackle, €5/m paint)
     INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt") VALUES
     (gen_random_uuid(), cat_paint, 'PANT-PRIMER', 'Дълбокопроникващ грунд', 'Грундиране на стени и тавани.', 1, 'sqm', 'if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5)', now(), now()),
-    (gen_random_uuid(), cat_paint, 'PANT-SPACKLE-STD', 'Шпакловка (Стандартна 2 ръце)', 'Цялостна шпакловка.', 6, 'sqm', 'if(Contains(paint_tasks, ''Цялостна шпакловка'') || Contains(paint_tasks, ''Сваляне на тапети''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', now(), now()),
+    (gen_random_uuid(), cat_paint, 'PANT-SPACKLE-STD', 'Шпакловка (Стандартна 2 ръце)', 'Цялостна шпакловка.', 6, 'sqm', 'if(Contains(paint_scope, ''Шпакловка'') || Contains(paint_scope, ''тапети''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', now(), now()),
     (gen_random_uuid(), cat_paint, 'PANT-SPACKLE-Q5', 'Фина шпакловка (Перфектна Q5)', 'Шитрок за гладка повърхност.', 12, 'sqm', 'if(Contains(paint_finish_level, ''Q5'') || Contains(paint_finish_level, ''Перфектно''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', now(), now()),
     (gen_random_uuid(), cat_paint, 'PANT-PAINT-WHITE', 'Боядисване в бяло (2 ръце)', 'Боядисване с бял латекс.', 5, 'sqm', 'if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5)', now(), now()),
     (gen_random_uuid(), cat_paint, 'PANT-PAINT-COLOR', 'Боядисване в цвят (2 ръце)', 'Боядисване с цветен латекс.', 7, 'sqm', 'if(Contains(paint_colors, ''цвят'') && !Contains(paint_colors, ''бяло''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm * 1.2), 0)', now(), now()),
     (gen_random_uuid(), cat_paint, 'PANT-TAPE-CORNER', 'Поставяне на ъглохранители', 'Алуминиеви или PVC ъгли.', 5, 'm', 'if(paint_sqm > 0, paint_sqm * 0.1, global_total_sqm * 0.25)', now(), now()),
     (gen_random_uuid(), cat_paint, 'PANT-TRIM', 'Боядисване на врати/первази', 'Декоративни елементи.', 35, 'pcs', 'if(Contains(paint_trim_doors_count, ''4+''), 4, if(Contains(paint_trim_doors_count, ''3''), 3, if(Contains(paint_trim_doors_count, ''2''), 2, if(Contains(paint_trim_doors_count, ''1''), 1, 0))))', now(), now()),
-    (gen_random_uuid(), cat_paint, 'PANT-WALLPAPER-REMOVE', 'Сваляне на стари тапети', 'Сваляне на стари тапети.', 4, 'sqm', 'if(Contains(paint_tasks, ''Сваляне на тапети''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)', now(), now());
+    (gen_random_uuid(), cat_paint, 'PANT-WALLPAPER-REMOVE', 'Сваляне на стари тапети', 'Сваляне на стари тапети.', 4, 'sqm', 'if(Contains(paint_scope, ''тапети''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)', now(), now());
 
     -- DRYWALL (Based on Sofia Low-End Market Rates: €18/m ceiling/partition)
     INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt") VALUES

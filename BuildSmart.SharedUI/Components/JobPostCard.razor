@@ -59,6 +59,16 @@
             </button>
         }
         
+        @if (JobVm.JobPost.Status == JobPostStatus.GeneratingScope)
+        {
+            <div class="d-flex justify-content-center mt-2">
+                <button class="bs-btn-primary w-100 py-2" disabled>
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    @Loc["JobWizard_OfferBuilding_Title"]
+                </button>
+            </div>
+        }
+        
         @if (JobVm.JobPost.Status == JobPostStatus.Rejected || JobVm.JobPost.Status == JobPostStatus.WaitingForUserReview || JobVm.JobPost.Status == JobPostStatus.WaitingForAdminReview)
         {
             <div class="d-flex justify-content-center mt-2">

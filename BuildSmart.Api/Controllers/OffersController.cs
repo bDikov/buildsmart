@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Application.Resources;
+using BuildSmart.Core.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Localization;
 using System;
@@ -149,11 +150,21 @@ public class OffersController : ControllerBase
 
             byte[] pdfBytes = await _pdfGeneratorService.GenerateOfferPdfAsync(offerData);
 
-            project.MasterOfferPdf = pdfBytes;
-            project.GeneralSummary = finalScopeDescription;
-            project.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.Projects.Update(project);
-            await _unitOfWork.SaveChangesAsync();
+            var activeJobPosts = project.JobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled && jp.Status != JobPostStatus.Draft).ToList();
+            bool allPriced = activeJobPosts.All(jp => projectCalcs.Any(c => c.ServiceCategoryId == jp.ServiceCategoryId));
+
+            if (allPriced)
+            {
+                project.MasterOfferPdf = pdfBytes;
+                project.GeneralSummary = finalScopeDescription;
+                project.UpdatedAt = DateTime.UtcNow;
+                _unitOfWork.Projects.Update(project);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                return File(pdfBytes, "application/pdf", $"{project.Title}_Offer.pdf");
+            }
         }
 
         return File(project.MasterOfferPdf, "application/pdf", $"{project.Title}_Offer.pdf");

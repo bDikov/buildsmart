@@ -453,6 +453,9 @@ public class ScopeGenerationWorker
 				// Layer 3
 				await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 3, "Validating estimations and finalizing structure...", 65);
 
+				freshJobPost.CompletePricing();
+				saveUnitOfWork.JobPosts.Update(freshJobPost);
+
 				await saveUnitOfWork.SaveChangesAsync();
 				_logger.LogDebug("Successfully saved AiCalculation for Job {JobId}. Grand Total: {GrandTotal}", jobPostId, grandTotal);
 

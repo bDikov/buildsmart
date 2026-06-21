@@ -75,8 +75,23 @@ public class JobWizardPage : BasePage
     public async Task SelectChoiceOptionAsync(string partialQuestionText, string optionText)
     {
         var questionWrapper = _page.Locator($".mb-4:has(label.form-label:has-text('{partialQuestionText}'))");
-        // Click the visible label (standard Blazor/Bootstrap pattern) to avoid hidden checkbox issues
-        await questionWrapper.Locator($"label:has-text('{optionText}')").First.ClickAsync();
+        
+        var dropdown = questionWrapper.Locator(".bs-dropdown");
+        if (await dropdown.CountAsync() > 0)
+        {
+            // Dropdown case (BsDropdown)
+            var header = dropdown.Locator(".bs-dropdown-header");
+            await header.ClickAsync();
+            
+            var item = dropdown.Locator($".bs-dropdown-item:has-text('{optionText}')").First;
+            await item.WaitForAsync();
+            await item.ClickAsync();
+        }
+        else
+        {
+            // Checkbox/Radio case (Multiselect/Boolean)
+            await questionWrapper.Locator($"label:has-text('{optionText}')").First.ClickAsync();
+        }
         await _page.WaitForTimeoutAsync(500); // Wait for Blazor binding to evaluate subsequential questions
     }
     
@@ -86,4 +101,13 @@ public class JobWizardPage : BasePage
         var input = questionWrapper.Locator("input[type='number']").First;
         await input.FillAsync(numberValue);
         await _page.WaitForTimeoutAsync(500); // Wait for Blazor binding
-    }}
+    }
+
+    public async Task FillTextInputAsync(string partialQuestionText, string textValue)
+    {
+        var questionWrapper = _page.Locator($".mb-4:has(label.form-label:has-text('{partialQuestionText}'))");
+        var input = questionWrapper.Locator("input[type='text']").First;
+        await input.FillAsync(textValue);
+        await _page.WaitForTimeoutAsync(500); // Wait for Blazor binding
+    }
+}

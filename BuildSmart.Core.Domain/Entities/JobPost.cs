@@ -162,8 +162,16 @@ public class JobPost : BaseEntity
 		}
 
 		GeneratedScope = scope;
-		Status = JobPostStatus.WaitingForUserReview;
 		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void CompletePricing()
+	{
+		if (Status == JobPostStatus.GeneratingScope)
+		{
+			Status = JobPostStatus.WaitingForUserReview;
+			UpdatedAt = DateTime.UtcNow;
+		}
 	}
 
 	public void MarkScopeGenerationQueued(string jobId, string jobDetails)

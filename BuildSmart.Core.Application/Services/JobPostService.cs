@@ -47,12 +47,20 @@ public class JobPostService : IJobPostService
 
 		_unitOfWork.JobPosts.Update(jobPost);
 
-		// Sync Project Status
-		var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
-		if (project != null && project.Status != ProjectStatus.UnderReview)
+		// Sync Project Status & clear PDF offer cache
+		if (_unitOfWork.Projects != null)
 		{
-			project.SubmitForReview();
-			_unitOfWork.Projects.Update(project);
+			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+			if (project != null)
+			{
+				project.MasterOfferPdf = null;
+				project.GeneralSummary = null;
+				if (project.Status != ProjectStatus.UnderReview)
+				{
+					project.SubmitForReview();
+				}
+				_unitOfWork.Projects.Update(project);
+			}
 		}
 
 		await _unitOfWork.SaveChangesAsync();
@@ -209,6 +217,12 @@ public class JobPostService : IJobPostService
 		};
 
 		await _unitOfWork.JobPosts.AddAsync(jobPost);
+
+		// Clear PDF offer cache on addition of new job
+		project.MasterOfferPdf = null;
+		project.GeneralSummary = null;
+		_unitOfWork.Projects.Update(project);
+
 		await _unitOfWork.SaveChangesAsync();
 
 		return jobPost;
@@ -232,6 +246,19 @@ public class JobPostService : IJobPostService
 	jobPost.UpdateTasks(tasks);
 
 		_unitOfWork.JobPosts.Update(jobPost);
+
+		// Clear PDF offer cache when tasks/criteria change
+		if (_unitOfWork.Projects != null)
+		{
+			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+			if (project != null)
+			{
+				project.MasterOfferPdf = null;
+				project.GeneralSummary = null;
+				_unitOfWork.Projects.Update(project);
+			}
+		}
+
 		await _unitOfWork.SaveChangesAsync();
 
 	// Enqueue the AI pricing background job to run off the main thread
@@ -262,6 +289,18 @@ public class JobPostService : IJobPostService
 		// but typically we just update the fields.
 
 		jobPost.UpdatedAt = DateTime.UtcNow;
+
+		// Clear PDF offer cache when saving/updating draft
+		if (_unitOfWork.Projects != null)
+		{
+			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+			if (project != null)
+			{
+				project.MasterOfferPdf = null;
+				project.GeneralSummary = null;
+				_unitOfWork.Projects.Update(project);
+			}
+		}
 
 		_unitOfWork.JobPosts.Update(jobPost);
 		await _unitOfWork.SaveChangesAsync();

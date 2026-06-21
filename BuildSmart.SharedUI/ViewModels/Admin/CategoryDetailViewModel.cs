@@ -42,6 +42,9 @@ public partial class CategoryDetailViewModel : ObservableObject
     private bool _isGlobalSwitchVisible = true; // Default to true, hide if in Global Mode
 
     [ObservableProperty]
+    private bool _isProjectDetails;
+
+    [ObservableProperty]
     private ObservableCollection<QuestionViewModel> _questions = new();
 
     public CategoryDetailViewModel(IBuildSmartApiClient apiClient)
@@ -98,6 +101,7 @@ public partial class CategoryDetailViewModel : ObservableObject
                     if (!string.IsNullOrWhiteSpace(category.TemplateStructure))
                     {
                         var template = JsonNode.Parse(category.TemplateStructure);
+                        IsProjectDetails = template?["isProjectDetails"]?.GetValue<bool>() ?? false;
                         if (template?["questions"] is JsonArray questionNodes)
                         {
                             Questions.Clear();
@@ -224,13 +228,15 @@ public partial class CategoryDetailViewModel : ObservableObject
 
                                                                                                                 
 
-                                                                                                                            var template = new JsonObject
+                                                                                                                             var template = new JsonObject
 
-                                                                                                                            {
+                                                                                                                             {
 
-                                                                                                                                ["questions"] = questionNodes
+                                                                                                                                 ["questions"] = questionNodes,
 
-                                                                                                                            };
+                                                                                                                                 ["isProjectDetails"] = IsProjectDetails
+
+                                                                                                                             };
 
                                                                                                                             
 

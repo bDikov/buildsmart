@@ -620,4 +620,19 @@
   <data name="CreateAccount_LogIn" xml:space="preserve">
     <value>Влезте</value>
   </data>
+  <data name="JobWizard_OfferBuilding_Title" xml:space="preserve">
+    <value>Подготвяме вашата оферта!</value>
+  </data>
+  <data name="JobWizard_OfferBuilding_Message" xml:space="preserve">
+    <value>Нашият AI строителен мениджър изготвя подробен Количествено-стойностен разчет. Това може да отнеме няколко минути.</value>
+  </data>
+  <data name="JobWizard_OfferBuilding_SubMessage" xml:space="preserve">
+    <value>Можете безопасно да затворите този екран. Ще ви изпратим имейл, когато е готова, или можете да я разгледате от списъка с проекти.</value>
+  </data>
+  <data name="JobWizard_GoToProjects" xml:space="preserve">
+    <value>Към моите проекти</value>
+  </data>
+  <data name="JobWizard_SaveAndViewOffer" xml:space="preserve">
+    <value>Запази и Виж Оферта</value>
+  </data>
 </root>

@@ -2040,10 +2040,10 @@ BEGIN
         SELECT "Id" INTO sku_id FROM "ServiceSkus" WHERE "SkuCode" = 'PANT-SPACKLE-STD';
         IF sku_id IS NULL THEN
             INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-            VALUES (gen_random_uuid(), cat_id, 'PANT-SPACKLE-STD', 'Шпакловка (Стандартна 2 ръце)', 'Цялостна шпакловка.', 14, 'sqm', 'if(Contains(paint_tasks, ''Цялостна шпакловка'') || Contains(paint_tasks, ''Сваляне на тапети''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', now(), now());
+            VALUES (gen_random_uuid(), cat_id, 'PANT-SPACKLE-STD', 'Шпакловка (Стандартна 2 ръце)', 'Цялостна шпакловка.', 14, 'sqm', 'if(Contains(paint_scope, ''Шпакловка'') || Contains(paint_scope, ''тапети''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', now(), now());
         ELSE
             UPDATE "ServiceSkus"
-            SET "ServiceCategoryId" = cat_id, "Name" = 'Шпакловка (Стандартна 2 ръце)', "Description" = 'Цялостна шпакловка.', "BasePrice" = 14, "UnitType" = 'sqm', "CalculationFormula" = 'if(Contains(paint_tasks, ''Цялостна шпакловка'') || Contains(paint_tasks, ''Сваляне на тапети''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', "UpdatedAt" = now()
+            SET "ServiceCategoryId" = cat_id, "Name" = 'Шпакловка (Стандартна 2 ръце)', "Description" = 'Цялостна шпакловка.', "BasePrice" = 14, "UnitType" = 'sqm', "CalculationFormula" = 'if(Contains(paint_scope, ''Шпакловка'') || Contains(paint_scope, ''тапети''), if(paint_sqm > 0, paint_sqm, global_total_sqm * 2.5), 0)', "UpdatedAt" = now()
             WHERE "Id" = sku_id;
         END IF;
     ELSE
@@ -2160,10 +2160,10 @@ BEGIN
         SELECT "Id" INTO sku_id FROM "ServiceSkus" WHERE "SkuCode" = 'PANT-WALLPAPER-REMOVE';
         IF sku_id IS NULL THEN
             INSERT INTO "ServiceSkus" ("Id", "ServiceCategoryId", "SkuCode", "Name", "Description", "BasePrice", "UnitType", "CalculationFormula", "CreatedAt", "UpdatedAt")
-            VALUES (gen_random_uuid(), cat_id, 'PANT-WALLPAPER-REMOVE', 'Сваляне на стари тапети', 'Сваляне на стари тапети.', 4.50, 'sqm', 'if(Contains(paint_tasks, ''Сваляне на тапети''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)', now(), now());
+            VALUES (gen_random_uuid(), cat_id, 'PANT-WALLPAPER-REMOVE', 'Сваляне на стари тапети', 'Сваляне на стари тапети.', 4.50, 'sqm', 'if(Contains(paint_scope, ''тапети''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)', now(), now());
         ELSE
             UPDATE "ServiceSkus"
-            SET "ServiceCategoryId" = cat_id, "Name" = 'Сваляне на стари тапети', "Description" = 'Сваляне на стари тапети.', "BasePrice" = 4.50, "UnitType" = 'sqm', "CalculationFormula" = 'if(Contains(paint_tasks, ''Сваляне на тапети''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)', "UpdatedAt" = now()
+            SET "ServiceCategoryId" = cat_id, "Name" = 'Сваляне на стари тапети', "Description" = 'Сваляне на стари тапети.', "BasePrice" = 4.50, "UnitType" = 'sqm', "CalculationFormula" = 'if(Contains(paint_scope, ''тапети''), if(paint_sqm > 0, paint_sqm * 0.5, global_total_sqm), 0)', "UpdatedAt" = now()
             WHERE "Id" = sku_id;
         END IF;
     ELSE

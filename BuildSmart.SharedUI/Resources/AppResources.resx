@@ -617,4 +617,19 @@
   <data name="CreateAccount_LogIn" xml:space="preserve">
     <value>Log In</value>
   </data>
+  <data name="JobWizard_OfferBuilding_Title" xml:space="preserve">
+    <value>We are preparing your offer!</value>
+  </data>
+  <data name="JobWizard_OfferBuilding_Message" xml:space="preserve">
+    <value>Our AI construction manager is building a detailed, professional Scope of Work and calculating pricing. This may take a few minutes.</value>
+  </data>
+  <data name="JobWizard_OfferBuilding_SubMessage" xml:space="preserve">
+    <value>You can safely close this screen. We will notify you as soon as the offer is ready, or you can track its progress in your dashboard.</value>
+  </data>
+  <data name="JobWizard_GoToProjects" xml:space="preserve">
+    <value>Go to My Projects</value>
+  </data>
+  <data name="JobWizard_SaveAndViewOffer" xml:space="preserve">
+    <value>Save &amp; View Offer</value>
+  </data>
 </root>

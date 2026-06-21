@@ -23,6 +23,7 @@ public class JobCreationTests : TestBase
         
         // Clear seeded global categories to avoid them injecting a General Questions step that blocks our tests
         await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        await dbContext.ServiceCategories.Where(c => c.Name == "Project Details").ExecuteDeleteAsync();
         
         var uniqueUserGuid = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
@@ -45,9 +46,24 @@ public class JobCreationTests : TestBase
             Status = CategoryStatus.Active,
             TemplateStructure = "{\"questions\": [{\"id\":\"q1\",\"text\":\"How many sockets?\",\"type\":\"number\"}]}"
         };
+
+        var projectDetailsCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "Project Details",
+            Status = CategoryStatus.Active,
+            TemplateStructure = @"{
+                ""isProjectDetails"": true,
+                ""questions"": [
+                    { ""id"": ""proj_location"", ""text"": ""Where is the location?"", ""type"": ""text"", ""required"": true },
+                    { ""id"": ""proj_start_timeline"", ""text"": ""When do you hope to start?"", ""type"": ""text"", ""required"": true }
+                ]
+            }"
+        };
         
         dbContext.Users.Add(testUser);
         dbContext.ServiceCategories.Add(testCategory);
+        dbContext.ServiceCategories.Add(projectDetailsCategory);
         await dbContext.SaveChangesAsync();
 
         // 1. Arrange - Navigate to Login
@@ -66,23 +82,28 @@ public class JobCreationTests : TestBase
         // Expectation: URL should navigate to wizard
         await Expect(Page).ToHaveURLAsync(new Regex(".*job-wizard"));
 
-        // 3. Act - Fill out Step 0
+        // 3. Step 0: Category Selection
         var wizardPage = new JobWizardPage(Page);
-        string uniqueTitle = $"E2E Test Project {Guid.NewGuid().ToString().Substring(0, 5)}";
-        await wizardPage.FillBasicInfoAsync(
-            title: uniqueTitle,
-            location: "Sofia, Bulgaria",
-            description: "Full apartment renovation. Needed ASAP."
-        );
-        
-        await wizardPage.ClickNextAsync();
-
-        // 4. Act - Select Category and proceed
         await wizardPage.SelectCategoryAsync(categoryName);
         await wizardPage.ClickNextAsync();
 
-        // 5. Assert we reached the next step (questions or success)
-        await Expect(Page).Not.ToHaveURLAsync(new Regex(".*login"));
+        // 4. Step 1: Category Questions
+        await wizardPage.ExpectQuestionVisibleAsync("How many sockets?");
+        await wizardPage.FillNumberInputAsync("How many sockets?", "10");
+        await wizardPage.ClickNextAsync();
+
+        // 5. Step 2: Review & Submit (Pre-final step)
+        await wizardPage.ClickNextAsync();
+
+        // 6. Step 3: Project Details (Final step, post-submission)
+        await wizardPage.ExpectQuestionVisibleAsync("Where is the location?");
+        await wizardPage.FillTextInputAsync("Where is the location?", "Sofia, Bulgaria");
+        await wizardPage.FillTextInputAsync("When do you hope to start?", "In 2 weeks");
+        await wizardPage.ClickNextAsync();
+
+        // 7. Assert: Verify we reached the Offer Building success page
+        var successMessage = Page.Locator("h3:has-text('preparing your offer')");
+        await Expect(successMessage).ToBeVisibleAsync();
     }
 
     [Test]
@@ -94,6 +115,7 @@ public class JobCreationTests : TestBase
         
         // Clear seeded global categories to avoid them injecting a General Questions step that blocks our tests
         await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        await dbContext.ServiceCategories.Where(c => c.Name == "Project Details").ExecuteDeleteAsync();
         
         var uniqueSubSeqId = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
@@ -125,19 +147,20 @@ public class JobCreationTests : TestBase
             }"
         };
 
-        var dummyCategoryName = $"Dummy Category Seq-{uniqueSubSeqId}";
-        var dummyCategory = new ServiceCategory
+        var projectDetailsCategory = new ServiceCategory
         {
             Id = Guid.NewGuid(),
-            Name = dummyCategoryName,
-            IsGlobal = false,
+            Name = "Project Details",
             Status = CategoryStatus.Active,
-            TemplateStructure = "{}"
+            TemplateStructure = @"{
+                ""isProjectDetails"": true,
+                ""questions"": []
+            }"
         };
         
         dbContext.Users.Add(testUser);
         dbContext.ServiceCategories.Add(subSeqCategory);
-        dbContext.ServiceCategories.Add(dummyCategory);
+        dbContext.ServiceCategories.Add(projectDetailsCategory);
         await dbContext.SaveChangesAsync();
 
         // 1. Navigate & Login
@@ -154,35 +177,31 @@ public class JobCreationTests : TestBase
         await myProjectsPage.GotoAsync(BaseUrl);
         await myProjectsPage.ClickCreateNewProjectAsync();
 
-        // 3. Fill Basic Info
+        // 3. Step 0: Category Selection
         var wizardPage = new JobWizardPage(Page);
-        await wizardPage.FillBasicInfoAsync("Sub-sequential Flow Test", "Test City", "Testing UI toggles");
-        await wizardPage.ClickNextAsync();
-
-        // 4. Select Category
         await wizardPage.SelectCategoryAsync(categoryName);
         await wizardPage.ClickNextAsync();
 
-        // 5. We are on Questions step
+        // 4. We are on Questions step
         // Assert base state: Main Question is visible, Sub Question A and Deep Question A1 are hidden
         await wizardPage.ExpectQuestionVisibleAsync("Main Question");
         await wizardPage.ExpectQuestionHiddenAsync("Sub Question A");
         await wizardPage.ExpectQuestionHiddenAsync("Deep Question A1");
 
-        // 6. Act: Select 'Option A' on Main Question
+        // 5. Act: Select 'Option A' on Main Question
         await wizardPage.SelectChoiceOptionAsync("Main Question", "Option A");
         
         // Assert: Sub Question A should appear now
         await wizardPage.ExpectQuestionVisibleAsync("Sub Question A");
         await wizardPage.ExpectQuestionHiddenAsync("Deep Question A1"); // Deep question still hidden
 
-        // 7. Act: Select 'Sub A1' on Sub Question A
+        // 6. Act: Select 'Sub A1' on Sub Question A
         await wizardPage.SelectChoiceOptionAsync("Sub Question A", "Sub A1");
 
         // Assert: Deep Question A1 should appear now
         await wizardPage.ExpectQuestionVisibleAsync("Deep Question A1");
 
-        // 8. Act: Deselect 'Option A' on Main Question (click it again)
+        // 7. Act: Deselect 'Option A' on Main Question (click it again)
         await wizardPage.SelectChoiceOptionAsync("Main Question", "Option A");
 
         // Assert: Both nested questions should immediately hide due to recursive logic
@@ -199,6 +218,7 @@ public class JobCreationTests : TestBase
         
         // Clear seeded global categories to avoid them injecting a General Questions step that blocks our tests
         await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        await dbContext.ServiceCategories.Where(c => c.Name == "Project Details").ExecuteDeleteAsync();
         
         var uniqueLangId = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
@@ -226,9 +246,21 @@ public class JobCreationTests : TestBase
               ]
             }"
         };
+
+        var projectDetailsCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "Project Details",
+            Status = CategoryStatus.Active,
+            TemplateStructure = @"{
+                ""isProjectDetails"": true,
+                ""questions"": []
+            }"
+        };
         
         dbContext.Users.Add(testUser);
         dbContext.ServiceCategories.Add(localizedCategory);
+        dbContext.ServiceCategories.Add(projectDetailsCategory);
         await dbContext.SaveChangesAsync();
 
         // 1. Arrange - Inject the Language Header and Cookie
@@ -261,12 +293,8 @@ public class JobCreationTests : TestBase
         await myProjectsPage.GotoAsync(BaseUrl);
         await myProjectsPage.ClickCreateNewProjectAsync();
 
-        // 3. Fill Basic Info
+        // 4. Step 0: Category Selection
         var wizardPage = new JobWizardPage(Page);
-        await wizardPage.FillBasicInfoAsync("Lang Test", "City", "Lang UI Test");
-        await wizardPage.ClickNextAsync();
-
-        // 4. Select Category
         await wizardPage.SelectCategoryAsync(categoryName);
         await wizardPage.ClickNextAsync();
 
@@ -283,6 +311,7 @@ public class JobCreationTests : TestBase
         
         // Clear seeded global categories to isolate the test
         await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        await dbContext.ServiceCategories.Where(c => c.Name == "Project Details").ExecuteDeleteAsync();
         
         var uniqueElecId = Guid.NewGuid().ToString().Substring(0, 8);
         var testUser = new User 
@@ -312,12 +341,43 @@ public class JobCreationTests : TestBase
                 ]
             }"
         };
+
+        var projectDetailsCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "Project Details",
+            Status = CategoryStatus.Active,
+            TemplateStructure = @"{
+                ""isProjectDetails"": true,
+                ""questions"": [
+                    { ""id"": ""proj_location"", ""text"": ""Къде е обектът?"", ""type"": ""text"", ""required"": true },
+                    { ""id"": ""proj_start_timeline"", ""text"": ""Кога искате да започнете?"", ""type"": ""text"", ""required"": true }
+                ]
+            }"
+        };
         
         dbContext.Users.Add(testUser);
         dbContext.ServiceCategories.Add(elecCategory);
+        dbContext.ServiceCategories.Add(projectDetailsCategory);
         await dbContext.SaveChangesAsync();
 
-        // 1. Navigate & Login
+        // 1. Arrange - Inject the Language Header and Cookie
+        await Context.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
+        {
+            { "Accept-Language", "bg-BG,bg;q=0.9" }
+        });
+        
+        await Context.AddCookiesAsync(new[]
+        {
+            new Microsoft.Playwright.Cookie
+            {
+                Name = ".AspNetCore.Culture",
+                Value = "c=bg|uic=bg",
+                Url = BaseUrl
+            }
+        });
+
+        // 2. Navigate & Login
         var loginPage = new LoginPage(Page);
         await loginPage.GotoAsync(BaseUrl);
         await loginPage.LoginWithCredentialsAsync($"testuserelec{uniqueElecId}@buildsmart.com", "Password123!");
@@ -330,16 +390,12 @@ public class JobCreationTests : TestBase
         await myProjectsPage.GotoAsync(BaseUrl);
         await myProjectsPage.ClickCreateNewProjectAsync();
 
-        // 3. Fill Basic Info
+        // 3. Step 0: Select Category
         var wizardPage = new JobWizardPage(Page);
-        await wizardPage.FillBasicInfoAsync("Electrical E2E Test", "Sofia", "Testing new UI components");
-        await wizardPage.ClickNextAsync();
-
-        // 4. Select Category
         await wizardPage.SelectCategoryAsync(categoryName);
         await wizardPage.ClickNextAsync();
 
-        // 5. Answer Questions (Testing the new Choice/Multiselect cards)
+        // 4. Step 1: Answer Questions (Testing the new Choice/Multiselect cards)
         await wizardPage.ExpectQuestionVisibleAsync("Какъв е мащабът на ремонта?");
         
         // Select Scope
@@ -352,12 +408,22 @@ public class JobCreationTests : TestBase
         // Select Comfort Level
         await wizardPage.SelectChoiceOptionAsync("Колко контакти желаете във всяка стая?", "Комфорт");
 
-        // 6. Click next to submit the scope
+        // Click next to go to Review
         await wizardPage.ClickNextAsync();
         
-        // 7. Verify we advanced past the questions step
-        // We assert we are not still on the job-wizard (or we reached the success screen/AI generation screen)
-        // Note: Actual success navigation depends on your routing logic, but hitting next without validation errors is the goal.
+        // 5. Step 2: Review (Pre-final step)
+        await wizardPage.ClickNextAsync();
+
+        // 6. Step 3: Project Details (Final step, post-submission)
+        await wizardPage.ExpectQuestionVisibleAsync("Къде е обектът?");
+        await wizardPage.FillTextInputAsync("Къде е обектът?", "София");
+        await wizardPage.FillTextInputAsync("Кога искате да започнете?", "След месец");
+        await wizardPage.ClickNextAsync(); // Save & View Offer
+        
+        // 7. Verify we reached the success screen
+        var successMessage = Page.Locator("h3:has-text('Подготвяме вашата оферта')");
+        await Expect(successMessage).ToBeVisibleAsync();
+        
         var validationErrors = Page.Locator(".text-danger"); // Standard bootstrap validation
         await Expect(validationErrors).ToHaveCountAsync(0);
     }

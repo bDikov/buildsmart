@@ -231,6 +231,20 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
+		private static bool IsProjectDetailsCategory(string? templateStructure)
+		{
+			if (string.IsNullOrWhiteSpace(templateStructure)) return false;
+			try
+			{
+				var node = System.Text.Json.Nodes.JsonNode.Parse(templateStructure);
+				return node?["isProjectDetails"]?.GetValue<bool>() ?? false;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
 		private async Task LoadCategoriesAsync()
 		{
 			try
@@ -243,8 +257,8 @@ namespace BuildSmart.SharedUI.ViewModels
 						Categories.Clear();
 						var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
-						// Filter only Active categories and exclude Global category
-						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.IsGlobal != true))
+						// Filter only Active categories and exclude Global category / Project Details category
+						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.IsGlobal != true && !IsProjectDetailsCategory(c.TemplateStructure)))
 						{
 							// Find translation for current culture, fallback to default English name
 							var translation = cat.Translations?.FirstOrDefault(t => string.Equals(t.LanguageCode, currentCulture, StringComparison.OrdinalIgnoreCase));

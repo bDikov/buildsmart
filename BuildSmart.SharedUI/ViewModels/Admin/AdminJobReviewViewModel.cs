@@ -278,8 +278,8 @@ public partial class AdminJobReviewViewModel : ObservableObject
 				{
 					foreach (var cat in categoriesResult.Data.ServiceCategories)
 					{
-						// Match if it's the job's category OR if it's a Global category
-						if (cat.Name == job.ServiceCategory.Name || cat.IsGlobal)
+						// Match if it's the job's category, a Global category, or the Project Details questionnaire
+						if (cat.Name == job.ServiceCategory.Name || cat.IsGlobal || IsProjectDetailsCategory(cat.TemplateStructure))
 						{
 							if (!string.IsNullOrEmpty(cat.TemplateStructure))
 							{
@@ -441,6 +441,17 @@ public partial class AdminJobReviewViewModel : ObservableObject
 		{
 			IsBusy = false;
 		}
+	}
+
+	private static bool IsProjectDetailsCategory(string? templateStructure)
+	{
+		if (string.IsNullOrWhiteSpace(templateStructure)) return false;
+		try
+		{
+			var node = System.Text.Json.Nodes.JsonNode.Parse(templateStructure);
+			return node?["isProjectDetails"]?.GetValue<bool>() ?? false;
+		}
+		catch { return false; }
 	}
 }
 

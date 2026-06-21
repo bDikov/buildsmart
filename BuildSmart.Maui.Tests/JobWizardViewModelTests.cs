@@ -33,29 +33,10 @@ public class JobWizardViewModelTests
     }
 
     [Fact]
-    public void ProgressPercentage_InfoStep_Returns15()
-    {
-        // Arrange (Initial state is Info, Step 0)
-        _viewModel.CurrentStep = 0;
-        
-        // Mock data to reach 15 points
-        _viewModel.ProjectTitle = "123456789012345"; // 15 chars
-        _viewModel.ProjectLocation = "1234567890"; // 10 chars
-        _viewModel.ProjectDescription = "1234567890123456789012345678901234567890"; // 40 chars
-        _viewModel.PreferredSiteVisitDate = System.DateTime.Now;
-        
-        // Act
-        var progress = _viewModel.ProgressPercentage;
-
-        // Assert
-        progress.Should().Be(15);
-    }
-
-    [Fact]
-    public void ProgressPercentage_CategoryStep_Returns30()
+    public void ProgressPercentage_CategoryStep_Returns15()
     {
         // Arrange
-        _viewModel.CurrentStep = 1;
+        _viewModel.CurrentStep = 0;
         _viewModel.SelectableCategories = new System.Collections.ObjectModel.ObservableCollection<SelectableCategoryViewModel>
         {
             new SelectableCategoryViewModel(new Mock<IGetServiceCategories_ServiceCategories>().Object) { IsSelected = true }
@@ -65,20 +46,45 @@ public class JobWizardViewModelTests
         var progress = _viewModel.ProgressPercentage;
 
         // Assert
-        progress.Should().Be(30);
+        progress.Should().Be(15);
     }
 
     [Fact]
-    public void ProgressPercentage_ReviewStep_Returns100()
+    public void ProgressPercentage_ReviewStep_Returns70()
     {
         // Arrange
-        _viewModel.CurrentStep = 2; // Default InitializeSteps has Info, Category, Review
+        _viewModel.CurrentStep = 1; // Default InitializeSteps has CategorySelection, Review, Info
         
         // Act
         var progress = _viewModel.ProgressPercentage;
 
         // Assert
-        progress.Should().Be(100);
+        progress.Should().Be(70);
+    }
+
+    [Fact]
+    public void ProgressPercentage_InfoStep_Returns70To100()
+    {
+        // Arrange
+        _viewModel.CurrentStep = 2; // Info Step
+        
+        var q1 = new WizardQuestionViewModel { Id = "q1", Type = "text", IsVisible = true, Answer = "" };
+        var q2 = new WizardQuestionViewModel { Id = "q2", Type = "text", IsVisible = true, Answer = "" };
+        
+        _viewModel.Questions.Clear();
+        _viewModel.Questions.Add(q1);
+        _viewModel.Questions.Add(q2);
+        
+        // Act & Assert 1: 0 answered -> 70
+        _viewModel.ProgressPercentage.Should().Be(70);
+
+        // Act & Assert 2: 1 answered -> 70 + 30 * (1/2) = 85
+        q1.Answer = "Some Location";
+        _viewModel.ProgressPercentage.Should().Be(85);
+
+        // Act & Assert 3: 2 answered -> 70 + 30 * (2/2) = 100
+        q2.Answer = "Referral Info";
+        _viewModel.ProgressPercentage.Should().Be(100);
     }
 
     [Fact]
@@ -87,31 +93,35 @@ public class JobWizardViewModelTests
         // Arrange
         var steps = new List<WizardStep>
         {
-            new WizardStep { Type = WizardStepType.Info },
             new WizardStep { Type = WizardStepType.CategorySelection },
             new WizardStep { Type = WizardStepType.Questions }, // Question 1
             new WizardStep { Type = WizardStepType.Questions }, // Question 2
-            new WizardStep { Type = WizardStepType.Review }
+            new WizardStep { Type = WizardStepType.Review },
+            new WizardStep { Type = WizardStepType.Info }
         };
         
         SetWizardSteps(_viewModel, steps);
 
         // Act & Assert
         
-        // Step 2 (First Question)
+        // Step 1 (First Question)
+        _viewModel.CurrentStep = 1;
+        // Calculation: 2 steps total between category & review. 
+        // 1st q = fraction 1/2. 15 + 55*(1/2) = 42.5
+        _viewModel.ProgressPercentage.Should().Be(42.5);
+        
+        // Step 2 (Second Question)
         _viewModel.CurrentStep = 2;
-        // Calculation: 3 steps total between category & review. 
-        // 1st q = fraction 1/3. 30 + 70*(1/3) = 53.333...
-        _viewModel.ProgressPercentage.Should().BeApproximately(53.33, 0.1);
+        // 2nd q = fraction 2/2. 15 + 55*(2/2) = 70.0
+        _viewModel.ProgressPercentage.Should().Be(70.0);
         
-        // Step 3 (Second Question)
+        // Step 3 (Review)
         _viewModel.CurrentStep = 3;
-        // 2nd q = fraction 2/3. 30 + 70*(2/3) = 76.666...
-        _viewModel.ProgressPercentage.Should().BeApproximately(76.66, 0.1);
-        
-        // Step 4 (Review)
+        _viewModel.ProgressPercentage.Should().Be(70.0);
+
+        // Step 4 (Info)
         _viewModel.CurrentStep = 4;
-        _viewModel.ProgressPercentage.Should().Be(100);
+        _viewModel.ProgressPercentage.Should().Be(70.0);
     }
     
     [Fact]
