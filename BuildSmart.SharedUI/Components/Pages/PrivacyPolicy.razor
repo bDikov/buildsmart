@@ -1,0 +1,381 @@
+@page "/privacy"
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+<div class="legal-page-container">
+    <div class="legal-card bs-card">
+        <div class="legal-header">
+            <div class="back-button" @onclick="GoBack">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>@(isBulgarian ? "Назад" : "Back")</span>
+            </div>
+            <div class="lang-switcher">
+                <button class="lang-btn @(isBulgarian ? "active" : "")" @onclick="() => SetLanguage(true)">BG</button>
+                <button class="lang-btn @(!isBulgarian ? "active" : "")" @onclick="() => SetLanguage(false)">EN</button>
+            </div>
+        </div>
+
+        @if (isBulgarian)
+        {
+            <div class="legal-content">
+                <h1>Политика за поверителност</h1>
+                <p class="last-updated">Последна промяна: 22 юни 2026 г.</p>
+
+                <p class="intro">
+                    Вашата поверителност е изключително важна за нас. Тази Политика за поверителност обяснява как <strong>BuildSmart</strong> събира, използва, съхранява и защитава вашите лични данни в съответствие с Общия регламент относно защитата на данните (Регламент (ЕС) 2016/679 - GDPR) и българското законодателство.
+                </p>
+
+                <section>
+                    <h2>1. Администратор на лични данни</h2>
+                    <p>
+                        Администратор на данните е доставчикът на платформата BuildSmart (гр. София, България). За контакт по въпроси, свързани с поверителността, пишете на support@buildsmart.com.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>2. Какви лични данни събираме</h2>
+                    <p>
+                        В зависимост от начина, по който използвате платформата, събираме:
+                    </p>
+                    <ul>
+                        <li><strong>Данни за профила:</strong> Име, фамилия, имейл адрес, парола (криптирана) и телефонен номер.</li>
+                        <li><strong>Проектни данни:</strong> Детайли за строителни или ремонтни обекти, включително адреси (местоположение на имота), размери, снимки, отговори в интелигентния съветник за изготвяне на КСС.</li>
+                        <li><strong>Комуникация:</strong> Съобщения, изпратени чрез чата на живо (SignalR) и коментари по оферти в системата за обратна връзка.</li>
+                        <li><strong>Технически данни:</strong> IP адрес, данни за устройството и браузъра, бисквитки за поддържане на сесията и езикови предпочитания.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>3. Цели и правни основания за обработване</h2>
+                    <p>
+                        Обработваме личните ви данни на следните основания:
+                    </p>
+                    <ul>
+                        <li><strong>Изпълнение на договор:</strong> За регистрация на профил, поддържане на функционалността на платформата, изчисление на КСС чрез алгоритми, свързване на собственици с майстори и осъществяване на чат комуникация.</li>
+                        <li><strong>Легитимен интерес:</strong> За поддържане на сигурността на платформата, предотвратяване на измами и подобряване на потребителското изживяване.</li>
+                        <li><strong>Законово задължение:</strong> За счетоводни и данъчни цели съгласно приложимото законодателство.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>4. Комуникация, известия и оферти</h2>
+                    <p>
+                        Ние използваме вашите контакти по следния начин:
+                    </p>
+                    <ul>
+                        <li><strong>Системни известия:</strong> Изпращаме ви имейли, SMS или известия на живо за състоянието на вашите оферти, нови наддавания по проекти, съобщения от потребители и промени в статуса на проектите. Те са съществена част от услугата.</li>
+                        <li><strong>Маркетинг:</strong> Можем да ви изпращаме промоционални съобщения и нови оферти, от които можете да се откажете по всяко време чрез бутона „Отписване“ във всеки имейл.</li>
+                        <li><strong>ПРАВИЛО ЗА НЕПРОДАЖБА НА ДАННИ:</strong> Ние <strong>НЕ продаваме, НЕ отдаваме под наем и НЕ споделяме</strong> вашите лични данни с трети лица за техни маркетингови цели. Вашите данни се използват само за нуждите на платформата.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>5. Споделяне на данни с трети страни</h2>
+                    <p>
+                        Вашите данни могат да бъдат споделени само със:
+                    </p>
+                    <ul>
+                        <li>Други потребители на платформата (напр. собственик вижда контактите на кандидатствалия майстор и обратно), с цел изпълнение на проектите.</li>
+                        <li><strong>AI Услуги:</strong> Въведените от вас отговори в съветника се обработват сигурно от API на Google Gemini с цел автоматизирано изготвяне на обхват на работата (КСС). Ние използваме професионален платен интерфейс, който гарантира, че данните ви НЕ се използват за обучение на публични модели.</li>
+                        <li>Доставчици на хостинг и база данни (в рамките на ЕС).</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>6. Срокове за съхранение</h2>
+                    <p>
+                        Съхраняваме вашите данни само докато профилът ви е активен или докато сме задължени по закон (например за счетоводни документи — до 10 години).
+                    </p>
+                </section>
+
+                <section>
+                    <h2>7. Вашите права съгласно GDPR</h2>
+                    <p>
+                        Като потребител имате следните права:
+                    </p>
+                    <ul>
+                        <li>Право на достъп и коригиране на данните.</li>
+                        <li>Право на изтриване („право да бъдеш забравен“) при отпадане на основанието за съхранение.</li>
+                        <li>Право на ограничаване на обработването.</li>
+                        <li>Право на преносимост на данните.</li>
+                        <li>Право на възражение срещу обработване въз основа на легитимен интерес.</li>
+                    </ul>
+                    <p>
+                        За да упражните правата си, изпратете имейл на support@buildsmart.com.
+                    </p>
+                    <p>
+                        Имате право да подадете жалба и директно до българския надзорен орган:
+                        <br /><strong>Комисия за защита на личните данни (КЗЛД)</strong>
+                        <br />Адрес: София 1592, бул. „Проф. Цветан Лазаров” № 2
+                        <br />Имейл: kzld@cpdp.bg
+                        <br />Уебсайт: www.cpdp.bg
+                    </p>
+                </section>
+            </div>
+        }
+        else
+        {
+            <div class="legal-content">
+                <h1>Privacy Policy</h1>
+                <p class="last-updated">Last Updated: June 22, 2026</p>
+
+                <p class="intro">
+                    Your privacy is extremely important to us. This Privacy Policy explains how <strong>BuildSmart</strong> collects, uses, stores, and protects your personal data in accordance with the General Data Protection Regulation (Regulation (EU) 2016/679 - GDPR) and Bulgarian national legislation.
+                </p>
+
+                <section>
+                    <h2>1. Data Controller</h2>
+                    <p>
+                        The data controller is the provider of the BuildSmart platform based in Sofia, Bulgaria. For any privacy-related requests, please contact: support@buildsmart.com.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>2. Personal Data We Collect</h2>
+                    <p>
+                        Depending on how you use our platform, we collect:
+                    </p>
+                    <ul>
+                        <li><strong>Account Details:</strong> First name, last name, email address, password (encrypted), and phone number.</li>
+                        <li><strong>Project Data:</strong> Construction/renovation project specifications, including addresses (site location), dimensions, photos, and answers to the smart wizard.</li>
+                        <li><strong>Communication:</strong> Messages sent via live chat (SignalR) and feedback threads on specific offers.</li>
+                        <li><strong>Technical Logs:</strong> IP address, device and browser metadata, session cookies, and language settings.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>3. Legal Bases for Processing</h2>
+                    <p>
+                        We process your data under the following legal bases:
+                    </p>
+                    <ul>
+                        <li><strong>Contractual Performance:</strong> To register your account, run the platform, calculate pricing and scopes using algorithms, connect homeowners and tradesmen, and facilitate chat communications.</li>
+                        <li><strong>Legitimate Interest:</strong> To maintain security, prevent fraud, and optimize user experience.</li>
+                        <li><strong>Legal Obligation:</strong> For taxation, financial records, and consumer regulatory compliance.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>4. Communication, Notifications & Offers</h2>
+                    <p>
+                        We use your contact details to deliver core value:
+                    </p>
+                    <ul>
+                        <li><strong>System Notifications:</strong> We send emails, SMS, or live updates about your offers, new bids on your projects, messages from contractors, and project status updates. These are essential for our services.</li>
+                        <li><strong>Marketing & News:</strong> We may send you promotional emails or new platform offers. You can easily unsubscribe at any time using the "Unsubscribe" link in any email.</li>
+                        <li><strong>NO DATA SELLING RULE:</strong> We **do not sell, rent, trade, or distribute** your personal data to third parties for their marketing or advertising purposes. Your data is used exclusively to facilitate BuildSmart operations.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>5. Sharing Data with Third Parties</h2>
+                    <p>
+                        Your data is shared only with:
+                    </p>
+                    <ul>
+                        <li>Other users of the platform (e.g. homeowners see tradesmen contact details and vice-versa) to facilitate bookings and agreements.</li>
+                        <li><strong>AI Processing:</strong> Smart wizard answers are securely processed via the Google Gemini API to build Scopes of Work. We use a professional paid tier which guarantees your data is NOT used for public model training.</li>
+                        <li>Hosting and database providers located within the EU.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>6. Data Retention</h2>
+                    <p>
+                        We keep your personal data only as long as your account is active, or as required by law (e.g., tax records must be retained for up to 10 years).
+                    </p>
+                </section>
+
+                <section>
+                    <h2>7. Your GDPR Rights</h2>
+                    <p>
+                        Under GDPR, you have the following rights:
+                    </p>
+                    <ul>
+                        <li>Right to access and correct your personal data.</li>
+                        <li>Right to erasure ("right to be forgotten") when data is no longer necessary.</li>
+                        <li>Right to restrict processing.</li>
+                        <li>Right to data portability.</li>
+                        <li>Right to object to processing based on legitimate interests.</li>
+                    </ul>
+                    <p>
+                        To exercise these rights, please email: support@buildsmart.com.
+                    </p>
+                    <p>
+                        You also have the right to file a complaint with the Bulgarian supervisory authority:
+                        <br /><strong>Commission for Personal Data Protection (KZLD)</strong>
+                        <br />Address: 2 Prof. Tsvetan Lazarov Blvd., Sofia 1592, Bulgaria
+                        <br />Email: kzld@cpdp.bg
+                        <br />Website: www.cpdp.bg
+                    </p>
+                </section>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .legal-page-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100dvh;
+        background-color: var(--bg-page);
+        font-family: var(--font-primary);
+        padding: 40px 20px;
+        box-sizing: border-box;
+    }
+
+    .legal-card {
+        width: 100%;
+        max-width: 800px;
+        padding: 40px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        box-shadow: var(--shadow-main);
+    }
+
+    .legal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+
+    .back-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: var(--text-primary);
+    }
+
+    .lang-switcher {
+        display: flex;
+        gap: 8px;
+        background-color: var(--bg-page);
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .lang-btn {
+        background: none;
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    .legal-content {
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        line-height: 1.6;
+    }
+
+    .legal-content h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .last-updated {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .intro {
+        font-size: 16px;
+    }
+
+    .legal-content h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 5px;
+    }
+
+    .legal-content ul {
+        padding-left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .legal-content li strong {
+        color: var(--text-primary);
+    }
+
+    @@media (max-width: 600px) {
+        .legal-page-container {
+            padding: 0;
+        }
+
+        .legal-card {
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            padding: 20px;
+            min-height: 100dvh;
+        }
+
+        .legal-content h1 {
+            font-size: 24px;
+        }
+
+        .legal-content h2 {
+            font-size: 18px;
+        }
+    }
+</style>
+
+@code {
+    private bool isBulgarian = true;
+
+    protected override void OnInitialized()
+    {
+        var currentCultureName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        isBulgarian = currentCultureName.Equals("bg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void SetLanguage(bool bulgarian)
+    {
+        isBulgarian = bulgarian;
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/");
+    }
+}

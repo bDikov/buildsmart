@@ -13,6 +13,13 @@ public class SignalRService : IAsyncDisposable
     public event Action<System.Text.Json.JsonElement>? QuestionUpdated;
     public event Action<System.Text.Json.JsonElement>? NewReplyReceived;
     public event Action<Guid>? OfferRegenerated;
+    public event Action<System.Text.Json.JsonElement>? ProjectMessageReceived;
+    public event Action? NotificationsStateChanged;
+
+    public void NotifyNotificationsStateChanged()
+    {
+        NotificationsStateChanged?.Invoke();
+    }
 
     public SignalRService(IAuthService authService)
     {
@@ -34,6 +41,17 @@ public class SignalRService : IAsyncDisposable
             .WithUrl(hubUrl, options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult<string?>(token);
+#if DEBUG
+                options.HttpMessageHandlerFactory = (messageHandler) =>
+                {
+                    if (messageHandler is System.Net.Http.HttpClientHandler clientHandler)
+                    {
+                        clientHandler.ServerCertificateCustomValidationCallback = 
+                            System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                    }
+                    return messageHandler;
+                };
+#endif
             })
             .WithAutomaticReconnect()
             .Build();
@@ -44,10 +62,22 @@ public class SignalRService : IAsyncDisposable
             {
                 NotificationReceived?.Invoke(title, message, data);
                 
-                var result = await AppServiceLocator.Alerts.DisplayAlert(title, message, "View", "OK");
-                if (result && data != null)
+                bool shouldShowAlert = true;
+                if (data is System.Text.Json.JsonElement element && element.TryGetProperty("route", out var routeProp))
                 {
-                    await HandleDeepLinkAsync(data);
+                    if (routeProp.GetString() == "ProjectMessages")
+                    {
+                        shouldShowAlert = false;
+                    }
+                }
+
+                if (shouldShowAlert)
+                {
+                    var result = await AppServiceLocator.Alerts.DisplayAlert(title, message, "View", "OK");
+                    if (result && data != null)
+                    {
+                        await HandleDeepLinkAsync(data);
+                    }
                 }
             });
         });
@@ -67,6 +97,11 @@ public class SignalRService : IAsyncDisposable
             AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => OfferRegenerated?.Invoke(projectId));
         });
 
+        _hubConnection.On<System.Text.Json.JsonElement>("ReceiveProjectMessage", (payload) =>
+        {
+            AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => ProjectMessageReceived?.Invoke(payload));
+        });
+
         try
         {
             await _hubConnection.StartAsync();
@@ -80,6 +115,7 @@ public class SignalRService : IAsyncDisposable
 
     public async Task JoinAuctionGroupAsync(string jobId)
     {
+        await ConnectAsync();
         if (_hubConnection?.State == HubConnectionState.Connected)
         {
             await _hubConnection.InvokeAsync("JoinAuctionGroup", jobId);
@@ -91,6 +127,40 @@ public class SignalRService : IAsyncDisposable
         if (_hubConnection?.State == HubConnectionState.Connected)
         {
             await _hubConnection.InvokeAsync("LeaveAuctionGroup", jobId);
+        }
+    }
+
+    public async Task JoinProjectGroupAsync(string projectId)
+    {
+        await ConnectAsync();
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("JoinProjectGroup", projectId);
+        }
+    }
+
+    public async Task LeaveProjectGroupAsync(string projectId)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("LeaveProjectGroup", projectId);
+        }
+    }
+
+    public async Task JoinSupportGroupAsync()
+    {
+        await ConnectAsync();
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("JoinSupportGroup");
+        }
+    }
+
+    public async Task LeaveSupportGroupAsync()
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.InvokeAsync("LeaveSupportGroup");
         }
     }
 
@@ -109,6 +179,11 @@ public class SignalRService : IAsyncDisposable
                         var jobId = jobIdProp.GetString();
                         // Navigate to Auction Hub with JobId
                         await AppServiceLocator.Navigation.NavigateToAsync($"AuctionHubPage?jobId={jobId}");
+                    }
+                    else if (route == "ProjectMessages" && element.TryGetProperty("projectId", out var projectIdProp))
+                    {
+                        var projectId = projectIdProp.GetString();
+                        await AppServiceLocator.Navigation.NavigateToAsync($"/project-messages?projectId={projectId}");
                     }
                 }
             }

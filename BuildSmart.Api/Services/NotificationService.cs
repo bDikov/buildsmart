@@ -87,4 +87,10 @@ public class NotificationService : INotificationService
     {
         await _hubContext.Clients.Group($"Auction_{jobPostId}").SendAsync(method, payload);
     }
+
+    public async Task NotifyProjectGroupAsync(Guid projectId, string method, object payload)
+    {
+        await _hubContext.Clients.Group($"Project_{projectId}").SendAsync(method, payload);
+        await _hubContext.Clients.Group("Support").SendAsync(method, payload);
+    }
 }

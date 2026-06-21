@@ -361,4 +361,59 @@ public class Query
 			.Where(b => b.TradesmanProfileId == tradesmanProfile.Id)
 			.OrderByDescending(b => b.CreatedAt);
 	}
+
+	[Authorize]
+	public async Task<IEnumerable<ProjectMessage>> GetProjectMessages(
+		Guid projectId,
+		int offset,
+		int limit,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IProjectChatService chatService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		return await chatService.GetProjectMessagesAsync(projectId, userId, offset, limit);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<IEnumerable<ProjectChatSummary>> GetActiveSupportChats(
+		[Service] AppDbContext context)
+	{
+		var activeChats = await context.Projects
+			.Include(p => p.Homeowner)
+			.Where(p => context.ProjectMessages.Any(m => m.ProjectId == p.Id && m.SenderId == p.HomeownerId))
+			.Select(p => new ProjectChatSummary
+			{
+				ProjectId = p.Id,
+				ProjectTitle = p.Title,
+				HomeownerName = $"{p.Homeowner.FirstName} {p.Homeowner.LastName}",
+				LatestMessageText = context.ProjectMessages
+					.Where(m => m.ProjectId == p.Id)
+					.OrderByDescending(m => m.CreatedAt)
+					.Select(m => m.MessageText)
+					.FirstOrDefault() ?? string.Empty,
+				LatestMessageTime = context.ProjectMessages
+					.Where(m => m.ProjectId == p.Id)
+					.OrderByDescending(m => m.CreatedAt)
+					.Select(m => (DateTime?)m.CreatedAt)
+					.FirstOrDefault()
+			})
+			.OrderByDescending(c => c.LatestMessageTime)
+			.ToListAsync();
+
+		return activeChats;
+	}
+}
+
+public class ProjectChatSummary
+{
+	public Guid ProjectId { get; set; }
+	public string ProjectTitle { get; set; } = string.Empty;
+	public string HomeownerName { get; set; } = string.Empty;
+	public string LatestMessageText { get; set; } = string.Empty;
+	public DateTime? LatestMessageTime { get; set; }
 }

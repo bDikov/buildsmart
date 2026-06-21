@@ -31,6 +31,14 @@ type TradesmanMedia {
   updatedAt: DateTime!
 }
 
+type ProjectChatSummary {
+  projectId: UUID!
+  projectTitle: String!
+  homeownerName: String!
+  latestMessageText: String!
+  latestMessageTime: DateTime
+}
+
 type JobPostQuestion {
   id: UUID!
   questionText: String!
@@ -438,6 +446,17 @@ type Booking {
   updatedAt: DateTime!
 }
 
+type ProjectMessage {
+  projectId: UUID!
+  project: Project!
+  senderId: UUID!
+  sender: User!
+  messageText: String!
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 input ListFilterInputTypeOfChangeOrderFilterInput {
   all: ChangeOrderFilterInput
   none: ChangeOrderFilterInput
@@ -633,6 +652,7 @@ type ServiceSku {
   basePrice: Decimal!
   unitType: String!
   serviceCategory: ServiceCategory!
+  calculationFormula: String!
   translations: [ServiceSkuTranslation!]!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -675,6 +695,7 @@ input ProjectFilterInput {
   masterOfferPdf: ListByteOperationFilterInput
   hasOfferPdf: BooleanOperationFilterInput
   status: ProjectStatusOperationFilterInput
+  lastVisitedStep: IntOperationFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
@@ -924,6 +945,7 @@ type Mutation {
   editJobAnswer(questionId: UUID! newAnswer: String!): JobPostQuestion!
   deleteAllNotifications: Boolean!
   markNotificationAsRead(notificationId: UUID!): Boolean!
+  markProjectNotificationsAsRead(projectId: UUID!): Boolean!
   "Uploads a portfolio entry for a tradesman."
   addPortfolioEntry(title: String! description: String file: Upload!): PortfolioEntry!
   "Uploads a certification for a tradesman."
@@ -942,6 +964,8 @@ type Mutation {
   updateTradesmanMediaCategory(mediaId: UUID! categoryId: UUID): TradesmanMedia!
   "Deletes a tradesman's media reel from the database."
   deleteTradesmanMedia(mediaId: UUID!): Boolean!
+  "Sends a real-time project message to the project group."
+  sendProjectMessage(projectId: UUID! messageText: String!): ProjectMessage!
   updateUserLanguage(languageCode: String!): User!
   updateUserTheme(theme: String!): User!
   updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
@@ -979,6 +1003,10 @@ type Query {
   auctionById(jobId: UUID!): Auction
   "Gets a specific job post question by ID."
   jobPostQuestionById(id: UUID!): JobPostQuestion
+  "Gets paginated project messages for homeowners or admins."
+  projectMessages(projectId: UUID! offset: Int! limit: Int!): [ProjectMessage!]!
+  "Gets all active project support chats for the admin support dashboard."
+  activeSupportChats: [ProjectChatSummary!]!
   serviceSkusByCategory(categoryId: UUID!): [ServiceSku!]!
   aiCalculation(projectId: UUID! categoryId: UUID!): [AiCalculation!]!
   aiCalculationByJob(jobId: UUID!): [AiCalculation!]!
@@ -1047,6 +1075,7 @@ input ProjectSortInput {
   generalSummary: SortEnumType
   hasOfferPdf: SortEnumType
   status: SortEnumType
+  lastVisitedStep: SortEnumType
   id: SortEnumType
   createdAt: SortEnumType
   updatedAt: SortEnumType
@@ -1119,6 +1148,7 @@ input ServiceSkuFilterInput {
   description: StringOperationFilterInput
   basePrice: DecimalOperationFilterInput
   unitType: StringOperationFilterInput
+  calculationFormula: StringOperationFilterInput
   translations: ListFilterInputTypeOfServiceSkuTranslationFilterInput
   id: UuidOperationFilterInput
   createdAt: DateTimeOperationFilterInput

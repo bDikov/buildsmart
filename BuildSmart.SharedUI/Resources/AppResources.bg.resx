@@ -597,7 +597,7 @@
     <value>Нашите експерти преглеждат вашия проект. Ако имате спешни въпроси или корекции, изпратете директно съобщение на вашия назначен администратор.</value>
   </data>
   <data name="ProjectDetail_NextSteps_AskBtn" xml:space="preserve">
-    <value>Задай въпрос на Админ</value>
+    <value>Задай въпрос на нашия екип</value>
   </data>
   <data name="Feed_All" xml:space="preserve">
     <value>Всички</value>
@@ -632,7 +632,22 @@
   <data name="JobWizard_GoToProjects" xml:space="preserve">
     <value>Към моите проекти</value>
   </data>
-  <data name="JobWizard_SaveAndViewOffer" xml:space="preserve">
-    <value>Запази и Виж Оферта</value>
+  <data name="CreateAccount_AgreeToTermsCheckbox" xml:space="preserve">
+    <value>Съгласявам се с Общите условия и се запознах с Политиката за поверителност</value>
+  </data>
+  <data name="CreateAccount_AgreeToTermsRequired" xml:space="preserve">
+    <value>Трябва да приемете Общите условия и Политиката за поверителност, за да се регистрирате.</value>
+  </data>
+  <data name="Login_TermsConsentNotice" xml:space="preserve">
+    <value>С влизането в профила си или с регистрацията се съгласявате с нашите Общи условия и се запознавате с Политиката за поверителност.</value>
+  </data>
+  <data name="Profile_LegalSectionTitle" xml:space="preserve">
+    <value>Правни документи</value>
+  </data>
+  <data name="Profile_TermsLink" xml:space="preserve">
+    <value>Общи условия</value>
+  </data>
+  <data name="Profile_PrivacyLink" xml:space="preserve">
+    <value>Политика за поверителност</value>
   </data>
 </root>

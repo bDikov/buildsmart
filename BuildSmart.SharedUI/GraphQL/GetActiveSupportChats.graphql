@@ -1,0 +1,9 @@
+query GetActiveSupportChats {
+  activeSupportChats {
+    projectId
+    projectTitle
+    homeownerName
+    latestMessageText
+    latestMessageTime
+  }
+}

@@ -1,0 +1,92 @@
+@page "/admin-support-chats"
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@inject IBuildSmartApiClient ApiClient
+@inject NavigationManager NavManager
+@inject SignalRService SignalRService
+@implements IAsyncDisposable
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+
+<div class="messenger-chats-container">
+    <!-- Messenger Header -->
+    <div class="messenger-header">
+        <h1 class="messenger-title">Chats</h1>
+        <div class="search-bar">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" placeholder="Search chats..." @bind="_searchQuery" @bind:event="oninput" />
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="messenger-loading">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>Loading chats...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Active Status Row -->
+        <div class="active-users-row">
+            <div class="active-user-item">
+                <div class="avatar-container active-now">
+                    <span class="avatar-initials">+</span>
+                </div>
+                <span class="active-user-name">Your Story</span>
+            </div>
+            @foreach (var chat in GetFilteredChats().Take(5))
+            {
+                <div class="active-user-item" @onclick="() => OpenChat(chat.ProjectId)">
+                    <div class="avatar-container active-now bg-primary-subtle">
+                        <span class="avatar-initials">@chat.HomeownerName[0]</span>
+                        <span class="online-indicator"></span>
+                    </div>
+                    <span class="active-user-name text-truncate">@chat.HomeownerName.Split(' ')[0]</span>
+                </div>
+            }
+        </div>
+
+        <!-- Chats List -->
+        <div class="chats-list">
+            @if (GetFilteredChats().Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h3>No Active Chats</h3>
+                    <p>No homeowner support messages match your query.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var chat in GetFilteredChats())
+                {
+                    <div class="chat-row" @onclick="() => OpenChat(chat.ProjectId)">
+                        <div class="avatar-container bg-secondary-subtle">
+                            <span class="avatar-initials">@chat.HomeownerName[0]</span>
+                            <span class="online-indicator"></span>
+                        </div>
+                        <div class="chat-details">
+                            <div class="chat-details-header">
+                                <span class="chat-user-name">@chat.HomeownerName</span>
+                                @if (chat.LatestMessageTime.HasValue)
+                                {
+                                    <span class="chat-time-stamp">@FormatTime(chat.LatestMessageTime.Value)</span>
+                                }
+                            </div>
+                            <div class="chat-message-preview-row">
+                                <span class="chat-project-tag">@chat.ProjectTitle</span>
+                                <span class="chat-message-dot">•</span>
+                                <span class="chat-message-preview">@chat.LatestMessageText</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>

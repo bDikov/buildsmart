@@ -1,0 +1,25 @@
+query GetProjectMessages($projectId: UUID!, $offset: Int!, $limit: Int!) {
+  projectMessages(projectId: $projectId, offset: $offset, limit: $limit) {
+    id
+    messageText
+    createdAt
+    senderId
+    sender {
+      firstName
+      lastName
+    }
+  }
+}
+
+mutation SendProjectMessage($projectId: UUID!, $messageText: String!) {
+  sendProjectMessage(projectId: $projectId, messageText: $messageText) {
+    id
+    messageText
+    createdAt
+    senderId
+  }
+}
+
+mutation MarkProjectNotificationsAsRead($projectId: UUID!) {
+  markProjectNotificationsAsRead(projectId: $projectId)
+}

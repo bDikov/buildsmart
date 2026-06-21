@@ -956,6 +956,23 @@ public class Mutation
 		return true;
 	}
 
+	[Authorize]
+	public async Task<bool> MarkProjectNotificationsAsRead(
+		Guid projectId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		await unitOfWork.Notifications.MarkProjectNotificationsAsReadAsync(userId, projectId);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+
 	[Authorize(Roles = new[] { "Admin" })]
 	public string RequestVideoUploadUrl(
 		string fileName,
@@ -1065,5 +1082,20 @@ public class Mutation
 		await dbContext.SaveChangesAsync();
 
 		return true;
+	}
+
+	[Authorize]
+	public async Task<ProjectMessage> SendProjectMessage(
+		Guid projectId,
+		string messageText,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IProjectChatService chatService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+		return await chatService.SendMessageAsync(projectId, userId, messageText);
 	}
 }

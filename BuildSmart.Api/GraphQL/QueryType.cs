@@ -62,6 +62,14 @@ public class QueryType : ObjectType<Query>
                     .Description("Gets a specific job post question by ID.")
                     .Type<JobPostQuestionType>()
                     .Authorize();
+
+                descriptor.Field(q => q.GetProjectMessages(default!, default!, default!, default!, default!))
+                    .Description("Gets paginated project messages for homeowners or admins.")
+                    .Authorize();
+
+                descriptor.Field(q => q.GetActiveSupportChats(default!))
+                    .Description("Gets all active project support chats for the admin support dashboard.")
+                    .Authorize(roles: new[] { "Admin" });
         	}
         }
         

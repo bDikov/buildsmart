@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using BuildSmart.SharedUI.GraphQL;
+using Microsoft.Extensions.Localization;
 
 namespace BuildSmart.SharedUI.ViewModels
 {
@@ -12,6 +13,7 @@ namespace BuildSmart.SharedUI.ViewModels
         private readonly IBuildSmartApiClient _apiClient;
         private readonly IAuthService _authService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> _localizer;
 
         [ObservableProperty]
         private string _firstName = string.Empty;
@@ -28,16 +30,33 @@ namespace BuildSmart.SharedUI.ViewModels
         [ObservableProperty]
         private string _password = string.Empty;
 
-        public CreateAccountPageViewModel(IBuildSmartApiClient apiClient, IAuthService authService, IServiceProvider serviceProvider)
+        [ObservableProperty]
+        private bool _agreeToTerms = false;
+
+        public CreateAccountPageViewModel(
+            IBuildSmartApiClient apiClient, 
+            IAuthService authService, 
+            IServiceProvider serviceProvider,
+            IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> localizer)
         {
             _apiClient = apiClient;
             _authService = authService;
             _serviceProvider = serviceProvider;
+            _localizer = localizer;
         }
 
         [RelayCommand]
         private async Task CreateAccountAsync()
         {
+            if (!AgreeToTerms)
+            {
+                await AppServiceLocator.Alerts.DisplayAlert(
+                    _localizer["Validation_Error"] ?? "Validation Error", 
+                    _localizer["CreateAccount_AgreeToTermsRequired"] ?? "You must accept the Terms and Conditions and Privacy Policy to register.", 
+                    "OK");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName) || string.IsNullOrWhiteSpace(Password))
             {
                 await AppServiceLocator.Alerts.DisplayAlert("Validation Error", "First name, last name, and password are required.", "OK");

@@ -26,17 +26,8 @@ public class NavigationBridge : INavigationBridge
 
                 if (blazorUrl == "..")
                 {
-                    var path = new Uri(_blazorNavigationRegistry.CurrentManager.Uri).AbsolutePath.ToLower();
-                    if (path.Contains("/category-detail"))
-                    {
-                        _blazorNavigationRegistry.CurrentManager.NavigateTo("/category-management");
-                        return;
-                    }
-                    if (path.Contains("/user-edit"))
-                    {
-                        _blazorNavigationRegistry.CurrentManager.NavigateTo("/user-management");
-                        return;
-                    }
+                    await _blazorNavigationRegistry.GoBackAsync();
+                    return;
                 }
 
                 // Parse query string if present inside blazorUrl to perform EndsWith("Page") check correctly
@@ -109,12 +100,9 @@ public class NavigationBridge : INavigationBridge
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            if (_blazorNavigationRegistry.CurrentManager != null)
+            if (_blazorNavigationRegistry.GoBackAction != null)
             {
-                // Note: Blazor NavigationManager doesn't have a direct "GoBack", 
-                // but we can try to use JS Interop or just stick to Shell for physical back button feel
-                // However, for consistency with the bridge's current behavior:
-                await Shell.Current.GoToAsync("..");
+                await _blazorNavigationRegistry.GoBackAsync();
             }
             else
             {

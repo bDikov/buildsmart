@@ -1,0 +1,335 @@
+@page "/terms"
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+<div class="legal-page-container">
+    <div class="legal-card bs-card">
+        <div class="legal-header">
+            <div class="back-button" @onclick="GoBack">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>@(isBulgarian ? "Назад" : "Back")</span>
+            </div>
+            <div class="lang-switcher">
+                <button class="lang-btn @(isBulgarian ? "active" : "")" @onclick="() => SetLanguage(true)">BG</button>
+                <button class="lang-btn @(!isBulgarian ? "active" : "")" @onclick="() => SetLanguage(false)">EN</button>
+            </div>
+        </div>
+
+        @if (isBulgarian)
+        {
+            <div class="legal-content">
+                <h1>Общи условия за ползване</h1>
+                <p class="last-updated">Последна промяна: 22 юни 2026 г.</p>
+
+                <p class="intro">
+                    Добре дошли в <strong>BuildSmart</strong>! Тези Общи условия уреждат достъпа и ползването на нашата платформа, включително уебсайта, мобилното приложение и придружаващите ги услуги. Моля, прочетете ги внимателно, преди да използвате платформата.
+                </p>
+
+                <section>
+                    <h2>1. Данни за доставчика</h2>
+                    <p>
+                        Платформата се оперира от дружество, регистрирано съгласно законите на Република България, с ЕИК/UIC и адрес на управление в гр. София, България. За всякакви въпроси можете да се свържете с нас на електронна поща: support@buildsmart.com.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>2. Предмет на услугите</h2>
+                    <p>
+                        BuildSmart е иновативна технологична платформа, която:
+                    </p>
+                    <ul>
+                        <li>Свързва собственици на имоти (Потребители), които планират ремонтни или строителни дейности, с професионални изпълнители (Майстори/Строителни фирми).</li>
+                        <li>Предоставя интелигентен съветник и висококачествени алгоритми за автоматично изготвяне на подробни Количествено-стойностни сметки (КСС) и проектни оферти.</li>
+                        <li>Осигурява инструменти за наддаване, комуникация в реално време (чат) и управление на проекти.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>3. Интелигентно остойностяване и алгоритми</h2>
+                    <p>
+                        Ние се гордеем с точността на нашите технологии:
+                    </p>
+                    <ul>
+                        <li><strong>Реалистични калкулации:</strong> Предложените в платформата оферти и количествени разчети се изчисляват на базата на висококачествени, професионални алгоритми, които отразяват реалните пазарни цени и нормативи. Тези цени не са произволни или фиктивни.</li>
+                        <li><strong>Необходимост от професионален оглед:</strong> Единствената причина, поради която предложените цени и количествени сметки не могат да бъдат гарантирани като окончателни, е че специфичните физически и технически условия на всеки обект се различават и изискват индивидуален оглед.</li>
+                        <li><strong>Проверка на място:</strong> Преди сключването на обвързващ писмен договор, всички размери, количества и специфики <strong>задължително трябва да бъдат проверени и потвърдени на място от квалифициран професионалист</strong>. Платформата не носи отговорност за несъответствия, възникнали при липса на такъв професионален оглед.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>4. Регистрация на потребители</h2>
+                    <p>
+                        За ползването на пълната функционалност на платформата е необходима регистрация на потребителски профил. Потребителите се задължават да предоставят вярна, точна и актуална информация. Защитата на паролата и профила е изцяло отговорност на потребителя.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>5. Връзка с потребителите и комуникация</h2>
+                    <p>
+                        С приемането на настоящите Общи условия и Политиката за поверителност, вие се съгласявате:
+                    </p>
+                    <ul>
+                        <li>Да получавате системни съобщения, имейли и известия (включително чрез SignalR чат), свързани с вашите проекти, оферти, запитвания и наддавания.</li>
+                        <li>Да се свързваме с вас за целите на нормалното функциониране на договорените услуги.</li>
+                        <li>Платформата **не продава, не отдава под наем и не предоставя** вашите лични данни на трети страни за маркетингови цели без вашето изрично съгласие.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>6. Интелектуална собственост</h2>
+                    <p>
+                        Всички софтуерни компоненти, алгоритми за остойностяване, бази данни, дизайн, текстове и лога са интелектуална собственост на платформата BuildSmart и са защитени от Закона за авторското право и сродните му права.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>7. Приложимо право и спорове</h2>
+                    <p>
+                        За всички неуредени въпроси се прилага българското законодателство. Споровете между страните се решават в дух на разбирателство, а при невъзможност — от компетентния съд в град София, България.
+                    </p>
+                </section>
+            </div>
+        }
+        else
+        {
+            <div class="legal-content">
+                <h1>Terms and Conditions of Use</h1>
+                <p class="last-updated">Last Updated: June 22, 2026</p>
+
+                <p class="intro">
+                    Welcome to <strong>BuildSmart</strong>! These Terms and Conditions govern your access to and use of our platform, including the website, mobile app, and accompanying services. Please read them carefully before using our platform.
+                </p>
+
+                <section>
+                    <h2>1. Provider Details</h2>
+                    <p>
+                        The platform is operated by a company registered under the laws of the Republic of Bulgaria, with its registered seat and address in Sofia, Bulgaria. For any inquiries, you can contact us at: support@buildsmart.com.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>2. Subject of Services</h2>
+                    <p>
+                        BuildSmart is an innovative tech platform that:
+                    </p>
+                    <ul>
+                        <li>Connects property owners (Users) planning renovation or construction works with professional contractors (Tradesmen/Construction companies).</li>
+                        <li>Provides a smart wizard and high-quality estimation algorithms to automatically generate detailed Bill of Quantities (BoQ) and project proposals.</li>
+                        <li>Provides bidding tools, real-time communication (chat), and project management workflows.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>3. Smart Estimations & Algorithms</h2>
+                    <p>
+                        We pride ourselves on the accuracy of our technology:
+                    </p>
+                    <ul>
+                        <li><strong>Realistic Calculations:</strong> The offers and quantities generated on the platform are calculated using high-quality, professional-grade algorithms designed to reflect real market prices and standards. These prices are highly realistic, not arbitrary.</li>
+                        <li><strong>On-Site Professional Verification:</strong> The primary reason these offers cannot be fully guaranteed as final is that the specific physical and technical conditions of each site vary.</li>
+                        <li><strong>Verification Required:</strong> Before signing any binding agreement or starting work, all measurements, quantities, and site conditions <strong>must be physically verified and confirmed on-site by a professional tradesperson</strong>. The platform is not liable for discrepancies arising from a lack of physical inspection.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>4. User Registration</h2>
+                    <p>
+                        To use the full features of the platform, you must register an account. You agree to provide true, accurate, and up-to-date information. Keeping your password and credentials secure is solely your responsibility.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>5. User Contact & Communication</h2>
+                    <p>
+                        By accepting these Terms and Conditions and acknowledging the Privacy Policy, you agree that:
+                    </p>
+                    <ul>
+                        <li>We can send you system messages, emails, and notifications (including via SignalR chat) regarding your active projects, offers, quotes, and bidding activity.</li>
+                        <li>We can contact you to facilitate the core services of our platform.</li>
+                        <li>We **do not sell, rent, or trade** your personal information to third parties for marketing purposes.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>6. Intellectual Property</h2>
+                    <p>
+                        All software, estimation algorithms, databases, UI designs, texts, and logos are the intellectual property of BuildSmart and are protected by copyright laws.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>7. Governing Law and Disputes</h2>
+                    <p>
+                        Bulgarian law applies to these Terms. Any disputes that cannot be settled amicably will be referred to the competent court in Sofia, Bulgaria.
+                    </p>
+                </section>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .legal-page-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100dvh;
+        background-color: var(--bg-page);
+        font-family: var(--font-primary);
+        padding: 40px 20px;
+        box-sizing: border-box;
+    }
+
+    .legal-card {
+        width: 100%;
+        max-width: 800px;
+        padding: 40px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        box-shadow: var(--shadow-main);
+    }
+
+    .legal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+
+    .back-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: var(--text-primary);
+    }
+
+    .lang-switcher {
+        display: flex;
+        gap: 8px;
+        background-color: var(--bg-page);
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .lang-btn {
+        background: none;
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    .legal-content {
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        line-height: 1.6;
+    }
+
+    .legal-content h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .last-updated {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .intro {
+        font-size: 16px;
+    }
+
+    .legal-content h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 5px;
+    }
+
+    .legal-content ul {
+        padding-left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .legal-content li strong {
+        color: var(--text-primary);
+    }
+
+    @@media (max-width: 600px) {
+        .legal-page-container {
+            padding: 0;
+        }
+
+        .legal-card {
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            padding: 20px;
+            min-height: 100dvh;
+        }
+
+        .legal-content h1 {
+            font-size: 24px;
+        }
+
+        .legal-content h2 {
+            font-size: 18px;
+        }
+    }
+</style>
+
+@code {
+    private bool isBulgarian = true;
+
+    protected override void OnInitialized()
+    {
+        var currentCultureName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        isBulgarian = currentCultureName.Equals("bg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void SetLanguage(bool bulgarian)
+    {
+        isBulgarian = bulgarian;
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/");
+    }
+}

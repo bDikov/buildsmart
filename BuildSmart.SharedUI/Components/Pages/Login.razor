@@ -51,6 +51,17 @@
             @Loc["Login_LogInButton"]
         </button>
 
+        <div class="login-legal-footnote">
+            @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
+            {
+                <span>С влизането си или с регистрацията се съгласявате с нашите <a href="/terms" class="legal-link">Общи условия</a> и се запознавате с <a href="/privacy" class="legal-link">Политиката за поверителност</a>.</span>
+            }
+            else
+            {
+                <span>By logging in or creating an account, you agree to our <a href="/terms" class="legal-link">Terms & Conditions</a> and acknowledge the <a href="/privacy" class="legal-link">Privacy Policy</a>.</span>
+            }
+        </div>
+
         <div class="signup-prompt">
             <span>@Loc["Login_NoAccountPrompt"]<a href="#" @onclick="() => ViewModel.CreateAccountCommand.Execute(null)" @onclick:preventDefault>@Loc["Login_SignUp"]</a></span>
         </div>
@@ -209,6 +220,26 @@
     }
 
     .signup-prompt a:hover {
+        text-decoration: underline;
+    }
+
+    .login-legal-footnote {
+        font-size: 13px;
+        color: var(--text-secondary);
+        text-align: center;
+        line-height: 1.4;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        opacity: 0.85;
+    }
+
+    .legal-link {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .legal-link:hover {
         text-decoration: underline;
     }
 </style>

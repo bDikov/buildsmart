@@ -34,11 +34,28 @@
             @foreach (var note in ViewModel.Notifications)
             {
                 <div class="ios-notification-card @(note.IsRead ? "read" : "unread")" @onclick="() => ViewModel.NavigateToNotificationCommand.ExecuteAsync(note)">
-                    <div class="ios-app-icon">
-                        <!-- BuildSmart Logo Icon -->
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                        </svg>
+                    <div style="position: relative; flex-shrink: 0;">
+                        @if (note.RelatedEntityType == "Project")
+                        {
+                            <div class="ios-app-icon messenger-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.91 1.45 5.48 3.72 7.12.21.15.33.42.27.68l-.55 2.71c-.06.29.22.54.5.42l3.1-1.3c.21-.09.46-.06.65.07.74.52 1.52.8 2.31.8 5.52 0 10-4.14 10-9.25C22 6.14 17.52 2 12 2zm1.25 11.5l-2.25-2.4-4.4 2.4 4.85-5.15 2.25 2.4 4.4-2.4-4.85 5.15z"/>
+                                </svg>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="ios-app-icon">
+                                <!-- BuildSmart Logo Icon -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                            </div>
+                        }
+                        @if (!note.IsRead)
+                        {
+                            <span class="unread-dot"></span>
+                        }
                     </div>
                     <div class="ios-notification-content">
                         <div class="ios-notification-header">
@@ -156,6 +173,28 @@
         color: white;
     }
 
+    .ios-app-icon.messenger-icon {
+        background: linear-gradient(135deg, #0078FF 0%, #00C6FF 100%) !important;
+    }
+
+    .unread-dot {
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        width: 10px;
+        height: 10px;
+        background-color: #FF3B30;
+        border-radius: 50%;
+        border: 1.5px solid rgba(37, 37, 37, 0.60);
+        z-index: 10;
+    }
+
+    @@media (prefers-color-scheme: light) {
+        .unread-dot {
+            border: 1.5px solid rgba(255, 255, 255, 0.70);
+        }
+    }
+
     .ios-notification-content {
         display: flex;
         flex-direction: column;
@@ -239,6 +278,7 @@
     {
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         await ViewModel.LoadNotificationsCommand.ExecuteAsync(null);
+        await ViewModel.MarkAllAsReadCommand.ExecuteAsync(null);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

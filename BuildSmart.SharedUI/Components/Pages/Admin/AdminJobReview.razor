@@ -96,6 +96,9 @@
                             {
                                 <p class="text-primary mb-0">Project: @selectedProject.Title</p>
                                 <p class="text-muted mb-0" style="font-size: 12px;">Owner: @selectedProject.Homeowner.FirstName @selectedProject.Homeowner.LastName</p>
+                                <button class="bs-btn-secondary btn-sm mt-1" style="font-size: 11px;" @onclick='() => NavManager.NavigateTo($"/project-messages?projectId={selectedProject.Id}")'>
+                                    💬 Chat with Homeowner
+                                </button>
                             }
                         </div>
                         <button class="close-btn" @onclick="() => ViewModel.CloseDetailsCommand.Execute(null)">✕</button>

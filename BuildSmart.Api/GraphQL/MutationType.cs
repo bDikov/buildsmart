@@ -131,6 +131,9 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.MarkNotificationAsRead(default!, default!))
             .Authorize();
 
+        descriptor.Field(m => m.MarkProjectNotificationsAsRead(default!, default!, default!))
+            .Authorize();
+
         descriptor.Field(m => m.AddPortfolioEntry(default!, default!, default!, default!, default!, default!))
             .Description("Uploads a portfolio entry for a tradesman.")
             .Authorize(roles: new[] { "Tradesman" });
@@ -166,5 +169,9 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.DeleteTradesmanMedia(default!, default!))
             .Description("Deletes a tradesman's media reel from the database.")
             .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.SendProjectMessage(default!, default!, default!, default!))
+            .Description("Sends a real-time project message to the project group.")
+            .Authorize();
     }
 }

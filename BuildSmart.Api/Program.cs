@@ -121,6 +121,7 @@ public partial class Program
 		builder.Services.AddScoped<IJobPostFeedbackRepository, JobPostFeedbackRepository>();
 		builder.Services.AddScoped<IAuctionActionRepository, AuctionActionRepository>();
 		builder.Services.AddScoped<IBidRepository, BidRepository>();
+		builder.Services.AddScoped<IProjectMessageRepository, BuildSmart.Infrastructure.Repositories.ProjectMessageRepository>();
 
 		// Add Application Services (Business Logic)
 		builder.Services.AddScoped<IBookingService, BookingService>();
@@ -132,10 +133,12 @@ public partial class Program
 		builder.Services.AddScoped<DataMigrationService>();
 		builder.Services.AddScoped<IAuthService, AuthService>();
 		builder.Services.AddScoped<INotificationService, BuildSmart.Api.Services.NotificationService>();
+		builder.Services.AddScoped<IProjectChatService, ProjectChatService>();
 		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
 		builder.Services.AddScoped<IMediaService, BuildSmart.Infrastructure.Services.CloudflareR2MediaService>();
 		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 		builder.Services.AddScoped<IPricingEngine, PricingEngine>();
+		builder.Services.AddSingleton<IActiveProjectChatTracker, ActiveProjectChatTracker>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();

@@ -1,4 +1,4 @@
-﻿using BuildSmart.Core.Application.Interfaces;
+using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Infrastructure.Persistence.Repositories; // We need this to find the concrete repositories
 
 namespace BuildSmart.Infrastructure.Persistence;
@@ -23,6 +23,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 	public INotificationRepository Notifications { get; }
 	public ICertificationRepository Certifications { get; }
 	public IServiceSkuRepository ServiceSkus { get; }
+	public IProjectMessageRepository ProjectMessages { get; }
 
 	public UnitOfWork(AppDbContext context)
 	{
@@ -45,6 +46,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 		Notifications = new NotificationRepository(_context);
 		Certifications = new CertificationRepository(_context);
 		ServiceSkus = new BuildSmart.Infrastructure.Repositories.ServiceSkuRepository(_context);
+		ProjectMessages = new BuildSmart.Infrastructure.Repositories.ProjectMessageRepository(_context);
 	}
 
 	/// <summary>

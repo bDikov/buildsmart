@@ -93,6 +93,9 @@
                         <button class="bs-btn-secondary btn-sm" @onclick='() => NavManager.NavigateTo($"/admin-job-review")'>
                             View Attached Jobs in Reviews
                         </button>
+                        <button class="bs-btn-primary btn-sm" @onclick='() => NavManager.NavigateTo($"/project-messages?projectId={project.Id}")'>
+                            Chat with Homeowner
+                        </button>
                     </div>
                 </div>
             }

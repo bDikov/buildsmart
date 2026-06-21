@@ -50,4 +50,18 @@ public class NotificationRepository : INotificationRepository
         var userNotes = await _context.Notifications.Where(n => n.UserId == userId).ToListAsync();
         _context.Notifications.RemoveRange(userNotes);
     }
+
+    public async Task MarkProjectNotificationsAsReadAsync(Guid userId, Guid projectId)
+    {
+        var projectNotifications = await _context.Notifications
+            .Where(n => n.UserId == userId && n.RelatedEntityType == "Project" && n.RelatedEntityId == projectId && !n.IsRead)
+            .ToListAsync();
+
+        foreach (var notification in projectNotifications)
+        {
+            notification.IsRead = true;
+            notification.UpdatedAt = DateTime.UtcNow;
+            _context.Notifications.Update(notification);
+        }
+    }
 }

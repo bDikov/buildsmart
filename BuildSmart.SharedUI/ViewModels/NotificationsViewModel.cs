@@ -8,10 +8,17 @@ namespace BuildSmart.SharedUI.ViewModels;
 public partial class NotificationsViewModel : ObservableObject
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly Services.SignalRService _signalRService;
+    private readonly GraphQL.State.BuildSmartApiClientStoreAccessor _storeAccessor;
 
-    public NotificationsViewModel(IBuildSmartApiClient apiClient)
+    public NotificationsViewModel(
+        IBuildSmartApiClient apiClient, 
+        Services.SignalRService signalRService,
+        GraphQL.State.BuildSmartApiClientStoreAccessor storeAccessor)
     {
         _apiClient = apiClient;
+        _signalRService = signalRService;
+        _storeAccessor = storeAccessor;
     }
 
     [ObservableProperty]
@@ -30,6 +37,7 @@ public partial class NotificationsViewModel : ObservableObject
             if (result.Errors.Count == 0)
             {
                 Notifications.Clear();
+                _signalRService.NotifyNotificationsStateChanged();
             }
         }
         catch { }
@@ -58,7 +66,14 @@ public partial class NotificationsViewModel : ObservableObject
             switch (note.RelatedEntityType.ToLowerInvariant())
             {
                 case "project":
-                    route = $"/project-detail?projectId={note.RelatedEntityId.Value}";
+                    if (IsChatNotification(note.Title))
+                    {
+                        route = $"/project-messages?projectId={note.RelatedEntityId.Value}";
+                    }
+                    else
+                    {
+                        route = $"/project-detail?projectId={note.RelatedEntityId.Value}";
+                    }
                     break;
                 case "jobpost":
                 case "job":
@@ -115,6 +130,8 @@ public partial class NotificationsViewModel : ObservableObject
         {
             bool isFirstLoad = Notifications.Count == 0;
             if (isFirstLoad) IsBusy = true;
+
+            try { _storeAccessor.OperationStore.Clear(); } catch { }
             
             var result = await _apiClient.GetMyNotifications.ExecuteAsync();
 
@@ -129,12 +146,42 @@ public partial class NotificationsViewModel : ObservableObject
             {
                 Notifications = new ObservableCollection<IGetMyNotifications_MyNotifications>();
             }
+
+            _signalRService.NotifyNotificationsStateChanged();
         }
         catch { /* Silently fail */ }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    [RelayCommand]
+    public async Task MarkAllAsReadAsync()
+    {
+        var unread = Notifications.Where(n => !n.IsRead).ToList();
+        if (unread.Count == 0) return;
+
+        foreach (var note in unread)
+        {
+            try
+            {
+                await _apiClient.MarkNotificationAsRead.ExecuteAsync(note.Id);
+            }
+            catch { }
+        }
+        await LoadNotificationsAsync();
+    }
+
+    private bool IsChatNotification(string title)
+    {
+        if (string.IsNullOrEmpty(title)) return false;
+        
+        var t = title.Trim();
+        return string.Equals(t, "Support Reply", StringComparison.OrdinalIgnoreCase) || 
+               string.Equals(t, "Отговор от поддръжката", StringComparison.OrdinalIgnoreCase) || 
+               string.Equals(t, "New Message", StringComparison.OrdinalIgnoreCase) || 
+               string.Equals(t, "Ново съобщение", StringComparison.OrdinalIgnoreCase);
     }
 }
 

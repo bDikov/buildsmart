@@ -9,4 +9,5 @@ public interface INotificationRepository
     Task<IEnumerable<Notification>> GetAllByUserIdAsync(Guid userId);
     Task MarkAsReadAsync(Guid notificationId);
     Task DeleteAllByUserIdAsync(Guid userId);
+    Task MarkProjectNotificationsAsReadAsync(Guid userId, Guid projectId);
 }

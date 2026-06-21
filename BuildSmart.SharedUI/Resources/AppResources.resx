@@ -594,7 +594,7 @@
     <value>Our experts are reviewing your project. If you have any immediate concerns or adjustments, send a direct message to your assigned admin.</value>
   </data>
   <data name="ProjectDetail_NextSteps_AskBtn" xml:space="preserve">
-    <value>Ask Admin</value>
+    <value>Ask our team</value>
   </data>
   <data name="Feed_All" xml:space="preserve">
     <value>All</value>
@@ -629,7 +629,22 @@
   <data name="JobWizard_GoToProjects" xml:space="preserve">
     <value>Go to My Projects</value>
   </data>
-  <data name="JobWizard_SaveAndViewOffer" xml:space="preserve">
-    <value>Save &amp; View Offer</value>
+  <data name="CreateAccount_AgreeToTermsCheckbox" xml:space="preserve">
+    <value>I agree to the Terms and Conditions and acknowledge the Privacy Policy</value>
+  </data>
+  <data name="CreateAccount_AgreeToTermsRequired" xml:space="preserve">
+    <value>You must accept the Terms and Conditions and Privacy Policy to register.</value>
+  </data>
+  <data name="Login_TermsConsentNotice" xml:space="preserve">
+    <value>By logging in or creating an account, you agree to our Terms and Conditions and acknowledge the Privacy Policy.</value>
+  </data>
+  <data name="Profile_LegalSectionTitle" xml:space="preserve">
+    <value>Legal &amp; Policies</value>
+  </data>
+  <data name="Profile_TermsLink" xml:space="preserve">
+    <value>Terms &amp; Conditions</value>
+  </data>
+  <data name="Profile_PrivacyLink" xml:space="preserve">
+    <value>Privacy Policy</value>
   </data>
 </root>

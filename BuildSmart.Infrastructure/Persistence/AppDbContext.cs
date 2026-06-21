@@ -44,6 +44,7 @@ public class AppDbContext : DbContext
     public DbSet<Certification> Certifications { get; set; } = null!;
 	public DbSet<TradesmanMedia> TradesmanMedia { get; set; } = null!;
 	public DbSet<ProjectMilestoneMedia> ProjectMilestoneMedia { get; set; } = null!;
+	public DbSet<ProjectMessage> ProjectMessages { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)

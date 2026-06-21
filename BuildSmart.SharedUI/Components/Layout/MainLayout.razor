@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @using BuildSmart.SharedUI.Services
 @using BuildSmart.SharedUI.GraphQL
 @using Microsoft.AspNetCore.Components.Authorization
@@ -12,6 +13,7 @@
 @inject IBlazorNavigationRegistry NavigationRegistry
 @inject IBuildSmartApiClient ApiClient
 @inject IJSRuntime JSRuntime
+@inject SignalRService SignalRService
 @inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 
 <div class="page">
@@ -32,6 +34,10 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
+                @if (_hasUnreadNotifications)
+                {
+                    <span class="bell-unread-dot"></span>
+                }
             </a>
             
             <button class="mobile-menu-btn" @onclick="ToggleSidebar">
@@ -98,6 +104,12 @@
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     @Loc["Nav_JobReviews"]
                 </a>
+                <a class="nav-item-dark" href="/admin-support-chats" @onclick="CloseSidebar">
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Support Chats
+                </a>
                 <a class="nav-item-dark" href="/admin-projects" @onclick="CloseSidebar">
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     All Projects
@@ -146,6 +158,10 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
+                @if (_hasUnreadNotifications)
+                {
+                    <span class="bell-unread-dot"></span>
+                }
             </a>
         </div>
         <article class="content px-4 py-3">
@@ -374,6 +390,17 @@
         transition: background-color 0.2s ease;
     }
 
+    .bell-unread-dot {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 8px;
+        height: 8px;
+        background-color: #FF3B30;
+        border-radius: 50%;
+        border: 1.5px solid var(--bg-card);
+    }
+
     .notification-bell:hover {
         background-color: var(--bg-card-alt);
     }
@@ -455,12 +482,21 @@
     private string? _userName;
     private string? _userEmail;
     private string? _userProfilePictureUrl;
+    private bool _hasUnreadNotifications = false;
 
     private static bool _hasAttemptedLanguageSync = false;
 
     protected override async Task OnInitializedAsync()
     {
+        SignalRService.NotificationReceived += OnNotificationReceived;
+        SignalRService.NotificationsStateChanged += OnNotificationsStateChanged;
+        await LoadUnreadStatusAsync();
+
         NavigationRegistry.CurrentManager = NavManager;
+        NavigationRegistry.GoBackAction = async () =>
+        {
+            await JSRuntime.InvokeVoidAsync("window.history.back");
+        };
         
         try
         {
@@ -578,6 +614,44 @@
         {
             NavigationBridge.NavigateToAsync("//LoginPage");
         });
+    }
+
+    private async Task LoadUnreadStatusAsync()
+    {
+        try
+        {
+            try { StoreAccessor.OperationStore.Clear(); } catch { }
+            var result = await ApiClient.GetMyNotifications.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.MyNotifications != null)
+            {
+                _hasUnreadNotifications = result.Data.MyNotifications.Any(n => !n.IsRead);
+            }
+        }
+        catch { }
+    }
+
+    private void OnNotificationReceived(string title, string msg, object? data)
+    {
+        InvokeAsync(() =>
+        {
+            _hasUnreadNotifications = true;
+            StateHasChanged();
+        });
+    }
+
+    private void OnNotificationsStateChanged()
+    {
+        InvokeAsync(async () =>
+        {
+            await LoadUnreadStatusAsync();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        SignalRService.NotificationReceived -= OnNotificationReceived;
+        SignalRService.NotificationsStateChanged -= OnNotificationsStateChanged;
     }
 }
 

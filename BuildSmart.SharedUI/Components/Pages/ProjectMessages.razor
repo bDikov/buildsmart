@@ -1,0 +1,142 @@
+@page "/project-messages"
+@using BuildSmart.SharedUI.ViewModels
+@using System.ComponentModel
+@using Microsoft.Extensions.Localization
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.Services
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IAsyncDisposable
+@inject IBuildSmartApiClient ApiClient
+@inject SignalRService SignalRService
+@inject IAuthService AuthService
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+
+<div class="chat-page-container">
+    <!-- Header -->
+    <div class="chat-header">
+        <button class="back-btn" @onclick="GoBack">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+        <div class="header-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.91 1.45 5.48 3.72 7.12.21.15.33.42.27.68l-.55 2.71c-.06.29.22.54.5.42l3.1-1.3c.21-.09.46-.06.65.07.74.52 1.52.8 2.31.8 5.52 0 10-4.14 10-9.25C22 6.14 17.52 2 12 2zm1.25 11.5l-2.25-2.4-4.4 2.4 4.85-5.15 2.25 2.4 4.4-2.4-4.85 5.15z"/>
+            </svg>
+        </div>
+        <div class="chat-header-info">
+            <h2 class="chat-title">@(_projectName ?? Loc["ProjectDetail_Loading"])</h2>
+            <span class="chat-subtitle">@Loc["ProjectDetail_NextSteps_AskBtn"]</span>
+        </div>
+    </div>
+
+    <!-- Messages Window -->
+    <div class="chat-messages-wrapper">
+        <div @ref="_messageContainerRef" class="chat-messages-container" @onscroll="OnScroll">
+            @if (_isLoadingHistory && _messages.Count == 0)
+            {
+                <div class="chat-loading-state">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <p>@Loc["Notifications_Loading"]</p>
+                </div>
+            }
+            else
+            {
+                @if (_isLoadingMore)
+                {
+                    <div class="chat-loading-more">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    </div>
+                }
+                
+                @if (_messages.Count == 0)
+                {
+                    <div class="chat-empty-state">
+                        <div class="chat-empty-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="empty-title">Няма съобщения</p>
+                        <p class="empty-subtitle">Започнете разговор с нашия екип относно вашия проект.</p>
+                    </div>
+                }
+                else
+                {
+                    DateTime? lastDate = null;
+                    @foreach (var msg in _messages)
+                    {
+                        var showDateHeader = lastDate == null || lastDate.Value.Date != msg.CreatedAt.LocalDateTime.Date;
+                        lastDate = msg.CreatedAt.LocalDateTime;
+
+                        if (showDateHeader)
+                        {
+                            <div class="chat-date-divider">
+                                <span>@FormatDate(msg.CreatedAt.LocalDateTime)</span>
+                            </div>
+                        }
+
+                        <div class="chat-bubble-row @(msg.IsCurrentUser ? "current-user" : "other-user")">
+                            @if (!msg.IsCurrentUser)
+                            {
+                                <div class="sender-avatar">
+                                    <span>@msg.SenderName[0]</span>
+                                </div>
+                            }
+                            <div class="chat-bubble-content">
+                                @if (!msg.IsCurrentUser)
+                                {
+                                    <span class="sender-name">@msg.SenderName</span>
+                                }
+                                <div class="chat-bubble">
+                                    <p class="message-text">@msg.MessageText</p>
+                                    <span class="message-time">@msg.CreatedAt.LocalDateTime.ToString("HH:mm")</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Input Footer -->
+    <div class="chat-footer">
+        <div class="input-container">
+            <textarea class="chat-input" 
+                      placeholder="Напишете съобщение..." 
+                      @bind="_newMessageText" 
+                      @bind:event="oninput" 
+                      @onkeydown="OnInputKeyDown" 
+                      rows="1"></textarea>
+            <button class="send-btn @(string.IsNullOrWhiteSpace(_newMessageText) ? "disabled" : "")" 
+                    @onclick="SendMessageAsync" 
+                    disabled="@string.IsNullOrWhiteSpace(_newMessageText)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.chatHelpers = {
+        scrollToBottom: (el) => {
+            if (el) {
+                requestAnimationFrame(() => {
+                    el.scrollTop = el.scrollHeight;
+                });
+            }
+        },
+        getScrollHeight: (el) => el ? el.scrollHeight : 0,
+        getScrollTop: (el) => el ? el.scrollTop : 0,
+        setScrollTop: (el, val) => {
+            if (el) el.scrollTop = val;
+        }
+    };
+</script>

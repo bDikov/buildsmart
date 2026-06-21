@@ -1,4 +1,4 @@
-﻿namespace BuildSmart.Core.Application.Interfaces;
+namespace BuildSmart.Core.Application.Interfaces;
 
 /// <summary>
 /// Defines the contract for a Unit of Work,
@@ -43,6 +43,7 @@ public interface IUnitOfWork
     IAuctionActionRepository AuctionActions { get; }
     INotificationRepository Notifications { get; }
     ICertificationRepository Certifications { get; }
+    IProjectMessageRepository ProjectMessages { get; }
 
 	/// <summary>
 	/// Saves all changes made in this unit of work to the underlying database

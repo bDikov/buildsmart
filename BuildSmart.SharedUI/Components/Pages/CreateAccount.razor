@@ -47,6 +47,20 @@
                 <input type="password" class="bs-input register-input" id="password" @bind="ViewModel.Password" />
             </div>
 
+            <div class="form-checkbox-group">
+                <input type="checkbox" class="bs-checkbox" id="agreeToTerms" @bind="ViewModel.AgreeToTerms" />
+                <label for="agreeToTerms" class="checkbox-label">
+                    @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span>Съгласявам се с <a href="/terms" target="_blank" class="legal-link">Общите условия</a> и се запознах с <a href="/privacy" target="_blank" class="legal-link">Политиката за поверителност</a>.</span>
+                    }
+                    else
+                    {
+                        <span>I agree to the <a href="/terms" target="_blank" class="legal-link">Terms and Conditions</a> and acknowledge the <a href="/privacy" target="_blank" class="legal-link">Privacy Policy</a>.</span>
+                    }
+                </label>
+            </div>
+
             <button class="bs-btn-primary register-btn w-100" type="submit">
                 @Loc["CreateAccount_CreateButton"]
             </button>
@@ -198,6 +212,43 @@
     }
 
     .login-prompt a:hover {
+        text-decoration: underline;
+    }
+
+    .form-checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .bs-checkbox {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-primary);
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .checkbox-label {
+        font-size: 14px;
+        color: var(--text-primary);
+        line-height: 1.4;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .legal-link {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .legal-link:hover {
         text-decoration: underline;
     }
 </style>
