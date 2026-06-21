@@ -15,7 +15,7 @@
       "description": "Complete final cleaning after works.",
       "basePrice": 2,
       "unitType": "sqm",
-      "calculationFormula": "1"
+      "calculationFormula": "global_total_sqm"
     },
     {
       "skuCode": "GEN-003",

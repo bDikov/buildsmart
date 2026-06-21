@@ -7,7 +7,7 @@
       "description": "Грундиране на стени и тавани.",
       "basePrice": 3,
       "unitType": "sqm",
-      "calculationFormula": "if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5)"
+      "calculationFormula": "global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5)"
     },
     {
       "skuCode": "PANT-SPACKLE-STD",
@@ -15,7 +15,7 @@
       "description": "Цялостна шпакловка.",
       "basePrice": 14,
       "unitType": "sqm",
-      "calculationFormula": "if(Contains(paint_tasks, \u0027Цялостна шпакловка\u0027) || Contains(paint_tasks, \u0027Сваляне на тапети\u0027), if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5), 0)"
+      "calculationFormula": "if(Contains(paint_tasks, 'Цялостна шпакловка') || Contains(paint_tasks, 'Сваляне на тапети'), global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5), 0)"
     },
     {
       "skuCode": "PANT-SPACKLE-Q5",
@@ -23,7 +23,7 @@
       "description": "Шитрок за идеално гладка повърхност.",
       "basePrice": 20,
       "unitType": "sqm",
-      "calculationFormula": "if(Contains(paint_finish_level, \u0027Q5\u0027) || Contains(paint_finish_level, \u0027Перфектно\u0027), if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5), 0)"
+      "calculationFormula": "if(Contains(paint_finish_level, 'Q5') || Contains(paint_finish_level, 'Перфектно'), global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5), 0)"
     },
     {
       "skuCode": "PANT-PAINT-WHITE",
@@ -31,7 +31,7 @@
       "description": "Боядисване с бял латекс.",
       "basePrice": 6.50,
       "unitType": "sqm",
-      "calculationFormula": "if(paint_sqm \u003E 0, paint_sqm, global_total_sqm * 2.5)"
+      "calculationFormula": "global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5)"
     },
     {
       "skuCode": "PANT-PAINT-COLOR",
@@ -39,7 +39,7 @@
       "description": "Боядисване с цветен латекс.",
       "basePrice": 8.50,
       "unitType": "sqm",
-      "calculationFormula": "if(Contains(paint_colors, \u0027цвят\u0027) \u0026\u0026 !Contains(paint_colors, \u0027бяло\u0027), if(paint_sqm \u003E 0, paint_sqm * 0.5, global_total_sqm * 1.2), 0)"
+      "calculationFormula": "if(Contains(paint_colors, 'цвят') && !Contains(paint_colors, 'бяло'), (global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5)) * 0.5, 0)"
     },
     {
       "skuCode": "PANT-TAPE-CORNER",
@@ -47,7 +47,7 @@
       "description": "Алуминиеви или PVC ъгли.",
       "basePrice": 6,
       "unitType": "m",
-      "calculationFormula": "if(paint_sqm \u003E 0, paint_sqm * 0.1, global_total_sqm * 0.25)"
+      "calculationFormula": "(global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5)) * 0.1"
     },
     {
       "skuCode": "PANT-TRIM",
@@ -55,7 +55,7 @@
       "description": "Боядисване на декоративни елементи.",
       "basePrice": 45,
       "unitType": "pcs",
-      "calculationFormula": "if(Contains(paint_trim_doors_count, \u00274\u002B\u0027), 4, if(Contains(paint_trim_doors_count, \u00273\u0027), 3, if(Contains(paint_trim_doors_count, \u00272\u0027), 2, if(Contains(paint_trim_doors_count, \u00271\u0027), 1, 0))))"
+      "calculationFormula": "if(Contains(paint_trim_doors_count, '4+'), 4, if(Contains(paint_trim_doors_count, '3'), 3, if(Contains(paint_trim_doors_count, '2'), 2, if(Contains(paint_trim_doors_count, '1'), 1, 0))))"
     },
     {
       "skuCode": "PANT-WALLPAPER-REMOVE",
@@ -63,7 +63,7 @@
       "description": "Сваляне на стари тапети.",
       "basePrice": 4.50,
       "unitType": "sqm",
-      "calculationFormula": "if(Contains(paint_tasks, \u0027Сваляне на тапети\u0027), if(paint_sqm \u003E 0, paint_sqm * 0.5, global_total_sqm), 0)"
+      "calculationFormula": "if(Contains(paint_tasks, 'Сваляне на тапети'), (global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5)) * 0.5, 0)"
     }
   ]
 }

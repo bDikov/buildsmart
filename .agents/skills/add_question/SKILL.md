@@ -53,3 +53,13 @@ No manual SQL execution or runner script is needed on the Live DB.
 - Push the changes to the `main` branch. 
 - The CI/CD deployment pipeline will build and run the updated API.
 - Upon startup, [AppDbContext.cs](file:///C:/Users/bonch/source/repos/BuildSmart/BuildSmart.Infrastructure/Persistence/AppDbContext.cs) will read the embedded JSON seed files, automatically convert base prices from BGN to EUR (by dividing by `1.95583`), insert any new SKUs, and update the properties and calculation formulas for all existing SKUs.
+
+## Handling Legacy/Duplicate SKUs (Seeder Self-Healing)
+
+> [!WARNING]
+> The database seeder dynamically creates legacy SKUs (like `PANT-001` through `PANT-006` or `TILE-001` through `TILE-004`) from `MarketData_Sofia_Seed.json` on startup. These legacy SKUs originally had empty formulas, causing underestimation bugs.
+
+To ensure new projects map correctly:
+1. **Self-Healing Seeder Method**: The `HealLegacySkuFormulasAsync()` method inside [AppDbContext.cs](file:///C:/Users/bonch/source/repos/BuildSmart/BuildSmart.Infrastructure/Persistence/AppDbContext.cs) defines the correct formulas, unit types, and prices for these legacy/duplicate SKUs.
+2. **Adding/Updating Legacy SKUs**: If you introduce a new questionnaire option or add dynamic logic, verify if the AI might map to a legacy `00%` SKU. If so, add it to the `legacySkuFormulas` dictionary inside `HealLegacySkuFormulasAsync()` with the correct formula string. This guarantees the database auto-heals on startup in both local and live environments.
+
