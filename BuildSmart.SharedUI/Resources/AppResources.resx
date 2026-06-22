@@ -650,6 +650,9 @@
   <data name="Consultation_Email" xml:space="preserve">
     <value>Email</value>
   </data>
+  <data name="Consultation_Live" xml:space="preserve">
+    <value>In-person visit</value>
+  </data>
   <data name="Consultation_PhoneLabel" xml:space="preserve">
     <value>Phone Number</value>
   </data>

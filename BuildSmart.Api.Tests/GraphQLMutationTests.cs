@@ -724,4 +724,78 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 
 		mockJobPostService.Verify(s => s.ApproveJobScopeAsync(jobPostId, finalScope), Times.Once);
 	}
+
+	[Fact]
+	public async Task UpdateProjectLocation_ValidData_ReturnsTrue()
+	{
+		// Arrange
+		var homeownerId = Guid.NewGuid();
+		var projectId = Guid.NewGuid();
+		var location = "123 New Address St";
+
+		var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+
+		var project = new Project { Id = projectId, HomeownerId = homeownerId };
+		var jobs = new List<JobPost>
+		{
+			new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, Location = "Old Address" },
+			new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, Location = "Old Address" }
+		};
+
+		var mockProjectRepo = new Mock<IProjectRepository>();
+		mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+
+		var mockJobPostRepo = new Mock<IJobPostRepository>();
+		mockJobPostRepo.Setup(r => r.GetJobsByProjectIdAsync(projectId)).ReturnsAsync(jobs);
+
+		var mockUnitOfWork = new Mock<IUnitOfWork>();
+		mockUnitOfWork.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+		mockUnitOfWork.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+		mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IUnitOfWork));
+			services.AddSingleton(mockUnitOfWork.Object);
+		}, homeownerToken);
+
+		var graphQLRequest = new
+		{
+			query = @"
+                mutation UpdateLocation($projectId: UUID!, $location: String!) {
+                  updateProjectLocation(projectId: $projectId, location: $location)
+                }",
+			variables = new
+			{
+				projectId = projectId.ToString(),
+				location = location
+			}
+		};
+
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				Encoding.UTF8,
+				"application/json")
+		};
+
+		// Act
+		var response = await client.SendAsync(request);
+
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content);
+		response.EnsureSuccessStatusCode();
+
+		var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
+		Assert.Null(jsonResponse.errors);
+		bool success = jsonResponse.data.updateProjectLocation;
+		Assert.True(success);
+
+		Assert.All(jobs, j => Assert.Equal(location, j.Location));
+		mockJobPostRepo.Verify(r => r.Update(It.IsAny<JobPost>()), Times.Exactly(2));
+		mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+	}
 }
+

@@ -13412,3 +13412,20 @@ Error: Could not find 'reelsObserver.initialize' ('reelsObserver' was undefined)
    at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[22.06.2026 г. 10:01:06 ч.] JSException: Map container not found.
+Error: Map container not found.
+    at e._initContainer (https://unpkg.com/leaflet@1.9.4/dist/leaflet.js:5:38528)
+    at e.initialize (https://unpkg.com/leaflet@1.9.4/dist/leaflet.js:5:27098)
+    at new e (https://unpkg.com/leaflet@1.9.4/dist/leaflet.js:5:2708)
+    at t.map (https://unpkg.com/leaflet@1.9.4/dist/leaflet.js:5:146815)
+    at Object.init (https://localhost:7213/_content/BuildSmart.SharedUI/js/map.js:24:22)
+    at https://localhost:7213/_framework/blazor.web.js:1:2900
+    at new Promise (<anonymous>)
+    at w.beginInvokeJSFromDotNet (https://localhost:7213/_framework/blazor.web.js:1:2857)
+    at vn._invokeClientMethod (https://localhost:7213/_framework/blazor.web.js:1:65751)
+    at vn._processIncomingData (https://localhost:7213/_framework/blazor.web.js:1:63140)
+   at Microsoft.JSInterop.JSRuntime.InvokeAsync[TValue](Int64 targetInstanceId, String identifier, Object[] args)
+   at Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(IJSRuntime jsRuntime, String identifier, Object[] args)
+   at BuildSmart.SharedUI.Components.Pages.RequestConsultation.OnAfterRenderAsync(Boolean firstRender) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Components\Pages\RequestConsultation.razor:line 473
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

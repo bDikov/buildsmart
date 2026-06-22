@@ -3,8 +3,10 @@
 @using BuildSmart.SharedUI.Services
 @using Microsoft.Extensions.Localization
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
 @inject IBuildSmartApiClient ApiClient
 @inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 
 <div class="container py-4">
@@ -44,9 +46,9 @@
                     <div class="mb-2" style="font-size: 0.95rem;">
                         <span class="text-muted">@Loc["Consultation_ContactMethod"]:</span> 
                         <strong class="ms-1" style="color: var(--text-primary);">
-                            @(SelectedContactMethod == "Phone" ? Loc["Consultation_Phone"] : SelectedContactMethod == "Video" ? Loc["Consultation_Video"] : Loc["Consultation_Email"])
+                            @(SelectedContactMethod == "Phone" ? Loc["Consultation_Phone"] : SelectedContactMethod == "Video" ? Loc["Consultation_Video"] : SelectedContactMethod == "Live" ? Loc["Consultation_Live"] : Loc["Consultation_Email"])
                         </strong>
-                        @if ((SelectedContactMethod == "Phone" || SelectedContactMethod == "Video") && !string.IsNullOrEmpty(PhoneNumber))
+                        @if ((SelectedContactMethod == "Phone" || SelectedContactMethod == "Video" || SelectedContactMethod == "Live") && !string.IsNullOrEmpty(PhoneNumber))
                         {
                             <span class="text-muted ms-2">(@PhoneNumber)</span>
                         }
@@ -111,7 +113,7 @@
                         <!-- Date -->
                         <div class="mb-4">
                             <label class="form-label fw-bold mb-2" style="color: var(--text-primary); font-size: 0.95rem;">@Loc["Consultation_Date"]</label>
-                            <input type="date" class="form-control bs-input" @bind="PreferredDate" min="@MinDate.ToString("yyyy-MM-dd")" style="border-radius: 8px; font-size: 1rem; padding: 10px 14px;" />
+                            <input type="date" class="form-control bs-input" @bind="PreferredDate" min="@MinDate.ToString("yyyy-MM-dd")" />
                         </div>
 
                         <!-- Time Slot -->
@@ -165,6 +167,16 @@
                                     </svg>
                                     <span>@Loc["Consultation_Video"]</span>
                                 </div>
+                                @if (IsWithinSofiaRange)
+                                {
+                                    <div class="slot-pill live-pill @(SelectedContactMethod == "Live" ? "active" : "")" @onclick='() => SelectedContactMethod = "Live"'>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                            <circle cx="12" cy="10" r="3"></circle>
+                                        </svg>
+                                        <span>@Loc["Consultation_Live"]</span>
+                                    </div>
+                                }
                                 <div class="slot-pill @(SelectedContactMethod == "Email" ? "active" : "")" @onclick='() => SelectedContactMethod = "Email"'>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -176,11 +188,11 @@
                         </div>
 
                         <!-- Phone input if applicable -->
-                        @if (SelectedContactMethod == "Phone" || SelectedContactMethod == "Video")
+                        @if (SelectedContactMethod == "Phone" || SelectedContactMethod == "Video" || SelectedContactMethod == "Live")
                         {
                             <div class="mb-4">
                                 <label class="form-label fw-bold mb-2" style="color: var(--text-primary); font-size: 0.95rem;">@Loc["Consultation_PhoneLabel"]</label>
-                                <input type="tel" class="form-control bs-input" @bind="PhoneNumber" placeholder="e.g. +359 888 888 888" style="border-radius: 8px; font-size: 1rem; padding: 10px 14px;" />
+                                <input type="tel" class="form-control bs-input" @bind="PhoneNumber" placeholder="e.g. +359 888 888 888" />
                                 @if (ShowPhoneError)
                                 {
                                     <div class="text-danger mt-1" style="font-size: 0.85rem;">Моля въведете телефон за връзка.</div>
@@ -188,31 +200,21 @@
                             </div>
                         }
 
-                        <!-- Address & Google Map -->
+                        <!-- Address & Interactive Map -->
                         <div class="mb-4">
                             <label class="form-label fw-bold mb-2" style="color: var(--text-primary); font-size: 0.95rem;">@Loc["Consultation_Address"]</label>
-                            <input type="text" class="form-control bs-input" @bind="Address" @bind:event="oninput" placeholder="@Loc["Consultation_AddressPlaceholder"]" style="border-radius: 8px; font-size: 1rem; padding: 10px 14px;" />
+                            <input type="text" class="form-control bs-input" value="@Address" @oninput="OnAddressInput" placeholder="@Loc["Consultation_AddressPlaceholder"]" />
                             <span class="form-text text-muted" style="font-size: 0.8rem; color: var(--text-secondary);">@Loc["Consultation_AddressHelp"]</span>
                         </div>
 
-                        @if (!string.IsNullOrWhiteSpace(Address))
-                        {
-                            <div class="mb-4" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0px 4px 12px rgba(0,0,0,0.05); transition: all 0.3s ease;">
-                                <iframe
-                                    width="100%"
-                                    height="300"
-                                    style="border:0;"
-                                    loading="lazy"
-                                    allowfullscreen
-                                    src="https://maps.google.com/maps?q=@(Uri.EscapeDataString(Address))&t=&z=15&ie=UTF8&iwloc=&output=embed">
-                                </iframe>
-                            </div>
-                        }
+                        <div class="mb-4" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0px 4px 12px rgba(0,0,0,0.05); transition: all 0.3s ease;">
+                            <div id="address-selection-map" style="height: 300px; width: 100%; z-index: 1;"></div>
+                        </div>
 
                         <!-- Notes -->
                         <div class="mb-4">
                             <label class="form-label fw-bold mb-2" style="color: var(--text-primary); font-size: 0.95rem;">@Loc["Consultation_Notes"]</label>
-                            <textarea class="form-control bs-input" rows="3" @bind="Notes" placeholder="@Loc["Consultation_NotesPlaceholder"]" style="border-radius: 8px; font-size: 0.95rem; padding: 10px 14px; min-height: 100px;"></textarea>
+                            <textarea class="form-control bs-input" rows="3" @bind="Notes" placeholder="@Loc["Consultation_NotesPlaceholder"]" style="min-height: 100px;"></textarea>
                         </div>
                     </div>
                 </div>
@@ -243,7 +245,7 @@
     
     .slots-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 12px;
     }
     
@@ -309,6 +311,17 @@
         0% { transform: scale(0); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
     }
+    
+    .live-pill {
+        font-weight: 700 !important;
+        animation: pulseScale 0.4s ease-out;
+    }
+    
+    @@keyframes pulseScale {
+        0% { transform: scale(0.95); opacity: 0.5; }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); opacity: 1; }
+    }
 </style>
 
 @code {
@@ -327,8 +340,10 @@
     private string SelectedContactMethod { get; set; } = "Phone";
     private string PhoneNumber { get; set; } = string.Empty;
     private string Address { get; set; } = string.Empty;
+    private string _originalAddress { get; set; } = string.Empty;
     private string Notes { get; set; } = string.Empty;
     private bool ShowPhoneError { get; set; } = false;
+    private bool IsWithinSofiaRange { get; set; } = false;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -349,6 +364,11 @@
                     if (Project.JobPosts != null && Project.JobPosts.Any())
                     {
                         Address = Project.JobPosts.FirstOrDefault(jp => !string.IsNullOrEmpty(jp.Location))?.Location ?? string.Empty;
+                        _originalAddress = Address;
+                        if (_dotNetRef != null)
+                        {
+                            await JSRuntime.InvokeVoidAsync("window.addressMap.geocodeAddress", Address);
+                        }
                     }
                 }
                 else
@@ -380,7 +400,7 @@
         ErrorMessage = null;
 
         // Validation
-        if ((SelectedContactMethod == "Phone" || SelectedContactMethod == "Video") && string.IsNullOrWhiteSpace(PhoneNumber))
+        if ((SelectedContactMethod == "Phone" || SelectedContactMethod == "Video" || SelectedContactMethod == "Live") && string.IsNullOrWhiteSpace(PhoneNumber))
         {
             ShowPhoneError = true;
             return;
@@ -389,6 +409,18 @@
         IsSubmitting = true;
         try
         {
+            // Update project/jobs location if changed
+            if (Address != _originalAddress)
+            {
+                var locResult = await ApiClient.UpdateProjectLocation.ExecuteAsync(ProjectId, Address);
+                if (locResult.Errors.Count > 0)
+                {
+                    ErrorMessage = $"Failed to update project address: {locResult.Errors[0].Message}";
+                    return;
+                }
+                _originalAddress = Address;
+            }
+
             // Transition all WaitingForUserReview job posts to WaitingForAdminReview
             var jobsToApprove = Project.JobPosts
                 .Where(jp => jp.Status == JobPostStatus.WaitingForUserReview)
@@ -407,7 +439,7 @@
 
             // Post system message in the chat
             var slotText = SelectedTimeSlot == "Morning" ? Loc["Consultation_Morning"].Value : SelectedTimeSlot == "Afternoon" ? Loc["Consultation_Afternoon"].Value : Loc["Consultation_LateAfternoon"].Value;
-            var contactText = SelectedContactMethod == "Phone" ? Loc["Consultation_Phone"].Value : SelectedContactMethod == "Video" ? Loc["Consultation_Video"].Value : Loc["Consultation_Email"].Value;
+            var contactText = SelectedContactMethod == "Phone" ? Loc["Consultation_Phone"].Value : SelectedContactMethod == "Video" ? Loc["Consultation_Video"].Value : SelectedContactMethod == "Live" ? Loc["Consultation_Live"].Value : Loc["Consultation_Email"].Value;
             var addressText = string.IsNullOrWhiteSpace(Address) ? "-" : Address;
             var notesText = string.IsNullOrWhiteSpace(Notes) ? "-" : Notes;
             
@@ -451,5 +483,52 @@
         {
             IsSubmitting = false;
         }
+    }
+
+    private DotNetObjectReference<RequestConsultation>? _dotNetRef;
+    private bool _mapInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Project != null && !_mapInitialized)
+        {
+            _mapInitialized = true;
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("window.addressMap.init", "address-selection-map", _dotNetRef, Address);
+        }
+    }
+
+    private async Task OnAddressInput(ChangeEventArgs e)
+    {
+        Address = e.Value?.ToString() ?? string.Empty;
+        await JSRuntime.InvokeVoidAsync("window.addressMap.geocodeAddress", Address);
+    }
+
+    [JSInvokable]
+    public void OnAddressSelectedFromMap(string address, bool isWithinRange)
+    {
+        Address = address;
+        IsWithinSofiaRange = isWithinRange;
+        if (!IsWithinSofiaRange && SelectedContactMethod == "Live")
+        {
+            SelectedContactMethod = "Phone";
+        }
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnLocationRangeUpdated(bool isWithinRange)
+    {
+        IsWithinSofiaRange = isWithinRange;
+        if (!IsWithinSofiaRange && SelectedContactMethod == "Live")
+        {
+            SelectedContactMethod = "Phone";
+        }
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
     }
 }

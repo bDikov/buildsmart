@@ -653,6 +653,9 @@
   <data name="Consultation_Email" xml:space="preserve">
     <value>Имейл</value>
   </data>
+  <data name="Consultation_Live" xml:space="preserve">
+    <value>Посещение на място</value>
+  </data>
   <data name="Consultation_PhoneLabel" xml:space="preserve">
     <value>Телефон за връзка</value>
   </data>

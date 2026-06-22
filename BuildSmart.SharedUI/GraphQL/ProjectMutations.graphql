@@ -48,3 +48,7 @@ mutation UpdateProjectDetails($projectId: UUID!, $title: String!, $description: 
         lastVisitedStep
     }
 }
+
+mutation UpdateProjectLocation($projectId: UUID!, $location: String!) {
+    updateProjectLocation(projectId: $projectId, location: $location)
+}

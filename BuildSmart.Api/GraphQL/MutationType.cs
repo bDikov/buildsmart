@@ -47,6 +47,10 @@ public class MutationType : ObjectType<Mutation>
             .Description("Updates project details like title and description.")
             .Authorize(roles: new[] { "Homeowner" });
 
+        descriptor.Field(m => m.UpdateProjectLocation(default!, default!, default!, default!))
+            .Description("Updates the location of all job posts in a project.")
+            .Authorize(roles: new[] { "Homeowner" });
+
         descriptor.Field(m => m.AddJobToProject(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Adds a sub-job to a project using the Wizard output.")
             .Authorize(roles: new[] { "Homeowner" });

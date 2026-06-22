@@ -911,6 +911,8 @@ type Mutation {
   createProject(homeownerId: UUID! title: String! description: String! languageCode: String): Project!
   "Updates project details like title and description."
   updateProjectDetails(projectId: UUID! title: String! description: String! lastVisitedStep: Int): Project!
+  "Updates the location of all job posts in a project."
+  updateProjectLocation(projectId: UUID! location: String!): Boolean!
   "Adds a sub-job to a project using the Wizard output."
   addJobToProject(projectId: UUID! categoryId: UUID! title: String! jobDetailsJson: String! location: String estimatedSubtotal: Decimal currency: String! imageUrls: [String!]! preferredSiteVisitDate: DateTime): JobPost!
   saveJobPostDraft(jobPostId: UUID! jobDetailsJson: String! description: String location: String estimatedSubtotal: Decimal currency: String!): Boolean!
