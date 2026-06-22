@@ -12,11 +12,11 @@ public static class ApiConfig
             return BaseUrlOverride;
         }
 
-        return "https://localhost:7212";
+        return "https://localhost:44378";
     }
 
-    public static string GetGraphQLUrl() => $"{GetBaseUrl()}/graphql";
+    public static string GetGraphQLUrl() => $"{GetBaseUrl()}/graphql/";
 
-    public static string GetGraphQLWebSocketUrl() => $"{GetBaseUrl().Replace("https", "wss")}/graphql";
+    public static string GetGraphQLWebSocketUrl() => $"{GetBaseUrl().Replace("https", "wss")}/graphql/";
 }
 

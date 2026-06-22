@@ -737,4 +737,7 @@
   <data name="Profile_PrivacyLink" xml:space="preserve">
     <value>Privacy Policy</value>
   </data>
+  <data name="ProjectDetail_SeeBreakdownsDesc" xml:space="preserve">
+    <value>See the task breakdowns by categories! Under it you will see each category total.</value>
+  </data>
 </root>

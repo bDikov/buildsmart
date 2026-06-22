@@ -740,4 +740,7 @@
   <data name="Profile_PrivacyLink" xml:space="preserve">
     <value>Политика за поверителност</value>
   </data>
+  <data name="ProjectDetail_SeeBreakdownsDesc" xml:space="preserve">
+    <value>Разгледайте ценовите разбивки по категории! По-долу ще видите общата сума за всяка категория.</value>
+  </data>
 </root>

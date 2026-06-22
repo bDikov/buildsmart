@@ -1,3 +1,38 @@
+/* Custom variables for theme-aware translucent colors and shadows */
+:root {
+    --bs-status-open-bg: rgba(16, 185, 129, 0.08);
+    --bs-status-warning-bg: rgba(255, 193, 7, 0.08);
+    --bs-status-info-bg: rgba(23, 162, 184, 0.08);
+    --bs-status-danger-bg: rgba(220, 53, 69, 0.08);
+    
+    --bs-btn-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --bs-total-card-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+}
+
+:root[data-theme='light'] {
+    --bs-status-open-bg: rgba(16, 185, 129, 0.08);
+    --bs-status-warning-bg: rgba(204, 132, 0, 0.08);
+    --bs-status-info-bg: rgba(23, 162, 184, 0.08);
+    --bs-status-danger-bg: rgba(220, 53, 69, 0.08);
+}
+
+:root[data-theme='dark'] {
+    --bs-status-open-bg: rgba(16, 185, 129, 0.15);
+    --bs-status-warning-bg: rgba(255, 193, 7, 0.15);
+    --bs-status-info-bg: rgba(23, 162, 184, 0.15);
+    --bs-status-danger-bg: rgba(220, 53, 69, 0.15);
+    
+    --bs-btn-shadow: none;
+    --bs-total-card-shadow: none;
+}
+
+:root[data-theme='colorful'] {
+    --bs-status-open-bg: rgba(16, 185, 129, 0.1);
+    --bs-status-warning-bg: rgba(207, 102, 121, 0.1);
+    --bs-status-info-bg: rgba(23, 162, 184, 0.1);
+    --bs-status-danger-bg: rgba(220, 53, 69, 0.1);
+}
+
 .project-detail-container {
     max-width: 800px;
     margin: 0 auto;
@@ -60,7 +95,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: var(--bs-btn-shadow);
     flex-shrink: 0;
 }
 
@@ -110,11 +145,11 @@
     }
 }
 
-.status-draft { color: gray; }
-.status-open { color: var(--color-success); background-color: rgba(40, 167, 69, 0.1); }
-.status-waitingforuserreview { color: var(--color-warning); background-color: rgba(255, 193, 7, 0.1); }
-.status-waitingforadminreview { color: var(--color-info); background-color: rgba(23, 162, 184, 0.1); }
-.status-rejected { color: var(--color-danger); background-color: rgba(220, 53, 69, 0.1); }
+.status-draft { color: var(--text-muted); }
+.status-open { color: var(--color-success); background-color: var(--bs-status-open-bg); }
+.status-waitingforuserreview { color: var(--color-warning); background-color: var(--bs-status-warning-bg); }
+.status-waitingforadminreview { color: var(--color-info); background-color: var(--bs-status-info-bg); }
+.status-rejected { color: var(--color-danger); background-color: var(--bs-status-danger-bg); }
 
 .section-title {
     font-size: 20px; /* Reduced for mobile */
@@ -180,4 +215,31 @@
 ::deep .job-title {
     word-break: break-word !important;
     overflow-wrap: break-word !important;
+}
+
+.overall-total-card {
+    background-color: var(--bg-card);
+    border: 2px solid var(--color-success);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: var(--bs-total-card-shadow);
+}
+
+.overall-total-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.overall-total-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-success);
+}
+
+.overall-total-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
 }

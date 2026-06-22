@@ -11,6 +11,11 @@ public partial class JobPostViewModel : ObservableObject
     public ObservableCollection<QuestionViewModel> Questions { get; } = new();
     public ObservableCollection<QAPair> QAList { get; } = new();
 
+    [ObservableProperty]
+    private decimal _totalEstimatedPrice;
+
+    public ObservableCollection<IGetAiCalculationByJob_AiCalculationByJob_Tasks> Tasks { get; } = new();
+
     public JobPostViewModel(IJobPostDetails jobPost, Func<QuestionViewModel, Task>? loadMoreRepliesAction = null)
     {
         JobPost = jobPost;

@@ -53,6 +53,19 @@
 
                 <h3 id="job-posts-section" class="section-title mt-4">@Loc["ProjectDetail_JobsTitle"]</h3>
 
+                @if (ViewModel.HasAnyEstimatedPrices)
+                {
+                    <div class="overall-total-card d-flex flex-column align-items-center justify-content-center p-3 text-center mb-3">
+                        <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                            <span class="overall-total-label">@Loc["GeneratedOffer_TotalValue"]:</span>
+                            <span class="overall-total-value">€@ViewModel.OverallTotalEstimatedPrice.ToString("F2")</span>
+                        </div>
+                        <p class="overall-total-desc">
+                            @Loc["ProjectDetail_SeeBreakdownsDesc"]
+                        </p>
+                    </div>
+                }
+
                 <div class="job-posts-list">
                     @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
                     {
@@ -68,7 +81,9 @@
                                 OnToggleExpansion="() => ToggleJobExpansion(jobVm.JobPost.Id)" 
                                 OnViewAuctionHub="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(jobVm.JobPost)"
                                 OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")'
-                                OnEditAnswers='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={jobVm.JobPost.Id}&targetCategoryId={jobVm.JobPost.ServiceCategory.Id}")' />
+                                OnEditAnswers='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={jobVm.JobPost.Id}&targetCategoryId={jobVm.JobPost.ServiceCategory.Id}")'
+                                OnSubmitToAdmin="SubmitProjectToAdmin"
+                                OnAskAdmin="AskAdminQuestion" />
                         }
                     }
                 </div>

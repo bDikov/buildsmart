@@ -201,6 +201,9 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         }
 	}
 
+    public decimal OverallTotalEstimatedPrice => JobPosts.Sum(j => j.TotalEstimatedPrice);
+    public bool HasAnyEstimatedPrices => JobPosts.Any(j => j.TotalEstimatedPrice > 0);
+
     private void SyncJobPosts()
     {
         JobPosts.Clear();
@@ -208,17 +211,51 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
         {
             foreach (var job in Project.JobPosts)
             {
-                JobPosts.Add(new JobPostViewModel(job, LoadMoreRepliesAsync));
+                var jobVm = new JobPostViewModel(job, LoadMoreRepliesAsync);
+                JobPosts.Add(jobVm);
+
+                var jobId = job.Id;
+
                 // Fire and forget safely to prevent UnobservedTaskException
                 Task.Run(async () => 
                 {
                     try 
                     {
                         await _signalRService.ConnectAsync();
-                        await _signalRService.JoinAuctionGroupAsync(job.Id.ToString());
+                        await _signalRService.JoinAuctionGroupAsync(jobId.ToString());
                     }
                     catch { /* Ignore SignalR connection errors in background */ }
                 });
+
+                if (job.Status != JobPostStatus.Draft && job.Status != JobPostStatus.GeneratingScope)
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var result = await _apiClient.GetAiCalculationByJob.ExecuteAsync(jobId);
+                            var aiCalculation = result.Data?.AiCalculationByJob?.FirstOrDefault();
+                            if (aiCalculation != null)
+                            {
+                                AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+                                {
+                                    jobVm.TotalEstimatedPrice = aiCalculation.TotalEstimatedPrice;
+                                    jobVm.Tasks.Clear();
+                                    if (aiCalculation.Tasks != null)
+                                    {
+                                        foreach (var t in aiCalculation.Tasks)
+                                        {
+                                            jobVm.Tasks.Add(t);
+                                        }
+                                    }
+                                    OnPropertyChanged(nameof(OverallTotalEstimatedPrice));
+                                    OnPropertyChanged(nameof(HasAnyEstimatedPrices));
+                                });
+                            }
+                        }
+                        catch { /* Fail silently */ }
+                    });
+                }
             }
         }
     }

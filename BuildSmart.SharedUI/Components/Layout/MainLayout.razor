@@ -19,7 +19,7 @@
 <div class="page">
     <!-- Mobile Header -->
     <div class="mobile-header">
-        <div class="logo-block">
+        <div class="logo-block" @onclick='() => Navigate("feed")'>
             <div class="logo-icon" style="width: 32px; height: 32px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -54,7 +54,7 @@
 
     <div class="sidebar shadow-sm @(_isSidebarOpen ? "open" : "")">
         <div class="sidebar-header">
-            <div class="logo-block">
+            <div class="logo-block" @onclick='() => Navigate("feed")'>
                 <div class="logo-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -168,13 +168,37 @@
             @Body
         </article>
     </main>
+
+    <!-- Bottom Mobile Navigation Bar -->
+    <div class="mobile-bottom-nav">
+        <a class="bottom-nav-item @(IsActivePage("feed") ? "active" : "")" @onclick='() => Navigate("feed")'>
+            <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span class="bottom-nav-text">@Loc["Nav_Marketplace"]</span>
+        </a>
+        <a class="bottom-nav-item @(IsActivePage("my-projects") ? "active" : "")" @onclick='() => Navigate("my-projects")'>
+            <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="bottom-nav-text">@Loc["Nav_MyProjects"]</span>
+        </a>
+        <a class="bottom-nav-item @(IsActivePage("user-profile") ? "active" : "")" @onclick='() => Navigate("user-profile")'>
+            <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="bottom-nav-text">@Loc["Settings_Title"]</span>
+        </a>
+    </div>
 </div>
 
 <style>
     .sidebar {
         background-color: var(--bg-card);
         border-right: 1px solid var(--border-color);
-        min-height: 100vh;
+        height: 100vh;
         width: 312px;
         position: fixed;
         top: 0;
@@ -195,6 +219,13 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        cursor: pointer;
+        user-select: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .logo-block:hover {
+        opacity: 0.85;
     }
 
     .logo-icon {
@@ -424,6 +455,7 @@
             margin-left: 0;
             width: 100%;
             padding-top: 60px; /* Space for fixed mobile header */
+            padding-bottom: 74px; /* Space for bottom sticky menu */
         }
 
         .mobile-header {
@@ -468,6 +500,63 @@
         }
     }
 
+    /* Mobile Bottom Navigation Bar */
+    .mobile-bottom-nav {
+        display: none;
+    }
+
+    @@media (max-width: 992px) {
+        .mobile-bottom-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            z-index: 95;
+            justify-content: space-around;
+            align-items: center;
+            padding: 4px 8px 12px 8px; /* Extra bottom padding for safe area / iOS home bar */
+            box-sizing: border-box;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            transition: color 0.2s ease, transform 0.2s ease;
+            user-select: none;
+        }
+
+        .bottom-nav-item:active {
+            transform: scale(0.95);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--color-primary);
+        }
+
+        .bottom-nav-icon {
+            stroke-width: 2px;
+            transition: stroke-width 0.2s ease;
+        }
+
+        .bottom-nav-item.active .bottom-nav-icon {
+            stroke-width: 2.5px;
+        }
+    }
+
     @@media (min-width: 993px) {
         .mobile-header, .sidebar-overlay {
             display: none !important;
@@ -490,6 +579,7 @@
     {
         SignalRService.NotificationReceived += OnNotificationReceived;
         SignalRService.NotificationsStateChanged += OnNotificationsStateChanged;
+        NavManager.LocationChanged += OnLocationChanged;
         await LoadUnreadStatusAsync();
 
         NavigationRegistry.CurrentManager = NavManager;
@@ -654,6 +744,26 @@
     {
         SignalRService.NotificationReceived -= OnNotificationReceived;
         SignalRService.NotificationsStateChanged -= OnNotificationsStateChanged;
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsActivePage(string route)
+    {
+        try
+        {
+            var relative = NavManager.ToBaseRelativePath(NavManager.Uri);
+            var path = relative.Split('?')[0].Trim('/');
+            return path.Equals(route, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 

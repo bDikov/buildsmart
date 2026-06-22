@@ -28,33 +28,33 @@
                     </svg>
                 </div>
                 <h2 class="h3 fw-bold mb-3" style="color: var(--text-primary);">@Loc["Consultation_SuccessTitle"]</h2>
-                <p class="mb-4 text-muted" style="max-width: 480px; font-size: 1.05rem; line-height: 1.6;">
+                <p class="mb-4 bs-desc-text" style="max-width: 480px;">
                     @Loc["Consultation_SuccessDesc"]
                 </p>
                 
                 <div class="mb-5 p-3 text-start w-100" style="background-color: var(--bg-card-alt); border-radius: 12px; border: 1px solid var(--border-color);">
                     <div class="mb-2" style="font-size: 0.95rem;">
-                        <span class="text-muted">@Loc["Consultation_Date"]:</span> 
+                        <span class="bs-muted-label">@Loc["Consultation_Date"]:</span> 
                         <strong class="ms-1" style="color: var(--text-primary);">@PreferredDate.ToString("dd.MM.yyyy")</strong>
                     </div>
                     <div class="mb-2" style="font-size: 0.95rem;">
-                        <span class="text-muted">@Loc["Consultation_TimeSlot"]:</span> 
+                        <span class="bs-muted-label">@Loc["Consultation_TimeSlot"]:</span> 
                         <strong class="ms-1" style="color: var(--text-primary);">
                             @(SelectedTimeSlot == "Morning" ? Loc["Consultation_Morning"] : SelectedTimeSlot == "Afternoon" ? Loc["Consultation_Afternoon"] : Loc["Consultation_LateAfternoon"])
                         </strong>
                     </div>
                     <div class="mb-2" style="font-size: 0.95rem;">
-                        <span class="text-muted">@Loc["Consultation_ContactMethod"]:</span> 
+                        <span class="bs-muted-label">@Loc["Consultation_ContactMethod"]:</span> 
                         <strong class="ms-1" style="color: var(--text-primary);">
                             @(SelectedContactMethod == "Phone" ? Loc["Consultation_Phone"] : SelectedContactMethod == "Video" ? Loc["Consultation_Video"] : SelectedContactMethod == "Live" ? Loc["Consultation_Live"] : Loc["Consultation_Email"])
                         </strong>
                         @if ((SelectedContactMethod == "Phone" || SelectedContactMethod == "Video" || SelectedContactMethod == "Live") && !string.IsNullOrEmpty(PhoneNumber))
                         {
-                            <span class="text-muted ms-2">(@PhoneNumber)</span>
+                            <span class="bs-muted-label ms-2">(@PhoneNumber)</span>
                         }
                     </div>
                     <div class="mb-0" style="font-size: 0.95rem;">
-                        <span class="text-muted">@Loc["Consultation_Address"]:</span> 
+                        <span class="bs-muted-label">@Loc["Consultation_Address"]:</span> 
                         <strong class="ms-1" style="color: var(--text-primary);">@(string.IsNullOrWhiteSpace(Address) ? "-" : Address)</strong>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                 </button>
                 <div>
                     <h2 class="h3 fw-bold mb-1" style="color: var(--text-primary);">@Loc["Consultation_Title"]</h2>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem;">@Loc["Consultation_Subtitle"]</p>
+                    <p class="bs-muted-label mb-0" style="font-size: 0.95rem;">@Loc["Consultation_Subtitle"]</p>
                 </div>
             </div>
 
@@ -91,7 +91,7 @@
             {
                 <div class="bs-card p-4 mb-4" style="border-radius: 12px; background-color: var(--bg-card);">
                     <div class="mb-4">
-                        <span class="text-muted uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">Проект</span>
+                        <span class="bs-muted-label uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">Проект</span>
                         <h3 class="h4 fw-bold mt-1 mb-2" style="color: var(--text-primary);">@Project.Title</h3>
                         @if (Project.JobPosts != null && Project.JobPosts.Any())
                         {
@@ -204,7 +204,7 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold mb-2" style="color: var(--text-primary); font-size: 0.95rem;">@Loc["Consultation_Address"]</label>
                             <input type="text" class="form-control bs-input" value="@Address" @oninput="OnAddressInput" placeholder="@Loc["Consultation_AddressPlaceholder"]" />
-                            <span class="form-text text-muted" style="font-size: 0.8rem; color: var(--text-secondary);">@Loc["Consultation_AddressHelp"]</span>
+                            <span class="form-text bs-muted-label" style="font-size: 0.8rem;">@Loc["Consultation_AddressHelp"]</span>
                         </div>
 
                         <div class="mb-4" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0px 4px 12px rgba(0,0,0,0.05); transition: all 0.3s ease;">
@@ -238,9 +238,42 @@
 </div>
 
 <style>
+    /* Theme-aware variables for shadows and translucent colors */
+    :root {
+        --bs-success-bg-light: rgba(16, 185, 129, 0.08);
+        --bs-success-bg-success-icon: rgba(16, 185, 129, 0.1);
+        --bs-pill-shadow: 0px 4px 10px rgba(0, 0, 0, 0.04);
+    }
+    
+    :root[data-theme='light'] {
+        --bs-success-bg-light: rgba(16, 185, 129, 0.08);
+        --bs-success-bg-success-icon: rgba(16, 185, 129, 0.1);
+    }
+    
+    :root[data-theme='dark'] {
+        --bs-success-bg-light: rgba(16, 185, 129, 0.15);
+        --bs-success-bg-success-icon: rgba(16, 185, 129, 0.2);
+        --bs-pill-shadow: none;
+    }
+    
+    :root[data-theme='colorful'] {
+        --bs-success-bg-light: rgba(16, 185, 129, 0.1);
+        --bs-success-bg-success-icon: rgba(16, 185, 129, 0.15);
+    }
+
     .request-consultation-container {
         max-width: 680px;
         margin: 0 auto;
+    }
+    
+    .bs-desc-text {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+    
+    .bs-muted-label {
+        color: var(--text-muted);
     }
     
     .slots-grid {
@@ -275,12 +308,12 @@
         border-color: var(--color-primary);
         color: var(--text-primary);
         transform: translateY(-2px);
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--bs-pill-shadow);
     }
     
     .slot-pill.active {
         border-color: var(--color-success);
-        background-color: rgba(76, 175, 80, 0.08);
+        background-color: var(--bs-success-bg-light);
         color: var(--color-success);
         font-weight: 600;
     }
@@ -297,7 +330,7 @@
     .success-icon-wrapper {
         width: 80px;
         height: 80px;
-        background-color: rgba(76, 175, 80, 0.1);
+        background-color: var(--bs-success-bg-success-icon);
         border-radius: 50%;
         display: flex;
         align-items: center;
