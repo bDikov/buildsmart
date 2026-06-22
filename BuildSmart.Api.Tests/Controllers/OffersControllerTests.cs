@@ -297,4 +297,42 @@ public class OffersControllerTests
         project.MasterOfferPdf.Should().BeNull(); // Should NOT be cached
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never); // Should NOT save changes
     }
+
+    [Fact]
+    public async Task DownloadOfferPdf_ShouldReturnBadRequest_WhenAnyCategoryIsDraft()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        
+        var project = new Project
+        {
+            Id = projectId,
+            Title = "Bathroom Renovation",
+            LanguageCode = "bg",
+            HomeownerId = homeownerId,
+            Description = "Initial description",
+            MasterOfferPdf = null
+        };
+
+        // Job post is in Draft status by default
+        var jobPost = new JobPost
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = projectId,
+            ServiceCategoryId = categoryId,
+            Title = "Bathroom"
+        };
+        project.JobPosts.Add(jobPost);
+
+        _projectRepoMock.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+
+        // Act
+        var result = await _controller.DownloadOfferPdf(projectId);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>()
+            .Which.Value.Should().Be("Cannot download offer until all categories are filled out.");
+    }
 }

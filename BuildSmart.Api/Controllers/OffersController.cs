@@ -43,6 +43,11 @@ public class OffersController : ControllerBase
             return NotFound("Project not found.");
         }
 
+        if (project.JobPosts.Any(jp => jp.Status == JobPostStatus.Draft))
+        {
+            return BadRequest("Cannot download offer until all categories are filled out.");
+        }
+
         if (project.MasterOfferPdf == null || project.MasterOfferPdf.Length == 0)
         {
             // Dynamically generate the PDF
@@ -150,7 +155,7 @@ public class OffersController : ControllerBase
 
             byte[] pdfBytes = await _pdfGeneratorService.GenerateOfferPdfAsync(offerData);
 
-            var activeJobPosts = project.JobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled && jp.Status != JobPostStatus.Draft).ToList();
+            var activeJobPosts = project.JobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled).ToList();
             bool allPriced = activeJobPosts.All(jp => projectCalcs.Any(c => c.ServiceCategoryId == jp.ServiceCategoryId));
 
             if (allPriced)

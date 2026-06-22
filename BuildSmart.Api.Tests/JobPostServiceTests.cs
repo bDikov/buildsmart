@@ -11,6 +11,9 @@ using System.Collections.Generic;
 using MockQueryable.Moq;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
+using BuildSmart.Core.Application.Resources;
 
 namespace BuildSmart.Api.Tests;
 
@@ -21,6 +24,8 @@ public class JobPostServiceTests
     private readonly Mock<INotificationService> _mockNotification;
     private readonly Mock<IJobsNotificationService> _mockJobsNotification;
     private readonly Mock<IAiService> _mockAiService;
+    private readonly IConfiguration _config;
+    private readonly Mock<IStringLocalizer<NotificationResources>> _mockLocalizer;
     private readonly JobPostService _service;
 
     public JobPostServiceTests()
@@ -30,13 +35,26 @@ public class JobPostServiceTests
         _mockNotification = new Mock<INotificationService>();
         _mockJobsNotification = new Mock<IJobsNotificationService>();
         _mockAiService = new Mock<IAiService>();
+        _mockLocalizer = new Mock<IStringLocalizer<NotificationResources>>();
+
+        _config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                {"Gemini:MaxAiRequests", "20"}
+            })
+            .Build();
+
+        var mockLocalizedString = new LocalizedString("Error_AiRequestLimitExceeded", "You have reached your limit of {0} requests.");
+        _mockLocalizer.Setup(l => l["Error_AiRequestLimitExceeded"]).Returns(mockLocalizedString);
 
         _service = new JobPostService(
             _mockUow.Object,
             _mockQueue.Object,
             _mockNotification.Object,
             _mockJobsNotification.Object,
-            _mockAiService.Object
+            _mockAiService.Object,
+            _config,
+            _mockLocalizer.Object
         );
     }
 
@@ -329,9 +347,11 @@ public class JobPostServiceTests
     {
         // Arrange
         var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
         var oldDetails = "{\"answers\": {\"a\": 1}}";
         var newDetails = "{\"answers\": {\"a\": 2}}";
-        var jobPost = new JobPost { Id = jobPostId, Title = "Test" };
+        var jobPost = new JobPost { Id = jobPostId, Title = "Test", ProjectId = projectId };
         
         var prop = typeof(JobPost).GetProperty("JobDetails");
         if (prop != null && prop.CanWrite) prop.SetValue(jobPost, newDetails);
@@ -349,8 +369,15 @@ public class JobPostServiceTests
         mockCatRepo.Setup(r => r.GetQueryable()).Returns(new List<ServiceCategory>().BuildMockDbSet().Object);
         _mockUow.Setup(u => u.ServiceCategories).Returns(mockCatRepo.Object);
 
+        var project = new Project { Id = projectId, HomeownerId = homeownerId };
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        var user = new User { Id = homeownerId, AiRequestCount = 0, LastAiRequestDate = DateTime.UtcNow };
         var mockUserRepo = new Mock<IUserRepository>();
         mockUserRepo.Setup(r => r.GetQueryable()).Returns(new List<User>().BuildMockDbSet().Object);
+        mockUserRepo.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(user);
         _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
 
         _mockQueue.Setup(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()))
@@ -388,5 +415,161 @@ public class JobPostServiceTests
         
         // Actually, since I can't easily mock Include/ToListAsync without extra libraries, 
         // I will just verify the repository call if possible or skip the complex part.
+    }
+
+    [Fact]
+    public async Task SubmitJobForScopeGenerationAsync_ShouldThrow_WhenRequestLimitExceeded()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var jobPost = new JobPost { Id = jobPostId, ProjectId = projectId, Title = "Test" };
+        
+        var project = new Project { Id = projectId, HomeownerId = homeownerId };
+        var user = new User { Id = homeownerId, AiRequestCount = 20, LastAiRequestDate = DateTime.UtcNow }; // Exceeded limit of 20
+        
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        var mockUserRepo = new Mock<IUserRepository>();
+        mockUserRepo.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(user);
+        _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
+
+        // Act
+        Func<Task> act = async () => await _service.SubmitJobForScopeGenerationAsync(jobPostId);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*limit*");
+    }
+
+    [Fact]
+    public async Task SubmitJobForScopeGenerationAsync_ShouldResetLimit_WhenNewMonthStarts()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var jobPost = new JobPost { Id = jobPostId, ProjectId = projectId, Title = "Test" };
+        
+        var project = new Project { Id = projectId, HomeownerId = homeownerId };
+        // Request count is 20, but the last request was in the previous month
+        var user = new User { Id = homeownerId, AiRequestCount = 20, LastAiRequestDate = DateTime.UtcNow.AddMonths(-1) }; 
+        
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        var mockUserRepo = new Mock<IUserRepository>();
+        mockUserRepo.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(user);
+        _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
+
+        _mockQueue.Setup(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync("job-123");
+
+        // Act
+        await _service.SubmitJobForScopeGenerationAsync(jobPostId);
+
+        // Assert
+        user.AiRequestCount.Should().Be(1); // Reset to 0 then incremented to 1
+        _mockQueue.Verify(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SubmitJobForScopeGenerationAsync_ShouldAllowGeneratingScope_AndCancelPreviousJob()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var jobPost = new JobPost { Id = jobPostId, ProjectId = projectId, Title = "Test" };
+        
+        // Use reflection to set Status to GeneratingScope
+        var statusProp = typeof(JobPost).GetProperty("Status");
+        statusProp?.SetValue(jobPost, JobPostStatus.GeneratingScope);
+        
+        var activeJobProp = typeof(JobPost).GetProperty("ActiveHangfireJobId");
+        activeJobProp?.SetValue(jobPost, "job-old-456");
+
+        var project = new Project { Id = projectId, HomeownerId = homeownerId };
+        var user = new User { Id = homeownerId, AiRequestCount = 5, LastAiRequestDate = DateTime.UtcNow };
+        
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        var mockUserRepo = new Mock<IUserRepository>();
+        mockUserRepo.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(user);
+        _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
+
+        _mockQueue.Setup(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync("job-new-789");
+
+        // Act
+        await _service.SubmitJobForScopeGenerationAsync(jobPostId);
+
+        // Assert
+        _mockQueue.Verify(q => q.CancelJobAsync("job-old-456"), Times.Once);
+        _mockQueue.Verify(q => q.QueueBackgroundWorkItemAsync(jobPostId, It.IsAny<CancellationToken>()), Times.Once);
+        user.AiRequestCount.Should().Be(6);
+        jobPost.ActiveHangfireJobId.Should().Be("job-new-789");
+    }
+
+    [Fact]
+    public async Task SubmitJobPostAsync_ShouldThrow_WhenRequestLimitExceeded()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var newDetails = "{\"answers\": {\"a\": 2}}";
+        var jobPost = new JobPost { Id = jobPostId, Title = "Test", ProjectId = projectId };
+        
+        var prop = typeof(JobPost).GetProperty("JobDetails");
+        if (prop != null && prop.CanWrite) prop.SetValue(jobPost, newDetails);
+
+        jobPost.SubmitForScopeGeneration();
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockCatRepo = new Mock<IServiceCategoryRepository>();
+        mockCatRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ServiceCategory>());
+        mockCatRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((ServiceCategory)null);
+        mockCatRepo.Setup(r => r.GetQueryable()).Returns(new List<ServiceCategory>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.ServiceCategories).Returns(mockCatRepo.Object);
+
+        var project = new Project { Id = projectId, HomeownerId = homeownerId };
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        var user = new User { Id = homeownerId, AiRequestCount = 20, LastAiRequestDate = DateTime.UtcNow }; // Exceeded limit of 20
+        var mockUserRepo = new Mock<IUserRepository>();
+        mockUserRepo.Setup(r => r.GetQueryable()).Returns(new List<User>().BuildMockDbSet().Object);
+        mockUserRepo.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(user);
+        _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
+
+        // Act
+        Func<Task> act = async () => await _service.SubmitJobPostAsync(jobPostId);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*limit*");
     }
 }

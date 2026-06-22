@@ -67,7 +67,8 @@
                                 IsExpanded="_expandedJobs.Contains(jobVm.JobPost.Id)" 
                                 OnToggleExpansion="() => ToggleJobExpansion(jobVm.JobPost.Id)" 
                                 OnViewAuctionHub="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(jobVm.JobPost)"
-                                OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")' />
+                                OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")'
+                                OnEditAnswers='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={jobVm.JobPost.Id}&targetCategoryId={jobVm.JobPost.ServiceCategory.Id}")' />
                         }
                     }
                 </div>

@@ -54,6 +54,11 @@ public class ScopeGenerationWorkerConcurrencyTests
         var jobPost2 = new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, ServiceCategoryId = categoryId, Project = project };
         var jobPost3 = new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, ServiceCategoryId = categoryId, Project = project };
         
+        // Transition from Draft to GeneratingScope so they are realistically priced
+        jobPost1.SubmitForScopeGeneration();
+        jobPost2.SubmitForScopeGeneration();
+        jobPost3.SubmitForScopeGeneration();
+
         var allJobs = new List<JobPost> { jobPost1, jobPost2, jobPost3 };
         
         // Mocks for UnitOfWork
@@ -75,6 +80,17 @@ public class ScopeGenerationWorkerConcurrencyTests
         mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPost3.Id)).ReturnsAsync(jobPost3);
         
         var aiCalcs = new List<AiCalculation>();
+        var calcLock = new object();
+        mockAiCalcRepo.Setup(r => r.AddAsync(It.IsAny<AiCalculation>()))
+            .Callback<AiCalculation>(c =>
+            {
+                lock (calcLock)
+                {
+                    aiCalcs.Add(c);
+                }
+            })
+            .Returns(Task.CompletedTask);
+
         mockAiCalcRepo.Setup(r => r.GetByProjectAsync(projectId)).ReturnsAsync(aiCalcs);
         mockAiCalcRepo.Setup(r => r.GetByProjectWithTasksAsync(projectId)).ReturnsAsync(aiCalcs);
         

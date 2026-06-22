@@ -111,4 +111,7 @@
   <data name="Notification_SupportReply_Body" xml:space="preserve"><value>Нашият екип отговори: {0}</value></data>
   <data name="Notification_NewMessage_Title" xml:space="preserve"><value>Ново съобщение</value></data>
   <data name="Notification_NewMessage_Body" xml:space="preserve"><value>Ново съобщение: {0}</value></data>
+  <data name="Error_AiRequestLimitExceeded" xml:space="preserve">
+    <value>Достигнахте месечния си лимит от {0} заявки за генериране на AI оферти. Моля, свържете се с екипа ни за поддръжка, ако имате нужда от съдействие или желаете да увеличите лимита си.</value>
+  </data>
 </root>

@@ -466,7 +466,7 @@ public class ScopeGenerationWorker
 				{
 					// 1. Get all job posts for this project to check if we are truly done with all categories
 					var projectJobPosts = await saveUnitOfWork.JobPosts.GetJobsByProjectIdAsync(freshJobPost.ProjectId);
-					var activeJobPosts = projectJobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled && jp.Status != JobPostStatus.Draft).ToList();
+					var activeJobPosts = projectJobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled).ToList();
 
 					// 2. Get all current calculations for this project
 					var projectCalcs = (await saveUnitOfWork.AiCalculations.GetByProjectWithTasksAsync(freshJobPost.ProjectId)).ToList();

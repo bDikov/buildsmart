@@ -3,6 +3,9 @@ using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
 using BuildSmart.Core.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
+using BuildSmart.Core.Application.Resources;
 
 namespace BuildSmart.Core.Application.Services;
 
@@ -13,19 +16,25 @@ public class JobPostService : IJobPostService
 	private readonly INotificationService _notificationService;
 	private readonly IJobsNotificationService _jobsNotificationService;
 	private readonly IAiService _aiService;
+	private readonly IConfiguration _configuration;
+	private readonly IStringLocalizer<NotificationResources> _localizer;
 
 	public JobPostService(
 		IUnitOfWork unitOfWork,
 		IScopeGenerationQueue scopeGenerationQueue,
 		INotificationService notificationService,
 		IJobsNotificationService jobsNotificationService,
-		IAiService aiService)
+		IAiService aiService,
+		IConfiguration configuration,
+		IStringLocalizer<NotificationResources> localizer)
 	{
 		_unitOfWork = unitOfWork;
 		_scopeGenerationQueue = scopeGenerationQueue;
 		_notificationService = notificationService;
 		_jobsNotificationService = jobsNotificationService;
 		_aiService = aiService;
+		_configuration = configuration;
+		_localizer = localizer;
 	}
 
 	public async Task SubmitJobForScopeGenerationAsync(Guid jobPostId)
@@ -35,10 +44,18 @@ public class JobPostService : IJobPostService
 
 		if (jobPost.Status != JobPostStatus.Draft &&
 			jobPost.Status != JobPostStatus.Rejected &&
-			jobPost.Status != JobPostStatus.WaitingForUserReview)
+			jobPost.Status != JobPostStatus.WaitingForUserReview &&
+			jobPost.Status != JobPostStatus.GeneratingScope)
 		{
-			throw new InvalidOperationException("AI generation can only be triggered for jobs in Draft, Rejected, or WaitingForUserReview status.");
+			throw new InvalidOperationException("AI generation can only be triggered for jobs in Draft, Rejected, WaitingForUserReview, or GeneratingScope status.");
 		}
+
+		if (jobPost.Status == JobPostStatus.GeneratingScope && !string.IsNullOrEmpty(jobPost.ActiveHangfireJobId))
+		{
+			await _scopeGenerationQueue.CancelJobAsync(jobPost.ActiveHangfireJobId);
+		}
+
+		await CheckAndIncrementAiRequestCountAsync(jobPost);
 
 		jobPost.SubmitForScopeGeneration();
 
@@ -66,7 +83,11 @@ public class JobPostService : IJobPostService
 		await _unitOfWork.SaveChangesAsync();
 
 		// Queue for background processing
-		await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
+		var jobId = await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
+		jobPost.MarkScopeGenerationQueued(jobId, jobPost.JobDetails);
+
+		_unitOfWork.JobPosts.Update(jobPost);
+		await _unitOfWork.SaveChangesAsync();
 	}
 
 	public async Task ApproveJobScopeAsync(Guid jobPostId, string finalScope)
@@ -338,6 +359,7 @@ public class JobPostService : IJobPostService
 
 		if (shouldQueue)
 		{
+			await CheckAndIncrementAiRequestCountAsync(jobPost);
 			jobPost.SubmitForScopeGeneration();
 		}
 
@@ -1037,5 +1059,36 @@ public class JobPostService : IJobPostService
 			.OrderBy(jt => jt.SequenceOrder)
 			.ToListAsync();
 		return tasks.ToLookup(jt => jt.JobPostId);
+	}
+
+	private async Task CheckAndIncrementAiRequestCountAsync(JobPost jobPost)
+	{
+		var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId)
+			?? throw new ArgumentException("Project not found");
+
+		var user = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId)
+			?? throw new ArgumentException("User not found");
+
+		var limitStr = _configuration["Gemini:MaxAiRequests"];
+		var maxRequests = int.TryParse(limitStr, out var limitVal) ? limitVal : 20;
+
+		var now = DateTime.UtcNow;
+		if (user.LastAiRequestDate == null || 
+			user.LastAiRequestDate.Value.Month != now.Month || 
+			user.LastAiRequestDate.Value.Year != now.Year)
+		{
+			// Reset the request count for the new month
+			user.AiRequestCount = 0;
+		}
+
+		if (user.AiRequestCount >= maxRequests)
+		{
+			var message = string.Format(_localizer["Error_AiRequestLimitExceeded"], maxRequests);
+			throw new InvalidOperationException(message);
+		}
+
+		user.AiRequestCount++;
+		user.LastAiRequestDate = now;
+		_unitOfWork.Users.Update(user);
 	}
 }

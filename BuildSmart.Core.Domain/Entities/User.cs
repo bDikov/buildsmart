@@ -1,4 +1,4 @@
-﻿using BuildSmart.Core.Domain.Common;
+using BuildSmart.Core.Domain.Common;
 using BuildSmart.Core.Domain.Enums;
 
 namespace BuildSmart.Core.Domain.Entities;
@@ -23,6 +23,9 @@ public class User : BaseEntity
 
 	public string PreferredLanguage { get; set; } = "bg";
 	public string PreferredTheme { get; set; } = "system";
+
+	public int AiRequestCount { get; set; } = 0;
+	public DateTime? LastAiRequestDate { get; set; }
 
 	public virtual HomeownerProfile? HomeownerProfile { get; set; }
 	public virtual TradesmanProfile? TradesmanProfile { get; set; }

@@ -75,6 +75,13 @@
                 <button class="bs-btn-primary w-100 py-2" @onclick="async () => await OnViewAIOffer.InvokeAsync()">@string.Format(Loc["ProjectDetail_ViewGeneratedOffer"], JobVm.JobPost.ServiceCategory?.Name ?? JobVm.JobPost.Title)</button>
             </div>
         }
+
+        @if (JobVm.JobPost.Status == JobPostStatus.Draft)
+        {
+            <div class="d-flex justify-content-center mt-2">
+                <button class="bs-btn-primary w-100 py-2" @onclick="async () => await OnEditAnswers.InvokeAsync()">@Loc["ProjectDetail_ContinueDraft"]</button>
+            </div>
+        }
     </div>
 </div>
 
@@ -93,4 +100,7 @@
 
     [Parameter]
     public EventCallback OnViewAIOffer { get; set; }
+
+    [Parameter]
+    public EventCallback OnEditAnswers { get; set; }
 }

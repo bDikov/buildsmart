@@ -111,4 +111,7 @@
   <data name="Notification_SupportReply_Body" xml:space="preserve"><value>Our support team has replied: {0}</value></data>
   <data name="Notification_NewMessage_Title" xml:space="preserve"><value>New Message</value></data>
   <data name="Notification_NewMessage_Body" xml:space="preserve"><value>New message: {0}</value></data>
+  <data name="Error_AiRequestLimitExceeded" xml:space="preserve">
+    <value>You have reached your monthly limit of {0} AI scope generation requests. Please contact our support team if you need further assistance or would like to increase your limit.</value>
+  </data>
 </root>
