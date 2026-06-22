@@ -111,7 +111,7 @@ public class ScopeGenerationWorkerConcurrencyTests
         // Assert
         Assert.Null(exception); // Should not throw Concurrency Exceptions
         
-        // Verify that GenerateOfferPdfAsync was called exactly 3 times, meaning all 3 workers got their turn in the lock
-        mockPdfService.Verify(p => p.GenerateOfferPdfAsync(It.IsAny<object>()), Times.Exactly(3));
+        // Verify that GenerateOfferPdfAsync was called exactly once, confirming that the synchronization lock prevents duplicate PDF generation
+        mockPdfService.Verify(p => p.GenerateOfferPdfAsync(It.IsAny<object>()), Times.Once());
     }
 }
