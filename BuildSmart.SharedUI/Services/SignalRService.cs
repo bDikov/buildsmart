@@ -21,9 +21,20 @@ public class SignalRService : IAsyncDisposable
         NotificationsStateChanged?.Invoke();
     }
 
-    public SignalRService(IAuthService authService)
+    private readonly INavigationBridge _navigation;
+    private readonly IAlertService _alerts;
+    private readonly IAppMainThread _mainThread;
+
+    public SignalRService(
+        IAuthService authService,
+        INavigationBridge navigation,
+        IAlertService alerts,
+        IAppMainThread mainThread)
     {
         _authService = authService;
+        _navigation = navigation;
+        _alerts = alerts;
+        _mainThread = mainThread;
     }
 
     public async Task ConnectAsync()
@@ -58,7 +69,7 @@ public class SignalRService : IAsyncDisposable
 
         _hubConnection.On<string, string, object?>("ReceiveNotification", (title, message, data) =>
         {
-            AppServiceLocator.MainThread.BeginInvokeOnMainThread(async () =>
+            _mainThread.BeginInvokeOnMainThread(async () =>
             {
                 NotificationReceived?.Invoke(title, message, data);
                 
@@ -73,7 +84,7 @@ public class SignalRService : IAsyncDisposable
 
                 if (shouldShowAlert)
                 {
-                    var result = await AppServiceLocator.Alerts.DisplayAlert(title, message, "View", "OK");
+                    var result = await _alerts.DisplayAlert(title, message, "View", "OK");
                     if (result && data != null)
                     {
                         await HandleDeepLinkAsync(data);
@@ -84,22 +95,22 @@ public class SignalRService : IAsyncDisposable
 
         _hubConnection.On<System.Text.Json.JsonElement>("ReceiveQuestionUpdate", (payload) =>
         {
-            AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => QuestionUpdated?.Invoke(payload));
+            _mainThread.BeginInvokeOnMainThread(() => QuestionUpdated?.Invoke(payload));
         });
 
         _hubConnection.On<System.Text.Json.JsonElement>("ReceiveNewReply", (payload) =>
         {
-            AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => NewReplyReceived?.Invoke(payload));
+            _mainThread.BeginInvokeOnMainThread(() => NewReplyReceived?.Invoke(payload));
         });
 
         _hubConnection.On<Guid>("OfferRegenerated", (projectId) =>
         {
-            AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => OfferRegenerated?.Invoke(projectId));
+            _mainThread.BeginInvokeOnMainThread(() => OfferRegenerated?.Invoke(projectId));
         });
 
         _hubConnection.On<System.Text.Json.JsonElement>("ReceiveProjectMessage", (payload) =>
         {
-            AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => ProjectMessageReceived?.Invoke(payload));
+            _mainThread.BeginInvokeOnMainThread(() => ProjectMessageReceived?.Invoke(payload));
         });
 
         try
@@ -178,12 +189,12 @@ public class SignalRService : IAsyncDisposable
                     {
                         var jobId = jobIdProp.GetString();
                         // Navigate to Auction Hub with JobId
-                        await AppServiceLocator.Navigation.NavigateToAsync($"AuctionHubPage?jobId={jobId}");
+                        await _navigation.NavigateToAsync($"AuctionHubPage?jobId={jobId}");
                     }
                     else if (route == "ProjectMessages" && element.TryGetProperty("projectId", out var projectIdProp))
                     {
                         var projectId = projectIdProp.GetString();
-                        await AppServiceLocator.Navigation.NavigateToAsync($"/project-messages?projectId={projectId}");
+                        await _navigation.NavigateToAsync($"/project-messages?projectId={projectId}");
                     }
                 }
             }

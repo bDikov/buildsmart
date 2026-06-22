@@ -20,8 +20,28 @@ namespace BuildSmart.SharedUI.Services
 
     public static class AppServiceLocator
     {
-        public static INavigationBridge Navigation { get; set; } = null!;
-        public static IAlertService Alerts { get; set; } = null!;
-        public static IAppMainThread MainThread { get; set; } = null!;
+        private static INavigationBridge _navigation = null!;
+        private static IAlertService _alerts = null!;
+        private static IAppMainThread _mainThread = null!;
+
+        public static Func<Type, object?>? ServiceResolver { get; set; }
+
+        public static INavigationBridge Navigation
+        {
+            get => (INavigationBridge?)ServiceResolver?.Invoke(typeof(INavigationBridge)) ?? _navigation;
+            set => _navigation = value;
+        }
+
+        public static IAlertService Alerts
+        {
+            get => (IAlertService?)ServiceResolver?.Invoke(typeof(IAlertService)) ?? _alerts;
+            set => _alerts = value;
+        }
+
+        public static IAppMainThread MainThread
+        {
+            get => (IAppMainThread?)ServiceResolver?.Invoke(typeof(IAppMainThread)) ?? _mainThread;
+            set => _mainThread = value;
+        }
     }
 }

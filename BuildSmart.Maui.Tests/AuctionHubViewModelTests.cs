@@ -1,6 +1,7 @@
 using Xunit;
 using Moq;
 using BuildSmart.SharedUI.ViewModels;
+using BuildSmart.SharedUI.Services;
 using BuildSmart.SharedUI.GraphQL;
 using FluentAssertions;
 using StrawberryShake;
@@ -21,7 +22,14 @@ public class AuctionHubViewModelTests
     {
         _mockApiClient = new Mock<IBuildSmartApiClient>();
         var authServiceMock = new Mock<BuildSmart.SharedUI.Services.IAuthService>();
-        _mockSignalRService = new Mock<BuildSmart.SharedUI.Services.SignalRService>(authServiceMock.Object);
+        var mockNav = new Mock<INavigationBridge>();
+        var mockAlert = new Mock<IAlertService>();
+        var mockMainThread = new Mock<IAppMainThread>();
+        _mockSignalRService = new Mock<BuildSmart.SharedUI.Services.SignalRService>(
+            authServiceMock.Object,
+            mockNav.Object,
+            mockAlert.Object,
+            mockMainThread.Object);
         _viewModel = new AuctionHubViewModel(_mockApiClient.Object, _mockSignalRService.Object);
     }
 

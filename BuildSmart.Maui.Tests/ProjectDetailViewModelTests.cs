@@ -23,7 +23,10 @@ public class ProjectDetailViewModelTests
     {
         _apiClientMock = new Mock<IBuildSmartApiClient>();
         _authServiceMock = new Mock<IAuthService>();
-        _signalRService = new SignalRService(_authServiceMock.Object);
+        var mockNav = new Mock<INavigationBridge>();
+        var mockAlert = new Mock<IAlertService>();
+        var mockMainThread = new Mock<IAppMainThread>();
+        _signalRService = new SignalRService(_authServiceMock.Object, mockNav.Object, mockAlert.Object, mockMainThread.Object);
         _viewModel = new ProjectDetailViewModel(_apiClientMock.Object, _signalRService, _authServiceMock.Object);
     }
 
