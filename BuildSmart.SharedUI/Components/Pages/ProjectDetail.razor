@@ -51,7 +51,7 @@
                     OnDownloadMasterOffer="DownloadMasterOffer"
                     OnAskAdmin="AskAdminQuestion" />
 
-                <h3 class="section-title mt-4">@Loc["ProjectDetail_JobsTitle"]</h3>
+                <h3 id="job-posts-section" class="section-title mt-4">@Loc["ProjectDetail_JobsTitle"]</h3>
 
                 <div class="job-posts-list">
                     @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
@@ -130,11 +130,12 @@
         }
     }
 
-    private async Task SubmitProjectToAdmin()
+    private void SubmitProjectToAdmin()
     {
-        // TODO: Implement actual submission logic to GraphQL API
-        Console.WriteLine("Project submitted for admin review.");
-        await Task.CompletedTask;
+        if (ViewModel.Project != null)
+        {
+            NavManager.NavigateTo($"/request-consultation?projectId={ViewModel.Project.Id}");
+        }
     }
 
     private void AskAdminQuestion()

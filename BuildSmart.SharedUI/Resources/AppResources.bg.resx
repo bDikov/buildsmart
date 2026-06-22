@@ -599,6 +599,93 @@
   <data name="ProjectDetail_NextSteps_AskBtn" xml:space="preserve">
     <value>Задай въпрос на нашия екип</value>
   </data>
+  <data name="ProjectDetail_NextSteps_IncompleteTitle" xml:space="preserve">
+    <value>Завършете вашия проект</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_IncompleteDesc" xml:space="preserve">
+    <value>За да видите пълния обхват на проекта и ценовата оферта, първо трябва да попълните въпросниците за следните категории: {0}.</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_IncompleteBtn" xml:space="preserve">
+    <value>Попълни въпросника</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_GeneratingTitle" xml:space="preserve">
+    <value>Генериране на обхват</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_GeneratingDesc" xml:space="preserve">
+    <value>Нашият AI в момента генерира обхвата и офертите за избраните категории. Можете да прегледате детайлите за попълнените категории или просто да изчакате.</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_GeneratingBtn" xml:space="preserve">
+    <value>Преглед на категориите</value>
+  </data>
+  <data name="Consultation_Title" xml:space="preserve">
+    <value>Заявка за консултация</value>
+  </data>
+  <data name="Consultation_Subtitle" xml:space="preserve">
+    <value>Нашите експерти ще се свържат с вас за финализиране на детайлите и стартиране на проекта.</value>
+  </data>
+  <data name="Consultation_PreferredTime" xml:space="preserve">
+    <value>Предпочитано време</value>
+  </data>
+  <data name="Consultation_Date" xml:space="preserve">
+    <value>Предпочитана дата</value>
+  </data>
+  <data name="Consultation_TimeSlot" xml:space="preserve">
+    <value>Времеви интервал</value>
+  </data>
+  <data name="Consultation_Morning" xml:space="preserve">
+    <value>Сутрин (09:00 - 12:00)</value>
+  </data>
+  <data name="Consultation_Afternoon" xml:space="preserve">
+    <value>Следобед (12:00 - 15:00)</value>
+  </data>
+  <data name="Consultation_LateAfternoon" xml:space="preserve">
+    <value>Късен следобед (15:00 - 18:00)</value>
+  </data>
+  <data name="Consultation_ContactMethod" xml:space="preserve">
+    <value>Начин на връзка</value>
+  </data>
+  <data name="Consultation_Phone" xml:space="preserve">
+    <value>Телефонен разговор</value>
+  </data>
+  <data name="Consultation_Video" xml:space="preserve">
+    <value>Видео среща (Zoom/Meet)</value>
+  </data>
+  <data name="Consultation_Email" xml:space="preserve">
+    <value>Имейл</value>
+  </data>
+  <data name="Consultation_PhoneLabel" xml:space="preserve">
+    <value>Телефон за връзка</value>
+  </data>
+  <data name="Consultation_Notes" xml:space="preserve">
+    <value>Бележки или специфични изисквания</value>
+  </data>
+  <data name="Consultation_NotesPlaceholder" xml:space="preserve">
+    <value>Споделете нещо допълнително с нашия екип...</value>
+  </data>
+  <data name="Consultation_Submit" xml:space="preserve">
+    <value>Изпрати заявка</value>
+  </data>
+  <data name="Consultation_Cancel" xml:space="preserve">
+    <value>Отказ</value>
+  </data>
+  <data name="Consultation_SuccessTitle" xml:space="preserve">
+    <value>Заявката е изпратена успешно!</value>
+  </data>
+  <data name="Consultation_SuccessDesc" xml:space="preserve">
+    <value>Нашите експерти ще прегледат вашия проект и ще се свържат с вас в избраното време.</value>
+  </data>
+  <data name="Consultation_SuccessBtn" xml:space="preserve">
+    <value>Обратно към проекта</value>
+  </data>
+  <data name="Consultation_Address" xml:space="preserve">
+    <value>Адрес на проекта</value>
+  </data>
+  <data name="Consultation_AddressPlaceholder" xml:space="preserve">
+    <value>Въведете адрес на проекта (напр. град, улица, номер)...</value>
+  </data>
+  <data name="Consultation_AddressHelp" xml:space="preserve">
+    <value>Този адрес ще бъде отбелязан на картата по-долу, за да улесни нашите експерти при намирането на обекта.</value>
+  </data>
   <data name="Feed_All" xml:space="preserve">
     <value>Всички</value>
   </data>

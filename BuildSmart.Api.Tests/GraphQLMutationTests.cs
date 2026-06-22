@@ -667,4 +667,61 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 		Assert.Equal("VIDEO", savedType);
 		mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<System.Threading.CancellationToken>()), Times.Once);
 		}
-		}
+
+	[Fact]
+	public async Task ApproveJobScope_ValidData_ReturnsTrue()
+	{
+		// Arrange
+		var homeownerId = Guid.NewGuid();
+		var jobPostId = Guid.NewGuid();
+		var finalScope = "Approved scope text description";
+
+		var homeownerToken = TestTokenHelper.GenerateJwtToken(homeownerId, "homeowner@example.com", "Homeowner", _configuration);
+
+		var mockJobPostService = new Mock<IJobPostService>();
+		mockJobPostService.Setup(s => s.ApproveJobScopeAsync(jobPostId, finalScope))
+			.Returns(Task.CompletedTask);
+
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IJobPostService));
+			services.AddSingleton(mockJobPostService.Object);
+		}, homeownerToken);
+
+		var graphQLRequest = new
+		{
+			query = @"
+                mutation ApproveScope($jobPostId: UUID!, $finalScope: String!) {
+                  approveJobScope(jobPostId: $jobPostId, finalScope: $finalScope)
+                }",
+			variables = new
+			{
+				jobPostId = jobPostId.ToString(),
+				finalScope = finalScope
+			}
+		};
+
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				Encoding.UTF8,
+				"application/json")
+		};
+
+		// Act
+		var response = await client.SendAsync(request);
+
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content);
+		response.EnsureSuccessStatusCode();
+
+		var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
+		Assert.Null(jsonResponse.errors);
+		bool approved = jsonResponse.data.approveJobScope;
+		Assert.True(approved);
+
+		mockJobPostService.Verify(s => s.ApproveJobScopeAsync(jobPostId, finalScope), Times.Once);
+	}
+}

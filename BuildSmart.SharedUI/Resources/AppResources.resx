@@ -596,6 +596,93 @@
   <data name="ProjectDetail_NextSteps_AskBtn" xml:space="preserve">
     <value>Ask our team</value>
   </data>
+  <data name="ProjectDetail_NextSteps_IncompleteTitle" xml:space="preserve">
+    <value>Complete Your Project</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_IncompleteDesc" xml:space="preserve">
+    <value>To view your comprehensive scope and official offer, please complete the questionnaires for the following categories: {0}.</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_IncompleteBtn" xml:space="preserve">
+    <value>Complete Questionnaire</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_GeneratingTitle" xml:space="preserve">
+    <value>Generating Your Scope</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_GeneratingDesc" xml:space="preserve">
+    <value>Our AI is currently generating the scopes and offers for your selected categories. You can review the details of completed categories or simply wait a moment.</value>
+  </data>
+  <data name="ProjectDetail_NextSteps_GeneratingBtn" xml:space="preserve">
+    <value>Review Categories</value>
+  </data>
+  <data name="Consultation_Title" xml:space="preserve">
+    <value>Request Consultation</value>
+  </data>
+  <data name="Consultation_Subtitle" xml:space="preserve">
+    <value>Our experts will contact you to finalize the details and start your project.</value>
+  </data>
+  <data name="Consultation_PreferredTime" xml:space="preserve">
+    <value>Preferred Time</value>
+  </data>
+  <data name="Consultation_Date" xml:space="preserve">
+    <value>Preferred Date</value>
+  </data>
+  <data name="Consultation_TimeSlot" xml:space="preserve">
+    <value>Time Slot</value>
+  </data>
+  <data name="Consultation_Morning" xml:space="preserve">
+    <value>Morning (09:00 - 12:00)</value>
+  </data>
+  <data name="Consultation_Afternoon" xml:space="preserve">
+    <value>Afternoon (12:00 - 15:00)</value>
+  </data>
+  <data name="Consultation_LateAfternoon" xml:space="preserve">
+    <value>Late Afternoon (15:00 - 18:00)</value>
+  </data>
+  <data name="Consultation_ContactMethod" xml:space="preserve">
+    <value>Preferred Contact Method</value>
+  </data>
+  <data name="Consultation_Phone" xml:space="preserve">
+    <value>Phone Call</value>
+  </data>
+  <data name="Consultation_Video" xml:space="preserve">
+    <value>Video Call (Zoom/Meet)</value>
+  </data>
+  <data name="Consultation_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Consultation_PhoneLabel" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="Consultation_Notes" xml:space="preserve">
+    <value>Notes or Specific Requirements</value>
+  </data>
+  <data name="Consultation_NotesPlaceholder" xml:space="preserve">
+    <value>Share anything else with our team...</value>
+  </data>
+  <data name="Consultation_Submit" xml:space="preserve">
+    <value>Submit Request</value>
+  </data>
+  <data name="Consultation_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Consultation_SuccessTitle" xml:space="preserve">
+    <value>Request Sent Successfully!</value>
+  </data>
+  <data name="Consultation_SuccessDesc" xml:space="preserve">
+    <value>Our experts will review your project and contact you at the selected time.</value>
+  </data>
+  <data name="Consultation_SuccessBtn" xml:space="preserve">
+    <value>Back to Project</value>
+  </data>
+  <data name="Consultation_Address" xml:space="preserve">
+    <value>Project Address</value>
+  </data>
+  <data name="Consultation_AddressPlaceholder" xml:space="preserve">
+    <value>Enter project address (e.g. city, street, number)...</value>
+  </data>
+  <data name="Consultation_AddressHelp" xml:space="preserve">
+    <value>This address will be pinned on the map below to help our experts locate your project.</value>
+  </data>
   <data name="Feed_All" xml:space="preserve">
     <value>All</value>
   </data>

@@ -572,4 +572,86 @@ public class JobPostServiceTests
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*limit*");
     }
+
+    [Fact]
+    public async Task ApproveJobScopeAsync_ShouldApproveJobScope_WhenValidData()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var jobPost = new JobPost 
+        { 
+            Id = jobPostId, 
+            Title = "Test Job", 
+            JobTasks = new List<JobTask> { new JobTask { Id = Guid.NewGuid(), Title = "Task 1", SequenceOrder = 1 } }
+        };
+        var statusProp = typeof(JobPost).GetProperty("Status");
+        statusProp?.SetValue(jobPost, JobPostStatus.WaitingForUserReview);
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        // Act
+        await _service.ApproveJobScopeAsync(jobPostId, "Final AI generated scope details");
+
+        // Assert
+        jobPost.Status.Should().Be(JobPostStatus.WaitingForAdminReview);
+        jobPost.UserEditedScope.Should().Be("Final AI generated scope details");
+        jobPost.Description.Should().Be("Final AI generated scope details");
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApproveJobScopeAsync_ShouldThrow_WhenNoTasksExist()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var jobPost = new JobPost 
+        { 
+            Id = jobPostId, 
+            Title = "Test Job", 
+            JobTasks = new List<JobTask>() // Empty tasks list
+        };
+        var statusProp = typeof(JobPost).GetProperty("Status");
+        statusProp?.SetValue(jobPost, JobPostStatus.WaitingForUserReview);
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        // Act
+        Func<Task> act = async () => await _service.ApproveJobScopeAsync(jobPostId, "Scope details");
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("A task breakdown must be created before sending for approval.");
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Never);
+    }
+
+    [Fact]
+    public async Task ApproveJobScopeAsync_ShouldThrow_WhenNotWaitingForUserReview()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var jobPost = new JobPost 
+        { 
+            Id = jobPostId, 
+            Title = "Test Job", 
+            JobTasks = new List<JobTask> { new JobTask { Id = Guid.NewGuid(), Title = "Task 1", SequenceOrder = 1 } }
+        };
+        var statusProp = typeof(JobPost).GetProperty("Status");
+        statusProp?.SetValue(jobPost, JobPostStatus.Draft); // Set to Draft
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        // Act
+        Func<Task> act = async () => await _service.ApproveJobScopeAsync(jobPostId, "Scope details");
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Job is not waiting for user review. Current Status: Draft");
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Never);
+    }
 }

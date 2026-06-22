@@ -1,4 +1,6 @@
 @using BuildSmart.SharedUI.GraphQL
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 
 @if (Project != null)
 {
@@ -9,7 +11,7 @@
             jp.Status == JobPostStatus.GeneratingScope || 
             jp.Status == JobPostStatus.Rejected);
 
-    @if (hasJobWaitingForUserReview || Project.Status == ProjectStatus.UnderReview || isMasterOfferReady)
+    @if (Project.JobPosts != null && Project.JobPosts.Any())
     {
         <h3 class="section-title mt-4">@Loc["ProjectDetail_NextSteps_Title"]</h3>
         
@@ -36,19 +38,82 @@
                     </div>
                 </div>
             }
+            else
+            {
+                var draftJobs = Project.JobPosts.Where(jp => jp.Status == JobPostStatus.Draft).ToList();
+                @if (draftJobs.Any())
+                {
+                    <!-- Incomplete Questionnaire Card -->
+                    <div class="bs-card next-step-card" style="border-left: 4px solid var(--color-warning);">
+                        <div class="d-flex flex-column align-items-center text-center">
+                            <h4 class="fw-bold mb-2" style="color: var(--text-primary); font-size: 1.25rem;">@Loc["ProjectDetail_NextSteps_IncompleteTitle"]</h4>
+                            <p class="mb-4" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+                                @string.Format(Loc["ProjectDetail_NextSteps_IncompleteDesc"], string.Join(", ", draftJobs.Select(j => j.ServiceCategory.Name)))
+                            </p>
+                            <div class="mt-auto w-100">
+                                @{
+                                    var firstDraft = draftJobs.First();
+                                }
+                                <button class="bs-btn-primary w-100 py-2" style="background-color: var(--color-warning); border-color: var(--color-warning);" @onclick='() => NavManager.NavigateTo($"/job-wizard?projectId={Project.Id}&jobId={firstDraft.Id}&targetCategoryId={firstDraft.ServiceCategory.Id}")'>
+                                    @Loc["ProjectDetail_NextSteps_IncompleteBtn"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Generating Scope Card -->
+                    <div class="bs-card next-step-card" style="border-left: 4px solid var(--color-primary);">
+                        <div class="d-flex flex-column align-items-center text-center">
+                            <h4 class="fw-bold mb-2" style="color: var(--text-primary); font-size: 1.25rem;">@Loc["ProjectDetail_NextSteps_GeneratingTitle"]</h4>
+                            <p class="mb-4" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+                                @Loc["ProjectDetail_NextSteps_GeneratingDesc"]
+                            </p>
+                            <div class="mt-auto w-100">
+                                <button class="bs-btn-dark w-100 py-2" @onclick="ScrollToJobsSection">
+                                    @Loc["ProjectDetail_NextSteps_GeneratingBtn"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
 
-            @if (hasJobWaitingForUserReview)
+            @if (!isMasterOfferReady || hasJobWaitingForUserReview)
             {
                 <!-- Submit to Admin Card -->
-                <div class="bs-card next-step-card" style="border-left: 4px solid var(--color-success);">
+                <div class="bs-card next-step-card" style="border-left: 4px solid var(--color-success); @(!isMasterOfferReady ? "opacity: 0.65; cursor: not-allowed;" : "")">
                     <div class="d-flex flex-column align-items-center text-center">
-                        <h4 class="fw-bold mb-2" style="color: var(--text-primary); font-size: 1.25rem;">@Loc["ProjectDetail_NextSteps_SubmitTitle"]</h4>
+                        <h4 class="fw-bold mb-2" style="color: var(--text-primary); font-size: 1.25rem;">
+                            @Loc["ProjectDetail_NextSteps_SubmitTitle"]
+                            @if (!isMasterOfferReady)
+                            {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-2 text-muted" style="vertical-align: middle;">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            }
+                        </h4>
                         <p class="mb-4" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
                             @Loc["ProjectDetail_NextSteps_SubmitDesc"]
                         </p>
                         <div class="mt-auto w-100">
-                            <button class="bs-btn-primary w-100 py-2" @onclick="async () => await OnSubmitToAdmin.InvokeAsync()">
-                                @Loc["ProjectDetail_NextSteps_SubmitBtn"]
+                            <button class="bs-btn-primary w-100 py-2" disabled="@(!isMasterOfferReady)" @onclick="async () => await OnSubmitToAdmin.InvokeAsync()">
+                                @if (!isMasterOfferReady)
+                                {
+                                    <span class="d-flex align-items-center justify-content-center gap-2">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                        @Loc["ProjectDetail_NextSteps_SubmitBtn"]
+                                    </span>
+                                }
+                                else
+                                {
+                                    @Loc["ProjectDetail_NextSteps_SubmitBtn"]
+                                }
                             </button>
                         </div>
                     </div>
@@ -148,4 +213,16 @@
 
     [Parameter]
     public EventCallback OnAskAdmin { get; set; }
+
+    private async Task ScrollToJobsSection()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('job-posts-section')?.scrollIntoView({ behavior: 'smooth' })");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to scroll: {ex.Message}");
+        }
+    }
 }
