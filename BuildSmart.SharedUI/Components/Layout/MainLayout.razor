@@ -508,6 +508,8 @@
                 _userEmail = user.Email;
                 _userProfilePictureUrl = user.ProfilePictureUrl;
                 
+                _ = SignalRService.ConnectAsync();
+                
                 var preferredLang = user.PreferredLanguage;
                 var currentCulture = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
                 

@@ -15,6 +15,7 @@ public class SignalRService : IAsyncDisposable
     public event Action<Guid>? OfferRegenerated;
     public event Action<System.Text.Json.JsonElement>? ProjectMessageReceived;
     public event Action? NotificationsStateChanged;
+    public event Action<string, bool>? UserPresenceChanged;
 
     public void NotifyNotificationsStateChanged()
     {
@@ -111,6 +112,11 @@ public class SignalRService : IAsyncDisposable
         _hubConnection.On<System.Text.Json.JsonElement>("ReceiveProjectMessage", (payload) =>
         {
             _mainThread.BeginInvokeOnMainThread(() => ProjectMessageReceived?.Invoke(payload));
+        });
+
+        _hubConnection.On<string, bool>("UserPresenceChanged", (userId, isOnline) =>
+        {
+            _mainThread.BeginInvokeOnMainThread(() => UserPresenceChanged?.Invoke(userId, isOnline));
         });
 
         try

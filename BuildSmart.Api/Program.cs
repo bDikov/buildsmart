@@ -139,6 +139,7 @@ public partial class Program
 		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 		builder.Services.AddScoped<IPricingEngine, PricingEngine>();
 		builder.Services.AddSingleton<IActiveProjectChatTracker, ActiveProjectChatTracker>();
+		builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();

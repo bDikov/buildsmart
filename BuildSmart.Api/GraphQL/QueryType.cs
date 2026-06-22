@@ -67,7 +67,7 @@ public class QueryType : ObjectType<Query>
                     .Description("Gets paginated project messages for homeowners or admins.")
                     .Authorize();
 
-                descriptor.Field(q => q.GetActiveSupportChats(default!))
+                descriptor.Field(q => q.GetActiveSupportChats(default!, default!))
                     .Description("Gets all active project support chats for the admin support dashboard.")
                     .Authorize(roles: new[] { "Admin" });
         	}

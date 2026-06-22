@@ -1,4 +1,5 @@
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Application.Interfaces;
 
 // Corrected namespace
 namespace BuildSmart.Api.GraphQL.Types;
@@ -23,6 +24,15 @@ public class UserType : ObjectType<User>
 
         descriptor.Field(u => u.HomeownerProfile).Type<HomeownerProfileType>();
         descriptor.Field(u => u.TradesmanProfile).Type<TradesmanProfileType>();
+
+		descriptor.Field("isOnline")
+			.Type<NonNullType<BooleanType>>()
+			.Resolve(ctx =>
+			{
+				var user = ctx.Parent<User>();
+				var presenceService = ctx.Service<IUserPresenceService>();
+				return presenceService.IsUserOnline(user.Id.ToString());
+			});
 
 		// Relationships will be configured here later
 	}

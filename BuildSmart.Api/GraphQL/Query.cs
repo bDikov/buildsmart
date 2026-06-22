@@ -381,7 +381,8 @@ public class Query
 
 	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<IEnumerable<ProjectChatSummary>> GetActiveSupportChats(
-		[Service] AppDbContext context)
+		[Service] AppDbContext context,
+		[Service] IUserPresenceService presenceService)
 	{
 		var activeChats = await context.Projects
 			.Include(p => p.Homeowner)
@@ -391,6 +392,7 @@ public class Query
 				ProjectId = p.Id,
 				ProjectTitle = p.Title,
 				HomeownerName = $"{p.Homeowner.FirstName} {p.Homeowner.LastName}",
+				HomeownerId = p.HomeownerId,
 				LatestMessageText = context.ProjectMessages
 					.Where(m => m.ProjectId == p.Id)
 					.OrderByDescending(m => m.CreatedAt)
@@ -405,6 +407,11 @@ public class Query
 			.OrderByDescending(c => c.LatestMessageTime)
 			.ToListAsync();
 
+		foreach (var chat in activeChats)
+		{
+			chat.IsHomeownerOnline = presenceService.IsUserOnline(chat.HomeownerId.ToString());
+		}
+
 		return activeChats;
 	}
 }
@@ -414,6 +421,8 @@ public class ProjectChatSummary
 	public Guid ProjectId { get; set; }
 	public string ProjectTitle { get; set; } = string.Empty;
 	public string HomeownerName { get; set; } = string.Empty;
+	public Guid HomeownerId { get; set; }
 	public string LatestMessageText { get; set; } = string.Empty;
 	public DateTime? LatestMessageTime { get; set; }
+	public bool IsHomeownerOnline { get; set; }
 }

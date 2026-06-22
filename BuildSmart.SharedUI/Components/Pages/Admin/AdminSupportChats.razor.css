@@ -114,6 +114,10 @@
     border-radius: 50%;
 }
 
+.online-indicator.offline {
+    background-color: #fa3e3e;
+}
+
 /* Chats List */
 .chats-list {
     display: flex;
@@ -194,4 +198,134 @@
 .empty-icon {
     font-size: 40px;
     margin-bottom: 8px;
+}
+
+.section-header {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 24px 8px 12px 8px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+}
+
+.search-results-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.homeowner-row {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.homeowner-header-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    gap: 12px;
+}
+
+.homeowner-header-row:hover {
+    background-color: rgba(128, 128, 128, 0.04);
+}
+
+.homeowner-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.homeowner-name {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.homeowner-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.expand-icon {
+    transition: transform 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.expand-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.homeowner-projects-container {
+    padding: 12px 16px 16px 64px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid var(--border-color);
+}
+
+.projects-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.project-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.project-item-row:hover {
+    background-color: rgba(128, 128, 128, 0.08);
+}
+
+.project-item-title {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.project-item-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.create-project-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.create-project-btn:hover {
+    background-color: var(--color-primary-dark, #2b6cb0);
+}
+
+.create-project-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

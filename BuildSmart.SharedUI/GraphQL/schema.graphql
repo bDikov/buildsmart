@@ -35,8 +35,10 @@ type ProjectChatSummary {
   projectId: UUID!
   projectTitle: String!
   homeownerName: String!
+  homeownerId: UUID!
   latestMessageText: String!
   latestMessageTime: DateTime
+  isHomeownerOnline: Boolean!
 }
 
 type JobPostQuestion {
@@ -1519,6 +1521,7 @@ type User {
   preferredTheme: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  isOnline: Boolean!
 }
 
 type AiCalculationCriteria {

@@ -18,7 +18,7 @@
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" placeholder="Search chats..." @bind="_searchQuery" @bind:event="oninput" />
+            <input type="text" placeholder="Search chats by name, project, or email..." @bind="SearchQuery" @bind:event="oninput" />
         </div>
     </div>
 
@@ -44,12 +44,76 @@
                 <div class="active-user-item" @onclick="() => OpenChat(chat.ProjectId)">
                     <div class="avatar-container active-now bg-primary-subtle">
                         <span class="avatar-initials">@chat.HomeownerName[0]</span>
-                        <span class="online-indicator"></span>
+                        <span class="online-indicator @(chat.IsHomeownerOnline ? "" : "offline")"></span>
                     </div>
                     <span class="active-user-name text-truncate">@chat.HomeownerName.Split(' ')[0]</span>
                 </div>
             }
         </div>
+
+        @if (_searchResults.Any())
+        {
+            <div class="section-header">All Homeowners</div>
+            <div class="search-results-section">
+                @foreach (var user in _searchResults)
+                {
+                    var isExpanded = _expandedHomeownerIds.Contains(user.Id);
+                    <div class="homeowner-row">
+                        <div class="homeowner-header-row" @onclick="() => OnHomeownerClickedAsync(user.Id, user.FirstName, user.LastName)">
+                            <div class="avatar-container bg-primary-subtle">
+                                <span class="avatar-initials">@user.FirstName[0]</span>
+                                <span class="online-indicator @(user.IsOnline ? "" : "offline")"></span>
+                            </div>
+                            <div class="homeowner-info">
+                                <span class="homeowner-name">@user.FirstName @user.LastName</span>
+                                <span class="homeowner-email">@user.Email</span>
+                            </div>
+                            <div class="expand-icon @(isExpanded ? "expanded" : "")">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+
+                        @if (isExpanded)
+                        {
+                            <div class="homeowner-projects-container">
+                                @if (!_homeownerProjects.ContainsKey(user.Id))
+                                {
+                                    <p class="text-muted">Loading projects...</p>
+                                }
+                                else
+                                {
+                                    var projects = _homeownerProjects[user.Id];
+                                    @if (!projects.Any())
+                                    {
+                                        <button class="create-project-btn" @onclick="() => CreateSupportProjectAndChatAsync(user.Id, user.FirstName, user.LastName)" disabled="@_isCreatingProject">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                            Create Support Project & Chat
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <div class="projects-title">Choose Project:</div>
+                                        @foreach (var proj in projects)
+                                        {
+                                            <div class="project-item-row" @onclick="() => OpenChat(proj.Id)">
+                                                <span class="project-item-title">@proj.Title</span>
+                                                <span class="project-item-status badge bg-secondary">@proj.Status</span>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="section-header">Active Chats</div>
 
         <!-- Chats List -->
         <div class="chats-list">
@@ -68,7 +132,7 @@
                     <div class="chat-row" @onclick="() => OpenChat(chat.ProjectId)">
                         <div class="avatar-container bg-secondary-subtle">
                             <span class="avatar-initials">@chat.HomeownerName[0]</span>
-                            <span class="online-indicator"></span>
+                            <span class="online-indicator @(chat.IsHomeownerOnline ? "" : "offline")"></span>
                         </div>
                         <div class="chat-details">
                             <div class="chat-details-header">

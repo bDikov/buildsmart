@@ -3,7 +3,9 @@ query GetActiveSupportChats {
     projectId
     projectTitle
     homeownerName
+    homeownerId
     latestMessageText
     latestMessageTime
+    isHomeownerOnline
   }
 }

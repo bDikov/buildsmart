@@ -20,3 +20,13 @@ mutation UpdateUserRoleAndCategories($userId: UUID!, $newRole: UserRoleTypes!, $
     role
   }
 }
+
+query SearchUsers($where: UserFilterInput) {
+  users(where: $where) {
+    id
+    firstName
+    lastName
+    email
+    isOnline
+  }
+}

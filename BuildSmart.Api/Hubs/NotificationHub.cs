@@ -11,10 +11,27 @@ namespace BuildSmart.Api.Hubs;
 public class NotificationHub : Hub
 {
     private readonly IActiveProjectChatTracker _tracker;
+    private readonly IUserPresenceService _presenceService;
 
-    public NotificationHub(IActiveProjectChatTracker tracker)
+    public NotificationHub(IActiveProjectChatTracker tracker, IUserPresenceService presenceService)
     {
         _tracker = tracker;
+        _presenceService = presenceService;
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+        var userId = Context.UserIdentifier;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var wasOnline = _presenceService.IsUserOnline(userId);
+            _presenceService.UserConnected(Context.ConnectionId, userId);
+            if (!wasOnline)
+            {
+                await Clients.All.SendAsync("UserPresenceChanged", userId, true);
+            }
+        }
     }
 
     // Groups are handled automatically by Clients.User() when IUserIdProvider is registered
@@ -65,6 +82,15 @@ public class NotificationHub : Hub
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         _tracker.RemoveConnection(Context.ConnectionId);
+        var userId = _presenceService.UserDisconnected(Context.ConnectionId);
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var isStillOnline = _presenceService.IsUserOnline(userId);
+            if (!isStillOnline)
+            {
+                await Clients.All.SendAsync("UserPresenceChanged", userId, false);
+            }
+        }
         await base.OnDisconnectedAsync(exception);
     }
 }

@@ -41,7 +41,7 @@ public class MutationType : ObjectType<Mutation>
 
         descriptor.Field(m => m.CreateProject(default!, default!, default!, default!, default!))
             .Description("Creates a new project for a homeowner.")
-            .Authorize(roles: new[] { "Homeowner" });
+            .Authorize(roles: new[] { "Homeowner", "Admin" });
 
         descriptor.Field(m => m.UpdateProjectDetails(default!, default!, default!, default!, default!, default!))
             .Description("Updates project details like title and description.")

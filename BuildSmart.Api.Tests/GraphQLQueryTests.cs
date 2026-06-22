@@ -430,4 +430,88 @@ public class GraphQLQueryTests : IClassFixture<TestApplicationFactory>
         var hasNextPage = jsonResponse["data"]?["feedMedia"]?["pageInfo"]?["hasNextPage"]?.Value<bool>();
         Assert.True(hasNextPage);
     }
+
+    [Fact]
+    public async Task GetActiveSupportChats_ShouldResolveIsHomeownerOnlineCorrectly()
+    {
+        // Arrange
+        var adminId = Guid.NewGuid();
+        var adminToken = TestTokenHelper.GenerateJwtToken(adminId, "admin@example.com", "Admin", _configuration);
+
+        var homeownerId = Guid.NewGuid();
+        
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BuildSmart.Infrastructure.Persistence.AppDbContext>();
+
+        var homeowner = new User 
+        { 
+            Id = homeownerId, 
+            FirstName = "Alice", 
+            LastName = "Green", 
+            Email = "alice@example.com",
+            PreferredLanguage = "en",
+            PreferredTheme = "Light"
+        };
+        db.Users.Add(homeowner);
+
+        var project = new Project
+        {
+            Id = Guid.NewGuid(),
+            HomeownerId = homeownerId,
+            Title = "Support Project",
+            Description = "Support chat",
+            LanguageCode = "en"
+        };
+        db.Projects.Add(project);
+
+        var message = new ProjectMessage
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = project.Id,
+            SenderId = homeownerId,
+            MessageText = "Hello support!",
+            CreatedAt = DateTime.UtcNow
+        };
+        db.ProjectMessages.Add(message);
+        await db.SaveChangesAsync();
+
+        var mockPresenceService = new Mock<IUserPresenceService>();
+        mockPresenceService.Setup(p => p.IsUserOnline(homeownerId.ToString())).Returns(true);
+
+        var client = CreateClient(services =>
+        {
+            services.RemoveAll(typeof(IUserPresenceService));
+            services.AddSingleton(mockPresenceService.Object);
+        }, adminToken);
+
+        var graphQLRequest = new
+        {
+            query = "{ activeSupportChats { projectId homeownerName homeownerId isHomeownerOnline latestMessageText } }"
+        };
+        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+        {
+            Content = new StringContent(
+                Newtonsoft.Json.JsonConvert.SerializeObject(graphQLRequest),
+                System.Text.Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        var response = await client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var jsonResponse = JObject.Parse(content);
+        Assert.Null(jsonResponse["errors"]);
+        
+        var chats = jsonResponse["data"]?["activeSupportChats"] as JArray;
+        Assert.NotNull(chats);
+        
+        var targetChat = chats.FirstOrDefault(c => Guid.Parse(c["projectId"]!.Value<string>()!) == project.Id);
+        Assert.NotNull(targetChat);
+        Assert.Equal("Alice Green", targetChat["homeownerName"]!.Value<string>());
+        Assert.Equal("Hello support!", targetChat["latestMessageText"]!.Value<string>());
+        Assert.True(targetChat["isHomeownerOnline"]!.Value<bool>());
+    }
 }
