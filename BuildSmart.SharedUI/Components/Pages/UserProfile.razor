@@ -4,6 +4,12 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject UserProfileViewModel ViewModel
+@using BuildSmart.SharedUI.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject INavigationBridge NavigationBridge
+@inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 
 <div class="profile-page-container">
 	<div class="header-section">
@@ -43,6 +49,15 @@
 			                </svg>
 			                <span>@Loc["Profile_PrivacyLink"]</span>
 			            </a>
+			            
+			            <button type="button" class="legal-card-link logout-link-mobile" @onclick="LogoutAsync" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); width: 100%; text-align: left; cursor: pointer; box-sizing: border-box; font-family: inherit;">
+			                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgb(255, 107, 107)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+			                    <polyline points="16 17 21 12 16 7"></polyline>
+			                    <line x1="21" y1="12" x2="9" y2="12"></line>
+			                </svg>
+			                <span style="color: rgb(255, 107, 107); font-weight: bold;">@(System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "bg" ? "Изход" : "Log Out")</span>
+			            </button>
 			        </div>
 			    </div>
 			</div>
@@ -287,6 +302,16 @@
 		color: var(--text-secondary);
 		opacity: 0.8;
 	}
+
+	.logout-link-mobile {
+		display: none;
+	}
+
+	@@media (max-width: 992px) {
+		.logout-link-mobile {
+			display: flex !important;
+		}
+	}
 </style>
 
 @code {
@@ -326,5 +351,26 @@
 	{
 		await ViewModel.SaveProfileCommand.ExecuteAsync(null);
 		_showEditModal = false;
+	}
+
+	private async Task LogoutAsync()
+	{
+		try 
+		{ 
+			StoreAccessor.OperationStore.Clear(); 
+		} 
+		catch { }
+
+		await AuthService.ClearTokenAsync();
+		
+		if (AuthStateProvider is MauiAuthenticationStateProvider mauiProvider)
+		{
+			mauiProvider.NotifyAuthenticationStateChanged();
+		}
+		
+		await BuildSmart.SharedUI.MauiMocks.MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			NavigationBridge.NavigateToAsync("//LoginPage");
+		});
 	}
 }

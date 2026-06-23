@@ -225,7 +225,7 @@ public class Query
 		};
 	}
 
-	[Authorize(Roles = new[] { "Homeowner" })]
+	[Authorize]
 	public async Task<IEnumerable<Project>> GetMyProjects(
 	ClaimsPrincipal claimsPrincipal,
 	[Service] IProjectRepository projectRepository)

@@ -20,6 +20,7 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     private bool _isLoadingHistory = true;
     private bool _isLoadingMore = false;
     private bool _hasMoreHistory = true;
+    private bool _shouldScrollToBottom = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,12 +45,14 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         await SignalRService.JoinProjectGroupAsync(ProjectId.Value.ToString());
 
         _isLoadingHistory = false;
+        _shouldScrollToBottom = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (_shouldScrollToBottom)
         {
+            _shouldScrollToBottom = false;
             await ScrollToBottomAsync();
         }
     }
