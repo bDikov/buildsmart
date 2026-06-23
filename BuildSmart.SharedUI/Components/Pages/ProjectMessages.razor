@@ -16,12 +16,15 @@
 <div class="chat-page-container">
     <!-- Header -->
     <div class="chat-header">
-        <button class="back-btn" @onclick="GoBack">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-        </button>
+        @if (!_isGuest)
+        {
+            <button class="back-btn" @onclick="GoBack">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+        }
         <div class="header-avatar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.91 1.45 5.48 3.72 7.12.21.15.33.42.27.68l-.55 2.71c-.06.29.22.54.5.42l3.1-1.3c.21-.09.46-.06.65.07.74.52 1.52.8 2.31.8 5.52 0 10-4.14 10-9.25C22 6.14 17.52 2 12 2zm1.25 11.5l-2.25-2.4-4.4 2.4 4.85-5.15 2.25 2.4 4.4-2.4-4.85 5.15z"/>

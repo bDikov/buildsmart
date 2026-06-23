@@ -65,10 +65,14 @@ public class WebAuthService : IAuthService
     {
         if (_cachedToken != null) return _cachedToken;
 
-        // Try reading from localStorage via JSInterop
+        // Try reading from localStorage, then fallback to sessionStorage (if guest)
         try 
         {
             _cachedToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "auth_token");
+            if (string.IsNullOrEmpty(_cachedToken))
+            {
+                _cachedToken = await _jsRuntime.InvokeAsync<string>("sessionStorage.getItem", "auth_token");
+            }
         }
         catch (InvalidOperationException) { /* Static rendering context */ }
         catch (JSException) { /* JS not ready */ }
@@ -80,10 +84,32 @@ public class WebAuthService : IAuthService
     {
         _cachedToken = token;
         BlazorCircuitContext.CurrentToken.Value = token;
+        
+        bool isGuest = false;
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var email = System.Linq.Enumerable.FirstOrDefault(jwtToken.Claims, c => 
+                c.Type == "email" || 
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { }
+
         try 
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
-            await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", token, 365);
+            if (isGuest)
+            {
+                // Save to sessionStorage and set a session cookie (days = null)
+                await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "auth_token", token);
+                await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", token, null);
+            }
+            else
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
+                await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", token, 365);
+            }
         }
         catch { /* Ignore prerendering errors */ }
     }
@@ -95,6 +121,7 @@ public class WebAuthService : IAuthService
         try 
         {
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "auth_token");
+            await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "auth_token");
             await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", "", -1);
         }
         catch { /* Ignore prerendering errors */ }

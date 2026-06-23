@@ -205,6 +205,12 @@ public class JobPostService : IJobPostService
 
 	public async Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description, string? languageCode = null)
 	{
+		var user = await _unitOfWork.Users.GetByIdAsync(homeownerId);
+		if (user == null || user.HashedPassword == null)
+		{
+			throw new UnauthorizedAccessException("Guest users cannot create standard projects.");
+		}
+
 		var project = new Project
 		{
 			HomeownerId = homeownerId,

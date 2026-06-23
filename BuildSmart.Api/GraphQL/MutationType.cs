@@ -177,5 +177,8 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.SendProjectMessage(default!, default!, default!, default!))
             .Description("Sends a real-time project message to the project group.")
             .Authorize();
+
+        descriptor.Field(m => m.StartAnonymousSupportChat(default!, default!))
+            .Description("Initiates an anonymous support session and returns a JWT token.");
     }
 }

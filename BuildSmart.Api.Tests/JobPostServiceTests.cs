@@ -578,10 +578,12 @@ public class JobPostServiceTests
     {
         // Arrange
         var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
         var jobPost = new JobPost 
         { 
             Id = jobPostId, 
             Title = "Test Job", 
+            ProjectId = projectId,
             JobTasks = new List<JobTask> { new JobTask { Id = Guid.NewGuid(), Title = "Task 1", SequenceOrder = 1 } }
         };
         var statusProp = typeof(JobPost).GetProperty("Status");
@@ -590,6 +592,14 @@ public class JobPostServiceTests
         var mockJobPostRepo = new Mock<IJobPostRepository>();
         mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId)).ReturnsAsync(jobPost);
         _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(new Project { Id = projectId, Title = "Test Project" });
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        var mockUserRepo = new Mock<IUserRepository>();
+        mockUserRepo.Setup(r => r.GetQueryable()).Returns(new List<User>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.Users).Returns(mockUserRepo.Object);
 
         // Act
         await _service.ApproveJobScopeAsync(jobPostId, "Final AI generated scope details");

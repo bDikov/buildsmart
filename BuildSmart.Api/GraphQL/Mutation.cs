@@ -1149,4 +1149,68 @@ public class Mutation
 		}
 		return await chatService.SendMessageAsync(projectId, userId, messageText);
 	}
+
+	public async Task<AnonymousChatPayload> StartAnonymousSupportChat(
+		[Service] IUnitOfWork unitOfWork,
+		[Service] IConfiguration configuration)
+	{
+		var guestGuid = Guid.NewGuid();
+		var guestEmail = $"guest_{guestGuid:N}@buildsmart.guest";
+
+		var user = new User
+		{
+			Email = guestEmail,
+			FirstName = "Guest",
+			LastName = "User",
+			Role = UserRoleTypes.Homeowner,
+			HashedPassword = null,
+			IsEmailVerified = false
+		};
+		await unitOfWork.Users.AddAsync(user);
+		await unitOfWork.SaveChangesAsync();
+
+		var supportProject = new Project
+		{
+			Title = "Support Chat",
+			Description = $"Anonymous GDPR support session for guest user {guestGuid}.",
+			HomeownerId = user.Id,
+			LanguageCode = "bg"
+		};
+		await unitOfWork.Projects.AddAsync(supportProject);
+		await unitOfWork.SaveChangesAsync();
+
+		var issuer = configuration["Jwt:Issuer"];
+		var audience = configuration["Jwt:Audience"];
+		var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]!);
+
+		var tokenDescriptor = new SecurityTokenDescriptor
+		{
+			Subject = new ClaimsIdentity(new[]
+			{
+				new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+				new Claim(ClaimTypes.Email, user.Email),
+				new Claim(ClaimTypes.Role, user.Role.ToString())
+			}),
+			Expires = DateTime.UtcNow.AddDays(7),
+			Issuer = issuer,
+			Audience = audience,
+			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+		};
+
+		var tokenHandler = new JwtSecurityTokenHandler();
+		var token = tokenHandler.CreateToken(tokenDescriptor);
+		var jwtToken = tokenHandler.WriteToken(token);
+
+		return new AnonymousChatPayload
+		{
+			Token = jwtToken,
+			ProjectId = supportProject.Id
+		};
+	}
+}
+
+public class AnonymousChatPayload
+{
+	public string Token { get; set; } = null!;
+	public Guid ProjectId { get; set; }
 }

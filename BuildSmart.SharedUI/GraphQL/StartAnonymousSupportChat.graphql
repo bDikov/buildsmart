@@ -1,0 +1,6 @@
+mutation StartAnonymousSupportChat {
+  startAnonymousSupportChat {
+    token
+    projectId
+  }
+}

@@ -21,6 +21,7 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     private bool _isLoadingMore = false;
     private bool _hasMoreHistory = true;
     private bool _shouldScrollToBottom = false;
+    private bool _isGuest = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,6 +30,21 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
             NavManager.NavigateTo("/my-projects");
             return;
         }
+
+        try
+        {
+            var token = await AuthService.GetTokenAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var email = jwtToken.Claims.FirstOrDefault(c => 
+                    c.Type == "email" || 
+                    c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                _isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        catch { }
 
         await LoadUserDataAndProjectAsync();
         await LoadHistoryAsync(0, 20);
@@ -65,6 +81,8 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
             if (userResult.Data?.CurrentUser != null)
             {
                 _currentUserId = Guid.Parse(userResult.Data.CurrentUser.Id);
+                var email = userResult.Data.CurrentUser.Email;
+                _isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
             }
 
             var projectResult = await ApiClient.GetProjectById.ExecuteAsync(ProjectId!.Value);

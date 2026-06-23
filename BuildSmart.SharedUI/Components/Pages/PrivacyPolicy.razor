@@ -1,9 +1,16 @@
 @page "/privacy"
 @attribute [AllowAnonymous]
 @layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@using BuildSmart.SharedUI.Services
+@using BuildSmart.SharedUI.GraphQL
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@inject IBuildSmartApiClient ApiClient
+@inject IAuthService AuthService
 
 <div class="legal-page-container">
+    <div style="display: none; visibility: hidden; opacity: 0; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+        <input type="text" name="verify_bot_field" @bind="_honeypot" tabindex="-1" autocomplete="off" />
+    </div>
     <div class="legal-card bs-card">
         <div class="legal-header">
             <div class="back-button" @onclick="GoBack">
@@ -32,7 +39,7 @@
                 <section>
                     <h2>1. Администратор на лични данни</h2>
                     <p>
-                        Администратор на данните е доставчикът на платформата BuildSmart (гр. София, България). За контакт по въпроси, свързани с поверителността, пишете на support@buildsmart.com.
+                        Администратор на данните е доставчикът на платформата BuildSmart (гр. София, България). За контакт по въпроси, свързани с поверителността, моля, стартирайте нашия защитен <a href="" @onclick="TriggerStartChat" @onclick:preventDefault class="support-chat-inline-link">чат за поддръжка (КЛИКНЕТЕ ТУК)</a>.
                     </p>
                 </section>
 
@@ -105,8 +112,29 @@
                         <li>Право на възражение срещу обработване въз основа на легитимен интерес.</li>
                     </ul>
                     <p>
-                        За да упражните правата си, изпратете имейл на support@buildsmart.com.
+                        За да упражните правата си, започнете директна сесия чрез нашия <a href="" @onclick="TriggerStartChat" @onclick:preventDefault class="support-chat-inline-link">чат за поддръжка (КЛИКНЕТЕ ТУК)</a>.
                     </p>
+                    
+                    <div class="support-chat-promo-box">
+                        <h3>💬 Чат за поддръжка на живо</h3>
+                        <p>
+                            Ако желаете да упражните правата си съгласно GDPR или имате въпроси относно поверителността, можете да се свържете с нас незабавно чрез нашия защитен чат. 
+                            <strong>Не е необходима предварителна регистрация.</strong>
+                        </p>
+                        <p class="verification-notice">
+                            <em>Забележка: За заявки за изтриване на данни, нашият екип ще изпрати писмо за потвърждение на имейла, който посочите в чата, за да потвърдим самоличността Ви, преди да извършим каквито и да е действия.</em>
+                        </p>
+                        <button type="button" @onclick="TriggerStartChat" disabled="@_isStartingChat">
+                            @if (_isStartingChat)
+                            {
+                                <span>Стартиране...</span>
+                            }
+                            else
+                            {
+                                <span>Започни Чат за Поддръжка</span>
+                            }
+                        </button>
+                    </div>
                     <p>
                         Имате право да подадете жалба и директно до българския надзорен орган:
                         <br /><strong>Комисия за защита на личните данни (КЗЛД)</strong>
@@ -130,7 +158,7 @@
                 <section>
                     <h2>1. Data Controller</h2>
                     <p>
-                        The data controller is the provider of the BuildSmart platform based in Sofia, Bulgaria. For any privacy-related requests, please contact: support@buildsmart.com.
+                        The data controller is the provider of the BuildSmart platform based in Sofia, Bulgaria. For any privacy-related requests, please contact us via our secure <a href="" @onclick="TriggerStartChat" @onclick:preventDefault class="support-chat-inline-link">support chat (CLICK HERE)</a>.
                     </p>
                 </section>
 
@@ -203,8 +231,29 @@
                         <li>Right to object to processing based on legitimate interests.</li>
                     </ul>
                     <p>
-                        To exercise these rights, please email: support@buildsmart.com.
+                        To exercise these rights, please contact us via our secure <a href="" @onclick="TriggerStartChat" @onclick:preventDefault class="support-chat-inline-link">support chat (CLICK HERE)</a>.
                     </p>
+                    
+                    <div class="support-chat-promo-box">
+                        <h3>💬 Live Support Chat</h3>
+                        <p>
+                            If you wish to exercise your GDPR rights or have questions about privacy, you can contact us instantly via our secure chat.
+                            <strong>No account registration required.</strong>
+                        </p>
+                        <p class="verification-notice">
+                            <em>Note: For data deletion requests, our team will manually send a confirmation email to the address you provide in the chat to verify your identity before taking action.</em>
+                        </p>
+                        <button type="button" @onclick="TriggerStartChat" disabled="@_isStartingChat">
+                            @if (_isStartingChat)
+                            {
+                                <span>Starting chat...</span>
+                            }
+                            else
+                            {
+                                <span>Start Support Chat</span>
+                            }
+                        </button>
+                    </div>
                     <p>
                         You also have the right to file a complaint with the Bulgarian supervisory authority:
                         <br /><strong>Commission for Personal Data Protection (KZLD)</strong>
@@ -217,6 +266,55 @@
         }
     </div>
 </div>
+
+@if (_showCaptchaModal)
+{
+    <div class="captcha-modal-overlay">
+        <div class="captcha-modal-card">
+            <div class="captcha-modal-header">
+                <h3>@(isBulgarian ? "Потвърждение за сигурност" : "Security Verification")</h3>
+                <button type="button" class="captcha-close-btn" @onclick="() => _showCaptchaModal = false">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <p class="captcha-instruction">
+                @(isBulgarian ? "Моля, решете простата математическа задача, за да потвърдите, че не сте робот:" : "Please solve the simple math problem to verify you are not a robot:")
+            </p>
+            
+            <div class="captcha-challenge-box">
+                @_captchaNum1 + @_captchaNum2 = ?
+            </div>
+            
+            <input type="text" 
+                   class="captcha-input" 
+                   placeholder="@(isBulgarian ? "Въведете отговора тук" : "Enter the answer here")" 
+                   @bind="_captchaAnswerInput" 
+                   @bind:event="oninput"
+                   @onkeydown="OnCaptchaKeyDown" 
+                   focus />
+            
+            @if (_captchaError != null)
+            {
+                <p class="captcha-error-msg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #FF3B30;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    @_captchaError
+                </p>
+            }
+            
+            <button type="button" class="captcha-submit-btn" @onclick="VerifyAndStartChat">
+                @(isBulgarian ? "Потвърди и продължи" : "Verify and Continue")
+            </button>
+        </div>
+    </div>
+}
 
 <style>
     .legal-page-container {
@@ -358,10 +456,228 @@
             font-size: 18px;
         }
     }
+
+    .support-chat-promo-box {
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 24px;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .support-chat-promo-box h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .support-chat-promo-box p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .verification-notice {
+        font-size: 13px !important;
+        opacity: 0.85;
+    }
+
+    .support-chat-promo-box button {
+        align-self: flex-start;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        transition: background-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .support-chat-promo-box button:hover {
+        opacity: 0.9;
+    }
+
+    .support-chat-promo-box button:disabled {
+        background-color: var(--border-color);
+        cursor: not-allowed;
+    }
+
+    /* Captcha Modal styles */
+    .captcha-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+        animation: fadeIn 0.25s ease-out;
+    }
+
+    .captcha-modal-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 400px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .captcha-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .captcha-modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .captcha-close-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .captcha-close-btn:hover {
+        color: var(--text-primary);
+        background-color: var(--bg-card-alt);
+    }
+
+    .captcha-instruction {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .captcha-challenge-box {
+        background-color: var(--bg-page);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--color-primary);
+        letter-spacing: 2px;
+        user-select: none;
+    }
+
+    .captcha-input {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 16px;
+        color: var(--text-primary);
+        width: 100%;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .captcha-input:focus {
+        border-color: var(--color-primary);
+    }
+
+    .captcha-error-msg {
+        color: #FF3B30;
+        font-size: 13px;
+        margin: 0;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .captcha-submit-btn {
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    .captcha-submit-btn:hover {
+        opacity: 0.9;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .support-chat-inline-link {
+        color: var(--color-primary) !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+        text-underline-offset: 4px;
+        padding: 2px 8px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .support-chat-inline-link:hover {
+        background-color: var(--color-primary);
+        color: white !important;
+        text-decoration: none !important;
+        border-color: var(--color-primary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    }
 </style>
 
 @code {
     private bool isBulgarian = true;
+    private bool _showCaptchaModal = false;
+    private string _honeypot = string.Empty;
+    private int _captchaNum1;
+    private int _captchaNum2;
+    private string _captchaAnswerInput = string.Empty;
+    private string? _captchaError;
 
     protected override void OnInitialized()
     {
@@ -377,5 +693,82 @@
     private void GoBack()
     {
         NavManager.NavigateTo("/");
+    }
+
+    private void GenerateCaptcha()
+    {
+        var rand = new Random();
+        _captchaNum1 = rand.Next(1, 10);
+        _captchaNum2 = rand.Next(1, 10);
+        _captchaAnswerInput = string.Empty;
+        _captchaError = null;
+    }
+
+    private void TriggerStartChat()
+    {
+        if (!string.IsNullOrEmpty(_honeypot))
+        {
+            // Honeypot triggered, silently discard
+            return;
+        }
+
+        GenerateCaptcha();
+        _showCaptchaModal = true;
+        StateHasChanged();
+    }
+
+    private async Task VerifyAndStartChat()
+    {
+        if (!int.TryParse(_captchaAnswerInput, out var userAnswer) || userAnswer != (_captchaNum1 + _captchaNum2))
+        {
+            _captchaError = isBulgarian ? "Невалиден отговор. Моля, опитайте отново." : "Incorrect answer. Please try again.";
+            GenerateCaptcha();
+            return;
+        }
+
+        _showCaptchaModal = false;
+        await StartChat();
+    }
+
+    private async Task OnCaptchaKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await VerifyAndStartChat();
+        }
+    }
+
+    private bool _isStartingChat = false;
+
+    private async Task StartChat()
+    {
+        if (_isStartingChat) return;
+        _isStartingChat = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await ApiClient.StartAnonymousSupportChat.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.StartAnonymousSupportChat != null)
+            {
+                var payload = result.Data.StartAnonymousSupportChat;
+                await AuthService.SaveTokenAsync(payload.Token);
+                NavManager.NavigateTo($"/project-messages?projectId={payload.ProjectId}", forceLoad: true);
+            }
+            else
+            {
+                var error = result.Errors.FirstOrDefault()?.Message ?? "Failed to start support chat.";
+                Console.WriteLine($"[PrivacyPolicy] Error starting chat: {error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[PrivacyPolicy] Exception starting chat: {ex.Message}");
+        }
+        finally
+        {
+            _isStartingChat = false;
+            StateHasChanged();
+        }
     }
 }
