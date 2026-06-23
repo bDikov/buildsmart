@@ -187,6 +187,7 @@ fragment ProjectDetails on Project {
     id
     firstName
     lastName
+    email
   }
   jobPosts {
     ... JobPostDetails

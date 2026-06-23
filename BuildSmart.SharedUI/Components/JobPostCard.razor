@@ -120,6 +120,15 @@
                 <button class="bs-btn-primary w-100 py-2" @onclick="async () => await OnEditAnswers.InvokeAsync()">@Loc["ProjectDetail_ContinueDraft"]</button>
             </div>
         }
+
+        @if (IsAdmin)
+        {
+            <div class="d-flex justify-content-center mt-2">
+                <button class="bs-btn-secondary w-100 py-2" @onclick="async () => await OnReviewScope.InvokeAsync()">
+                    🛠️ Edit Task Breakdown
+                </button>
+            </div>
+        }
     </div>
 </div>
 
@@ -129,6 +138,9 @@
 
     [Parameter]
     public bool IsExpanded { get; set; }
+
+    [Parameter]
+    public bool IsAdmin { get; set; }
 
     [Parameter]
     public EventCallback OnToggleExpansion { get; set; }
@@ -147,6 +159,9 @@
 
     [Parameter]
     public EventCallback OnAskAdmin { get; set; }
+
+    [Parameter]
+    public EventCallback OnReviewScope { get; set; }
 
     private bool _breakdownExpanded = false;
 

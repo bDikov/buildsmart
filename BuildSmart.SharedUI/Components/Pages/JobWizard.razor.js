@@ -136,3 +136,14 @@ export function resetSwipeStyle(element) {
     element.style.transform = '';
     element.style.transition = '';
 }
+
+export function scrollToElement(element) {
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const targetY = rect.top + scrollTop - 100; // 100px offset for sticky headers / spacing
+    window.scrollTo({
+        top: Math.max(0, targetY),
+        behavior: 'smooth'
+    });
+}

@@ -10,10 +10,11 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 {
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
+	private readonly IAuthService _authService;
 	private bool _isFirstLoad = true;
 
 	[ObservableProperty]
-	private ObservableCollection<IGetMyProjects_MyProjects> _projects = new();
+	private ObservableCollection<IProjectDetails> _projects = new();
 
 	[ObservableProperty]
 	private bool _isBusy;
@@ -21,10 +22,26 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 	[ObservableProperty]
 	private bool _isEmpty;
 
-	public MyProjectsViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService)
+	[ObservableProperty]
+	private bool _isAdmin;
+
+	[ObservableProperty]
+	private string _searchQuery = string.Empty;
+
+	[ObservableProperty]
+	private string _filterUserId = string.Empty;
+
+	[ObservableProperty]
+	private string _filterUserEmail = string.Empty;
+
+	[ObservableProperty]
+	private string _filterStatus = "ALL";
+
+	public MyProjectsViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService, IAuthService authService)
 	{
 		_apiClient = apiClient;
 		_signalRService = signalRService;
+		_authService = authService;
 
 		// Subscribe to notifications
 		_signalRService.NotificationReceived += OnNotificationReceived;
@@ -33,7 +50,6 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 	private void OnNotificationReceived(string title, string message, object? data)
 	{
 		// Reload projects when ANY notification is received (simple approach)
-		// In a real app, we might check if the notification is relevant to projects
 		AppServiceLocator.MainThread.BeginInvokeOnMainThread(async () => await LoadProjectsAsync());
 	}
 
@@ -51,32 +67,118 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 		try
 		{
 			IsBusy = true;
-			var result = await _apiClient.GetMyProjects.ExecuteAsync();
 
-			if (result.Errors.Count > 0)
-			{
-				var error = result.Errors.First();
-				await AppServiceLocator.Alerts.DisplayAlert("GraphQL Error", $"{error.Message}\nCode: {error.Code}", "OK");
-				return;
-			}
+			// Check admin role
+			var token = await _authService.GetTokenAsync();
+			var role = _authService.GetUserRoleFromToken(token);
+			IsAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase) || 
+			          string.Equals(role, "ADMIN", StringComparison.OrdinalIgnoreCase);
 
 			Projects.Clear();
-			if (result.Data?.MyProjects != null)
+
+			if (IsAdmin)
 			{
-				var sortedProjects = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).ToList();
-				foreach (var project in sortedProjects)
+				ProjectFilterInput? filter = null;
+				var andConditions = new List<ProjectFilterInput>();
+
+				// Search Query (title, description, email, names)
+				if (!string.IsNullOrWhiteSpace(SearchQuery))
 				{
-					Projects.Add(project);
+					var textFilter = new StringOperationFilterInput { Contains = SearchQuery };
+					var orConditions = new List<ProjectFilterInput>
+					{
+						new ProjectFilterInput { Title = textFilter },
+						new ProjectFilterInput { Description = textFilter },
+						new ProjectFilterInput { Homeowner = new UserFilterInput { Email = textFilter } },
+						new ProjectFilterInput { Homeowner = new UserFilterInput { FirstName = textFilter } },
+						new ProjectFilterInput { Homeowner = new UserFilterInput { LastName = textFilter } }
+					};
+
+					if (Guid.TryParse(SearchQuery, out var guid))
+					{
+						orConditions.Add(new ProjectFilterInput { Id = new UuidOperationFilterInput { Eq = guid } });
+						orConditions.Add(new ProjectFilterInput { HomeownerId = new UuidOperationFilterInput { Eq = guid } });
+					}
+
+					andConditions.Add(new ProjectFilterInput { Or = orConditions });
 				}
 
-				IsEmpty = !Projects.Any();
+				// User ID filter
+				if (!string.IsNullOrWhiteSpace(FilterUserId) && Guid.TryParse(FilterUserId, out var filterGuid))
+				{
+					andConditions.Add(new ProjectFilterInput { HomeownerId = new UuidOperationFilterInput { Eq = filterGuid } });
+				}
 
-				// Auto-navigation removed as per user request to see list first
+				// User Email filter
+				if (!string.IsNullOrWhiteSpace(FilterUserEmail))
+				{
+					andConditions.Add(new ProjectFilterInput 
+					{ 
+						Homeowner = new UserFilterInput 
+						{ 
+							Email = new StringOperationFilterInput { Eq = FilterUserEmail.Trim() } 
+						} 
+					});
+				}
+
+				// Status filter
+				if (!string.IsNullOrWhiteSpace(FilterStatus) && !string.Equals(FilterStatus, "ALL", StringComparison.OrdinalIgnoreCase))
+				{
+					if (Enum.TryParse<ProjectStatus>(FilterStatus, true, out var statusEnum))
+					{
+						andConditions.Add(new ProjectFilterInput { Status = new ProjectStatusOperationFilterInput { Eq = statusEnum } });
+					}
+				}
+
+				if (andConditions.Any())
+				{
+					filter = new ProjectFilterInput { And = andConditions };
+				}
+
+				var order = new List<ProjectSortInput>
+				{
+					new ProjectSortInput { CreatedAt = SortEnumType.Desc }
+				};
+
+				var result = await _apiClient.GetAllProjects.ExecuteAsync(filter, order);
+				if (result.Errors.Count > 0)
+				{
+					var error = result.Errors.First();
+					await AppServiceLocator.Alerts.DisplayAlert("GraphQL Error", $"{error.Message}", "OK");
+					return;
+				}
+
+				if (result.Data?.AllProjects != null)
+				{
+					foreach (var project in result.Data.AllProjects)
+					{
+						Projects.Add(project);
+					}
+				}
 			}
 			else
 			{
-				IsEmpty = true;
+				// Regular user
+				var result = await _apiClient.GetMyProjects.ExecuteAsync();
+
+				if (result.Errors.Count > 0)
+				{
+					var error = result.Errors.First();
+					await AppServiceLocator.Alerts.DisplayAlert("GraphQL Error", $"{error.Message}", "OK");
+					return;
+				}
+
+				if (result.Data?.MyProjects != null)
+				{
+					var sortedProjects = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).ToList();
+					foreach (var project in sortedProjects)
+					{
+						Projects.Add(project);
+					}
+				}
 			}
+
+			IsEmpty = !Projects.Any();
 		}
 		catch (Exception ex)
 		{
@@ -89,7 +191,7 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 	}
 
 	[RelayCommand]
-	private async Task GoToDetails(IGetMyProjects_MyProjects project)
+	private async Task GoToDetails(IProjectDetails project)
 	{
 		if (project.Status == ProjectStatus.Draft)
 		{
@@ -106,7 +208,7 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 	}
 
 	[RelayCommand]
-	private async Task DeleteProjectAsync(IGetMyProjects_MyProjects project)
+	private async Task DeleteProjectAsync(IProjectDetails project)
 	{
 		if (project == null) return;
 

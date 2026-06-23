@@ -67,7 +67,7 @@
             </a>
 
             <!-- Role-based Native XAML Bridges & Blazor Pages -->
-            <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman">
+            <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman, Admin, ADMIN, admin">
                 <a class="nav-item-dark" href="/my-projects" @onclick="CloseSidebar">
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                     @Loc["Nav_MyProjects"]
@@ -175,6 +175,12 @@
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
             </svg>
             <span class="bottom-nav-text">@Loc["Nav_MyProjects"]</span>
+        </a>
+        <a class="bottom-nav-item @(IsChatActive() ? "active" : "")" @onclick="NavigateToChat">
+            <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="bottom-nav-text">@Loc["Nav_Chat"]</span>
         </a>
         <a class="bottom-nav-item @(IsActivePage("/user-profile") ? "active" : "")" @onclick='() => Navigate("/user-profile")'>
             <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -755,6 +761,49 @@
         catch
         {
             return false;
+        }
+    }
+
+    private bool IsChatActive()
+    {
+        return IsActivePage("/project-messages") || IsActivePage("/admin-support-chats");
+    }
+
+    private async Task NavigateToChat()
+    {
+        CloseSidebar();
+        
+        bool isAdmin = false;
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            isAdmin = user.IsInRole("Admin") || user.IsInRole("ADMIN") || user.IsInRole("admin");
+        }
+        catch { }
+
+        if (isAdmin)
+        {
+            NavigationBridge.NavigateToAsync("/admin-support-chats");
+            return;
+        }
+
+        try
+        {
+            var result = await ApiClient.GetMyProjects.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.MyProjects != null && result.Data.MyProjects.Any())
+            {
+                var latestProject = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).First();
+                NavigationBridge.NavigateToAsync($"/project-messages?projectId={latestProject.Id}");
+            }
+            else
+            {
+                NavigationBridge.NavigateToAsync("/my-projects");
+            }
+        }
+        catch
+        {
+            NavigationBridge.NavigateToAsync("/my-projects");
         }
     }
 }

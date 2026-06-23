@@ -19,6 +19,46 @@
         </button>
     </div>
 
+    @if (ViewModel.IsAdmin)
+    {
+        <div class="bs-card admin-filters-card mb-4">
+            <h3 class="filters-title">Admin Filters</h3>
+            <div class="filters-grid">
+                <div class="filter-item">
+                    <label class="filter-label">Search Query</label>
+                    <input type="text" class="bs-input" @bind="ViewModel.SearchQuery" placeholder="Search title, ID, email..." />
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">User ID</label>
+                    <input type="text" class="bs-input" @bind="ViewModel.FilterUserId" placeholder="Filter by User GUID..." />
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">User Email</label>
+                    <input type="text" class="bs-input" @bind="ViewModel.FilterUserEmail" placeholder="user@example.com..." />
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">Status</label>
+                    <select class="bs-select" @bind="ViewModel.FilterStatus">
+                        <option value="ALL">All Statuses</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="UNDERREVIEW">Under Review</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="COMPLETED">Completed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions mt-3">
+                <button class="bs-btn-primary" @onclick="ApplyFilters">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Apply Filters
+                </button>
+                <button class="bs-btn-secondary" @onclick="ClearAdminFilters">
+                    Reset
+                </button>
+            </div>
+        </div>
+    }
+
     @if (ViewModel.IsBusy && !ViewModel.Projects.Any())
     {
         <div class="loading-state">
@@ -38,7 +78,7 @@
     else
     {
         <div class="projects-grid">
-            @foreach (var project in ViewModel.Projects)
+            @foreach (var project in ViewModel.Projects.Take(_visibleCount))
             {
                 var progress = CalculateProgress(project);
                 <div class="bs-card project-card" @onclick="() => HandleProjectClick(project)">
@@ -50,8 +90,24 @@
                                     <span class="status-pill status-@project.Status.ToString().ToLower()">
                                         @FormatStatus(project.Status)
                                     </span>
+                                    @if (project.Status == ProjectStatus.UnderReview)
+                                    {
+                                        <span class="status-pill status-underreview" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
+                                            Заявена Консултация
+                                        </span>
+                                    }
                                 </div>
                             </div>
+                            @if (ViewModel.IsAdmin && project.Homeowner != null)
+                            {
+                                <div class="project-owner-info mt-1" style="font-size: 13px; color: var(--text-muted);">
+                                    <strong>Owner:</strong> @project.Homeowner.FirstName @project.Homeowner.LastName 
+                                    @if (!string.IsNullOrEmpty(project.Homeowner.Email))
+                                    {
+                                        <span>(@project.Homeowner.Email)</span>
+                                    }
+                                </div>
+                            }
                             <div class="project-meta">
                                 <span class="meta-item">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -115,10 +171,78 @@
                 </div>
             }
         </div>
+        @if (ViewModel.Projects.Count > _visibleCount)
+        {
+            <div class="d-flex justify-content-center mt-4 w-100" style="grid-column: 1 / -1;">
+                <button class="bs-btn-secondary px-4 py-2" style="border-radius: 8px; font-weight: 600;" @onclick="LoadMoreProjects">
+                    Load More Projects (@(ViewModel.Projects.Count - _visibleCount) remaining)
+                </button>
+            </div>
+        }
     }
 </div>
 
 <style>
+    .admin-filters-card {
+        padding: 24px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 24px;
+    }
+
+    .filters-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .filter-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bs-input, .bs-select {
+        width: 100%;
+        padding: 10px 14px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease;
+    }
+
+    .bs-input:focus, .bs-select:focus {
+        border-color: var(--color-primary);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
     .projects-container {
         padding: 40px 20px;
         max-width: 1100px;
@@ -197,6 +321,10 @@
             align-items: center;
             gap: 12px;
         }
+        .status-badge-container {
+            justify-content: flex-start;
+            width: 100%;
+        }
     }
 
     .project-card {
@@ -231,19 +359,22 @@
 
     .project-title-bar {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 8px;
         width: 100%;
     }
 
     .status-badge-container {
-        flex-shrink: 0; /* Keep badge size stable */
+        flex-shrink: 0;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
     }
 
     .project-title {
-        flex: 1;
-        min-width: 0;
         font-size: 22px;
         font-weight: 700;
         margin: 0;
@@ -401,6 +532,18 @@
 
 @code {
     private HashSet<Guid> _expandedProjects = new HashSet<Guid>();
+    private int _visibleCount = 6;
+
+    private void LoadMoreProjects()
+    {
+        _visibleCount += 6;
+    }
+
+    private async Task ApplyFilters()
+    {
+        _visibleCount = 6;
+        await ViewModel.LoadProjectsAsync();
+    }
 
     private void ToggleProjectDescription(Guid projectId)
     {
@@ -412,6 +555,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _visibleCount = 6;
         SignalRService.NotificationReceived += OnNotificationReceived;
         if (ViewModel.Projects.Count == 0)
         {
@@ -429,7 +573,17 @@
         });
     }
 
-    private int CalculateProgress(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)
+    private async Task ClearAdminFilters()
+    {
+        _visibleCount = 6;
+        ViewModel.SearchQuery = string.Empty;
+        ViewModel.FilterUserId = string.Empty;
+        ViewModel.FilterUserEmail = string.Empty;
+        ViewModel.FilterStatus = "ALL";
+        await ViewModel.LoadProjectsAsync();
+    }
+
+    private int CalculateProgress(BuildSmart.SharedUI.GraphQL.IProjectDetails project)
     {
         if (project.JobPosts == null || !project.JobPosts.Any()) return 0;
         
@@ -458,7 +612,7 @@
         return Loc[$"Status_{status}"];
     }
 
-    private void HandleProjectClick(BuildSmart.SharedUI.GraphQL.IGetMyProjects_MyProjects project)
+    private void HandleProjectClick(BuildSmart.SharedUI.GraphQL.IProjectDetails project)
     {
         if (project.Status == BuildSmart.SharedUI.GraphQL.ProjectStatus.Draft)
         {

@@ -125,6 +125,9 @@
   <data name="Nav_MyProjects" xml:space="preserve">
     <value>My Projects</value>
   </data>
+  <data name="Nav_Chat" xml:space="preserve">
+    <value>Chat</value>
+  </data>
   <data name="Nav_ActiveJobs" xml:space="preserve">
     <value>Active Jobs</value>
   </data>

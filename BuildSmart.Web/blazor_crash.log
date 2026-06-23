@@ -13595,3 +13595,143 @@ Object name: 'IServiceProvider'.
 --- End of stack trace from previous location ---
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[24.06.2026 г. 0:14:50 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[24.06.2026 г. 0:14:50 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:50 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:50 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:51 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:52 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[24.06.2026 г. 0:14:52 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[24.06.2026 г. 0:14:52 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:52 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:58 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 0:14:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

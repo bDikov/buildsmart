@@ -248,3 +248,9 @@
     opacity: 0.5;
     cursor: default;
 }
+
+@media (max-width: 992px) {
+    .chat-page-container {
+        height: calc(100vh - 158px);
+    }
+}

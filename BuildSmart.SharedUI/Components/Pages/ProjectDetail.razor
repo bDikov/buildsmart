@@ -10,6 +10,7 @@
 @inject BuildSmart.SharedUI.Services.SignalRService SignalRService
 @inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 @inject IJSRuntime JSRuntime
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
 
 <ErrorBoundary>
     <ChildContent>
@@ -36,6 +37,12 @@
                     <div class="header-content">
                         <h2 class="page-title">@ViewModel.Project.Title</h2>
                         <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@Loc[$"Status_{ViewModel.Project.Status}"]</span>
+                        @if (ViewModel.Project.Status == ProjectStatus.UnderReview)
+                        {
+                            <span class="status-badge status-underreview ms-2" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
+                                Заявена Консултация
+                            </span>
+                        }
                     </div>
                 </div>
 
@@ -129,11 +136,13 @@
                         {
                             <JobPostCard 
                                 JobVm="jobVm" 
+                                IsAdmin="_isAdmin"
                                 IsExpanded="_expandedJobs.Contains(jobVm.JobPost.Id)" 
                                 OnToggleExpansion="() => ToggleJobExpansion(jobVm.JobPost.Id)" 
                                 OnViewAuctionHub="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(jobVm.JobPost)"
                                 OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")'
                                 OnEditAnswers='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={jobVm.JobPost.Id}&targetCategoryId={jobVm.JobPost.ServiceCategory.Id}")'
+                                OnReviewScope="() => ViewModel.ReviewScopeCommand.ExecuteAsync(jobVm.JobPost)"
                                 OnSubmitToAdmin="SubmitProjectToAdmin"
                                 OnAskAdmin="AskAdminQuestion" />
                         }
@@ -211,6 +220,8 @@
         NavManager.NavigateTo($"/project-messages?projectId={ViewModel.Project?.Id}");
     }
 
+    private bool _isAdmin = false;
+
     protected override async Task OnInitializedAsync()
     {
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -221,6 +232,15 @@
         if (JobId.HasValue) query["JobId"] = JobId.Value;
         
         ViewModel.ApplyQueryAttributes(query);
+
+        try
+        {
+            var token = await AuthService.GetTokenAsync();
+            var role = AuthService.GetUserRoleFromToken(token);
+            _isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase) || 
+                       string.Equals(role, "ADMIN", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { }
     }
 
     private void OnNotificationReceived(string title, string msg, object? data)
