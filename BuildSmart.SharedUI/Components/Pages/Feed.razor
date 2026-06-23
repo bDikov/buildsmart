@@ -48,36 +48,38 @@
                     @if (ViewModel.IsHomeowner)
                     {
                         <!-- TikTok Style Interest Filters -->
-                        <div class="bs-category-filters-container">
-                            <div class="bs-category-filters @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed")">
-                                <button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")" 
-                                        @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
-                                    @Loc["Feed_All"]
-                                </button>
-                                
-                                @* If collapsed, only show first 4 categories. If expanded, show all. *@
-                                @foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
-                                {
-                                    <button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")" 
-                                            @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
-                                        @cat.Name
+                        <div class="bs-category-filters-container @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed")">
+                            <div class="bs-category-filters-scroll">
+                                <div class="bs-category-filters-list">
+                                    <button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")" 
+                                            @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
+                                        @Loc["Feed_All"]
                                     </button>
-                                }
-
-                                @if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
-                                {
-                                    <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-                                        @Loc["Feed_ViewAll"]
-                                    </button>
-                                }
-                                
-                                @if (ViewModel.IsFilterExpanded)
-                                {
-                                    <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-                                        @Loc["Feed_Collapse"]
-                                    </button>
-                                }
+                                    
+                                    @* If collapsed, only show first 4 categories. If expanded, show all. *@
+                                    @foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
+                                    {
+                                        <button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")" 
+                                                @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
+                                            @cat.Name
+                                        </button>
+                                    }
+                                </div>
                             </div>
+                            
+                            @if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
+                            {
+                                <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+                                    @Loc["Feed_ViewAll"]
+                                </button>
+                            }
+                            
+                            @if (ViewModel.IsFilterExpanded)
+                            {
+                                <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+                                    @Loc["Feed_Collapse"]
+                                </button>
+                            }
                         </div>
 
                         @if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
@@ -186,34 +188,57 @@
         width: 100%;
         max-width: 600px;
         margin: -10px auto 1rem auto; /* Reduced from 2.5rem to pull videos closer */
-    }
-
-    .bs-category-filters {
-        display: flex;
-        gap: 0.5rem;
+        box-sizing: border-box;
         transition: all 0.3s ease;
     }
 
-    .bs-category-filters.collapsed {
-        flex-wrap: nowrap;
-        overflow-x: auto;
+    .bs-category-filters-container.collapsed {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         padding: 0 1rem;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefox */
     }
 
-    .bs-category-filters.collapsed::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
-    }
-
-    .bs-category-filters.expanded {
-        flex-wrap: wrap;
+    .bs-category-filters-container.expanded {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
         padding: 1rem;
-        margin: 0 1rem;
-        justify-content: flex-start;
         background-color: var(--bg-card);
         border-radius: 16px;
         box-shadow: var(--elevation-08dp);
+    }
+
+    .bs-category-filters-scroll {
+        flex: 1;
+        min-width: 0; /* Important for flex child to allow inner scroll */
+    }
+
+    .bs-category-filters-container.collapsed .bs-category-filters-scroll {
+        overflow-x: auto;
+        scrollbar-width: none; /* Firefox */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .bs-category-filters-container.collapsed .bs-category-filters-scroll::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    .bs-category-filters-container.expanded .bs-category-filters-scroll {
+        overflow: visible;
+    }
+
+    .bs-category-filters-list {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .bs-category-filters-container.collapsed .bs-category-filters-list {
+        flex-wrap: nowrap;
+    }
+
+    .bs-category-filters-container.expanded .bs-category-filters-list {
+        flex-wrap: wrap;
     }
 
     .bs-chip {
@@ -259,6 +284,10 @@
         justify-content: center;
         transition: all 0.2s ease;
         box-shadow: var(--elevation-01dp);
+    }
+
+    .bs-category-filters-container.expanded .bs-chip-add {
+        align-self: flex-start;
     }
     
     .bs-chip-add:hover {

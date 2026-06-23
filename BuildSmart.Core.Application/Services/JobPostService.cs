@@ -100,6 +100,8 @@ public class JobPostService : IJobPostService
 			throw new InvalidOperationException("A task breakdown must be created before sending for approval.");
 		}
 
+		bool isNewTransition = jobPost.Status != JobPostStatus.WaitingForAdminReview;
+
 		if (jobPost.Status == JobPostStatus.WaitingForAdminReview)
 		{
 			// Idempotency: If already waiting for admin, allow updating the text without throwing
@@ -114,6 +116,28 @@ public class JobPostService : IJobPostService
 
 		_unitOfWork.JobPosts.Update(jobPost);
 		await _unitOfWork.SaveChangesAsync();
+
+		if (isNewTransition)
+		{
+			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+			var projectName = project?.Title ?? "Unknown Project";
+
+			// Notify Admins
+			var admins = await _unitOfWork.Users.GetQueryable()
+				.Where(u => u.Role == UserRoleTypes.Admin)
+				.ToListAsync();
+
+			foreach (var admin in admins)
+			{
+				await _notificationService.SendNotificationAsync(
+					admin.Id,
+					"Consultation Requested",
+					$"A consultation has been requested for project '{projectName}' (Job: '{jobPost.Title}').",
+					jobPost.ProjectId,
+					"Project"
+				);
+			}
+		}
 	}
 
 	public async Task AdminReviewJobScopeAsync(Guid jobPostId, bool approved, string? feedback, Guid? reviewerId)
