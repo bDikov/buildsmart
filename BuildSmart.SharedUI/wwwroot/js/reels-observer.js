@@ -258,13 +258,18 @@ window.reelsObserver = {
                 touchStartX = null;
 
                 const isTheater = element.classList.contains('bs-theater-mode');
+                const absX = Math.abs(deltaX);
+                const absY = Math.abs(deltaY);
 
-                if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
+                if (absX > 80 || absY > 80) {
+                    // Determine swipe direction: horizontal wins or vertical wins
+                    const isNext = absX > absY ? deltaX < 0 : deltaY < 0;
+
                     // SYNCHRONOUS TRUSTED PLAY: Bypass browser autoplay block by playing the next video right here!
                     let nextVideoId = null;
                     let nextElementToTransferTheaterMode = null;
                     
-                    if (deltaX < 0) {
+                    if (isNext) {
                         nextElementToTransferTheaterMode = element.previousElementSibling;
                         if (nextElementToTransferTheaterMode) nextVideoId = nextElementToTransferTheaterMode.getAttribute('data-video-id');
                     } else {
@@ -277,10 +282,20 @@ window.reelsObserver = {
                     }
 
                     if (!isTheater) {
-                        const flyX = deltaX > 0 ? 1000 : -1000;
-                        const rotate = deltaX > 0 ? 25 : -25;
+                        let flyX = 0;
+                        let flyY = 0;
+                        let rotate = 0;
+                        if (absX > absY) {
+                            flyX = deltaX > 0 ? 1000 : -1000;
+                            flyY = -800;
+                            rotate = deltaX > 0 ? 25 : -25;
+                        } else {
+                            flyX = 0;
+                            flyY = deltaY > 0 ? 1000 : -1000;
+                            rotate = 0;
+                        }
                         element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
-                        element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% - 800px)) rotate(${rotate}deg)`;
+                        element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% + ${flyY}px)) rotate(${rotate}deg)`;
                         
                         // OPTIMISTIC UI: Instantly start animating the next card into the center 
                         // so the user doesn't feel the network delay waiting for Blazor to update the DOM!
@@ -307,7 +322,8 @@ window.reelsObserver = {
                     setTimeout(async () => {
                         if (window.reelsObserver.dotNetRef) {
                             try {
-                                await window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', deltaX, 0, 0, 0, videoId);
+                                const finalDeltaX = isNext ? -100 : 100;
+                                await window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', finalDeltaX, 0, 0, 0, videoId);
                             } catch (e) { console.error(e); }
                         }
                         

@@ -357,6 +357,21 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
+		public bool ShouldLoadMore()
+		{
+			var state = GetActiveCacheState();
+			if (!state.HasNextPage || _isLoadingMore) return false;
+
+			var topVideo = FeedVideos.LastOrDefault();
+			if (topVideo == null) return true;
+
+			int index = state.CachedVideos.IndexOf(topVideo);
+			if (index == -1) return true;
+
+			int remaining = state.CachedVideos.Count - 1 - index;
+			return remaining < 3;
+		}
+
 		public async Task LoadMoreFeedMediaAsync()
 		{
 			var state = GetActiveCacheState();

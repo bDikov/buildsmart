@@ -115,6 +115,144 @@ namespace BuildSmart.Maui.Tests
             mockGetFeedMediaQuery.Verify(q => q.ExecuteAsync(It.IsAny<TradesmanMediaFilterInput>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
+        [Fact]
+        public async Task ShouldLoadMore_WithFewRemainingVideos_ReturnsTrue()
+        {
+            // Arrange
+            _mockAuthService.Setup(a => a.GetTokenAsync()).ReturnsAsync("fake_token");
+            _mockAuthService.Setup(a => a.GetUserRoleFromToken(It.IsAny<string>())).Returns("Homeowner");
+
+            // Mock MyProjects query
+            var mockMyProjectsResult = new Mock<IOperationResult<IGetMyProjectsResult>>();
+            var mockProjectsData = new Mock<IGetMyProjectsResult>();
+            mockProjectsData.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects>());
+            mockMyProjectsResult.Setup(r => r.Data).Returns(mockProjectsData.Object);
+            mockMyProjectsResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+            var mockGetMyProjectsQuery = new Mock<IGetMyProjectsQuery>();
+            mockGetMyProjectsQuery.Setup(q => q.ExecuteAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockMyProjectsResult.Object);
+            _mockApiClient.Setup(api => api.GetMyProjects).Returns(mockGetMyProjectsQuery.Object);
+
+            // Mock GetServiceCategories query
+            var mockCategoriesResult = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+            var mockCategoriesData = new Mock<IGetServiceCategoriesResult>();
+            mockCategoriesData.Setup(d => d.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories>());
+            mockCategoriesResult.Setup(r => r.Data).Returns(mockCategoriesData.Object);
+            mockCategoriesResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+            
+            var mockGetCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+            mockGetCategoriesQuery.Setup(q => q.ExecuteAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockCategoriesResult.Object);
+            _mockApiClient.Setup(api => api.GetServiceCategories).Returns(mockGetCategoriesQuery.Object);
+
+            // Mock GetFeedMedia query to return 3 videos, with HasNextPage = true
+            var mockFeedResult = new Mock<IOperationResult<IGetFeedMediaResult>>();
+            var mockFeedData = new Mock<IGetFeedMediaResult>();
+            
+            var mockFeedMediaConnection = new Mock<IGetFeedMedia_FeedMedia>();
+            
+            var items = new List<IGetFeedMedia_FeedMedia_Items>();
+            for (int i = 0; i < 3; i++)
+            {
+                var mockItem = new Mock<IGetFeedMedia_FeedMedia_Items>();
+                mockItem.Setup(x => x.Id).Returns(Guid.NewGuid().ToString());
+                mockItem.Setup(x => x.TradesmanId).Returns(Guid.NewGuid().ToString());
+                mockItem.Setup(x => x.VideoUrl).Returns($"video_{i}.mp4");
+                items.Add(mockItem.Object);
+            }
+            
+            var mockPageInfo = new Mock<IGetFeedMedia_FeedMedia_PageInfo>();
+            mockPageInfo.Setup(p => p.HasNextPage).Returns(true);
+
+            mockFeedMediaConnection.Setup(m => m.Items).Returns(items);
+            mockFeedMediaConnection.Setup(m => m.PageInfo).Returns(mockPageInfo.Object);
+
+            mockFeedData.Setup(d => d.FeedMedia).Returns(mockFeedMediaConnection.Object);
+            mockFeedResult.Setup(r => r.Data).Returns(mockFeedData.Object);
+            mockFeedResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+            var mockGetFeedMediaQuery = new Mock<IGetFeedMediaQuery>();
+            mockGetFeedMediaQuery.Setup(q => q.ExecuteAsync(It.IsAny<TradesmanMediaFilterInput>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockFeedResult.Object);
+            _mockApiClient.Setup(api => api.GetFeedMedia).Returns(mockGetFeedMediaQuery.Object);
+
+            // Act
+            await _viewModel.LoadFeedCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.True(_viewModel.ShouldLoadMore());
+        }
+
+        [Fact]
+        public async Task ShouldLoadMore_WithNoNextPage_ReturnsFalse()
+        {
+            // Arrange
+            _mockAuthService.Setup(a => a.GetTokenAsync()).ReturnsAsync("fake_token");
+            _mockAuthService.Setup(a => a.GetUserRoleFromToken(It.IsAny<string>())).Returns("Homeowner");
+
+            // Mock MyProjects query
+            var mockMyProjectsResult = new Mock<IOperationResult<IGetMyProjectsResult>>();
+            var mockProjectsData = new Mock<IGetMyProjectsResult>();
+            mockProjectsData.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects>());
+            mockMyProjectsResult.Setup(r => r.Data).Returns(mockProjectsData.Object);
+            mockMyProjectsResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+            var mockGetMyProjectsQuery = new Mock<IGetMyProjectsQuery>();
+            mockGetMyProjectsQuery.Setup(q => q.ExecuteAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockMyProjectsResult.Object);
+            _mockApiClient.Setup(api => api.GetMyProjects).Returns(mockGetMyProjectsQuery.Object);
+
+            // Mock GetServiceCategories query
+            var mockCategoriesResult = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+            var mockCategoriesData = new Mock<IGetServiceCategoriesResult>();
+            mockCategoriesData.Setup(d => d.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories>());
+            mockCategoriesResult.Setup(r => r.Data).Returns(mockCategoriesData.Object);
+            mockCategoriesResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+            
+            var mockGetCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+            mockGetCategoriesQuery.Setup(q => q.ExecuteAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockCategoriesResult.Object);
+            _mockApiClient.Setup(api => api.GetServiceCategories).Returns(mockGetCategoriesQuery.Object);
+
+            // Mock GetFeedMedia query to return 3 videos, with HasNextPage = false
+            var mockFeedResult = new Mock<IOperationResult<IGetFeedMediaResult>>();
+            var mockFeedData = new Mock<IGetFeedMediaResult>();
+            
+            var mockFeedMediaConnection = new Mock<IGetFeedMedia_FeedMedia>();
+            
+            var items = new List<IGetFeedMedia_FeedMedia_Items>();
+            for (int i = 0; i < 3; i++)
+            {
+                var mockItem = new Mock<IGetFeedMedia_FeedMedia_Items>();
+                mockItem.Setup(x => x.Id).Returns(Guid.NewGuid().ToString());
+                mockItem.Setup(x => x.TradesmanId).Returns(Guid.NewGuid().ToString());
+                mockItem.Setup(x => x.VideoUrl).Returns($"video_{i}.mp4");
+                items.Add(mockItem.Object);
+            }
+            
+            var mockPageInfo = new Mock<IGetFeedMedia_FeedMedia_PageInfo>();
+            mockPageInfo.Setup(p => p.HasNextPage).Returns(false);
+
+            mockFeedMediaConnection.Setup(m => m.Items).Returns(items);
+            mockFeedMediaConnection.Setup(m => m.PageInfo).Returns(mockPageInfo.Object);
+
+            mockFeedData.Setup(d => d.FeedMedia).Returns(mockFeedMediaConnection.Object);
+            mockFeedResult.Setup(r => r.Data).Returns(mockFeedData.Object);
+            mockFeedResult.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+            var mockGetFeedMediaQuery = new Mock<IGetFeedMediaQuery>();
+            mockGetFeedMediaQuery.Setup(q => q.ExecuteAsync(It.IsAny<TradesmanMediaFilterInput>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockFeedResult.Object);
+            _mockApiClient.Setup(api => api.GetFeedMedia).Returns(mockGetFeedMediaQuery.Object);
+
+            // Act
+            await _viewModel.LoadFeedCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.False(_viewModel.ShouldLoadMore());
+        }
+
         // Mock implementation to bypass MAUI MainThread dispatching in unit tests
         private class MockMainThread : IAppMainThread
         {

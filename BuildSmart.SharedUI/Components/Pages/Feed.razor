@@ -661,24 +661,11 @@
             if (deltaX < 0)
             {
                 // Swiping LEFT: Move forward (Next Video)
-                // If API is exhausted, cycle the loop ONE item at a time by moving the top card to the bottom.
-                if (!ViewModel.HasNextPage)
+                // Use .Move() so Blazor preserves the DOM node and video buffer!
+                int lastIndex = ViewModel.FeedVideos.Count - 1;
+                if (lastIndex > 0)
                 {
-                    int lastIndex = ViewModel.FeedVideos.Count - 1;
-                    if (lastIndex > 0)
-                    {
-                        // Use .Move() so Blazor preserves the DOM node and video buffer!
-                        ViewModel.FeedVideos.Move(lastIndex, 0);
-                    }
-                }
-                else
-                {
-                    // Not looping yet, just remove the top card so the next one from the API shows.
-                    var topVideo = ViewModel.FeedVideos.LastOrDefault();
-                    if (topVideo != null)
-                    {
-                        ViewModel.FeedVideos.Remove(topVideo);
-                    }
+                    ViewModel.FeedVideos.Move(lastIndex, 0);
                 }
             }
             else 
@@ -702,7 +689,7 @@
             }
 
             // Lazy-load logic: If we are running low on videos, fetch the next batch in the background
-            if (ViewModel.FeedVideos.Count < 3 && ViewModel.HasNextPage)
+            if (ViewModel.ShouldLoadMore())
             {
                 // Fire and forget
                 _ = ViewModel.LoadMoreFeedMediaAsync();
