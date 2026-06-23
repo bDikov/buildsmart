@@ -62,6 +62,8 @@ namespace BuildSmart.SharedUI.ViewModels
 			public Guid Id { get; set; } = Guid.NewGuid();
 			public string TradesmanId { get; set; } = string.Empty;
 			public string VideoUrl { get; set; } = string.Empty;
+			public string? MobileVideoUrl { get; set; }
+			public string? ImageUrl { get; set; }
 			public string Name { get; set; } = string.Empty;
 			public string Role { get; set; } = string.Empty;
 			public string Location { get; set; } = string.Empty;
@@ -104,6 +106,9 @@ namespace BuildSmart.SharedUI.ViewModels
 		{
 			IsFilterExpanded = !IsFilterExpanded;
 		}
+
+		[ObservableProperty]
+		private Guid? _activeVideoId;
 
 		public FeedPageViewModel(IBuildSmartApiClient apiClient, IAuthService authService)
 		{
@@ -335,13 +340,12 @@ namespace BuildSmart.SharedUI.ViewModels
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
 						FeedVideos.Clear();
-						// Reverse the list when adding so the first item from the DB is at the end of the collection (Top of the Stack in UI)
-						foreach (var media in result.Items.Reverse())
+						foreach (var media in result.Items)
 						{
 							if (media != null)
 							{
 								var item = CreateFeedMediaItem(media);
-								state.CachedVideos.Insert(0, item); // Keep original order in cache
+								state.CachedVideos.Add(item);
 								FeedVideos.Add(item);
 							}
 						}
@@ -362,10 +366,13 @@ namespace BuildSmart.SharedUI.ViewModels
 			var state = GetActiveCacheState();
 			if (!state.HasNextPage || _isLoadingMore) return false;
 
-			var topVideo = FeedVideos.LastOrDefault();
-			if (topVideo == null) return true;
+			var activeId = ActiveVideoId ?? FeedVideos.FirstOrDefault()?.Id;
+			if (activeId == null) return true;
 
-			int index = state.CachedVideos.IndexOf(topVideo);
+			var activeVideo = FeedVideos.FirstOrDefault(v => v.Id == activeId);
+			if (activeVideo == null) return true;
+
+			int index = state.CachedVideos.IndexOf(activeVideo);
 			if (index == -1) return true;
 
 			int remaining = state.CachedVideos.Count - 1 - index;
@@ -386,7 +393,6 @@ namespace BuildSmart.SharedUI.ViewModels
 				{
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
-						// Insert at 0 so they appear at the bottom of the Tinder stack
 						foreach (var media in result.Items)
 						{
 							if (media != null)
@@ -397,12 +403,10 @@ namespace BuildSmart.SharedUI.ViewModels
 								// Strict deduplication check to prevent Blazor @key crashes
 								if (!FeedVideos.Any(v => v.Id == videoItem.Id))
 								{
-									FeedVideos.Insert(0, videoItem);
+									FeedVideos.Add(videoItem);
 								}
 							}
 						}
-
-						TrimFeedStack();
 					});
 
 					state.CurrentSkip += result.Items.Count;
@@ -493,6 +497,8 @@ namespace BuildSmart.SharedUI.ViewModels
 				Id = Guid.Parse(media.Id.ToString()),
 				TradesmanId = media.TradesmanId.ToString(),
 				VideoUrl = media.VideoUrl,
+				MobileVideoUrl = media.MobileVideoUrl,
+				ImageUrl = media.ImageUrl,
 				Name = $"{media.TradesmanProfile?.User?.FirstName} {media.TradesmanProfile?.User?.LastName}",
 				Role = media.ServiceCategory?.Name ?? media.TradesmanProfile?.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
 				Location = media.TradesmanProfile?.User?.Location ?? "",

@@ -54,6 +54,15 @@
                 }
             </div>
 
+            <div class="form-group">
+                <label>Select Custom Video Thumbnail (Optional):</label>
+                <InputFile OnChange="HandleImageFileSelected" accept="image/png,image/jpeg,image/webp" class="bs-input file-input" />
+                @if (selectedImageFile != null)
+                {
+                    <small>Selected: @selectedImageFile.Name (@(selectedImageFile.Size / 1024) KB)</small>
+                }
+            </div>
+
             <button class="bs-btn-primary" @onclick="UploadVideo" disabled="@(!CanUpload || isUploading)">
                 @if (isUploading)
                 {
@@ -119,6 +128,7 @@
     private string selectedTradesmanUserId = "";
     private string selectedCategoryId = "";
     private IBrowserFile? selectedFile;
+    private IBrowserFile? selectedImageFile;
     private List<IGetTradesmanProfiles_TradesmanProfiles> tradesmen = new();
     private List<IGetServiceCategories_ServiceCategories> categories = new();
     private string statusMessage = "";
@@ -166,6 +176,66 @@
         isError = false;
     }
 
+    private void HandleImageFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedImageFile = e.File;
+        statusMessage = "";
+        isError = false;
+    }
+
+    private async Task<string> UploadFileToCdnAsync(IBrowserFile file, string progressLabel)
+    {
+        var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(file.Name, file.ContentType);
+        if (urlResult.Errors.Count > 0)
+        {
+            var errorMsg = string.Join(", ", urlResult.Errors.Select(e => e.Message));
+            throw new Exception($"API Error: {errorMsg}");
+        }
+        if (string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
+        {
+            throw new Exception("Failed to get pre-signed upload URL: the URL was empty.");
+        }
+
+        var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;
+
+        using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024); // 500MB max
+        
+        using var progressStream = new ProgressStream(rawStream, (bytesRead) =>
+        {
+            var newProgress = (int)((bytesRead * 100) / file.Size);
+            if (newProgress != uploadProgress)
+            {
+                uploadProgress = newProgress;
+                var mbSent = (bytesRead / 1024.0 / 1024.0).ToString("0.0");
+                var mbTotal = (file.Size / 1024.0 / 1024.0).ToString("0.0");
+                statusMessage = $"{progressLabel}... {mbSent} MB / {mbTotal} MB ({newProgress}%)";
+                _ = InvokeAsync(StateHasChanged);
+            }
+        });
+
+        using var content = new StreamContent(progressStream); 
+        content.Headers.ContentLength = file.Size;
+
+        using var uploadClient = new HttpClient();
+        uploadClient.Timeout = TimeSpan.FromMinutes(60);
+
+        var response = await uploadClient.PutAsync(preSignedUrl, content);
+        if (!response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            throw new Exception($"CDN upload failed with status {response.StatusCode}. URL: {preSignedUrl}. Cloudflare Error: {responseBody}");
+        }
+
+        uploadProgress = 100;
+        await InvokeAsync(StateHasChanged);
+
+        var privateVideoUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
+        var fileName = System.IO.Path.GetFileName(privateVideoUrl);
+        var publicUrl = $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
+
+        return publicUrl;
+    }
+
     private async Task UploadVideo()
     {
         if (!CanUpload) return;
@@ -178,69 +248,21 @@
 
         try
         {
-            // 1. Get Pre-signed URL
-            var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(selectedFile.Name, selectedFile.ContentType);
-            if (urlResult.Errors.Count > 0)
+            // 1. Upload Video
+            var publicVideoUrl = await UploadFileToCdnAsync(selectedFile!, "Uploading video");
+
+            // 2. Upload Thumbnail if selected
+            string? publicImageUrl = null;
+            if (selectedImageFile != null)
             {
-                var errorMsg = string.Join(", ", urlResult.Errors.Select(e => e.Message));
-                throw new Exception($"API Error: {errorMsg}");
+                statusMessage = "Requesting secure upload URL for thumbnail...";
+                uploadProgress = 0;
+                StateHasChanged();
+                publicImageUrl = await UploadFileToCdnAsync(selectedImageFile, "Uploading thumbnail");
             }
-            if (string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
-            {
-                throw new Exception("Failed to get pre-signed upload URL: the URL was empty.");
-            }
 
-            var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;
-            statusMessage = "Uploading directly to CDN...";
-            StateHasChanged();
-
-            // 2. Upload directly to CDN using a dedicated HttpClient with an extended timeout
-            using var rawStream = selectedFile.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024); // 500MB max
-            
-            // Wrap the stream to intercept reads and report progress dynamically
-            using var progressStream = new ProgressStream(rawStream, (bytesRead) =>
-            {
-                var newProgress = (int)((bytesRead * 100) / selectedFile.Size);
-                if (newProgress != uploadProgress)
-                {
-                    uploadProgress = newProgress;
-                    var mbSent = (bytesRead / 1024.0 / 1024.0).ToString("0.0");
-                    var mbTotal = (selectedFile.Size / 1024.0 / 1024.0).ToString("0.0");
-                    statusMessage = $"Uploading... {mbSent} MB / {mbTotal} MB";
-                    _ = InvokeAsync(StateHasChanged);
-                }
-            });
-
-            using var content = new StreamContent(progressStream); 
-            
-            // Do not explicitly set Content-Type here, as it triggers a strict Signature mismatch
-            // block from Cloudflare R2 if it doesn't perfectly match the backend signature.
-            
-            // CRITICAL: R2/S3 Pre-signed URLs reject 'Transfer-Encoding: chunked'. We MUST provide the exact Content-Length.
-            content.Headers.ContentLength = selectedFile.Size;
-            
-            using var uploadClient = new HttpClient();
-            uploadClient.Timeout = TimeSpan.FromMinutes(60); // 1 hour timeout for large videos
-
-            var response = await uploadClient.PutAsync(preSignedUrl, content);
-            if (!response.IsSuccessStatusCode)
-            {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                throw new Exception($"CDN upload failed with status {response.StatusCode}. URL: {preSignedUrl}. Cloudflare Error: {responseBody}");
-            }
-            uploadProgress = 100;
             statusMessage = "Saving database record...";
             StateHasChanged();
-
-            // The public URL is the pre-signed URL without the query string parameters
-            var privateVideoUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
-            
-            // CRITICAL FIX: The pre-signed URL uses the S3 API endpoint (e.g., https://f1e77b...cloudflarestorage.com/buildsmart-media/video.mp4).
-            // This endpoint is completely locked down and requires a cryptographic signature to view the file.
-            // If we save this raw S3 URL to the database, the Feed page's <video> tag will get a 403 Forbidden and remain black!
-            // We MUST swap the private S3 domain for the public R2 domain (or custom subdomain) before saving to the DB.
-            var fileName = System.IO.Path.GetFileName(privateVideoUrl);
-            var publicVideoUrl = $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
 
             var categoryId = string.IsNullOrEmpty(selectedCategoryId) ? (Guid?)null : Guid.Parse(selectedCategoryId);
 
@@ -248,6 +270,7 @@
             var confirmResult = await ApiClient.ConfirmVideoUpload.ExecuteAsync(
                 Guid.Parse(selectedTradesmanUserId), 
                 publicVideoUrl,
+                publicImageUrl,
                 BuildSmart.SharedUI.GraphQL.MediaType.Video,
                 categoryId);
 
@@ -257,9 +280,10 @@
                 throw new Exception($"Database save failed: {errorMsg}");
             }
 
-            statusMessage = "Video uploaded and saved successfully!";
+            statusMessage = "Video uploaded successfully! The backend is optimizing it for mobile and generating a thumbnail in the background.";
             isError = false;
             selectedFile = null; // Reset
+            selectedImageFile = null;
             
             // Refresh the UI to show the newly added video in the Manage Videos section
             await LoadData();

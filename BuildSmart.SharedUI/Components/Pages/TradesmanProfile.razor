@@ -67,7 +67,7 @@
                             else
                             {
                                 <!-- Fallback: a video element can serve as a thumbnail if muted and paused -->
-                                <video src="@entry.VideoUrl" muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                                <video src="@entry.VideoUrl" poster="@entry.ImageUrl" muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
                                 <div class="video-play-indicator">▶</div>
                             }
                         </div>

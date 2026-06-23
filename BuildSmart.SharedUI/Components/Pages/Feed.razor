@@ -88,7 +88,11 @@
                                     var videoId = $"video_{video.Id}";
                                     var wrapperId = $"wrapper_{videoId}";
                                     <div @key="video.Id" class="bs-reel-item" data-video-id="@videoId" id="@wrapperId">
-                                        <video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="auto" poster="" muted>
+                                        <video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="auto" poster="@video.ImageUrl" muted>
+                                            @if (!string.IsNullOrEmpty(video.MobileVideoUrl))
+                                            {
+                                                <source src="@video.MobileVideoUrl" media="(max-width: 768px)" type="video/mp4" />
+                                            }
                                             <source src="@video.VideoUrl" type="video/mp4" />
                                         </video>
                                         
@@ -301,39 +305,37 @@
     }
 
     .bs-reels-container {
-        position: relative;
-        width: 100%;
-        height: 70vh; /* Give the stack some height to live in */
-        max-width: 400px;
-        margin: 0 auto;
         display: flex;
-        justify-content: center;
-        align-items: center;
+        flex-direction: column;
+        width: 100%;
+        height: 480px; /* Locked height for premium scroll container card */
+        max-width: 356px; /* Match standard mobile screen widths */
+        margin: 0 auto;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        border-radius: 24px;
+        box-shadow: var(--elevation-08dp);
+    }
+
+    .bs-reels-container::-webkit-scrollbar {
+        display: none;
     }
 
     .bs-reel-item {
-        position: absolute;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        flex: 0 0 100%;
         width: 100%;
-        max-width: 326px; /* Match Figma exact width */
-        aspect-ratio: 326 / 438; /* Match Figma exactly */
+        height: 100%;
+        position: relative;
         background-color: var(--bg-card);
-        
-        /* Figma PersonalityCard Properties */
         border: 2px solid var(--border-color, var(--bg-card-alt));
         border-radius: 24px;
-        box-shadow: var(--elevation-08dp, 0px 8px 10px 0px rgba(0, 0, 0, 0.20));
-            
         overflow: hidden;
         cursor: pointer;
-        
-        /* Stack them perfectly on top of each other */
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        transition: transform 0.3s ease, border-radius 0.3s ease, width 0.3s ease, max-width 0.3s ease, height 0.3s ease;
-        
-        /* Only allow the top card to be swipeable to prevent bugs */
-        pointer-events: none;
+        pointer-events: auto;
     }
 
     /* --- THEATER MODE (TRIPLE CLICK) --- */
@@ -359,83 +361,6 @@
         pointer-events: auto !important;
         background-color: black !important;
         opacity: 1 !important;
-    }
-
-    /* --- MOBILE VIEW: Tinder Stack --- */
-    @@media (max-width: 768px) {
-        /* Simulate depth by pushing earlier items back slightly, similar to JobWizard */
-        .bs-reel-item:nth-last-child(1) {
-            z-index: 3;
-            transform: translate(-50%, -50%) scale(1);
-            pointer-events: auto; /* Active Top Card */
-        }
-        .bs-reel-item:nth-last-child(2) {
-            z-index: 2;
-            transform: translate(-50%, calc(-50% + 14px)) scale(0.96);
-            opacity: 0.8;
-        }
-        .bs-reel-item:nth-last-child(3) {
-            z-index: 1;
-            transform: translate(-50%, calc(-50% + 28px)) scale(0.92);
-            opacity: 0.4;
-        }
-        .bs-reel-item:nth-last-child(n+4) {
-            opacity: 0;
-        }
-    }
-
-    /* --- DESKTOP/TABLET VIEW: 3D Roller Coaster --- */
-    @@media (min-width: 769px) {
-        .bs-reels-container {
-            max-width: 1200px; /* Allow wider container on desktop */
-        }
-        
-        .bs-reel-item {
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease;
-        }
-
-        /* Center (Active - Top of Deck) */
-        .bs-reel-item:nth-last-child(1) {
-            z-index: 3;
-            transform: translate(-50%, -50%) scale(1);
-            filter: blur(0px);
-            opacity: 1;
-            pointer-events: auto; /* Active Top Card */
-        }
-        /* Right Side (Next in queue) */
-        .bs-reel-item:nth-last-child(2) {
-            z-index: 2;
-            transform: translate(calc(-50% + 360px), -50%) scale(0.85);
-            filter: blur(4px);
-            opacity: 0.5;
-            pointer-events: auto; /* Clickable */
-            cursor: pointer;
-        }
-        /* Left Side (Previously viewed / Absolute Bottom of deck) */
-        .bs-reel-item:nth-child(1):not(:nth-last-child(1)):not(:nth-last-child(2)) {
-            z-index: 1;
-            transform: translate(calc(-50% - 360px), -50%) scale(0.85);
-            filter: blur(4px);
-            opacity: 0.5;
-            pointer-events: auto; /* Clickable */
-            cursor: pointer;
-        }
-        /* Hidden (Any cards deeper in the deck staged on the right) */
-        .bs-reel-item:not(:nth-last-child(1)):not(:nth-last-child(2)):not(:nth-child(1)) {
-            z-index: 0;
-            opacity: 0.001;
-            transform: translate(calc(-50% + 420px), -50%) scale(0.75);
-            filter: blur(8px);
-            pointer-events: none;
-        }
-        
-        /* Desktop Theater Mode Fix: Prevent aggressive zooming/cropping on wide screens */
-        .bs-reel-item.bs-theater-mode {
-            background-color: #000; /* Black letterbox background */
-        }
-        .bs-reel-item.bs-theater-mode .plyr__video-wrapper video {
-            object-fit: contain !important; /* Shrink video to fit monitor height without cropping */
-        }
     }
 
     .bs-reel-video {
@@ -650,59 +575,22 @@
     }
 
     [JSInvokable]
-    public async Task ProcessSwipeEndFromJS(double deltaX, double velocity, double currentX, double currentRot, string videoId)
+    public async Task OnVideoVisible(string videoId)
     {
-        // JS already determined this is a valid swipe out, so we don't need to double-check deltaX.
-        if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+        if (!string.IsNullOrEmpty(videoId) && videoId.StartsWith("video_"))
         {
-            // Optional: Stop the old top video player
-            try { await JSRuntime.InvokeVoidAsync("reelsObserver.pauseVideo", videoId); } catch { }
-
-            if (deltaX < 0)
+            var guidStr = videoId.Substring(6);
+            if (Guid.TryParse(guidStr, out var id))
             {
-                // Swiping LEFT: Move forward (Next Video)
-                // Use .Move() so Blazor preserves the DOM node and video buffer!
-                int lastIndex = ViewModel.FeedVideos.Count - 1;
-                if (lastIndex > 0)
+                ViewModel.ActiveVideoId = id;
+                if (ViewModel.ShouldLoadMore())
                 {
-                    ViewModel.FeedVideos.Move(lastIndex, 0);
+                    // Fire and forget
+                    _ = ViewModel.LoadMoreFeedMediaAsync();
                 }
+                await InvokeAsync(StateHasChanged);
             }
-            else 
-            {
-                // Swiping RIGHT: Move backward (Previous Video)
-                // Take the absolute bottom card (First) and move it to the top (Last)
-                int lastIndex = ViewModel.FeedVideos.Count - 1;
-                if (lastIndex > 0)
-                {
-                    // Use .Move() so Blazor preserves the DOM node and video buffer!
-                    ViewModel.FeedVideos.Move(0, lastIndex);
-                }
-            }
-            
-            // Trigger the observer to play the NEW top video
-            if (ViewModel.FeedVideos.Any())
-            {
-                var newTopVideo = ViewModel.FeedVideos.Last();
-                var newTopVideoId = $"video_{newTopVideo.Id}";
-                try { await JSRuntime.InvokeVoidAsync("reelsObserver.playVideo", newTopVideoId); } catch { }
-            }
-
-            // Lazy-load logic: If we are running low on videos, fetch the next batch in the background
-            if (ViewModel.ShouldLoadMore())
-            {
-                // Fire and forget
-                _ = ViewModel.LoadMoreFeedMediaAsync();
-            }
-
-            await InvokeAsync(StateHasChanged);
         }
-    }
-
-    [JSInvokable]
-    public void OnVideoVisible(string videoId)
-    {
-        // Handled by JS for playback, we can use this hook for analytics later if needed.
     }
 
     private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-profile?TradesmanId={id}");

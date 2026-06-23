@@ -14,9 +14,11 @@ public class CloudflareR2MediaService : IMediaService
     private readonly string _serviceUrl;
     private readonly string _bucketName;
     private readonly IAmazonS3 _s3Client;
+    private readonly IConfiguration _configuration;
 
     public CloudflareR2MediaService(IConfiguration configuration)
     {
+        _configuration = configuration;
         _accessKey = configuration["CloudflareR2:AccessKey"] ?? string.Empty;
         _secretKey = configuration["CloudflareR2:SecretKey"] ?? string.Empty;
         
@@ -59,5 +61,26 @@ public class CloudflareR2MediaService : IMediaService
 
         var url = _s3Client.GetPreSignedURL(request);
         return url;
+    }
+
+    public async Task<string> UploadFileAsync(Stream stream, string fileName, string contentType)
+    {
+        var putRequest = new PutObjectRequest
+        {
+            BucketName = _bucketName,
+            Key = fileName,
+            InputStream = stream,
+            ContentType = contentType
+        };
+
+        await _s3Client.PutObjectAsync(putRequest);
+
+        var publicBaseUrl = _configuration["CloudflareR2:PublicUrl"];
+        if (!string.IsNullOrEmpty(publicBaseUrl))
+        {
+            return $"{publicBaseUrl.TrimEnd('/')}/{fileName}";
+        }
+
+        return $"{_serviceUrl.TrimEnd('/')}/{_bucketName}/{fileName}";
     }
 }

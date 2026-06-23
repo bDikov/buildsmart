@@ -21,6 +21,8 @@ query GetTradesmanProfiles {
     media {
       id
       videoUrl
+      mobileVideoUrl
+      imageUrl
       thumbnailUrl
       isActive
       createdAt

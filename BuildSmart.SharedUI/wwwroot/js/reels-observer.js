@@ -19,10 +19,7 @@ window.reelsObserver = {
                 const videoId = entry.target.getAttribute('data-video-id');
                 const player = this.players[videoId];
 
-                const isTopCard = !entry.target.nextElementSibling;
-                const isTheaterMode = entry.target.classList.contains('bs-theater-mode');
-
-                if (entry.isIntersecting && (isTopCard || isTheaterMode)) {
+                if (entry.isIntersecting) {
                     if (player) {
                         player.__ignoreVolumeChangeUntil = Date.now() + 200;
                         player.muted = window.reelsObserver.globalMuted;
@@ -59,13 +56,12 @@ window.reelsObserver = {
                         }
                     }
                     this.dotNetRef.invokeMethodAsync('OnVideoVisible', videoId);
+                    window.reelsObserver.preDecodeAdjacent(entry.target);
                 } else {
                     if (player) {
-                        if (!isTheaterMode) {
-                            player.__ignoreVolumeChangeUntil = Date.now() + 200;
-                            player.muted = true; 
-                            window.reelsObserver.safePause(videoId, player);
-                        }
+                        player.__ignoreVolumeChangeUntil = Date.now() + 200;
+                        player.muted = true; 
+                        window.reelsObserver.safePause(videoId, player);
                     }
                 }
             });
@@ -118,9 +114,6 @@ window.reelsObserver = {
 
         if (element && !element.__swipeInitialized) {
             element.__swipeInitialized = true;
-            let touchStartX = null;
-            let touchStartY = null;
-            let isSwiping = false;
             let tapCount = 0;
             let tapTimer = null;
 
@@ -132,7 +125,6 @@ window.reelsObserver = {
             const handleTheaterBtn = (e, action) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Ensure the action only runs once per interaction
                 if (e.type === 'touchstart' || e.type === 'mousedown') {
                     action();
                 }
@@ -140,7 +132,6 @@ window.reelsObserver = {
 
             const bindButton = (btn, action) => {
                 if (!btn) return;
-                // Block all possible touch/mouse events from reaching Plyr
                 btn.addEventListener('touchstart', (e) => handleTheaterBtn(e, action), { passive: false });
                 btn.addEventListener('mousedown', (e) => handleTheaterBtn(e, action));
                 btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
@@ -153,18 +144,28 @@ window.reelsObserver = {
             });
 
             bindButton(prevBtn, () => {
-                endSwipe(touchStartX !== null ? touchStartX + 1000 : 1000, 0, true);
+                const prevEl = element.previousElementSibling;
+                if (prevEl) {
+                    element.classList.remove('bs-theater-mode');
+                    prevEl.classList.add('bs-theater-mode');
+                    const container = element.closest('.bs-reels-container');
+                    if (container) {
+                        container.scrollBy({ top: -container.clientHeight, behavior: 'auto' });
+                    }
+                }
             });
 
             bindButton(nextBtn, () => {
-                endSwipe(touchStartX !== null ? touchStartX - 1000 : -1000, 0, true);
+                const nextEl = element.nextElementSibling;
+                if (nextEl) {
+                    element.classList.remove('bs-theater-mode');
+                    nextEl.classList.add('bs-theater-mode');
+                    const container = element.closest('.bs-reels-container');
+                    if (container) {
+                        container.scrollBy({ top: container.clientHeight, behavior: 'auto' });
+                    }
+                }
             });
-
-            // Expose a function so background cards can force the center card to swipe
-            element.__triggerSwipe = (direction) => {
-                const flyDist = direction === 'left' ? -1000 : 1000;
-                endSwipe(flyDist, 0, true);
-            };
 
             element.addEventListener('click', (e) => {
                 if (e.target.closest('.bs-reel-action-btn') || 
@@ -172,41 +173,20 @@ window.reelsObserver = {
                     e.target.closest('.plyr__control--overlaid') || 
                     e.target.closest('.bs-theater-btn')) return;
 
-                const parent = element.parentElement;
-                const isCenterCard = parent.lastElementChild === element;
-
-                if (!isCenterCard) {
-                    // User clicked a blurry background card!
-                    const isRightCard = element.nextElementSibling === parent.lastElementChild;
-                    const centerCard = parent.lastElementChild;
-                    
-                    if (centerCard && centerCard.__triggerSwipe) {
-                        if (isRightCard) {
-                            // Clicked Right card (Next) -> Force center card to swipe left
-                            centerCard.__triggerSwipe('left');
-                        } else {
-                            // Clicked Left card (Previous) -> Force center card to swipe right
-                            centerCard.__triggerSwipe('right');
-                        }
-                    }
-                    return; // Prevent play/pause toggle for background cards
-                }
-
                 tapCount++;
                 if (tapCount === 1) {
                     tapTimer = setTimeout(() => {
                         const player = window.reelsObserver.players[videoId];
                         if (player) {
-                            // User wants a single tap to both play/pause AND toggle UI controls visibility.
                             player.togglePlay();
                             
                             const plyrContainer = document.getElementById(videoId).closest('.plyr');
                             if (plyrContainer) {
                                 const areControlsHidden = plyrContainer.classList.contains('plyr--hide-controls');
                                 if (areControlsHidden) {
-                                    player.toggleControls(true); // Wake up and show controls
+                                    player.toggleControls(true);
                                 } else {
-                                    player.toggleControls(false); // Force hide controls
+                                    player.toggleControls(false);
                                 }
                             }
                         }
@@ -226,150 +206,6 @@ window.reelsObserver = {
                     clearTimeout(tapTimer);
                 }
             });
-
-            const startSwipe = (x, y) => {
-                // If it's in theater mode on desktop, maybe disable dragging completely? No, user requested swipe without animation.
-                touchStartX = x;
-                touchStartY = y;
-                isSwiping = true;
-                element.style.transition = 'none';
-            };
-
-            const moveSwipe = (x, y) => {
-                if (!isSwiping || touchStartX === null) return;
-                const deltaX = x - touchStartX;
-                const deltaY = y - touchStartY;
-                
-                // Don't drag the card physically if we are in theater mode
-                if (element.classList.contains('bs-theater-mode')) return;
-
-                const currentX = deltaX * 0.85;
-                const currentY = deltaY * 0.85;
-                const currentRot = currentX * 0.05;
-                element.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) rotate(${currentRot}deg)`;
-            };
-
-            const endSwipe = (x, y, forceSwipe = false) => {
-                if (!forceSwipe && (!isSwiping || touchStartX === null)) return;
-                
-                const deltaX = forceSwipe ? x : x - touchStartX;
-                const deltaY = forceSwipe ? y : y - touchStartY;
-                isSwiping = false;
-                touchStartX = null;
-
-                const isTheater = element.classList.contains('bs-theater-mode');
-                const absX = Math.abs(deltaX);
-                const absY = Math.abs(deltaY);
-
-                if (absX > 80 || absY > 80) {
-                    // Determine swipe direction: horizontal wins or vertical wins
-                    const isNext = absX > absY ? deltaX < 0 : deltaY < 0;
-
-                    // SYNCHRONOUS TRUSTED PLAY: Bypass browser autoplay block by playing the next video right here!
-                    let nextVideoId = null;
-                    let nextElementToTransferTheaterMode = null;
-                    
-                    if (isNext) {
-                        nextElementToTransferTheaterMode = element.previousElementSibling;
-                        if (nextElementToTransferTheaterMode) nextVideoId = nextElementToTransferTheaterMode.getAttribute('data-video-id');
-                    } else {
-                        nextElementToTransferTheaterMode = element.parentElement.firstElementChild;
-                        if (nextElementToTransferTheaterMode) nextVideoId = nextElementToTransferTheaterMode.getAttribute('data-video-id');
-                    }
-                    
-                    if (nextVideoId) {
-                        window.reelsObserver.playVideo(nextVideoId);
-                    }
-
-                    if (!isTheater) {
-                        let flyX = 0;
-                        let flyY = 0;
-                        let rotate = 0;
-                        if (absX > absY) {
-                            flyX = deltaX > 0 ? 1000 : -1000;
-                            flyY = -800;
-                            rotate = deltaX > 0 ? 25 : -25;
-                        } else {
-                            flyX = 0;
-                            flyY = deltaY > 0 ? 1000 : -1000;
-                            rotate = 0;
-                        }
-                        element.style.transition = 'transform 0.45s cubic-bezier(0.1, 0.7, 0.1, 1)';
-                        element.style.transform = `translate(calc(-50% + ${flyX}px), calc(-50% + ${flyY}px)) rotate(${rotate}deg)`;
-                        
-                        // OPTIMISTIC UI: Instantly start animating the next card into the center 
-                        // so the user doesn't feel the network delay waiting for Blazor to update the DOM!
-                        if (nextElementToTransferTheaterMode) {
-                            nextElementToTransferTheaterMode.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease';
-                            nextElementToTransferTheaterMode.style.transform = 'translate(-50%, -50%) scale(1)';
-                            nextElementToTransferTheaterMode.style.filter = 'blur(0px)';
-                            nextElementToTransferTheaterMode.style.opacity = '1';
-                            nextElementToTransferTheaterMode.style.zIndex = '4'; // Boost above the whole stack
-                        }
-                    } else {
-                        // Transfer the theater mode class to the next video so it stays fullscreen
-                        element.classList.remove('bs-theater-mode');
-                        // No need to set opacity: 0 manually; the .in-theater-mode container class handles this
-                        if (nextElementToTransferTheaterMode) {
-                            nextElementToTransferTheaterMode.classList.add('bs-theater-mode');
-                        }
-                    }
-
-                    if (nextElementToTransferTheaterMode) {
-                        window.reelsObserver.preDecodeAdjacent(nextElementToTransferTheaterMode);
-                    }
-
-                    setTimeout(async () => {
-                        if (window.reelsObserver.dotNetRef) {
-                            try {
-                                const finalDeltaX = isNext ? -100 : 100;
-                                await window.reelsObserver.dotNetRef.invokeMethodAsync('ProcessSwipeEndFromJS', finalDeltaX, 0, 0, 0, videoId);
-                            } catch (e) { console.error(e); }
-                        }
-                        
-                        // Fix for Live Server Latency: 
-                        if (!isTheater) {
-                            element.style.opacity = '0';
-                        }
-                        element.style.transition = 'none';
-                        element.style.transform = '';
-                        
-                        // Remove the inline opacity override and the Optimistic UI styles
-                        // after Blazor has had time to apply the proper CSS classes
-                        setTimeout(() => {
-                            if (!isTheater) {
-                                element.style.opacity = '';
-                            }
-                            if (nextElementToTransferTheaterMode && !isTheater) {
-                                nextElementToTransferTheaterMode.style.transition = '';
-                                nextElementToTransferTheaterMode.style.transform = '';
-                                nextElementToTransferTheaterMode.style.filter = '';
-                                nextElementToTransferTheaterMode.style.opacity = '';
-                                nextElementToTransferTheaterMode.style.zIndex = '';
-                            }
-                        }, 100);
-                        
-                    }, isTheater ? 10 : 400); // Super fast 10ms execution if theater mode
-                } else {
-                    if (!isTheater) {
-                        element.style.transition = 'transform 0.5s cubic-bezier(0.2, 1.2, 0.3, 1)';
-                        element.style.transform = '';
-                    }
-                }
-            };
-
-            element.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-            element.addEventListener('touchmove', (e) => {
-                if (isSwiping && e.cancelable) e.preventDefault();
-                moveSwipe(e.touches[0].clientX, e.touches[0].clientY);
-            }, { passive: false });
-            element.addEventListener('touchend', (e) => {
-                if (e.changedTouches.length > 0) endSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-            });
-
-            element.addEventListener('mousedown', (e) => startSwipe(e.clientX, e.clientY));
-            window.addEventListener('mousemove', (e) => { if (isSwiping) moveSwipe(e.clientX, e.clientY); });
-            window.addEventListener('mouseup', (e) => { if (isSwiping) endSwipe(e.clientX, e.clientY); });
         }
     },
 
@@ -472,18 +308,12 @@ window.reelsObserver = {
                 }
             };
 
-            // Previous video (wrap to bottom of stack if needed)
-            let prev = centerElement.nextElementSibling;
-            if (!prev) {
-                prev = centerElement.parentElement.firstElementChild;
-            }
+            // Previous video (up)
+            let prev = centerElement.previousElementSibling;
             tryPreDecode(prev);
 
-            // Next video (wrap to top of stack if needed)
-            let next = centerElement.previousElementSibling;
-            if (!next) {
-                next = centerElement.parentElement.lastElementChild;
-            }
+            // Next video (down)
+            let next = centerElement.nextElementSibling;
             tryPreDecode(next);
             
         } catch (e) {

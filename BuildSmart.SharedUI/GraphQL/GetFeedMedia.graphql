@@ -4,6 +4,7 @@ query GetFeedMedia($where: TradesmanMediaFilterInput, $skip: Int, $take: Int) {
       id
       tradesmanId
       videoUrl
+      mobileVideoUrl
       imageUrl
       type
       serviceCategoryId

@@ -158,7 +158,7 @@ public class MutationType : ObjectType<Mutation>
             .Description("Generates a secure, time-limited Pre-signed URL for direct video uploads to the CDN.")
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(m => m.ConfirmVideoUpload(default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.ConfirmVideoUpload(default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Confirms a successful CDN upload and saves the media record to the tradesman's profile.")
             .Authorize(roles: new[] { "Admin" });
 

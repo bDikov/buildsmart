@@ -1,10 +1,11 @@
 mutation RequestVideoUploadUrl($fileName: String!, $contentType: String!) {
   requestVideoUploadUrl(fileName: $fileName, contentType: $contentType)
 }
-mutation ConfirmVideoUpload($tradesmanUserId: UUID!, $videoUrl: String!, $type: MediaType!, $serviceCategoryId: UUID) {
-  confirmVideoUpload(tradesmanUserId: $tradesmanUserId, videoUrl: $videoUrl, type: $type, serviceCategoryId: $serviceCategoryId) {
+mutation ConfirmVideoUpload($tradesmanUserId: UUID!, $videoUrl: String!, $imageUrl: String, $type: MediaType!, $serviceCategoryId: UUID) {
+  confirmVideoUpload(tradesmanUserId: $tradesmanUserId, videoUrl: $videoUrl, imageUrl: $imageUrl, type: $type, serviceCategoryId: $serviceCategoryId) {
     id
     videoUrl
+    mobileVideoUrl
     imageUrl
     type
     isActive

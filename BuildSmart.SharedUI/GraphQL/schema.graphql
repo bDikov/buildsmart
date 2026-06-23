@@ -24,6 +24,7 @@ type TradesmanMedia {
   isActive: Boolean!
   createdAt: DateTime!
   tradesmanProfile: TradesmanProfile!
+  mobileVideoUrl: String
   imageUrl: String
   type: MediaType!
   serviceCategoryId: UUID
@@ -108,6 +109,7 @@ input TradesmanMediaSortInput {
   tradesmanId: SortEnumType
   tradesmanProfile: TradesmanProfileSortInput
   videoUrl: SortEnumType
+  mobileVideoUrl: SortEnumType
   imageUrl: SortEnumType
   thumbnailUrl: SortEnumType
   type: SortEnumType
@@ -732,6 +734,8 @@ input UserFilterInput {
   emailVerificationTokenExpires: DateTimeOperationFilterInput
   preferredLanguage: StringOperationFilterInput
   preferredTheme: StringOperationFilterInput
+  aiRequestCount: IntOperationFilterInput
+  lastAiRequestDate: DateTimeOperationFilterInput
   homeownerProfile: HomeownerProfileFilterInput
   tradesmanProfile: TradesmanProfileFilterInput
   id: UuidOperationFilterInput
@@ -961,7 +965,7 @@ type Mutation {
   "Generates a secure, time-limited Pre-signed URL for direct video uploads to the CDN."
   requestVideoUploadUrl(fileName: String! contentType: String!): String!
   "Confirms a successful CDN upload and saves the media record to the tradesman's profile."
-  confirmVideoUpload(tradesmanUserId: UUID! videoUrl: String! type: MediaType! serviceCategoryId: UUID): TradesmanMedia!
+  confirmVideoUpload(tradesmanUserId: UUID! videoUrl: String! imageUrl: String type: MediaType! serviceCategoryId: UUID): TradesmanMedia!
   "Toggles the visibility (IsActive) status of a tradesman's media reel."
   toggleTradesmanMediaStatus(mediaId: UUID! isActive: Boolean!): TradesmanMedia!
   "Updates the category assigned to a tradesman's media reel."
@@ -1059,6 +1063,7 @@ input TradesmanMediaFilterInput {
   tradesmanId: UuidOperationFilterInput
   tradesmanProfile: TradesmanProfileFilterInput
   videoUrl: StringOperationFilterInput
+  mobileVideoUrl: StringOperationFilterInput
   imageUrl: StringOperationFilterInput
   thumbnailUrl: StringOperationFilterInput
   type: MediaTypeOperationFilterInput
@@ -1516,14 +1521,16 @@ type User {
   profilePictureUrl: String
   homeownerProfile: HomeownerProfile
   tradesmanProfile: TradesmanProfile
+  isOnline: Boolean!
   isEmailVerified: Boolean!
   emailVerificationToken: String
   emailVerificationTokenExpires: DateTime
   preferredLanguage: String!
   preferredTheme: String!
+  aiRequestCount: Int!
+  lastAiRequestDate: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!
-  isOnline: Boolean!
 }
 
 type AiCalculationCriteria {
@@ -1561,6 +1568,8 @@ input UserSortInput {
   emailVerificationTokenExpires: SortEnumType
   preferredLanguage: SortEnumType
   preferredTheme: SortEnumType
+  aiRequestCount: SortEnumType
+  lastAiRequestDate: SortEnumType
   homeownerProfile: HomeownerProfileSortInput
   tradesmanProfile: TradesmanProfileSortInput
   id: SortEnumType

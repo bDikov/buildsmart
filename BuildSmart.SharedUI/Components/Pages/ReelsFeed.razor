@@ -33,11 +33,16 @@
                     @if (isRendered)
                     {
                         <video class="reel-video" 
-                               src="@reel.VideoUrl" 
                                loop 
                                muted="false" 
                                playsinline 
-                               preload="auto">
+                               preload="auto"
+                               poster="@reel.ImageUrl">
+                            @if (!string.IsNullOrEmpty(reel.MobileVideoUrl))
+                            {
+                                <source src="@reel.MobileVideoUrl" media="(max-width: 768px)" type="video/mp4" />
+                            }
+                            <source src="@reel.VideoUrl" type="video/mp4" />
                         </video>
                     }
                     else
@@ -173,6 +178,8 @@
     {
         public string Id { get; set; } = "";
         public string VideoUrl { get; set; } = "";
+        public string? MobileVideoUrl { get; set; }
+        public string? ImageUrl { get; set; }
         public string Title { get; set; } = "";
     }
 
@@ -198,7 +205,9 @@
                     {
                         Id = m.Id.ToString(),
                         VideoUrl = m.VideoUrl,
-                        Title = "Tradesman Portfolio" // We can add a Title property to TradesmanMedia later if needed
+                        MobileVideoUrl = m.MobileVideoUrl,
+                        ImageUrl = m.ImageUrl,
+                        Title = "Tradesman Portfolio"
                     }).ToList();
                 }
             }

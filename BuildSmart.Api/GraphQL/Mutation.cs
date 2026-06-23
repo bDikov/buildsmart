@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Hangfire;
 
 namespace BuildSmart.Api.GraphQL;
 
@@ -1019,10 +1020,12 @@ public class Mutation
 	public async Task<TradesmanMedia> ConfirmVideoUpload(
 		Guid tradesmanUserId,
 		string videoUrl,
+		string? imageUrl,
         BuildSmart.Core.Domain.Enums.MediaType type,
         Guid? serviceCategoryId,
 		[Service] IUnitOfWork unitOfWork,
-		[Service] Microsoft.Extensions.Configuration.IConfiguration config)
+		[Service] Microsoft.Extensions.Configuration.IConfiguration config,
+		[Service] Hangfire.IBackgroundJobClient backgroundJobs)
 	{
 		var profile = await unitOfWork.TradesmanProfiles.GetByUserIdAsync(tradesmanUserId)
 			?? throw new GraphQLException("Tradesman profile not found.");
@@ -1031,23 +1034,17 @@ public class Mutation
 		var publicBaseUrl = config["CloudflareR2:PublicUrl"];
 		var bucketName = config["CloudflareR2:BucketName"];
 		
-		if (!string.IsNullOrEmpty(publicBaseUrl) && Uri.TryCreate(videoUrl, UriKind.Absolute, out var parsedUri))
-		{
-			var path = parsedUri.AbsolutePath;
-			// Strip the bucket name from the path if it's present (S3 URLs include it, public R2 domains usually map the bucket to root)
-			if (!string.IsNullOrEmpty(bucketName) && path.StartsWith($"/{bucketName}/"))
-			{
-				path = path.Substring($"/{bucketName}".Length);
-			}
-			videoUrl = $"{publicBaseUrl.TrimEnd('/')}{path}";
-		}
+		videoUrl = RemapUrl(videoUrl, publicBaseUrl, bucketName) ?? videoUrl;
+		imageUrl = RemapUrl(imageUrl, publicBaseUrl, bucketName);
 
 		var media = new TradesmanMedia
 		{
 			Id = Guid.NewGuid(),
 			TradesmanId = profile.Id, 
 			VideoUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Video ? videoUrl : string.Empty,
-            ImageUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Picture ? videoUrl : null,
+			MobileVideoUrl = null, // Set to null; processed asynchronously
+            ImageUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Picture ? videoUrl : imageUrl,
+            ThumbnailUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Picture ? videoUrl : imageUrl,
             Type = type,
             ServiceCategoryId = serviceCategoryId,
 			CreatedAt = DateTime.UtcNow,
@@ -1058,7 +1055,27 @@ public class Mutation
 		await unitOfWork.TradesmanProfiles.AddMediaAsync(media);
 		await unitOfWork.SaveChangesAsync();
 
+		if (type == BuildSmart.Core.Domain.Enums.MediaType.Video)
+		{
+			backgroundJobs.Enqueue<BuildSmart.Api.Workers.VideoProcessingJob>(job => job.ProcessVideoAsync(media.Id));
+		}
+
 		return media;
+	}
+
+	private string? RemapUrl(string? url, string? publicBaseUrl, string? bucketName)
+	{
+		if (string.IsNullOrEmpty(url)) return url;
+		if (!string.IsNullOrEmpty(publicBaseUrl) && Uri.TryCreate(url, UriKind.Absolute, out var parsedUri))
+		{
+			var path = parsedUri.AbsolutePath;
+			if (!string.IsNullOrEmpty(bucketName) && path.StartsWith($"/{bucketName}/"))
+			{
+				path = path.Substring($"/{bucketName}".Length);
+			}
+			return $"{publicBaseUrl.TrimEnd('/')}{path}";
+		}
+		return url;
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]

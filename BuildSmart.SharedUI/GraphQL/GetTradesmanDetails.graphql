@@ -37,6 +37,7 @@ query GetTradesmanDetailsById {
     media {
       id
       videoUrl
+      mobileVideoUrl
       imageUrl
       type
       isActive

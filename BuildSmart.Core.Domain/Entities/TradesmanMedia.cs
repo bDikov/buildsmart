@@ -12,6 +12,7 @@ public class TradesmanMedia : BaseEntity
     public TradesmanProfile TradesmanProfile { get; set; } = null!;
 
     public string VideoUrl { get; set; } = string.Empty;
+    public string? MobileVideoUrl { get; set; }
     public string? ImageUrl { get; set; }
     public string? ThumbnailUrl { get; set; }
     
