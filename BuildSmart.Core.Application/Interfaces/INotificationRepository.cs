@@ -10,4 +10,5 @@ public interface INotificationRepository
     Task MarkAsReadAsync(Guid notificationId);
     Task DeleteAllByUserIdAsync(Guid userId);
     Task MarkProjectNotificationsAsReadAsync(Guid userId, Guid projectId);
+    Task DeleteProjectNotificationsAsync(Guid projectId);
 }

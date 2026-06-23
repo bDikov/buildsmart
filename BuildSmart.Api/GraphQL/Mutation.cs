@@ -446,6 +446,7 @@ public class Mutation
 			throw new GraphQLException(new Error("Homeowners cannot delete a project while it is Active.", "PROJECT_IS_ACTIVE"));
 		}
 
+		await unitOfWork.Notifications.DeleteProjectNotificationsAsync(projectId);
 		await unitOfWork.Projects.DeleteAsync(projectId);
 		await unitOfWork.SaveChangesAsync();
 		return true;

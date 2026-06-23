@@ -64,4 +64,16 @@ public class NotificationRepository : INotificationRepository
             _context.Notifications.Update(notification);
         }
     }
+
+    public async Task DeleteProjectNotificationsAsync(Guid projectId)
+    {
+        var projectNotifications = await _context.Notifications
+            .Where(n => n.RelatedEntityType == "Project" && n.RelatedEntityId == projectId)
+            .ToListAsync();
+
+        if (projectNotifications.Any())
+        {
+            _context.Notifications.RemoveRange(projectNotifications);
+        }
+    }
 }
