@@ -57,6 +57,14 @@ window.reelsObserver = {
                     }
                     this.dotNetRef.invokeMethodAsync('OnVideoVisible', videoId);
                     window.reelsObserver.preDecodeAdjacent(entry.target);
+
+                    const container = entry.target.closest('.bs-reels-container');
+                    if (container && container.classList.contains('in-theater-mode')) {
+                        container.querySelectorAll('.bs-reel-item').forEach(item => {
+                            item.classList.remove('bs-theater-mode');
+                        });
+                        entry.target.classList.add('bs-theater-mode');
+                    }
                 } else {
                     if (player) {
                         player.__ignoreVolumeChangeUntil = Date.now() + 200;
@@ -117,10 +125,8 @@ window.reelsObserver = {
             let tapCount = 0;
             let tapTimer = null;
 
-            // Wire up the new theater mode buttons to aggressively block Plyr from capturing the touch
+            // Wire up the close button to aggressively block Plyr from capturing the touch
             const closeBtn = element.querySelector('.bs-theater-close');
-            const prevBtn = element.querySelector('.bs-theater-prev');
-            const nextBtn = element.querySelector('.bs-theater-next');
 
             const handleTheaterBtn = (e, action) => {
                 e.preventDefault();
@@ -141,30 +147,6 @@ window.reelsObserver = {
                 element.classList.remove('bs-theater-mode');
                 const container = element.closest('.bs-reels-container');
                 if (container) container.classList.remove('in-theater-mode');
-            });
-
-            bindButton(prevBtn, () => {
-                const prevEl = element.previousElementSibling;
-                if (prevEl) {
-                    element.classList.remove('bs-theater-mode');
-                    prevEl.classList.add('bs-theater-mode');
-                    const container = element.closest('.bs-reels-container');
-                    if (container) {
-                        container.scrollBy({ top: -container.clientHeight, behavior: 'auto' });
-                    }
-                }
-            });
-
-            bindButton(nextBtn, () => {
-                const nextEl = element.nextElementSibling;
-                if (nextEl) {
-                    element.classList.remove('bs-theater-mode');
-                    nextEl.classList.add('bs-theater-mode');
-                    const container = element.closest('.bs-reels-container');
-                    if (container) {
-                        container.scrollBy({ top: container.clientHeight, behavior: 'auto' });
-                    }
-                }
             });
 
             element.addEventListener('click', (e) => {
@@ -328,3 +310,39 @@ window.reelsObserver = {
         }
     }
 };
+
+window.addEventListener('keydown', (e) => {
+    const container = document.querySelector('.bs-reels-container.in-theater-mode');
+    if (!container) return;
+
+    const activeItem = container.querySelector('.bs-reel-item.bs-theater-mode');
+    if (!activeItem) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        container.scrollBy({ top: container.clientHeight, behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        container.scrollBy({ top: -container.clientHeight, behavior: 'smooth' });
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        activeItem.classList.remove('bs-theater-mode');
+        container.classList.remove('in-theater-mode');
+    } else if (e.key === ' ') {
+        e.preventDefault();
+        const videoId = activeItem.getAttribute('data-video-id');
+        if (videoId) {
+            window.reelsObserver.togglePlayback(videoId);
+        }
+    } else if (e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        const videoId = activeItem.getAttribute('data-video-id');
+        if (videoId) {
+            const player = window.reelsObserver.players[videoId];
+            if (player) {
+                player.muted = !player.muted;
+                window.reelsObserver.globalMuted = player.muted;
+            }
+        }
+    }
+});

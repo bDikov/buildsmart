@@ -103,45 +103,7 @@
                                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                                             </svg>
                                         </button>
-                                        <button type="button" class="bs-theater-btn bs-theater-prev" title="Previous Video">
-                                            <!-- Solid Rewind Icon -->
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                                <polygon points="11,19 2,12 11,5"></polygon>
-                                                <polygon points="22,19 13,12 22,5"></polygon>
-                                            </svg>
-                                        </button>
-                                        <button type="button" class="bs-theater-btn bs-theater-next" title="Next Video">
-                                            <!-- Solid Fast Forward Icon -->
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                                <polygon points="13,19 22,12 13,5"></polygon>
-                                                <polygon points="2,19 11,12 2,5"></polygon>
-                                            </svg>
-                                        </button>
 
-                                        <div class="bs-reel-overlay" @onclick:stopPropagation="true">
-                                            <div class="bs-reel-info">
-                                                <h3 class="bs-reel-name">@video.Name</h3>
-                                                <p class="bs-reel-role">@video.Role・@video.Location</p>
-                                                
-                                                <div class="bs-reel-stats">
-                                                    <div class="bs-reel-stat-item">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                                        </svg>
-                                                        <span>@string.Format("{0:F1}", video.Rating)</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="bs-reel-actions">
-                                                <div class="bs-reel-avatar-ring">
-                                                    <img src="@(string.IsNullOrEmpty(video.ProfilePictureUrl) ? "" : video.ProfilePictureUrl)" alt="Profile" class="bs-reel-avatar-image" />
-                                                </div>
-                                                <button class="bs-reel-action-btn" @onclick="() => NavigateToTradesmanProfile(video.TradesmanId)">
-                                                    @Loc["Feed_ViewProfile"]
-                                                </button>
-                                            </div>
-                                        </div>
                                     </div>
                                 }
                             </div>
@@ -338,101 +300,31 @@
         pointer-events: auto;
     }
 
-    /* --- THEATER MODE (TRIPLE CLICK) --- */
-    .bs-reels-container.in-theater-mode .bs-reel-item:not(.bs-theater-mode) {
-        opacity: 0.001 !important; /* Keep in render tree for pre-decoding, but invisible */
-        pointer-events: none !important;
-        transition: none !important;
-        z-index: -1 !important;
-    }
-
-    .bs-reel-item.bs-theater-mode {
-        position: fixed !important; /* Break out of relative container */
+    /* --- THEATER MODE --- */
+    .bs-reels-container.in-theater-mode {
+        position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        transform: none !important; /* Disable all centering transforms */
         width: 100vw !important;
         max-width: none !important;
         height: 100vh !important;
-        aspect-ratio: auto !important;
+        margin: 0 !important;
         border-radius: 0 !important;
         border: none !important;
         z-index: 9999 !important; /* Float above everything including navbars */
-        pointer-events: auto !important;
         background-color: black !important;
-        opacity: 1 !important;
+        box-shadow: none !important;
+    }
+
+    .bs-reels-container.in-theater-mode .bs-reel-item {
+        border-radius: 0 !important;
+        border: none !important;
     }
 
     .bs-reel-video {
         width: 100%;
         height: 100%;
         object-fit: cover;
-    }
-
-    .bs-reel-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        /* Add border-radius to match the container so the gradient doesn't bleed */
-        border-bottom-left-radius: 22px;
-        border-bottom-right-radius: 22px;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-        padding: 40px 20px 60px 20px; /* Extra bottom padding pushes user info ABOVE the media controls */
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        color: var(--text-primary);
-        z-index: 10;
-        pointer-events: none; /* Let clicks pass through to Plyr controls */
-        
-        /* Auto-Hide UI: Hidden by default, shown on hover/tap via Plyr state */
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    /* Show the overlay when the user hovers the card, OR when Plyr decides controls should be visible */
-    .bs-reel-item:hover .bs-reel-overlay,
-    .plyr:not(.plyr--hide-controls) + .bs-reel-overlay {
-        opacity: 1;
-    }
-
-    .bs-reel-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-        pointer-events: auto; /* Re-enable clicks on buttons */
-    }
-
-    .bs-reel-avatar-ring {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        border: 2px solid var(--bg-card);
-        overflow: hidden;
-    }
-
-    .bs-reel-avatar-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .bs-reel-action-btn {
-        background-color: var(--color-primary);
-        border: none;
-        border-radius: 20px;
-        color: var(--bg-page);
-        font-weight: bold;
-        padding: 8px 16px;
-        font-size: var(--font-body-2, 12px);
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .bs-reel-action-btn:hover {
-        background-color: var(--color-secondary);
     }
 
     /* --- PLYR VIDEO CONTROLS FIX --- */
@@ -450,10 +342,10 @@
         object-fit: cover;
     }
 
-    /* Push the Plyr controls up so they aren't hidden behind our custom title/avatar overlay */
+    /* Standard controls padding */
     #reels-feed-container .plyr__controls {
-        padding-bottom: 10px; /* Sit at the absolute bottom */
-        z-index: 20; /* Ensure it floats above the gradient overlay */
+        padding-bottom: 10px;
+        z-index: 20;
         background: transparent;
     }
 
@@ -499,24 +391,32 @@
         right: 20px;
     }
 
-    .bs-theater-prev {
-        top: 50%;
-        left: 20px;
-        transform: translateY(-50%);
-    }
-    
-    .bs-theater-prev:hover {
-        transform: translateY(-50%) scale(1.1);
-    }
 
-    .bs-theater-next {
-        top: 50%;
-        right: 20px;
-        transform: translateY(-50%);
-    }
-    
-    .bs-theater-next:hover {
-        transform: translateY(-50%) scale(1.1);
+    @@media (min-width: 992px) {
+        /* Larger video card in normal mode on desktop */
+        .bs-reels-container:not(.in-theater-mode) {
+            height: 600px !important;
+            max-width: 440px !important;
+        }
+
+        /* Center the vertical video in theater mode with 9:16 ratio */
+        .bs-reels-container.in-theater-mode .plyr {
+            position: absolute !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: auto !important;
+            height: 100% !important;
+            aspect-ratio: 9 / 16 !important;
+            max-width: calc(100vh * (9/16)) !important;
+        }
+        
+        /* Adjust theater close button on desktop */
+        .bs-reels-container.in-theater-mode .bs-theater-close {
+            top: 30px !important;
+            right: 30px !important;
+        }
     }
 </style>
 
