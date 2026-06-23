@@ -473,5 +473,6 @@
     public void Dispose()
     {
         SignalRService.NotificationReceived -= OnNotificationReceived;
+        ViewModel.Dispose();
     }
 }

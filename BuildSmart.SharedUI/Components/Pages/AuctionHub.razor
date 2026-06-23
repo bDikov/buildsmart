@@ -245,6 +245,7 @@
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            ViewModel.Dispose();
         }
     }
 }

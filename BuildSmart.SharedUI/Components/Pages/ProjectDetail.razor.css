@@ -226,6 +226,33 @@
     box-shadow: var(--bs-total-card-shadow);
 }
 
+.overall-total-card.interactive {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.overall-total-card.interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.1);
+    background-color: var(--bg-card-alt);
+}
+
+.overall-total-card.generating {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.05);
+    animation: pulse-border 2s infinite ease-in-out;
+}
+
+.overall-total-card.generating:hover {
+    box-shadow: 0 6px 16px rgba(168, 85, 247, 0.12);
+}
+
+@keyframes pulse-border {
+    0% { border-color: rgba(168, 85, 247, 0.3); }
+    50% { border-color: rgba(168, 85, 247, 1); }
+    100% { border-color: rgba(168, 85, 247, 0.3); }
+}
+
 .overall-total-label {
     font-size: 1.1rem;
     font-weight: 700;
@@ -242,4 +269,61 @@
     font-size: 0.9rem;
     color: var(--text-secondary);
     margin: 0;
+}
+
+/* CTA Link Buttons styling inside overall total card */
+.cta-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.cta-link-btn.primary {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+.cta-link-btn.primary:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.cta-link-btn.success {
+    background-color: var(--color-success);
+    color: #fff;
+}
+
+.cta-link-btn.success:hover {
+    background-color: #059669; /* Slightly darker emerald */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+
+/* Inline CTAs styling */
+.cta-inline-link {
+    color: var(--color-success);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline;
+}
+
+.cta-inline-link:hover {
+    color: #059669;
+    text-decoration-color: var(--color-primary);
 }

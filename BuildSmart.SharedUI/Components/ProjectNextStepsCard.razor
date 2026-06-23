@@ -13,7 +13,7 @@
 
     @if (Project.JobPosts != null && Project.JobPosts.Any())
     {
-        <h3 class="section-title mt-4">@Loc["ProjectDetail_NextSteps_Title"]</h3>
+        <h3 id="next-steps-section" class="section-title mt-4">@Loc["ProjectDetail_NextSteps_Title"]</h3>
         
         <div class="next-steps-grid">
             @if (isMasterOfferReady)

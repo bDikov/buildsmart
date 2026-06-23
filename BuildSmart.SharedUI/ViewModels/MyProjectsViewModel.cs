@@ -6,7 +6,7 @@ using BuildSmart.SharedUI.Services;
 
 namespace BuildSmart.SharedUI.ViewModels;
 
-public partial class MyProjectsViewModel : ObservableObject
+public partial class MyProjectsViewModel : ObservableObject, IDisposable
 {
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
@@ -142,6 +142,11 @@ public partial class MyProjectsViewModel : ObservableObject
 		{
 			IsBusy = false;
 		}
+	}
+
+	public void Dispose()
+	{
+		_signalRService.NotificationReceived -= OnNotificationReceived;
 	}
 }
 

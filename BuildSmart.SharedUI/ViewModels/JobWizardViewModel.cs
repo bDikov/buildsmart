@@ -230,6 +230,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	}
 
 	private Guid? _currentProjectId;
+	public Guid? CurrentProjectId => _currentProjectId;
 	private Guid? _targetJobPostId;
 	private Guid? _targetCategoryId;
 	private Dictionary<Guid, Guid> _currentJobPostIds = new();

@@ -7,6 +7,7 @@
 @inject NavigationManager NavManager
 @inject IBuildSmartApiClient ApiClient
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <div class="admin-container">
     <div class="header-section">
@@ -707,5 +708,10 @@
                 await JSRuntime.InvokeVoidAsync("alert", $"Failed to delete job: {ex.Message}");
             }
         }
+    }
+
+    public void Dispose()
+    {
+        ViewModel.Dispose();
     }
 }

@@ -8,74 +8,83 @@ using System.Collections.ObjectModel;
 
 namespace BuildSmart.SharedUI.ViewModels;
 
-public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributable
+public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributable, IDisposable
 {
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
-    private readonly IAuthService _authService;
+	private readonly IAuthService _authService;
 
-    [ObservableProperty]
-    private bool _hasLoaded;
+	[ObservableProperty]
+	private bool _hasLoaded;
 
-    [ObservableProperty]
-    private bool _isLoading;
+	[ObservableProperty]
+	private bool _isLoading;
 
-    private readonly SemaphoreSlim _reloadSemaphore = new(1, 1);
-    private DateTime _lastReloadTime = DateTime.MinValue;
+	private readonly SemaphoreSlim _reloadSemaphore = new(1, 1);
+	private DateTime _lastReloadTime = DateTime.MinValue;
 
-    public ObservableCollection<JobPostViewModel> JobPosts { get; } = new();
+	public ObservableCollection<JobPostViewModel> JobPosts { get; } = new();
 
 	public ProjectDetailViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService, IAuthService authService)
 	{
 		_apiClient = apiClient;
 		_signalRService = signalRService;
-        _authService = authService;
+		_authService = authService;
 
 		_signalRService.NotificationReceived += OnNotificationReceived;
-        _signalRService.QuestionUpdated += OnQuestionUpdated;
-        _signalRService.NewReplyReceived += OnNewReplyReceived;
-        _signalRService.OfferRegenerated += OnOfferRegenerated;
-        _ = DetectRoleAsync();
+		_signalRService.QuestionUpdated += OnQuestionUpdated;
+		_signalRService.NewReplyReceived += OnNewReplyReceived;
+		_signalRService.OfferRegenerated += OnOfferRegenerated;
+		_signalRService.ProcessingUpdateReceived += OnProcessingUpdateReceived;
+		_ = DetectRoleAsync();
 	}
 
-    private void OnOfferRegenerated(Guid projectId)
-    {
-        if (Project != null && Project.Id == projectId)
-        {
-            _ = LoadProjectAsync(projectId);
-        }
-    }
+	private void OnProcessingUpdateReceived(int step, string message, int progress)
+	{
+		if (Project != null)
+		{
+			AppServiceLocator.MainThread.BeginInvokeOnMainThread(async () => await ReloadProjectDebouncedAsync());
+		}
+	}
 
-    private void OnQuestionUpdated(System.Text.Json.JsonElement payload)
-    {
-        _ = ReloadProjectDebouncedAsync();
-    }
+	private void OnOfferRegenerated(Guid projectId)
+	{
+		if (Project != null && Project.Id == projectId)
+		{
+			_ = LoadProjectAsync(projectId);
+		}
+	}
 
-    private void OnNewReplyReceived(System.Text.Json.JsonElement payload)
-    {
-        _ = ReloadProjectDebouncedAsync();
-    }
+	private void OnQuestionUpdated(System.Text.Json.JsonElement payload)
+	{
+		_ = ReloadProjectDebouncedAsync();
+	}
 
-    private async Task DetectRoleAsync()
-    {
-        try
-        {
-            var token = await _authService.GetTokenAsync();
-            if (!string.IsNullOrEmpty(token))
-            {
-                var userId = _authService.GetUserIdFromToken(token);
-                if (userId != null)
-                {
-                    CurrentUserId = userId;
-                }
+	private void OnNewReplyReceived(System.Text.Json.JsonElement payload)
+	{
+		_ = ReloadProjectDebouncedAsync();
+	}
 
-                var role = _authService.GetUserRoleFromToken(token);
-                IsHomeowner = string.Equals(role, "HOMEOWNER", StringComparison.OrdinalIgnoreCase) || 
-                              string.Equals(role, "Homeowner", StringComparison.OrdinalIgnoreCase);
-            }
-        }
-        catch { /* Silently fail, default to false */ }
-    }
+	private async Task DetectRoleAsync()
+	{
+		try
+		{
+			var token = await _authService.GetTokenAsync();
+			if (!string.IsNullOrEmpty(token))
+			{
+				var userId = _authService.GetUserIdFromToken(token);
+				if (userId != null)
+				{
+					CurrentUserId = userId;
+				}
+
+				var role = _authService.GetUserRoleFromToken(token);
+				IsHomeowner = string.Equals(role, "HOMEOWNER", StringComparison.OrdinalIgnoreCase) ||
+							  string.Equals(role, "Homeowner", StringComparison.OrdinalIgnoreCase);
+			}
+		}
+		catch { /* Silently fail, default to false */ }
+	}
 
 	private void OnNotificationReceived(string title, string message, object? data)
 	{
@@ -85,11 +94,11 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		}
 	}
 
-    private async Task ReloadProjectDebouncedAsync()
-    {
-        if ((DateTime.UtcNow - _lastReloadTime).TotalSeconds < 2) return;
-        await ReloadProjectAsync();
-    }
+	private async Task ReloadProjectDebouncedAsync()
+	{
+		if ((DateTime.UtcNow - _lastReloadTime).TotalSeconds < 2) return;
+		await ReloadProjectAsync();
+	}
 
 	private async Task ReloadProjectAsync()
 	{
@@ -97,50 +106,98 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 
 		try
 		{
-            await _reloadSemaphore.WaitAsync();
-            IsLoading = true;
-            _lastReloadTime = DateTime.UtcNow;
+			await _reloadSemaphore.WaitAsync();
+			IsLoading = true;
+			_lastReloadTime = DateTime.UtcNow;
 
 			var result = await _apiClient.GetProjectById.ExecuteAsync(Project.Id);
 			if (result.Data?.ProjectById != null)
 			{
 				Project = result.Data.ProjectById;
-                SyncJobPosts();
-                HasLoaded = true;
+				SyncJobPosts();
+				HasLoaded = true;
 			}
 		}
 		catch { /* Silently fail reload */ }
-        finally
-        {
-            IsLoading = false;
-            _reloadSemaphore.Release();
-        }
+		finally
+		{
+			IsLoading = false;
+			_reloadSemaphore.Release();
+		}
 	}
 
-    public async Task LoadProjectAsync(Guid projectId)
-    {
-        if (IsLoading) return;
-        try
-        {
-            await _reloadSemaphore.WaitAsync();
-            IsLoading = true;
-            _lastReloadTime = DateTime.UtcNow;
+	public async Task LoadProjectAsync(Guid projectId)
+	{
+		if (IsLoading) return;
+		try
+		{
+			await _reloadSemaphore.WaitAsync();
+			IsLoading = true;
+			_lastReloadTime = DateTime.UtcNow;
 
-            var result = await _apiClient.GetProjectById.ExecuteAsync(projectId);
-            if (result.Data?.ProjectById != null)
-            {
-                Project = result.Data.ProjectById;
-                SyncJobPosts();
-                HasLoaded = true;
-            }
-        }
-        catch { /* Silently fail reload */ }
-        finally
-        {
-            IsLoading = false;
-            _reloadSemaphore.Release();
-        }
-    }
+			var result = await _apiClient.GetProjectById.ExecuteAsync(projectId);
+			if (result.Data?.ProjectById != null)
+			{
+				Project = result.Data.ProjectById;
+				SyncJobPosts();
+				HasLoaded = true;
+				JoinJobProcessingGroup(projectId.ToString());
+			}
+		}
+		catch { /* Silently fail reload */ }
+		finally
+		{
+			IsLoading = false;
+			_reloadSemaphore.Release();
+		}
+	}
+
+	private void JoinJobProcessingGroup(string projectId)
+	{
+		Task.Run(async () =>
+		{
+			try
+			{
+				await _signalRService.JoinJobProcessingGroupAsync(projectId);
+			}
+			catch { /* Ignore SignalR connection errors in background */ }
+		});
+	}
+
+	public void Dispose()
+	{
+		_signalRService.NotificationReceived -= OnNotificationReceived;
+		_signalRService.QuestionUpdated -= OnQuestionUpdated;
+		_signalRService.NewReplyReceived -= OnNewReplyReceived;
+		_signalRService.OfferRegenerated -= OnOfferRegenerated;
+		_signalRService.ProcessingUpdateReceived -= OnProcessingUpdateReceived;
+
+		if (Project != null)
+		{
+			var projectId = Project.Id.ToString();
+			Task.Run(async () =>
+			{
+				try
+				{
+					await _signalRService.LeaveJobProcessingGroupAsync(projectId);
+				}
+				catch { }
+			});
+
+			foreach (var job in Project.JobPosts)
+			{
+				var jobId = job.Id.ToString();
+				Task.Run(async () =>
+				{
+					try
+					{
+						await _signalRService.LeaveAuctionGroupAsync(jobId);
+					}
+					catch { }
+				});
+			}
+		}
+	}
 
 	[ObservableProperty]
 	private IProjectDetails? _project;
@@ -148,153 +205,158 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	[ObservableProperty]
 	private bool _isBusy;
 
-    [ObservableProperty]
-    private bool _isHomeowner;
+	[ObservableProperty]
+	private bool _isHomeowner;
 
-    [ObservableProperty]
-    private Guid? _currentUserId;
+	[ObservableProperty]
+	private Guid? _currentUserId;
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
 		if (query.TryGetValue("Project", out var projectObj))
 		{
-            if (projectObj is IProjectDetails project)
-            {
-                // CRITICAL: Clear current state first to prevent layout collisions
-                HasLoaded = false;
-                Project = null; 
+			if (projectObj is IProjectDetails project)
+			{
+				// CRITICAL: Clear current state first to prevent layout collisions
+				HasLoaded = false;
+				Project = null;
 
-                // Use a background task to allow navigation to complete smoothly
-                Task.Run(async () => {
-                    try
-                    {
-                        await Task.Delay(300); // Give the UI thread time to breathe
-                        
-                        AppServiceLocator.MainThread.BeginInvokeOnMainThread(() => {
-                            Project = project;
-                            SyncJobPosts();
-                            HasLoaded = true;
-                        });
-                    }
-                    catch { /* Prevent unobserved task exception */ }
-                });
-            }
+				// Use a background task to allow navigation to complete smoothly
+				Task.Run(async () =>
+				{
+					try
+					{
+						await Task.Delay(300); // Give the UI thread time to breathe
+
+						AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+						{
+							Project = project;
+							SyncJobPosts();
+							HasLoaded = true;
+							JoinJobProcessingGroup(project.Id.ToString());
+						});
+					}
+					catch { /* Prevent unobserved task exception */ }
+				});
+			}
 		}
-        else if (query.TryGetValue("ProjectId", out var projectIdObj) && Guid.TryParse(projectIdObj.ToString(), out var projectId))
-        {
-            Task.Run(async () => await LoadProjectAsync(projectId));
-        }
-        else if (query.TryGetValue("JobId", out var jobIdObj) && Guid.TryParse(jobIdObj.ToString(), out var jobId))
-        {
-            Task.Run(async () => {
-                try
-                {
-                    var result = await _apiClient.GetProjectIdFromJob.ExecuteAsync(jobId);
-                    var projId = result.Data?.AllJobPosts?.FirstOrDefault()?.Project?.Id;
-                    if (projId.HasValue)
-                    {
-                        await LoadProjectAsync(projId.Value);
-                    }
-                }
-                catch { /* Failed to resolve JobId */ }
-            });
-        }
+		else if (query.TryGetValue("ProjectId", out var projectIdObj) && Guid.TryParse(projectIdObj.ToString(), out var projectId))
+		{
+			Task.Run(async () => await LoadProjectAsync(projectId));
+		}
+		else if (query.TryGetValue("JobId", out var jobIdObj) && Guid.TryParse(jobIdObj.ToString(), out var jobId))
+		{
+			Task.Run(async () =>
+			{
+				try
+				{
+					var result = await _apiClient.GetProjectIdFromJob.ExecuteAsync(jobId);
+					var projId = result.Data?.AllJobPosts?.FirstOrDefault()?.Project?.Id;
+					if (projId.HasValue)
+					{
+						await LoadProjectAsync(projId.Value);
+					}
+				}
+				catch { /* Failed to resolve JobId */ }
+			});
+		}
 	}
 
-    public decimal OverallTotalEstimatedPrice => JobPosts.Sum(j => j.TotalEstimatedPrice);
-    public bool HasAnyEstimatedPrices => JobPosts.Any(j => j.TotalEstimatedPrice > 0);
+	public decimal OverallTotalEstimatedPrice => JobPosts.Sum(j => j.TotalEstimatedPrice);
+	public bool HasAnyEstimatedPrices => JobPosts.Any(j => j.TotalEstimatedPrice > 0);
 
-    private void SyncJobPosts()
-    {
-        JobPosts.Clear();
-        if (Project?.JobPosts != null)
-        {
-            foreach (var job in Project.JobPosts)
-            {
-                var jobVm = new JobPostViewModel(job, LoadMoreRepliesAsync);
-                JobPosts.Add(jobVm);
+	private void SyncJobPosts()
+	{
+		JobPosts.Clear();
+		if (Project?.JobPosts != null)
+		{
+			foreach (var job in Project.JobPosts)
+			{
+				var jobVm = new JobPostViewModel(job, LoadMoreRepliesAsync);
+				JobPosts.Add(jobVm);
 
-                var jobId = job.Id;
+				var jobId = job.Id;
 
-                // Fire and forget safely to prevent UnobservedTaskException
-                Task.Run(async () => 
-                {
-                    try 
-                    {
-                        await _signalRService.ConnectAsync();
-                        await _signalRService.JoinAuctionGroupAsync(jobId.ToString());
-                    }
-                    catch { /* Ignore SignalR connection errors in background */ }
-                });
+				// Fire and forget safely to prevent UnobservedTaskException
+				Task.Run(async () =>
+				{
+					try
+					{
+						await _signalRService.ConnectAsync();
+						await _signalRService.JoinAuctionGroupAsync(jobId.ToString());
+					}
+					catch { /* Ignore SignalR connection errors in background */ }
+				});
 
-                if (job.Status != JobPostStatus.Draft && job.Status != JobPostStatus.GeneratingScope)
-                {
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var result = await _apiClient.GetAiCalculationByJob.ExecuteAsync(jobId);
-                            var aiCalculation = result.Data?.AiCalculationByJob?.FirstOrDefault();
-                            if (aiCalculation != null)
-                            {
-                                AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
-                                {
-                                    jobVm.TotalEstimatedPrice = aiCalculation.TotalEstimatedPrice;
-                                    jobVm.Tasks.Clear();
-                                    if (aiCalculation.Tasks != null)
-                                    {
-                                        foreach (var t in aiCalculation.Tasks)
-                                        {
-                                            jobVm.Tasks.Add(t);
-                                        }
-                                    }
-                                    OnPropertyChanged(nameof(OverallTotalEstimatedPrice));
-                                    OnPropertyChanged(nameof(HasAnyEstimatedPrices));
-                                });
-                            }
-                        }
-                        catch { /* Fail silently */ }
-                    });
-                }
-            }
-        }
-    }
+				if (job.Status != JobPostStatus.Draft && job.Status != JobPostStatus.GeneratingScope)
+				{
+					Task.Run(async () =>
+					{
+						try
+						{
+							var result = await _apiClient.GetAiCalculationByJob.ExecuteAsync(jobId);
+							var aiCalculation = result.Data?.AiCalculationByJob?.FirstOrDefault();
+							if (aiCalculation != null)
+							{
+								AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+								{
+									jobVm.TotalEstimatedPrice = aiCalculation.TotalEstimatedPrice;
+									jobVm.Tasks.Clear();
+									if (aiCalculation.Tasks != null)
+									{
+										foreach (var t in aiCalculation.Tasks)
+										{
+											jobVm.Tasks.Add(t);
+										}
+									}
+									OnPropertyChanged(nameof(OverallTotalEstimatedPrice));
+									OnPropertyChanged(nameof(HasAnyEstimatedPrices));
+								});
+							}
+						}
+						catch { /* Fail silently */ }
+					});
+				}
+			}
+		}
+	}
 
-    private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
-    {
-        if (questionVm == null || IsBusy) return;
+	private async Task LoadMoreRepliesAsync(QuestionViewModel questionVm)
+	{
+		if (questionVm == null || IsBusy) return;
 
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.GetQuestionReplies.ExecuteAsync(
-                questionVm.Question.Id, 
-                questionVm.Replies.Count, 
-                5);
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.GetQuestionReplies.ExecuteAsync(
+				questionVm.Question.Id,
+				questionVm.Replies.Count,
+				5);
 
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
 
-            if (result.Data?.QuestionReplies?.Replies != null)
-            {
-                questionVm.AddReplies(result.Data.QuestionReplies.Replies);
-            }
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+			if (result.Data?.QuestionReplies?.Replies != null)
+			{
+				questionVm.AddReplies(result.Data.QuestionReplies.Replies);
+			}
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 
-       [RelayCommand]
-       private async Task EditAnswersAsync(IJobPostDetails job)	{
+	[RelayCommand]
+	private async Task EditAnswersAsync(IJobPostDetails job)
+	{
 		try
 		{
 			await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
@@ -336,261 +398,264 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		}
 	}
 
-    [RelayCommand]
-    private async Task ContinueDraftAsync()
-    {
-        if (Project == null) return;
-        try
-        {
-            await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
-            {
-                { "projectId", Project.Id }
-            });
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
-        }
-    }
+	[RelayCommand]
+	private async Task ContinueDraftAsync()
+	{
+		if (Project == null) return;
+		try
+		{
+			await AppServiceLocator.Navigation.NavigateToAsync("/job-wizard", new Dictionary<string, object>
+			{
+				{ "projectId", Project.Id }
+			});
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
+		}
+	}
 
-    [RelayCommand]
-    private async Task ViewAuctionHubAsync(IJobPostDetails job)
-    {
-        if (job == null) return;
-        try
-        {
-            await AppServiceLocator.Navigation.NavigateToAsync($"/auction-hub?jobId={job.Id}");
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
-        }
-    }
+	[RelayCommand]
+	private async Task ViewAuctionHubAsync(IJobPostDetails job)
+	{
+		if (job == null) return;
+		try
+		{
+			await AppServiceLocator.Navigation.NavigateToAsync($"/auction-hub?jobId={job.Id}");
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
+		}
+	}
 
-    [RelayCommand]
-    private async Task ReviewBidAsync(object bidObj)
-    {
-        try
-        {
-            Guid jobPostId = Guid.Empty;
-            Guid bidId = Guid.Empty;
+	[RelayCommand]
+	private async Task ReviewBidAsync(object bidObj)
+	{
+		try
+		{
+			Guid jobPostId = Guid.Empty;
+			Guid bidId = Guid.Empty;
 
-            if (bidObj is IGetProjectById_ProjectById_JobPosts_Bids pb)
-            {
-                jobPostId = pb.JobPostId;
-                bidId = pb.Id;
-            }
-            else if (bidObj is IGetProjectsForReview_ProjectsForReview_JobPosts_Bids pr)
-            {
-                jobPostId = pr.JobPostId;
-                bidId = pr.Id;
-            }
-            else
-            {
-                throw new Exception("Unknown bid object type.");
-            }
+			if (bidObj is IGetProjectById_ProjectById_JobPosts_Bids pb)
+			{
+				jobPostId = pb.JobPostId;
+				bidId = pb.Id;
+			}
+			else if (bidObj is IGetProjectsForReview_ProjectsForReview_JobPosts_Bids pr)
+			{
+				jobPostId = pr.JobPostId;
+				bidId = pr.Id;
+			}
+			else
+			{
+				throw new Exception("Unknown bid object type.");
+			}
 
-            await AppServiceLocator.Navigation.NavigateToAsync($"{"BidDetailsPage"}?jobPostId={jobPostId}&bidId={bidId}");
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
-        }
-    }
+			await AppServiceLocator.Navigation.NavigateToAsync($"{"BidDetailsPage"}?jobPostId={jobPostId}&bidId={bidId}");
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Navigation Error", ex.Message, "OK");
+		}
+	}
 
 	[RelayCommand]
 	private async Task RespondToAdminAsync(IJobPostDetails job)
 	{
-	        string response = await AppServiceLocator.Alerts.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
-	        if (string.IsNullOrWhiteSpace(response)) return;
+		string response = await AppServiceLocator.Alerts.DisplayPromptAsync("Respond to Admin", $"Provide clarification for '{job.Title}':", "Send", "Cancel", "Write your response...");
+		if (string.IsNullOrWhiteSpace(response)) return;
 
-	        try
-	        {
-	                IsBusy = true;
-	                var result = await _apiClient.AddJobFeedback.ExecuteAsync(job.Id, response);
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.AddJobFeedback.ExecuteAsync(job.Id, response);
 
-	                if (result.Errors.Count > 0)
-	                {
-	                        await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-	                        return;
-	                }
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
 
-	                await ReloadProjectAsync();
-	                }
-	                catch (Exception ex)
-	                {
-	                await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-	                }
-	                finally
-	                {
-	                IsBusy = false;
-	                }
-	                }
-
-    [RelayCommand]
-    private async Task EditFeedbackAsync(IFeedbackDetails feedback)
-    {
-        if (feedback == null) return;
-
-        string newText = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Comment", "Update your comment:", "Save", "Cancel", initialValue: feedback.Text);
-        if (string.IsNullOrWhiteSpace(newText) || newText == feedback.Text) return;
-
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.EditJobFeedback.ExecuteAsync(Guid.Parse(feedback.Id), newText);
-
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
-
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    [RelayCommand]
-    private async Task ReplyToFeedbackAsync(IFeedbackDetails feedback)
-    {
-        if (feedback == null) return;
-
-        string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply to Feedback", "Type your reply:", "Send", "Cancel", "...");
-        if (string.IsNullOrWhiteSpace(replyText)) return;
-
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(Guid.Parse(feedback.Id), replyText);
-
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
-
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-	                [RelayCommand]
-	                private async Task ReplyToQuestionAsync(IQuestionDetails question)
-	                {
-	                if (question == null) return;
-
-	                string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
-	                if (string.IsNullOrWhiteSpace(replyText)) return;
-
-	                try
-	                {
-	                IsBusy = true;
-
-	                var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(question.Id, replyText);
-
-	                if (result.Errors.Count > 0)
-	                {
-	                        await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-	                        return;
-	                }
-
-	                if (Project != null)
-	                {
-	                        await ReloadProjectAsync();
-	                }	        }
-	        catch (Exception ex)
-	        {
-	                await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-	        }
-	        finally
-	        {
-	                IsBusy = false;
-	        }
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
 	}
 
-    [RelayCommand]
-    private async Task ReplyToNestedQuestionAsync(IQuestionReplyDetails reply)
-    {
-        if (reply == null) return;
-        var parentId = reply.ParentQuestionId;
-        if (!parentId.HasValue) return;
-
-        string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
-        if (string.IsNullOrWhiteSpace(replyText)) return;
-
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(parentId.Value, replyText);
-
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
-
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    [RelayCommand]
-    private async Task ReplyToNestedFeedbackAsync(IFeedbackReplyDetails reply)
-    {
-        if (reply == null) return;
-        
-        var parentId = reply.ParentFeedbackId;
-        if (string.IsNullOrEmpty(parentId)) return;
-
-        string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply to Feedback", "Type your reply:", "Send", "Cancel", "...");
-        if (string.IsNullOrWhiteSpace(replyText)) return;
-
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(Guid.Parse(parentId), replyText);
-
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
-
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
 	[RelayCommand]
-	private async Task AnswerQuestionAsync(IQuestionDetails question)	{
+	private async Task EditFeedbackAsync(IFeedbackDetails feedback)
+	{
+		if (feedback == null) return;
+
+		string newText = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Comment", "Update your comment:", "Save", "Cancel", initialValue: feedback.Text);
+		if (string.IsNullOrWhiteSpace(newText) || newText == feedback.Text) return;
+
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.EditJobFeedback.ExecuteAsync(Guid.Parse(feedback.Id ?? string.Empty), newText);
+
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
+
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task ReplyToFeedbackAsync(IFeedbackDetails feedback)
+	{
+		if (feedback == null) return;
+
+		string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply to Feedback", "Type your reply:", "Send", "Cancel", "...");
+		if (string.IsNullOrWhiteSpace(replyText)) return;
+
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(Guid.Parse(feedback.Id ?? string.Empty), replyText);
+
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
+
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task ReplyToQuestionAsync(IQuestionDetails question)
+	{
+		if (question == null) return;
+
+		string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
+		if (string.IsNullOrWhiteSpace(replyText)) return;
+
+		try
+		{
+			IsBusy = true;
+
+			var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(question.Id, replyText);
+
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
+
+			if (Project != null)
+			{
+				await ReloadProjectAsync();
+			}
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task ReplyToNestedQuestionAsync(IQuestionReplyDetails reply)
+	{
+		if (reply == null) return;
+		var parentId = reply.ParentQuestionId;
+		if (!parentId.HasValue) return;
+
+		string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply", "Type your reply:", "Send", "Cancel", "...");
+		if (string.IsNullOrWhiteSpace(replyText)) return;
+
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.ReplyToJobQuestion.ExecuteAsync(parentId.Value, replyText);
+
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
+
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task ReplyToNestedFeedbackAsync(IFeedbackReplyDetails reply)
+	{
+		if (reply == null) return;
+
+		var parentId = reply.ParentFeedbackId;
+		if (string.IsNullOrEmpty(parentId)) return;
+
+		string replyText = await AppServiceLocator.Alerts.DisplayPromptAsync("Reply to Feedback", "Type your reply:", "Send", "Cancel", "...");
+		if (string.IsNullOrWhiteSpace(replyText)) return;
+
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.ReplyToJobFeedback.ExecuteAsync(Guid.Parse(parentId), replyText);
+
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
+
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task AnswerQuestionAsync(IQuestionDetails question)
+	{
 		string answer = await AppServiceLocator.Alerts.DisplayPromptAsync("Answer Tradesman", question.QuestionText, "Submit", "Cancel", "Write your answer here...");
 		if (string.IsNullOrWhiteSpace(answer)) return;
 
@@ -618,105 +683,99 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		}
 	}
 
-    [RelayCommand]
-    private async Task EditAnswerAsync(IQuestionDetails question)
-    {
-        if (question == null) return;
+	[RelayCommand]
+	private async Task EditAnswerAsync(IQuestionDetails question)
+	{
+		if (question == null) return;
 
-        string newAnswer = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Answer", "Update your answer:", "Save", "Cancel", initialValue: question.AnswerText);
-        if (string.IsNullOrWhiteSpace(newAnswer) || newAnswer == question.AnswerText) return;
+		string newAnswer = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Answer", "Update your answer:", "Save", "Cancel", initialValue: question.AnswerText ?? "");
+		if (string.IsNullOrWhiteSpace(newAnswer) || newAnswer == question.AnswerText) return;
 
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.EditJobAnswer.ExecuteAsync(question.Id, newAnswer);
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.EditJobAnswer.ExecuteAsync(question.Id, newAnswer);
 
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
 
-            await AppServiceLocator.Alerts.DisplayAlert("Success", "Answer updated.", "OK");
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+			await AppServiceLocator.Alerts.DisplayAlert("Success", "Answer updated.", "OK");
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 
-    [RelayCommand]
-    private async Task EditFeedbackReplyAsync(IFeedbackReplyDetails reply)
-    {
-        if (reply == null) return;
+	[RelayCommand]
+	private async Task EditFeedbackReplyAsync(IFeedbackReplyDetails reply)
+	{
+		if (reply == null) return;
 
-        string newText = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.Text);
-        if (string.IsNullOrWhiteSpace(newText) || newText == reply.Text) return;
+		string newText = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.Text ?? "");
+		if (string.IsNullOrWhiteSpace(newText) || newText == reply.Text) return;
 
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.EditJobFeedback.ExecuteAsync(Guid.Parse(reply.Id), newText);
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.EditJobFeedback.ExecuteAsync(Guid.Parse(reply.Id ?? string.Empty), newText);
 
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
 
-            await AppServiceLocator.Alerts.DisplayAlert("Success", "Feedback updated.", "OK");
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+			await AppServiceLocator.Alerts.DisplayAlert("Success", "Feedback updated.", "OK");
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 
-    [RelayCommand]
-    private async Task EditNestedQuestionAsync(IQuestionReplyDetails reply)
-    {
-        if (reply == null) return;
+	[RelayCommand]
+	private async Task EditNestedQuestionAsync(IQuestionReplyDetails reply)
+	{
+		if (reply == null) return;
 
-        string newText = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.QuestionText);
-        if (string.IsNullOrWhiteSpace(newText) || newText == reply.QuestionText) return;
+		string newText = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Reply", "Update your reply:", "Save", "Cancel", initialValue: reply.QuestionText);
+		if (string.IsNullOrWhiteSpace(newText) || newText == reply.QuestionText) return;
 
-        try
-        {
-            IsBusy = true;
-            var result = await _apiClient.EditJobQuestion.ExecuteAsync(reply.Id, newText);
+		try
+		{
+			IsBusy = true;
+			var result = await _apiClient.EditJobQuestion.ExecuteAsync(reply.Id, newText);
 
-            if (result.Errors.Count > 0)
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
-            }
+			if (result.Errors.Count > 0)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+				return;
+			}
 
-            await AppServiceLocator.Alerts.DisplayAlert("Success", "Reply updated.", "OK");
-            await ReloadProjectAsync();
-        }
-        catch (Exception ex)
-        {
-            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+			await AppServiceLocator.Alerts.DisplayAlert("Success", "Reply updated.", "OK");
+			await ReloadProjectAsync();
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
 }
-
-
-
-
-
-

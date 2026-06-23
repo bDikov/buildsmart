@@ -9,6 +9,7 @@
 @inject NavigationManager NavManager
 @inject BuildSmart.SharedUI.Services.SignalRService SignalRService
 @inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
+@inject IJSRuntime JSRuntime
 
 <ErrorBoundary>
     <ChildContent>
@@ -44,6 +45,70 @@
                     OnDownloadMasterOffer="DownloadMasterOffer" 
                     OnContinueDraft='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}")' />
 
+                @if (ViewModel.HasAnyEstimatedPrices || IsGeneratingScope())
+                {
+                    <div class="overall-total-card @(IsGeneratingScope() ? "generating" : "") d-flex flex-column align-items-center justify-content-center p-4 text-center mb-3">
+                        @if (IsGeneratingScope())
+                        {
+                            <div class="d-flex justify-content-center align-items-center gap-3 mb-2 flex-wrap">
+                                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                                @if (ViewModel.HasAnyEstimatedPrices)
+                                {
+                                    <span class="overall-total-label">@Loc["GeneratedOffer_TotalValue"] @(IsBulgarian() ? "(останалите се изчисляват...)" : "(remaining are being calculated...)"):</span>
+                                    <span class="overall-total-value font-monospace">€@ViewModel.OverallTotalEstimatedPrice.ToString("F2")</span>
+                                }
+                                else
+                                {
+                                    <span class="overall-total-label" style="color: var(--color-primary); font-weight: 800;">@(IsBulgarian() ? "Изчисляваме подробния разчет в реално време..." : "Calculating detailed estimate in real-time...")</span>
+                                }
+                            </div>
+                            <p class="overall-total-desc mb-3">
+                                @if (IsBulgarian())
+                                {
+                                    <span>Нашият AI строителен мениджър изготвя подробен Количествено-стойностен разчет. Можете да <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">следите прогреса по-долу</a> в реално време.</span>
+                                }
+                                else
+                                {
+                                    <span>Our AI construction manager is preparing a detailed Quantity-Cost estimate. You can <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">track the progress below</a> in real-time.</span>
+                                }
+                            </p>
+                            @if (ViewModel.HasAnyEstimatedPrices)
+                            {
+                                <div class="d-flex gap-3 justify-content-center flex-wrap w-100" style="max-width: 500px;">
+                                    <button type="button" class="cta-link-btn primary flex-grow-1" @onclick="ScrollToJobPosts">
+                                        🔍 @(IsBulgarian() ? "Разгледайте Задачите" : "Inspect Tasks & Pricing")
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-center align-items-center gap-3 mb-2 flex-wrap">
+                                <span class="overall-total-label">@Loc["GeneratedOffer_TotalValue"]:</span>
+                                <span class="overall-total-value font-monospace">€@ViewModel.OverallTotalEstimatedPrice.ToString("F2")</span>
+                            </div>
+                            <p class="overall-total-desc mb-3" style="font-weight: 500; font-size: 0.95rem;">
+                                @if (IsBulgarian())
+                                {
+                                    <span>Вашият индивидуален ценови разчет е готов! <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">Разгледайте задачите по категории</a> или директно <a href="" @onclick="HandleNextAction" @onclick:preventDefault class="cta-inline-link">@GetNextActionInlineText()</a>.</span>
+                                }
+                                else
+                                {
+                                    <span>Your custom price estimate is ready! <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">Review the category breakdowns</a> or directly <a href="" @onclick="HandleNextAction" @onclick:preventDefault class="cta-inline-link">@GetNextActionInlineText()</a>.</span>
+                                }
+                            </p>
+                            <div class="d-flex gap-3 justify-content-center flex-wrap w-100" style="max-width: 500px;">
+                                <button type="button" class="cta-link-btn primary flex-grow-1" @onclick="ScrollToJobPosts">
+                                    📋 @(IsBulgarian() ? "Разгледайте Задачите" : "Inspect Tasks & Pricing")
+                                </button>
+                                <button type="button" class="cta-link-btn success flex-grow-1" @onclick="HandleNextAction">
+                                    @GetNextActionButtonText()
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+
                 <!-- Next Steps Component -->
                 <ProjectNextStepsCard 
                     Project="ViewModel.Project"
@@ -52,19 +117,6 @@
                     OnAskAdmin="AskAdminQuestion" />
 
                 <h3 id="job-posts-section" class="section-title mt-4">@Loc["ProjectDetail_JobsTitle"]</h3>
-
-                @if (ViewModel.HasAnyEstimatedPrices)
-                {
-                    <div class="overall-total-card d-flex flex-column align-items-center justify-content-center p-3 text-center mb-3">
-                        <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
-                            <span class="overall-total-label">@Loc["GeneratedOffer_TotalValue"]:</span>
-                            <span class="overall-total-value">€@ViewModel.OverallTotalEstimatedPrice.ToString("F2")</span>
-                        </div>
-                        <p class="overall-total-desc">
-                            @Loc["ProjectDetail_SeeBreakdownsDesc"]
-                        </p>
-                    </div>
-                }
 
                 <div class="job-posts-list">
                     @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
@@ -187,6 +239,99 @@
         InvokeAsync(StateHasChanged);
     }
 
+    private bool IsGeneratingScope()
+    {
+        if (ViewModel.Project?.JobPosts == null) return false;
+        return ViewModel.Project.JobPosts.Any(jp => jp.Status == JobPostStatus.GeneratingScope);
+    }
+
+    private bool IsBulgarian()
+    {
+        return System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ScrollToJobPosts()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('job-posts-section')?.scrollIntoView({ behavior: 'smooth' })");
+        }
+        catch { }
+    }
+
+    private async Task ScrollToNextSteps()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('next-steps-section')?.scrollIntoView({ behavior: 'smooth' })");
+        }
+        catch { }
+    }
+
+    private string GetNextActionInlineText()
+    {
+        if (ViewModel.Project == null) return string.Empty;
+        
+        var isMasterOfferReady = IsMasterOfferReady();
+        var draftJobs = ViewModel.Project.JobPosts?.Where(jp => jp.Status == JobPostStatus.Draft).ToList();
+        
+        if (isMasterOfferReady)
+        {
+            return IsBulgarian() ? "изтеглете официалната оферта в PDF" : "download the official PDF offer";
+        }
+        else if (draftJobs != null && draftJobs.Any())
+        {
+            return IsBulgarian() ? "попълнете оставащите въпросници" : "complete the remaining questionnaires";
+        }
+        else
+        {
+            return IsBulgarian() ? "изпратете проекта за консултация" : "submit the project for consultation";
+        }
+    }
+
+    private string GetNextActionButtonText()
+    {
+        if (ViewModel.Project == null) return string.Empty;
+        
+        var isMasterOfferReady = IsMasterOfferReady();
+        var draftJobs = ViewModel.Project.JobPosts?.Where(jp => jp.Status == JobPostStatus.Draft).ToList();
+        
+        if (isMasterOfferReady)
+        {
+            return IsBulgarian() ? "📥 Изтеглете Офертата" : "📥 Download Offer";
+        }
+        else if (draftJobs != null && draftJobs.Any())
+        {
+            return IsBulgarian() ? "✍️ Продължете Въпросника" : "✍️ Resume Questionnaire";
+        }
+        else
+        {
+            return IsBulgarian() ? "🚀 Изпратете за Преглед" : "🚀 Submit for Review";
+        }
+    }
+
+    private void HandleNextAction()
+    {
+        if (ViewModel.Project == null) return;
+        
+        var isMasterOfferReady = IsMasterOfferReady();
+        var draftJobs = ViewModel.Project.JobPosts?.Where(jp => jp.Status == JobPostStatus.Draft).ToList();
+        
+        if (isMasterOfferReady)
+        {
+            DownloadMasterOffer();
+        }
+        else if (draftJobs != null && draftJobs.Any())
+        {
+            var firstDraft = draftJobs.First();
+            NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={firstDraft.Id}&targetCategoryId={firstDraft.ServiceCategory.Id}");
+        }
+        else
+        {
+            SubmitProjectToAdmin();
+        }
+    }
+
     private void GoBack()
     {
         NavManager.NavigateTo("/my-projects");
@@ -197,6 +342,7 @@
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            ViewModel.Dispose();
         }
         SignalRService.NotificationReceived -= OnNotificationReceived;
     }

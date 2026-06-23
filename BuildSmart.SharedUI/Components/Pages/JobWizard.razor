@@ -45,7 +45,7 @@
                     <p class="text-muted mb-5" style="font-size: 0.95rem;">
                         @Loc["JobWizard_OfferBuilding_SubMessage"]
                     </p>
-                    <button class="bs-btn-primary w-100 fw-bold" @onclick='() => NavManager.NavigateTo("/my-projects")'>
+                    <button class="bs-btn-primary w-100 fw-bold" @onclick='() => NavigateToProjectDetails()'>
                         @Loc["JobWizard_GoToProjects"]
                     </button>
                 </div>
@@ -326,6 +326,18 @@
 </ErrorBoundary>
 
 @code {
+    private void NavigateToProjectDetails()
+    {
+        if (ViewModel.CurrentProjectId.HasValue)
+        {
+            NavManager.NavigateTo($"/project-detail?projectId={ViewModel.CurrentProjectId.Value}");
+        }
+        else
+        {
+            NavManager.NavigateTo("/my-projects");
+        }
+    }
+
     [SupplyParameterFromQuery] public Guid? ProjectId { get; set; }
     [SupplyParameterFromQuery] public Guid? JobId { get; set; }
     [SupplyParameterFromQuery] public Guid? TargetCategoryId { get; set; }

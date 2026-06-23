@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 namespace BuildSmart.SharedUI.ViewModels;
 
 [QueryProperty(nameof(JobId), "jobId")]
-public partial class AuctionHubViewModel : ObservableObject
+public partial class AuctionHubViewModel : ObservableObject, IDisposable
 {
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly Services.SignalRService _signalRService;
@@ -44,6 +44,25 @@ public partial class AuctionHubViewModel : ObservableObject
 		if (!string.IsNullOrEmpty(JobId))
 		{
 			await _signalRService.LeaveAuctionGroupAsync(JobId);
+		}
+	}
+
+	public void Dispose()
+	{
+		_signalRService.QuestionUpdated -= OnQuestionUpdated;
+		_signalRService.NewReplyReceived -= OnNewReplyReceived;
+
+		if (!string.IsNullOrEmpty(JobId))
+		{
+			var jobId = JobId;
+			Task.Run(async () =>
+			{
+				try
+				{
+					await _signalRService.LeaveAuctionGroupAsync(jobId);
+				}
+				catch { }
+			});
 		}
 	}
 
@@ -90,7 +109,7 @@ public partial class AuctionHubViewModel : ObservableObject
 	{
 		if (Guid.TryParse(value, out var id))
 		{
-			LoadAuctionAsync(id);
+			_ = LoadAuctionAsync(id);
 		}
 	}
 
@@ -290,7 +309,7 @@ public partial class AuctionHubViewModel : ObservableObject
 	{
 		if (question == null) return;
 
-		string newAnswer = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Answer", "Update your answer:", "Save", "Cancel", initialValue: question.AnswerText);
+		string newAnswer = await AppServiceLocator.Alerts.DisplayPromptAsync("Edit Answer", "Update your answer:", "Save", "Cancel", initialValue: question.AnswerText ?? "");
 		if (string.IsNullOrWhiteSpace(newAnswer) || newAnswer == question.AnswerText) return;
 
 		try
@@ -327,7 +346,7 @@ public partial class AuctionHubViewModel : ObservableObject
 	[RelayCommand]
 	private async Task AskQuestionAsync()
 	{
-		if (Auction == null) return;
+		if (Auction?.Job == null) return;
 
 		string questionText = await AppServiceLocator.Alerts.DisplayPromptAsync("Ask Homeowner", "Your question will be public:", "Ask", "Cancel", "Type your question...");
 		if (string.IsNullOrWhiteSpace(questionText)) return;

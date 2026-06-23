@@ -13,7 +13,7 @@ public partial class QAPair : ObservableObject
 	public string Answer { get; set; } = string.Empty;
 }
 
-public partial class AdminJobReviewViewModel : ObservableObject
+public partial class AdminJobReviewViewModel : ObservableObject, IDisposable
 {
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
@@ -452,6 +452,11 @@ public partial class AdminJobReviewViewModel : ObservableObject
 			return node?["isProjectDetails"]?.GetValue<bool>() ?? false;
 		}
 		catch { return false; }
+	}
+
+	public void Dispose()
+	{
+		_signalRService.NotificationReceived -= OnNotificationReceived;
 	}
 }
 
