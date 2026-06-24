@@ -4,6 +4,7 @@ public static class ApiConfig
 {
     public static string? BaseUrlOverride { get; set; }
     public static string? SentryDsn { get; set; } = "";
+    public static string? ClarityProjectId { get; set; } = "";
 
     public static string GetBaseUrl()
     {

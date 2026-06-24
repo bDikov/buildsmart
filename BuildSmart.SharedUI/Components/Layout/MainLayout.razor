@@ -789,6 +789,18 @@
     {
         if (firstRender)
         {
+            if (!string.IsNullOrEmpty(ApiConfig.ClarityProjectId))
+            {
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("initializeClarity", ApiConfig.ClarityProjectId);
+                }
+                catch (Exception)
+                {
+                    // Prevent errors in testing or pre-rendering from breaking execution
+                }
+            }
+
             try
             {
                 var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
