@@ -12,6 +12,7 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 	private readonly SignalRService _signalRService;
 	private readonly IAuthService _authService;
 	private bool _isFirstLoad = true;
+	private bool _needsReload;
 
 	[ObservableProperty]
 	private ObservableCollection<IProjectDetails> _projects = new();
@@ -62,11 +63,16 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 	[RelayCommand]
 	public async Task LoadProjectsAsync()
 	{
-		if (IsBusy) return;
+		if (IsBusy)
+		{
+			_needsReload = true;
+			return;
+		}
 
 		try
 		{
 			IsBusy = true;
+			_needsReload = false;
 
 			// Check admin role
 			var token = await _authService.GetTokenAsync();
@@ -187,6 +193,10 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 		finally
 		{
 			IsBusy = false;
+			if (_needsReload)
+			{
+				_ = LoadProjectsAsync();
+			}
 		}
 	}
 

@@ -407,6 +407,7 @@
         width: 100vw !important;
         max-width: none !important;
         height: 100vh !important;
+        height: 100dvh !important;
         margin: 0 !important;
         border-radius: 0 !important;
         border: none !important;
@@ -443,7 +444,7 @@
 
     /* Standard controls padding */
     #reels-feed-container .plyr__controls {
-        padding-bottom: 10px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
         z-index: 20;
         background: transparent;
     }
@@ -486,8 +487,8 @@
     }
 
     .bs-theater-close {
-        top: 20px;
-        right: 20px;
+        top: calc(20px + env(safe-area-inset-top, 0px));
+        right: calc(20px + env(safe-area-inset-right, 0px));
     }
 
 
@@ -509,6 +510,7 @@
             height: 100% !important;
             aspect-ratio: 9 / 16 !important;
             max-width: calc(100vh * (9/16)) !important;
+            max-width: calc(100dvh * (9/16)) !important;
         }
         
         /* Adjust theater close button on desktop */

@@ -163,37 +163,57 @@ window.reelsObserver = {
                     e.target.closest('.plyr__control--overlaid') || 
                     e.target.closest('.bs-theater-btn')) return;
 
-                tapCount++;
-                if (tapCount === 1) {
-                    tapTimer = setTimeout(() => {
-                        const player = window.reelsObserver.players[videoId];
-                        if (player) {
-                            player.togglePlay();
-                            
-                            const plyrContainer = document.getElementById(videoId).closest('.plyr');
-                            if (plyrContainer) {
-                                const areControlsHidden = plyrContainer.classList.contains('plyr--hide-controls');
-                                if (areControlsHidden) {
-                                    player.toggleControls(true);
-                                } else {
-                                    player.toggleControls(false);
-                                }
+                const container = element.closest('.bs-reels-container') || element.closest('.reels-feed-container');
+                const isReelsPage = !!element.closest('.reels-page-container');
+                const isInTheaterMode = isReelsPage || element.classList.contains('bs-theater-mode') || 
+                                        (container && container.classList.contains('in-theater-mode'));
+
+                if (!isInTheaterMode) {
+                    // Enter theater mode on single click
+                    element.classList.add('bs-theater-mode');
+                    if (container) {
+                        container.classList.add('in-theater-mode');
+                    }
+                    
+                    // Auto-play the video when entering theater mode
+                    const player = window.reelsObserver.players[videoId];
+                    if (player) {
+                        if (player.paused) {
+                            player.play().catch(e => {});
+                        }
+                    } else {
+                        // Native video fallback (e.g. in ReelsFeed.razor)
+                        const nativeVideo = element.querySelector('video');
+                        if (nativeVideo && nativeVideo.paused) {
+                            nativeVideo.play().catch(e => {});
+                        }
+                    }
+                } else {
+                    // Toggle play/pause when already in theater mode
+                    const player = window.reelsObserver.players[videoId];
+                    if (player) {
+                        player.togglePlay();
+                        
+                        const plyrContainer = document.getElementById(videoId)?.closest('.plyr');
+                        if (plyrContainer) {
+                            const areControlsHidden = plyrContainer.classList.contains('plyr--hide-controls');
+                            if (areControlsHidden) {
+                                player.toggleControls(true);
+                            } else {
+                                player.toggleControls(false);
                             }
                         }
-                        tapCount = 0;
-                    }, 300);
-                } else if (tapCount === 2) {
-                    const container = element.closest('.bs-reels-container');
-                    const isEntering = !element.classList.contains('bs-theater-mode');
-                    if (isEntering) {
-                        element.classList.add('bs-theater-mode');
-                        if (container) container.classList.add('in-theater-mode');
                     } else {
-                        element.classList.remove('bs-theater-mode');
-                        if (container) container.classList.remove('in-theater-mode');
+                        // Native video fallback (e.g. in ReelsFeed.razor)
+                        const nativeVideo = element.querySelector('video');
+                        if (nativeVideo) {
+                            if (nativeVideo.paused) {
+                                nativeVideo.play().catch(e => {});
+                            } else {
+                                nativeVideo.pause();
+                            }
+                        }
                     }
-                    tapCount = 0;
-                    clearTimeout(tapTimer);
                 }
             });
         }
