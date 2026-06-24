@@ -1,0 +1,468 @@
+@page "/faq"
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+<div class="legal-page-container">
+    <div class="legal-card bs-card">
+        <div class="legal-header">
+            <div class="back-button" @onclick="GoBack">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>@(isBulgarian ? "Назад" : "Back")</span>
+            </div>
+            <div class="lang-switcher">
+                <button class="lang-btn @(isBulgarian ? "active" : "")" @onclick="() => SetLanguage(true)">BG</button>
+                <button class="lang-btn @(!isBulgarian ? "active" : "")" @onclick="() => SetLanguage(false)">EN</button>
+            </div>
+        </div>
+
+        <div class="legal-content">
+            <h1>@(isBulgarian ? "Често задавани въпроси (FAQ)" : "Frequently Asked Questions (FAQ)")</h1>
+            <p class="last-updated">@(isBulgarian ? "Последна промяна: 24 юни 2026 г." : "Last updated: June 24, 2026")</p>
+
+            <div class="faq-accordion">
+                @for (int i = 0; i < faqItems.Count; i++)
+                {
+                    var index = i;
+                    var faq = faqItems[index];
+                    <div class="faq-item-card @(openIndex == index ? "active" : "")">
+                        <div class="faq-question-bar" @onclick="() => ToggleItem(index)">
+                            <h3>@(isBulgarian ? faq.QuestionBg : faq.QuestionEn)</h3>
+                            <span class="chevron-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </span>
+                        </div>
+                        
+                        <div class="faq-answer-container">
+                            <div class="faq-answer-inner">
+                                @if (faq.HasDualAnswers)
+                                {
+                                    <div class="faq-subtabs">
+                                        <button class="subtab-btn @(activeTab[index] == "client" ? "active" : "")" @onclick='() => SetActiveTab(index, "client")'>
+                                            @(isBulgarian ? "Аз съм Клиент" : "I am a Client")
+                                        </button>
+                                        <button class="subtab-btn @(activeTab[index] == "contractor" ? "active" : "")" @onclick='() => SetActiveTab(index, "contractor")'>
+                                            @(isBulgarian ? "Аз съм Изпълнител" : "I am a Contractor")
+                                        </button>
+                                    </div>
+                                    <div class="faq-tab-content active">
+                                        @if (activeTab[index] == "client")
+                                        {
+                                            <p>@(isBulgarian ? faq.AnswerClientBg : faq.AnswerClientEn)</p>
+                                        }
+                                        else
+                                        {
+                                            <p>@(isBulgarian ? faq.AnswerContractorBg : faq.AnswerContractorEn)</p>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="faq-general-content">
+                                        <p>@(isBulgarian ? faq.AnswerGeneralBg : faq.AnswerGeneralEn)</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .legal-page-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100dvh;
+        background-color: var(--bg-page);
+        font-family: var(--font-primary);
+        padding: 40px 20px;
+        box-sizing: border-box;
+    }
+
+    .legal-card {
+        width: 100%;
+        max-width: 800px;
+        padding: 40px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        box-shadow: var(--shadow-main);
+    }
+
+    .legal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+
+    .back-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: var(--text-primary);
+    }
+
+    .lang-switcher {
+        display: flex;
+        gap: 8px;
+        background-color: var(--bg-page);
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .lang-btn {
+        background: none;
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    .legal-content {
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        line-height: 1.6;
+    }
+
+    .legal-content h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .last-updated {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .faq-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 10px;
+    }
+
+    .faq-item-card {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--bg-page);
+        overflow: hidden;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .faq-item-card:hover {
+        border-color: var(--text-secondary);
+    }
+
+    .faq-item-card.active {
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .faq-question-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .faq-question-bar h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-primary);
+        padding-right: 15px;
+    }
+
+    .chevron-icon {
+        color: var(--text-secondary);
+        transition: transform 0.3s ease, color 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .faq-item-card.active .chevron-icon {
+        transform: rotate(180deg);
+        color: var(--color-primary);
+    }
+
+    .faq-answer-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+    }
+
+    .faq-item-card.active .faq-answer-container {
+        max-height: 1000px;
+        transition: max-height 0.5s cubic-bezier(1, 0, 1, 0);
+    }
+
+    .faq-answer-inner {
+        padding: 0 20px 20px 20px;
+        border-top: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+    }
+
+    .faq-subtabs {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+    .subtab-btn {
+        background: none;
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .subtab-btn:hover {
+        color: var(--text-primary);
+        background-color: var(--bg-page);
+    }
+
+    .subtab-btn.active {
+        background-color: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+
+    .faq-tab-content, .faq-general-content {
+        margin-top: 10px;
+    }
+
+    .faq-tab-content p, .faq-general-content p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    @@media (max-width: 600px) {
+        .legal-page-container {
+            padding: 0;
+        }
+
+        .legal-card {
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            padding: 20px;
+            min-height: 100dvh;
+        }
+
+        .faq-question-bar {
+            padding: 15px;
+        }
+
+        .faq-question-bar h3 {
+            font-size: 15px;
+        }
+    }
+</style>
+
+@code {
+    private bool isBulgarian = true;
+    private int openIndex = -1;
+    private string[] activeTab = new string[10];
+
+    protected override void OnInitialized()
+    {
+        var currentCultureName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        isBulgarian = currentCultureName.Equals("bg", StringComparison.OrdinalIgnoreCase);
+        
+        // Initialize tabs to client view by default
+        for (int i = 0; i < activeTab.Length; i++)
+        {
+            activeTab[i] = "client";
+        }
+    }
+
+    private void SetLanguage(bool bulgarian)
+    {
+        isBulgarian = bulgarian;
+    }
+
+    private void ToggleItem(int index)
+    {
+        if (openIndex == index)
+        {
+            openIndex = -1; // close if clicked again
+        }
+        else
+        {
+            openIndex = index;
+        }
+    }
+
+    private void SetActiveTab(int index, string tab)
+    {
+        activeTab[index] = tab;
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/user-profile");
+    }
+
+    private class FaqItem
+    {
+        public string QuestionBg { get; set; }
+        public string QuestionEn { get; set; }
+        public bool HasDualAnswers { get; set; }
+        public string AnswerClientBg { get; set; }
+        public string AnswerClientEn { get; set; }
+        public string AnswerContractorBg { get; set; }
+        public string AnswerContractorEn { get; set; }
+        public string AnswerGeneralBg { get; set; }
+        public string AnswerGeneralEn { get; set; }
+    }
+
+    private List<FaqItem> faqItems = new List<FaqItem>
+    {
+        new FaqItem
+        {
+            QuestionBg = "1. Как BuildSmart гарантира сигурността и качеството на изпълнение?",
+            QuestionEn = "1. How does BuildSmart guarantee security and quality of work?",
+            HasDualAnswers = true,
+            AnswerClientBg = "В BuildSmart спестявате целия кошмар по управление на майстори, логистика и комуникация. Вие не контактувате директно с работниците и не се занимавате с организация - общувате единствено с приложението. Ние управляваме целия процес от начало до край, включително доставка на материали, транспорт, почистване и технически контрол. Парите се освобождават по етапи (0% авансово плащане) едва след като задачата е завършена и приета.",
+            AnswerClientEn = "With BuildSmart, you avoid the nightmare of managing tradesmen, logistics, and communication. You never deal directly with the workers or schedule coordination - you interact solely with the app. We manage the entire process start to finish, including materials delivery, transport, cleanup, and technical oversight. Plus, there are zero advance payments; you only pay when a task is completed.",
+            AnswerContractorBg = "Ние гарантираме Вашето плащане за всяка завършена задача. Клиентът депозира средствата в платформата преди старта на работата. Щом завършите задачата и тя бъде одобрена, средствата се превеждат автоматично към Вас. Без чакане на опашки, без бавене на плащания и без риск от недобросъвестни клиенти.",
+            AnswerContractorEn = "We guarantee your payment for every completed task. The client deposits the funds into the platform before you start working. Once the task is finished and approved, the funds are automatically transferred to you. No payment delays, and zero risk of bad debt from clients."
+        },
+        new FaqItem
+        {
+            QuestionBg = "2. Какви са таксите за ползване на приложението и платформата?",
+            QuestionEn = "2. What are the fees for using the platform and the app?",
+            HasDualAnswers = true,
+            AnswerClientBg = "Публикуването на проекти е безплатно. При извършване на трансакция (плащане по задача) към бюджета се начислява минимална такса от 5% за обслужване на платформата. Например, ако задачата струва Х лв., общата заплатена сума ще бъде Х + 5%. Без абонаментни такси!",
+            AnswerClientEn = "Posting projects is free. Upon transaction (paying for a completed task), a minimal service fee of 5% is added to the task budget. For example, if a task costs X BGN, your total payment will be X + 5%. There are no monthly subscriptions!",
+            AnswerContractorBg = "В BuildSmart няма месечни абонаменти или такси за разглеждане на обекти. Ние събираме комисиона от 12.5% единствено при успешна трансакция (когато задачата е успешно приключена и Вие получите парите си). Ако няма извършено плащане, не дължите нищо!",
+            AnswerContractorEn = "There are no monthly subscriptions or fees to browse jobs on BuildSmart. We only charge a 12.5% transaction fee upon successful completion (deducted from your payout when the task is finished and you get paid). If there is no transaction, you pay nothing!"
+        },
+        new FaqItem
+        {
+            QuestionBg = "3. Какво се случва при възникване на спор между страните?",
+            QuestionEn = "3. What happens in case of a dispute between parties?",
+            HasDualAnswers = true,
+            AnswerClientBg = "Всички детайли, договорени срокове и цени се съхраняват в дигиталната хронология на проекта в BuildSmart. Ако възникне спор относно качеството или обхвата на работата, нашият екип от независими строителни експерти се намесва като медиатор. Ние анализираме фактите и писмените споразумения и предлагаме обективно, справедливо решение за отстраняване на дефектите.",
+            AnswerClientEn = "All details, agreed deadlines, and prices are saved in the project's digital history. If a dispute arises regarding quality or scope, our team of independent construction experts steps in as mediators to offer a fair, objective solution based on facts.",
+            AnswerContractorBg = "Тъй като всички количествено-стойностни сметки (КСС) и промени в обема на работа се договарят и подписват дигитално в приложението, клиентът не може да изисква от Вас допълнителен неописан труд без допълнително заплащане. При необоснован отказ от негова страна да приеме качествено извършена работа, екипът на BuildSmart извършва проверка на доказателствата и освобождава средствата към Вас съобразно договора.",
+            AnswerContractorEn = "Since all quantity surveys and changes in scope are digitally signed in the app, the client cannot demand extra work without additional payment. If a client unreasonably refuses to accept quality work, our team reviews the evidence (photos, logs) and releases the funds to you."
+        },
+        new FaqItem
+        {
+            QuestionBg = "4. Защитени ли са личните ми данни и телефонният ми номер?",
+            QuestionEn = "4. Are my personal data and phone number protected?",
+            HasDualAnswers = true,
+            AnswerClientBg = "Да, напълно. Вашият телефонен номер и лични контакти са скрити по подразбиране. Цялата комуникация и уточнения с потенциалните майстори се извършват през сигурния чат на приложението. Едва когато изберете конкретен изпълнител и решите да преминете към оглед, Вие сами давате съгласие системата да разкрие контактите Ви.",
+            AnswerClientEn = "Yes, completely. Your phone number and personal details are hidden by default. All initial communication with builders is done via our secure in-app chat. Your contact details are only shared once you hire a contractor or request a physical site visit.",
+            AnswerContractorBg = "Ние ценим Вашето спокойствие и защитаваме фирмените Ви контакти от нежелани обаждания, рекламни агенции и спам. Вашите координати се споделят само и единствено с клиенти, които са публикували реален проект и по чието запитване сте изпратили оферта.",
+            AnswerContractorEn = "We respect your peace of mind and protect your contact details from cold calls and spam. Your information is only shared with clients who have posted a real project and for whose request you have submitted a valid offer."
+        },
+        new FaqItem
+        {
+            QuestionBg = "5. Сложен ли е софтуерът за работа и изисква ли се техническа подготовка?",
+            QuestionEn = "5. Is the app complicated to use and does it require technical training?",
+            HasDualAnswers = true,
+            AnswerClientBg = "BuildSmart е проектиран да бъде максимално лесен за крайния потребител. Публикуването на нов проект отнема под 2 минути и прилича на писане в чат. С помощта на интуитивни бутони, качване на снимки направо от телефона и готови шаблони за задачи, Вие управлявате Вашия ремонт без техническо усилие.",
+            AnswerClientEn = "BuildSmart is designed to be extremely user-friendly. Posting a project takes less than 2 minutes and is as simple as sending a chat message. With intuitive buttons and direct photo uploads, you manage your project effort-free.",
+            AnswerContractorBg = "Ако умеете да изпращате съобщения във Viber или да разглеждате Facebook, значит вече знаете как да ползвате BuildSmart. Нашето мобилно приложение работи перфектно на всякакви телефони, а изпращането на оферти и управлението на етапите става само с няколко докосвания на екрана.",
+            AnswerContractorEn = "If you can send a Viber message or browse Facebook, you already know how to use BuildSmart. Our mobile app works smoothly on any smartphone, and submitting quotes or updating milestones takes just a few taps."
+        },
+        new FaqItem
+        {
+            QuestionBg = "6. Има ли достатъчно активни потребители и проекти в моя град или регион?",
+            QuestionEn = "6. Are there enough active users and projects in my town or region?",
+            HasDualAnswers = true,
+            AnswerClientBg = "В BuildSmart имаме регистрирани и верифицирани строителни бригади и майстори от всички големи градове и региони в България. Нашата интелигентна търсачка филтрира изпълнителите според тяхната географска близост до Вашата локация, спестявайки разходи за транспорт.",
+            AnswerClientEn = "We have registered and vetted construction crews and tradesmen across all major cities and regions in Bulgaria. Our system filters contractors by proximity, saving you transportation costs.",
+            AnswerContractorBg = "Всеки ден десетки собственици на имоти публикуват своите нужди от ремонтни и строителни дейности в цялата страна. Благодарение на филтрирането по локация, Вие виждате обекти само в посочения от Вас район, което Ви спестява нерентабилни дълги пътувания.",
+            AnswerContractorEn = "Every day, dozens of property owners post new jobs nationwide. By using location filters, you only see projects within your preferred region, avoiding costly long-distance travel."
+        },
+        new FaqItem
+        {
+            QuestionBg = "7. Как да знам дали първоначалната оферта е реалистична и цената няма да се промени?",
+            QuestionEn = "7. How do I know if the initial quote is realistic and the price won't change?",
+            HasDualAnswers = true,
+            AnswerClientBg = "Спестявате време и пари: няма нужда от скъпи или времеемки посещения на място от майстори само за да получите оферта. Цените в BuildSmart се калкулират по прозрачни и професионални количествени алгоритми. Крайната цена се фиксира в договора и се разпределя на задачи, а всяка промяна се одобрява дигитално от Вас.",
+            AnswerClientEn = "Save time and money: there is no need for costly and time-wasting on-site visits by tradesmen just to get a quote. Prices are calculated transparently using professional software algorithms. The final price is locked in the contract, and any changes must be digitally approved by you.",
+            AnswerContractorBg = "Край на празните и безплатни огледи, които губят времето Ви. Нашите алгоритми дават изключително точни количествено-стойностни сметки (КСС) предварително. Вие давате оферта въз основа на реални параметри, а всяка промяна при специфични дефекти на място се одобрява писмено от клиента през приложението по време на работата.",
+            AnswerContractorEn = "No more empty site visits that waste your valuable time and money. Our system algorithms calculate highly accurate Bill of Quantities (BoQ) in advance. You submit quotes based on real metrics, and any necessary on-site changes are approved digitally by the client in the app."
+        },
+        new FaqItem
+        {
+            QuestionBg = "8. Как се контролира качеството и квалификацията на майсторите?",
+            QuestionEn = "8. How are the quality and qualifications of tradesmen controlled?",
+            HasDualAnswers = true,
+            AnswerClientBg = "Ние допускаме само сертифицирани майстори с доказана репутация. Всеки профил съдържа портфолио с висококачествени снимки от реално завършени обекти през BuildSmart, а отзивите от предишни клиенти са напълно проверени. Освен това, за по-сложни проекти можете да наемете независим технически надзор директно през нашето приложение.",
+            AnswerClientEn = "We only allow vetted professionals with proven track records. Each profile displays high-quality photos of projects completed through BuildSmart, backed by verified client reviews. For complex builds, you can also hire independent supervisors.",
+            AnswerContractorBg = "BuildSmart Ви предоставя дигитално портфолио, което работи за Вас денонощно. Качвайте сертификати, лицензи и снимки на готовите си обекти. Вашата отлична работа се превръща в дългосрочен рейтинг, който Ви помага да печелите по-лесно високобюджетни проекти без нужда да харчите пари за реклама.",
+            AnswerContractorEn = "BuildSmart provides you with a digital portfolio that showcases your work 24/7. Upload certificates, licensing, and high-res photos. Your quality work builds a long-term rating, helping you win higher-paying jobs without marketing costs."
+        },
+        new FaqItem
+        {
+            QuestionBg = "9. С какво платформата BuildSmart превъзхожда традиционното търсене „от уста на уста“?",
+            QuestionEn = "9. Why is the BuildSmart platform better than traditional word-of-mouth?",
+            HasDualAnswers = true,
+            AnswerClientBg = "Търсенето на майстори 'от уста на уста' Ви обвързва с кошмарно управление на процеси, логистика и спорове на обекта. С BuildSmart Вие контактувате само с нашето приложение, а ние поемаме пълния мениджмънт - от транспорта и доставките до почистването и контрола на качеството. Получавате фиксирана цена, писмена гаранция до 15 години и 24/7 видео връзка, спестявайки време и нерви.",
+            AnswerClientEn = "Traditional word-of-mouth leaves you with the nightmare of managing logistics, scheduling, and disputes on-site. With BuildSmart, you interact only with the app, while we manage the entire project - from transportation and deliveries to cleanups and quality control. You get a locked price, up to 15 years warranty, and a 24/7 camera stream, saving you time and stress.",
+            AnswerContractorBg = "Търсенето на работа само чрез познати води до периоди без никакви поръчки и сезонни спадове. BuildSmart Ви осигурява постоянен, предвидим източник на нови обекти по всяко време на годината. Освен това платформата Ви спестява риска от неплащане и спорове с познати, които често се опитват да намалят цената на труда Ви на приятелски начала.",
+            AnswerContractorEn = "Relying on word-of-mouth causes seasonal dry spells and empty schedules. BuildSmart gives you a steady stream of active leads all year round. It also protects you from payment disputes and awkward price haggling with friends."
+        },
+        new FaqItem
+        {
+            QuestionBg = "10. Мога ли да намеря майстори за много специфични или луксозни проекти?",
+            QuestionEn = "10. Can I find tradesmen for highly specialized or luxury projects?",
+            HasDualAnswers = false,
+            AnswerGeneralBg = "Да, абсолютно. Платформата BuildSmart обединява целия спектър от специалисти в строителния бранш на България. От лицензирани архитекти, геодезисти и строителни инженери с членство в браншовите камари, до тясно специализирани занаятчии (художествени мазилки, интелигентни ОВК инсталации, соларни системи и луксозни басейни). Можете да филтрирате търсенето по специфични квалификации и да разгледате сходни премиум обекти в портфолиото на изпълнителите преди да ги наемете.",
+            AnswerGeneralEn = "Yes, absolutely. The BuildSmart platform covers the entire construction spectrum in Bulgaria. From licensed architects, land surveyors, and structural engineers to specialized craftsmen (venetian plaster, smart HVAC systems, solar integrations, custom pools). You can filter by specific certifications and inspect portfolio details before hiring."
+        }
+    };
+}

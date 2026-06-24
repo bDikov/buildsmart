@@ -89,7 +89,8 @@
                                 {
                                     var videoId = $"video_{video.Id}";
                                     var wrapperId = $"wrapper_{videoId}";
-                                    <div @key="video.Id" class="bs-reel-item" data-video-id="@videoId" id="@wrapperId">
+                                    var isFirst = ViewModel.FeedVideos.IndexOf(video) == 0;
+                                    <div @key="video.Id" class="bs-reel-item @(isFirst ? "bs-first-reel-cue" : "")" data-video-id="@videoId" id="@wrapperId">
                                         <video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="auto" poster="@video.ImageUrl" muted>
                                             @if (!string.IsNullOrEmpty(video.MobileVideoUrl))
                                             {
@@ -106,8 +107,77 @@
                                             </svg>
                                         </button>
 
+                                        @if (isFirst)
+                                        {
+                                            <!-- Swipe Guide Hint (Fades out automatically) -->
+                                            <div class="bs-swipe-indicator">
+                                                <div class="bs-swipe-icon">
+                                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="17 11 12 6 7 11"></polyline>
+                                                        <polyline points="17 18 12 13 7 18" style="opacity: 0.4;"></polyline>
+                                                    </svg>
+                                                </div>
+                                                <span class="bs-swipe-text">@Loc["Feed_SwipeHint"]</span>
+                                            </div>
+                                        }
                                     </div>
                                 }
+                            </div>
+
+                            <!-- FAQ & Benefits Section (links to /faq) -->
+                            <div class="bs-reels-faq-section mt-4 mb-3">
+                                <div class="bs-reels-faq-header text-center mb-3">
+                                    <h4 class="h6 fw-bold mb-1">@Loc["Feed_FaqSectionTitle"]</h4>
+                                    <p class="text-muted small mb-0">@Loc["Feed_FaqSectionSubtitle"]</p>
+                                </div>
+                                
+                                <div class="bs-reels-faq-benefits d-flex flex-column gap-3">
+                                    <div class="bs-faq-benefit-item" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                        <div class="bs-benefit-icon">
+                                            <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                                <path d="m9 11 2 2 4-4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="bs-benefit-content">
+                                            <h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoAdvanceTitle"]</h5>
+                                            <p class="mb-0 text-muted small">@Loc["Feed_BenefitNoAdvanceDesc"]</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bs-faq-benefit-item" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                        <div class="bs-benefit-icon">
+                                            <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                        </div>
+                                        <div class="bs-benefit-content">
+                                            <h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoVisitsTitle"]</h5>
+                                            <p class="mb-0 text-muted small">@Loc["Feed_BenefitNoVisitsDesc"]</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bs-faq-benefit-item" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                        <div class="bs-benefit-icon">
+                                            <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
+                                                <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.5"/>
+                                                <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.5"/>
+                                            </svg>
+                                        </div>
+                                        <div class="bs-benefit-content">
+                                            <h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoStressTitle"]</h5>
+                                            <p class="mb-0 text-muted small">@Loc["Feed_BenefitNoStressDesc"]</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <button class="bs-btn-primary w-100 py-2" style="border-radius: 12px; font-size: 0.9rem;" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                        @Loc["Feed_FaqSectionLink"] &rarr;
+                                    </button>
+                                </div>
                             </div>
                         }
                         else
@@ -445,6 +515,175 @@
         .bs-reels-container.in-theater-mode .bs-theater-close {
             top: 30px !important;
             right: 30px !important;
+        }
+    }
+
+    /* FAQ & Benefits Section styles */
+    .bs-reels-faq-section {
+        display: none; /* Hidden by default on short screen viewports */
+        width: 100%;
+        max-width: 356px;
+        margin: 1.5rem auto 0 auto;
+        padding: 20px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: var(--elevation-02dp);
+        transition: all 0.3s ease;
+    }
+
+    .bs-reels-faq-section:hover {
+        box-shadow: var(--elevation-04dp);
+    }
+
+    .bs-reels-faq-header h4 {
+        color: var(--text-primary);
+        font-family: var(--font-primary), sans-serif;
+    }
+
+    .bs-faq-benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .bs-faq-benefit-item:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--elevation-01dp);
+    }
+
+    .bs-benefit-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--color-primary);
+        flex-shrink: 0;
+    }
+
+    .bs-benefit-content h5 {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .bs-benefit-content p {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+    /* Media queries to show the component ONLY if we have BIG space under the videos */
+
+    /* For Mobile viewports: show only if height is at least 780px */
+    @@media (max-width: 991px) and (min-height: 780px) {
+        .bs-reels-faq-section {
+            display: block;
+        }
+    }
+
+    /* For Desktop viewports: show only if height is at least 900px */
+    @@media (min-width: 992px) and (min-height: 900px) {
+        .bs-reels-faq-section {
+            display: block;
+            max-width: 440px !important;
+        }
+    }
+
+    /* Swipe Guide Hint Indicator */
+    .bs-swipe-indicator {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        z-index: 99; /* Higher than Plyr players and posters */
+        color: white; /* Hardcoded white for dark/video overlay context */
+        background: rgba(17, 17, 17, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        padding: 8px 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: var(--elevation-03dp);
+        pointer-events: none; /* Let swipes pass through to the video container */
+        animation: bsSwipeFade 4.5s forwards;
+    }
+
+    .bs-swipe-icon {
+        animation: bsSwipeBounce 1.2s infinite;
+    }
+
+    .bs-swipe-text {
+        font-family: var(--font-primary), sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.9);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        opacity: 0.9;
+        white-space: nowrap;
+    }
+
+    @@keyframes bsSwipeBounce {
+        0%, 100% {
+            transform: translateY(0);
+            opacity: 0.3;
+        }
+        50% {
+            transform: translateY(-8px);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes bsSwipeFade {
+        0% {
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        80% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+
+    /* Swipe Peek Animation for the first video card stack */
+    .bs-first-reel-cue {
+        animation: bsFirstReelCueAnimation 2.2s cubic-bezier(0.25, 1, 0.5, 1) 0.5s; /* 0.5s delay to let layout settle */
+    }
+
+    @@keyframes bsFirstReelCueAnimation {
+        0% {
+            transform: translateY(0);
+        }
+        35% {
+            transform: translateY(50%); /* Swipe down to reveal 50% of the next video */
+        }
+        65% {
+            transform: translateY(50%); /* Hold to let user see it */
+        }
+        100% {
+            transform: translateY(0); /* Go back up to 0 */
         }
     }
 </style>

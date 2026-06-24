@@ -8,6 +8,14 @@ window.reelsObserver = {
     initialize: function (dotNetHelper, containerId) {
         this.dotNetRef = dotNetHelper;
 
+        // Automatically focus/scroll the page to center the video feed in the viewport
+        const container = document.getElementById(containerId);
+        if (container) {
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 200);
+        }
+
         let options = {
             root: document.getElementById(containerId),
             rootMargin: '0px',

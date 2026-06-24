@@ -13735,3 +13735,21 @@ Object name: 'IServiceProvider'.
    at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[24.06.2026 г. 9:14:29 ч.] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at Program.<>c.<<Main>$>b__0_7(Type type) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Program.cs:line 143
+   at BuildSmart.SharedUI.Services.AppServiceLocator.get_Alerts() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\AppServices.cs:line 37
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.LoadFeedMediaAsync() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 360
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[24.06.2026 г. 9:14:29 ч.] ObjectDisposedException: Cannot access a disposed object.
+Object name: 'IServiceProvider'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at Program.<>c.<<Main>$>b__0_7(Type type) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Web\Program.cs:line 143
+   at BuildSmart.SharedUI.Services.AppServiceLocator.get_Alerts() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\AppServices.cs:line 37
+   at BuildSmart.SharedUI.ViewModels.FeedPageViewModel.LoadFeedAsync() in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\ViewModels\FeedPageViewModel.cs:line 231
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

@@ -58,7 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  
   <data name="Dashboard_Title" xml:space="preserve">
     <value>Табло</value>
   </data>
@@ -149,7 +148,7 @@
   <data name="Nav_Settings" xml:space="preserve">
     <value>Настройки</value>
   </data>
-    <data name="Projects_Subtitle" xml:space="preserve">
+  <data name="Projects_Subtitle" xml:space="preserve">
     <value>Управлявайте домашните си ремонти и следете напредъка.</value>
   </data>
   <data name="Projects_CreateNew" xml:space="preserve">
@@ -696,7 +695,7 @@
     <value>Всички</value>
   </data>
   <data name="Feed_ViewAll" xml:space="preserve">
-    <value>Виж Всички</value>
+    <value>Още категории</value>
   </data>
   <data name="Feed_Collapse" xml:space="preserve">
     <value>Скрий</value>
@@ -745,5 +744,35 @@
   </data>
   <data name="ProjectDetail_SeeBreakdownsDesc" xml:space="preserve">
     <value>Разгледайте ценовите разбивки по категории! По-долу ще видите общата сума за всяка категория.</value>
+  </data>
+  <data name="Feed_FaqSectionTitle" xml:space="preserve">
+    <value>Защо BuildSmart?</value>
+  </data>
+  <data name="Feed_FaqSectionSubtitle" xml:space="preserve">
+    <value>Ние управляваме целия процес, за да не се налага на вас.</value>
+  </data>
+  <data name="Feed_BenefitNoAdvanceTitle" xml:space="preserve">
+    <value>0% авансово плащане</value>
+  </data>
+  <data name="Feed_BenefitNoAdvanceDesc" xml:space="preserve">
+    <value>Плащайте само след като задачата е напълно завършена.</value>
+  </data>
+  <data name="Feed_BenefitNoVisitsTitle" xml:space="preserve">
+    <value>Без платени огледи</value>
+  </data>
+  <data name="Feed_BenefitNoVisitsDesc" xml:space="preserve">
+    <value>Вземете прозрачна цена предварително, без излишни посещения.</value>
+  </data>
+  <data name="Feed_BenefitNoStressTitle" xml:space="preserve">
+    <value>Нулев стрес и организация</value>
+  </data>
+  <data name="Feed_BenefitNoStressDesc" xml:space="preserve">
+    <value>Ние организираме майстори, транспорт и почистване. Комуникирате само с приложението.</value>
+  </data>
+  <data name="Feed_FaqSectionLink" xml:space="preserve">
+    <value>Научете повече в Често задавани въпроси</value>
+  </data>
+  <data name="Feed_SwipeHint" xml:space="preserve">
+    <value>Плъзнете нагоре за още</value>
   </data>
 </root>
