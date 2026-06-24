@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 92px);
+    height: calc(100dvh - 92px);
     background-color: var(--bg-page);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -251,6 +252,7 @@
 
 @media (max-width: 992px) {
     .chat-page-container {
-        height: calc(100vh - 158px);
+        height: calc(100vh - 166px);
+        height: calc(100dvh - 166px);
     }
 }
