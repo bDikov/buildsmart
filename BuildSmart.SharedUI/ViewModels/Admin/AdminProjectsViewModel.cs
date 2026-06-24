@@ -87,7 +87,7 @@ public partial class AdminProjectsViewModel : ObservableObject, IDisposable
             }
             else if (result.Data?.AllProjects != null)
             {
-                foreach (var project in result.Data.AllProjects)
+                foreach (var project in result.Data.AllProjects.Where(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - ")))
                 {
                     Projects.Add(project);
                 }

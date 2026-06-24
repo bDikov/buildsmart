@@ -150,7 +150,7 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 
 				if (result.Data?.AllProjects != null)
 				{
-					foreach (var project in result.Data.AllProjects)
+					foreach (var project in result.Data.AllProjects.Where(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - ")))
 					{
 						Projects.Add(project);
 					}
@@ -171,7 +171,7 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 				if (result.Data?.MyProjects != null)
 				{
 					var sortedProjects = result.Data.MyProjects.OrderByDescending(p => p.CreatedAt).ToList();
-					foreach (var project in sortedProjects)
+					foreach (var project in sortedProjects.Where(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - ")))
 					{
 						Projects.Add(project);
 					}
@@ -230,6 +230,7 @@ public partial class MyProjectsViewModel : ObservableObject, IDisposable
 			{
 				Projects.Remove(project);
 				IsEmpty = !Projects.Any();
+				_signalRService.NotifyNotificationsStateChanged();
 			}
 			else
 			{

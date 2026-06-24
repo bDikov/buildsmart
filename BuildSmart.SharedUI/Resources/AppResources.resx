@@ -772,4 +772,10 @@
   <data name="Feed_SwipeHint" xml:space="preserve">
     <value>Swipe up for more</value>
   </data>
+  <data name="Chat_NoProjectsStarted_Title" xml:space="preserve">
+    <value>Start a Project</value>
+  </data>
+  <data name="Chat_NoProjectsStarted_Message" xml:space="preserve">
+    <value>You must start at least one project to use the chat feature.</value>
+  </data>
 </root>

@@ -240,10 +240,12 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	public Dictionary<string, object> WizardAnswers { get; private set; } = new();
 
 	private Task? _loadCategoriesTask;
+	private readonly SignalRService? _signalRService;
 
-	public JobWizardViewModel(IBuildSmartApiClient apiClient)
+	public JobWizardViewModel(IBuildSmartApiClient apiClient, SignalRService? signalRService = null)
 	{
 		_apiClient = apiClient;
+		_signalRService = signalRService;
 		InitializeSteps();
 		_loadCategoriesTask = LoadCategoriesAsync();
 	}
@@ -443,7 +445,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				var projectsResult = await _apiClient.GetMyProjects.ExecuteAsync();
 				if (projectsResult.Data?.MyProjects != null)
 				{
-					HasProjects = projectsResult.Data.MyProjects.Count > 0;
+					HasProjects = projectsResult.Data.MyProjects.Any(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - "));
 				}
 			}
 			catch { }
@@ -1056,6 +1058,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		if (_currentProjectId == null)
 		{
 			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
+			if (selectedCategories.Count == 0)
+			{
+				return;
+			}
+
 			if (string.IsNullOrWhiteSpace(ProjectTitle))
 			{
 				ProjectTitle = selectedCategories.Count > 0 
@@ -1080,12 +1087,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			var userId = userResult.Data.CurrentUser.Id;
 
 			var projectResult = await _apiClient.CreateProject.ExecuteAsync(Guid.Parse(userId), ProjectTitle, ProjectDescription, currentLang);
-			if (projectResult.Errors.Count > 0)
+			if (projectResult.Errors.Count > 0 || projectResult.Data?.CreateProject == null)
 			{
 				await AppServiceLocator.Alerts.DisplayAlert("Error", "Failed to create project draft.", "OK");
 				return;
 			}
 			_currentProjectId = projectResult.Data.CreateProject.Id;
+			_signalRService?.NotifyNotificationsStateChanged();
 		}
 		else
 		{

@@ -96,16 +96,19 @@
                     </a>
                 }
                 <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman" Context="innerContext">
-                    <a class="nav-item-dark" @onclick="NavigateToChat" style="position: relative; display: flex; align-items: center; cursor: pointer;">
-                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        @Loc["Nav_Chat"]
-                        @if (_hasUnreadChatMessages)
-                        {
-                            <span class="sidebar-chat-unread-badge"></span>
-                        }
-                    </a>
+                    @if (_hasProjects)
+                    {
+                        <a class="nav-item-dark" @onclick="NavigateToChat" style="position: relative; display: flex; align-items: center; cursor: pointer;">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            @Loc["Nav_Chat"]
+                            @if (_hasUnreadChatMessages)
+                            {
+                                <span class="sidebar-chat-unread-badge"></span>
+                            }
+                        </a>
+                    }
                 </AuthorizeView>
                 <!-- Temporarily hidden
                 <a class="nav-item-dark" href="/active-jobs" @onclick="CloseSidebar">
@@ -234,16 +237,19 @@
                 </svg>
                 <span class="bottom-nav-text">@Loc["Nav_MyProjects"]</span>
             </a>
-            <a class="bottom-nav-item @(IsChatActive() ? "active" : "")" @onclick="NavigateToChat" style="position: relative;">
-                <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                @if (_hasUnreadChatMessages)
-                {
-                    <span class="chat-unread-dot"></span>
-                }
-                <span class="bottom-nav-text">@Loc["Nav_Chat"]</span>
-            </a>
+            @if (_hasProjects)
+            {
+                <a class="bottom-nav-item @(IsChatActive() ? "active" : "")" @onclick="NavigateToChat" style="position: relative;">
+                    <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    @if (_hasUnreadChatMessages)
+                    {
+                        <span class="chat-unread-dot"></span>
+                    }
+                    <span class="bottom-nav-text">@Loc["Nav_Chat"]</span>
+                </a>
+            }
             <a class="bottom-nav-item @(IsActivePage("/user-profile") ? "active" : "")" @onclick='() => Navigate("/user-profile")'>
                 <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -676,6 +682,7 @@
     private bool _hasUnreadChatMessages = false;
     private bool _isGuest = false;
     private Guid? _supportProjectId;
+    private bool _hasProjects = false;
 
     private static bool _hasAttemptedLanguageSync = false;
 
@@ -705,6 +712,7 @@
     {
         SignalRService.NotificationReceived += OnNotificationReceived;
         SignalRService.NotificationsStateChanged += OnNotificationsStateChanged;
+        SignalRService.ProjectMessageReceived += OnProjectMessageReceived;
         NavManager.LocationChanged += OnLocationChanged;
 
         NavigationRegistry.CurrentManager = NavManager;
@@ -728,6 +736,7 @@
         }
         
         await LoadUnreadStatusAsync();
+        await LoadProjectsStatusAsync();
         
         try
         {
@@ -891,11 +900,33 @@
         catch { }
     }
 
+    private async Task LoadProjectsStatusAsync()
+    {
+        try
+        {
+            var result = await ApiClient.GetMyProjects.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.MyProjects != null)
+            {
+                _hasProjects = result.Data.MyProjects.Any(p => p.Title != "Support Chat");
+            }
+            else
+            {
+                _hasProjects = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainLayout] Error loading project status: {ex.Message}");
+            _hasProjects = false;
+        }
+    }
+
     private void OnNotificationReceived(string title, string msg, object? data)
     {
         InvokeAsync(async () =>
         {
             await LoadUnreadStatusAsync();
+            await LoadProjectsStatusAsync();
             StateHasChanged();
         });
     }
@@ -905,6 +936,17 @@
         InvokeAsync(async () =>
         {
             await LoadUnreadStatusAsync();
+            await LoadProjectsStatusAsync();
+            StateHasChanged();
+        });
+    }
+
+    private void OnProjectMessageReceived(System.Text.Json.JsonElement payload)
+    {
+        InvokeAsync(async () =>
+        {
+            await LoadUnreadStatusAsync();
+            await LoadProjectsStatusAsync();
             StateHasChanged();
         });
     }
@@ -913,6 +955,7 @@
     {
         SignalRService.NotificationReceived -= OnNotificationReceived;
         SignalRService.NotificationsStateChanged -= OnNotificationsStateChanged;
+        SignalRService.ProjectMessageReceived -= OnProjectMessageReceived;
         NavManager.LocationChanged -= OnLocationChanged;
     }
 
@@ -922,6 +965,7 @@
         InvokeAsync(async () =>
         {
             await LoadUnreadStatusAsync();
+            await LoadProjectsStatusAsync();
             StateHasChanged();
         });
     }
@@ -1073,26 +1117,38 @@
             }
 
             var result = await ApiClient.GetMyProjects.ExecuteAsync();
-            if (result.Errors.Count == 0 && result.Data?.MyProjects != null && result.Data.MyProjects.Any())
+            if (result.Errors.Count == 0 && result.Data?.MyProjects != null)
             {
                 var projects = result.Data.MyProjects;
                 
-                // If we found a target project ID from notifications, verify that it still exists in the user's projects
-                if (targetProjectId.HasValue && projects.Any(p => p.Id == targetProjectId.Value))
+                // Find all projects that could have a chat room (excluding "Support Chat" which is for anonymous guests)
+                var actualProjects = projects.Where(p => p.Title != "Support Chat").ToList();
+                if (actualProjects.Any())
                 {
-                    NavigationBridge.NavigateToAsync($"/project-messages?projectId={targetProjectId.Value}");
-                }
-                else
-                {
-                    // Fallback to the user's most recently created project
-                    var latestProject = projects.OrderByDescending(p => p.CreatedAt).First();
+                    // 1. If targetProjectId from notifications exists and is in projects, navigate to it
+                    if (targetProjectId.HasValue && actualProjects.Any(p => p.Id == targetProjectId.Value))
+                    {
+                        NavigationBridge.NavigateToAsync($"/project-messages?projectId={targetProjectId.Value}");
+                        return;
+                    }
+
+                    // 2. Otherwise, look for any support project that starts with "Support - "
+                    var supportChat = actualProjects.FirstOrDefault(p => p.Title.StartsWith("Support - "));
+                    if (supportChat != null)
+                    {
+                        NavigationBridge.NavigateToAsync($"/project-messages?projectId={supportChat.Id}");
+                        return;
+                    }
+
+                    // 3. Fallback: navigate to the user's most recently created project
+                    var latestProject = actualProjects.OrderByDescending(p => p.CreatedAt).First();
                     NavigationBridge.NavigateToAsync($"/project-messages?projectId={latestProject.Id}");
+                    return;
                 }
             }
-            else
-            {
-                NavigationBridge.NavigateToAsync("/my-projects");
-            }
+
+            // Fallback: If no projects started, redirect to my projects list
+            NavigationBridge.NavigateToAsync("/my-projects");
         }
         catch (Exception ex)
         {

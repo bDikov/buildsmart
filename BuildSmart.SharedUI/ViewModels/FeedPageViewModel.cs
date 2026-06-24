@@ -136,7 +136,7 @@ namespace BuildSmart.SharedUI.ViewModels
 			try
 			{
 				var result = await _apiClient.GetMyProjects.ExecuteAsync();
-				if (result.Data?.MyProjects != null && result.Data.MyProjects.Count > 0)
+				if (result.Data?.MyProjects != null && result.Data.MyProjects.Any(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - ")))
 				{
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{

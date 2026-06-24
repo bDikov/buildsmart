@@ -557,13 +557,21 @@
     {
         _visibleCount = 6;
         SignalRService.NotificationReceived += OnNotificationReceived;
-        if (ViewModel.Projects.Count == 0)
-        {
-            await ViewModel.LoadProjectsAsync();
-        }
+        SignalRService.NotificationsStateChanged += OnNotificationsStateChanged;
+        await ViewModel.LoadProjectsAsync();
     }
 
     private void OnNotificationReceived(string title, string msg, object? data)
+    {
+        InvokeAsync(async () =>
+        {
+            try { StoreAccessor.OperationStore.Clear(); } catch { }
+            await ViewModel.LoadProjectsAsync();
+            StateHasChanged();
+        });
+    }
+
+    private void OnNotificationsStateChanged()
     {
         InvokeAsync(async () =>
         {
@@ -627,6 +635,7 @@
     public void Dispose()
     {
         SignalRService.NotificationReceived -= OnNotificationReceived;
+        SignalRService.NotificationsStateChanged -= OnNotificationsStateChanged;
         ViewModel.Dispose();
     }
 }
