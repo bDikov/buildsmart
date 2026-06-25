@@ -516,6 +516,84 @@ public class JobWizardViewModelTests
         mockAlerts.Verify(x => x.DisplayAlert(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
+    [Fact]
+    public async Task SaveDraft_ShouldPassCategoryNameAsDescription_NotGlobalProjectDescription()
+    {
+        // Arrange
+        var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
+        var catId = Guid.NewGuid();
+        mockCategoryNode.Setup(c => c.Id).Returns(catId);
+        mockCategoryNode.Setup(c => c.Name).Returns("Electrical Category Name");
+
+        // Mock GetCategories to return our category
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { mockCategoryNode.Object });
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        // Mock GetMyProjects to succeed with empty projects (so LoadCategoriesAsync doesn't crash)
+        var getProjectsQuery = new Mock<IGetMyProjectsQuery>();
+        var projectsResponseMock = new Mock<IOperationResult<IGetMyProjectsResult>>();
+        projectsResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        var projectsResultDataMock = new Mock<IGetMyProjectsResult>();
+        projectsResultDataMock.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects>());
+        projectsResponseMock.Setup(r => r.Data).Returns(projectsResultDataMock.Object);
+        getProjectsQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(projectsResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetMyProjects).Returns(getProjectsQuery.Object);
+
+        // Mock UpdateProjectDetails mutation
+        var updateProjectDetailsMock = new Mock<IUpdateProjectDetailsMutation>();
+        var updateResponseMock = new Mock<IOperationResult<IUpdateProjectDetailsResult>>();
+        updateResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        updateProjectDetailsMock.Setup(q => q.ExecuteAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), default))
+            .ReturnsAsync(updateResponseMock.Object);
+        _apiClientMock.Setup(a => a.UpdateProjectDetails).Returns(updateProjectDetailsMock.Object);
+
+        // Mock SaveJobPostDraft mutation
+        var saveJobPostDraftMock = new Mock<ISaveJobPostDraftMutation>();
+        var saveJobPostResponseMock = new Mock<IOperationResult<ISaveJobPostDraftResult>>();
+        saveJobPostResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        
+        string? passedDescription = null;
+        saveJobPostDraftMock.Setup(q => q.ExecuteAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<decimal?>(), It.IsAny<string>(), default))
+            .Callback<Guid, string, string, string, decimal?, string, System.Threading.CancellationToken>((id, details, desc, loc, budget, cur, token) => passedDescription = desc)
+            .ReturnsAsync(saveJobPostResponseMock.Object);
+        _apiClientMock.Setup(a => a.SaveJobPostDraft).Returns(saveJobPostDraftMock.Object);
+
+        var mockAlerts = new Mock<IAlertService>();
+        AppServiceLocator.Alerts = mockAlerts.Object;
+
+        await _viewModel.LoadCategoriesAsync();
+
+        // Set private fields via reflection first
+        var projectIdField = typeof(JobWizardViewModel).GetField("_currentProjectId", BindingFlags.NonPublic | BindingFlags.Instance);
+        var projectId = Guid.NewGuid();
+        projectIdField?.SetValue(_viewModel, projectId);
+
+        var jobPostIdsField = typeof(JobWizardViewModel).GetField("_currentJobPostIds", BindingFlags.NonPublic | BindingFlags.Instance);
+        var jobPostIds = new Dictionary<Guid, Guid> { { catId, Guid.NewGuid() } };
+        jobPostIdsField?.SetValue(_viewModel, jobPostIds);
+
+        // Setup Project details and selected categories
+        var catVm = _viewModel.SelectableCategories[0];
+        catVm.IsSelected = true;
+        
+        _viewModel.ProjectTitle = "Global Project Title";
+        _viewModel.ProjectDescription = "Global Project Description";
+        _viewModel.ProjectLocation = "Sofia";
+
+        // Act
+        var result = await _viewModel.SaveDraftAsync();
+
+        // Assert
+        result.Should().BeTrue();
+        passedDescription.Should().Be("Electrical Category Name"); // It should not be "Global Project Description"
+    }
+
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)
     {
         var field = typeof(JobWizardViewModel).GetField("_wizardSteps", BindingFlags.NonPublic | BindingFlags.Instance);

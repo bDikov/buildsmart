@@ -1319,7 +1319,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				var saveJobResult = await _apiClient.SaveJobPostDraft.ExecuteAsync(
 					jobId,
 					answersJson,
-					ProjectDescription,
+					cat.Category.Name,
 					ProjectLocation,
 					null, "EUR"
 				);

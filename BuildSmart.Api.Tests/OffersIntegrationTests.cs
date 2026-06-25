@@ -95,5 +95,98 @@ namespace BuildSmart.Api.Tests
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Cannot download offer until all categories are filled out.");
         }
+
+        [Fact]
+        public async Task DownloadOfferPdf_ShouldReturnPdf_WhenAllCategoriesAreReady_Integration()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var projectId = Guid.NewGuid();
+            var homeownerId = Guid.NewGuid();
+            var profileId = Guid.NewGuid();
+            var pdfBytes = new byte[] { 42, 42, 42 };
+
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var homeowner = new User
+                {
+                    Id = homeownerId,
+                    Email = $"homeowner-{Guid.NewGuid()}@example.com",
+                    FirstName = "John",
+                    LastName = "Doe",
+                    HashedPassword = "password",
+                    Role = UserRoleTypes.Homeowner
+                };
+                var homeownerProfile = new HomeownerProfile
+                {
+                    Id = profileId,
+                    UserId = homeownerId
+                };
+                homeowner.HomeownerProfile = homeownerProfile;
+
+                await dbContext.Users.AddAsync(homeowner);
+                await dbContext.HomeownerProfiles.AddAsync(homeownerProfile);
+
+                var category1Id = Guid.NewGuid();
+                var category2Id = Guid.NewGuid();
+                
+                var category1 = new ServiceCategory { Id = category1Id, Name = "Drywall", TemplateStructure = "{}" };
+                var category2 = new ServiceCategory { Id = category2Id, Name = "Painting", TemplateStructure = "{}" };
+                
+                await dbContext.ServiceCategories.AddRangeAsync(category1, category2);
+
+                var project = new Project
+                {
+                    Id = projectId,
+                    Title = "Home Renovations",
+                    Description = "Demo project",
+                    HomeownerId = homeownerId,
+                    MasterOfferPdf = pdfBytes
+                };
+
+                var job1 = new JobPost
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = projectId,
+                    ServiceCategoryId = category1Id,
+                    Title = "Drywalling",
+                    Location = "Sofia",
+                    Description = "Drywalling tasks",
+                    HomeownerProfileId = profileId
+                };
+                job1.SubmitForScopeGeneration();
+                job1.CompletePricing(); // status is WaitingForUserReview
+
+                var job2 = new JobPost
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = projectId,
+                    ServiceCategoryId = category2Id,
+                    Title = "Painting walls",
+                    Location = "Sofia",
+                    Description = "Painting tasks",
+                    HomeownerProfileId = profileId
+                };
+                job2.SubmitForScopeGeneration();
+                job2.CompletePricing(); // status is WaitingForUserReview
+
+                project.JobPosts.Add(job1);
+                project.JobPosts.Add(job2);
+
+                await dbContext.Projects.AddAsync(project);
+                await dbContext.SaveChangesAsync();
+            }
+
+            // Act
+            var response = await client.GetAsync($"/api/Offers/{projectId}/download");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Content.Headers.ContentType?.MediaType.Should().Be("application/pdf");
+            var downloadedBytes = await response.Content.ReadAsByteArrayAsync();
+            downloadedBytes.Should().Equal(pdfBytes);
+        }
     }
 }

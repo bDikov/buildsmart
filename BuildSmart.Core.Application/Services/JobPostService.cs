@@ -330,20 +330,19 @@ public class JobPostService : IJobPostService
 			// If it's already published, use UpdateScope (Amendment).
 		}
 
-		jobPost.JobDetails = jobDetailsJson;
-		if (!string.IsNullOrEmpty(description)) jobPost.Description = description;
-		if (!string.IsNullOrEmpty(location)) jobPost.Location = location;
-		if (estimatedBudget != null) jobPost.EstimatedBudget = estimatedBudget;
+		bool detailsChanged = jobPost.JobDetails != jobDetailsJson
+			|| (location != null && jobPost.Location != location)
+			|| (description != null && jobPost.Description != description);
 
-		// Ensure status is Draft (in case it was something else, though usually it stays Draft)
-		// jobPost.Status = JobPostStatus.Draft; // Setter is private, need method or reflection?
-		// Ideally we have a method RevertToDraft() or similar if needed,
-		// but typically we just update the fields.
+		jobPost.JobDetails = jobDetailsJson;
+		if (description != null) jobPost.Description = description;
+		if (location != null) jobPost.Location = location;
+		if (estimatedBudget != null) jobPost.EstimatedBudget = estimatedBudget;
 
 		jobPost.UpdatedAt = DateTime.UtcNow;
 
-		// Clear PDF offer cache when saving/updating draft
-		if (_unitOfWork.Projects != null)
+		// Clear PDF offer cache when saving/updating draft ONLY if details actually changed
+		if (detailsChanged && _unitOfWork.Projects != null)
 		{
 			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
 			if (project != null)

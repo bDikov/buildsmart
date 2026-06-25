@@ -664,4 +664,92 @@ public class JobPostServiceTests
             .WithMessage("Job is not waiting for user review. Current Status: Draft");
         _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Never);
     }
+
+    [Fact]
+    public async Task SaveDraftAsync_ShouldNotClearPdfCache_WhenAnswersAndDetailsAreUnchanged()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var initialDetails = "{\"q1\": \"Initial Answer\"}";
+        var initialDescription = "Category Name";
+        var initialLocation = "Sofia";
+
+        var jobPost = new JobPost
+        {
+            Id = jobPostId,
+            ProjectId = projectId,
+            JobDetails = initialDetails,
+            Description = initialDescription,
+            Location = initialLocation
+        };
+
+        var project = new Project
+        {
+            Id = projectId,
+            MasterOfferPdf = new byte[] { 1, 2, 3 },
+            GeneralSummary = "Original summary"
+        };
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        // Act
+        // Save the same details, location and description
+        await _service.SaveDraftAsync(jobPostId, initialDetails, initialDescription, initialLocation, null);
+
+        // Assert
+        project.MasterOfferPdf.Should().NotBeNull();
+        project.GeneralSummary.Should().Be("Original summary");
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_ShouldClearPdfCache_WhenAnswersAreChanged()
+    {
+        // Arrange
+        var jobPostId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var initialDetails = "{\"q1\": \"Initial Answer\"}";
+        var initialDescription = "Category Name";
+        var initialLocation = "Sofia";
+
+        var jobPost = new JobPost
+        {
+            Id = jobPostId,
+            ProjectId = projectId,
+            JobDetails = initialDetails,
+            Description = initialDescription,
+            Location = initialLocation
+        };
+
+        var project = new Project
+        {
+            Id = projectId,
+            MasterOfferPdf = new byte[] { 1, 2, 3 },
+            GeneralSummary = "Original summary"
+        };
+
+        var mockJobPostRepo = new Mock<IJobPostRepository>();
+        mockJobPostRepo.Setup(r => r.GetByIdAsync(jobPostId)).ReturnsAsync(jobPost);
+        _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
+
+        var mockProjectRepo = new Mock<IProjectRepository>();
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
+
+        // Act
+        // Save changed details
+        await _service.SaveDraftAsync(jobPostId, "{\"q1\": \"Different Answer\"}", initialDescription, initialLocation, null);
+
+        // Assert
+        project.MasterOfferPdf.Should().BeNull();
+        project.GeneralSummary.Should().BeNull();
+        _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
+    }
 }

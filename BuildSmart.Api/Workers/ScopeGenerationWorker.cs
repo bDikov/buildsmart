@@ -58,6 +58,12 @@ public class ScopeGenerationWorker
 			await unitOfWork.SaveChangesAsync();
 		}
 
+		if (jobPost.Status != JobPostStatus.GeneratingScope)
+		{
+			_logger.LogInformation("Job Post {JobId} is in status {Status}, not GeneratingScope. Skipping generation.", jobPostId, jobPost.Status);
+			return;
+		}
+
 		try
 		{
 			var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
@@ -257,6 +263,12 @@ public class ScopeGenerationWorker
 		if (jobPost == null)
 		{
 			_logger.LogWarning("Job Post {JobId} not found.", jobPostId);
+			return;
+		}
+
+		if (jobPost.Status != JobPostStatus.GeneratingScope)
+		{
+			_logger.LogInformation("Job Post {JobId} is in status {Status}, not GeneratingScope. Skipping pricing.", jobPostId, jobPost.Status);
 			return;
 		}
 
@@ -642,8 +654,15 @@ public class ScopeGenerationWorker
 				string finalScopeDescription = projectWithUser.Description;
 				if (combinedScope.Length > 0)
 				{
-					await EnforceRateLimitAsync();
-					finalScopeDescription = await aiService.GenerateExecutiveSummaryAsync(combinedScope.ToString(), projectWithUser.LanguageCode ?? "bg");
+					try
+					{
+						await EnforceRateLimitAsync();
+						finalScopeDescription = await aiService.GenerateExecutiveSummaryAsync(combinedScope.ToString(), projectWithUser.LanguageCode ?? "bg");
+					}
+					catch (Exception ex)
+					{
+						_logger.LogWarning(ex, "Failed to generate AI executive summary. Falling back to project description.");
+					}
 				}
 
 				var offerData = new

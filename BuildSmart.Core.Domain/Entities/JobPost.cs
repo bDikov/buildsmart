@@ -156,9 +156,8 @@ public class JobPost : BaseEntity
 	{
 		if (Status != JobPostStatus.GeneratingScope)
 		{
-			// If it's not in GeneratingScope, maybe ignore? Or throw?
-			// For robustness, if it's already past this stage, we shouldn't overwrite.
-			throw new InvalidOperationException($"Cannot set generated scope when status is {Status}");
+			// If it's already past this stage, we shouldn't overwrite or throw.
+			return;
 		}
 
 		GeneratedScope = scope;
