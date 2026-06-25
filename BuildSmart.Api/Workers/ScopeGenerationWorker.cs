@@ -477,15 +477,7 @@ public class ScopeGenerationWorker
 
 					if (allPriced)
 					{
-						_logger.LogInformation("All {Count} categories priced for Project {ProjectId}. Generating Master PDF...", activeJobPosts.Count, freshJobPost.ProjectId);
-
-						// Layer 4
-						await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 4, "Applying finishes and generating master offer...", 85);
-
 						await GenerateMasterProjectPdf(freshJobPost.ProjectId, saveScope.ServiceProvider);
-
-						// Layer 5
-						await hubContext.Clients.Group(freshJobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 5, "Complete", 100);
 					}
 					else
 					{
@@ -559,6 +551,31 @@ public class ScopeGenerationWorker
 				_logger.LogInformation("Master PDF already generated for Project {ProjectId}. Skipping regeneration and duplicate notification.", projectId);
 				return;
 			}
+
+			// Re-verify that all active categories are priced inside the lock
+			var projectJobPosts = await unitOfWork.JobPosts.GetJobsByProjectIdAsync(projectId);
+			var activeJobPosts = projectJobPosts.Where(jp => jp.Status != JobPostStatus.Cancelled).ToList();
+			var projectCalcs = (await unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId)).ToList();
+			bool allPriced = activeJobPosts.All(jp => projectCalcs.Any(c => c.ServiceCategoryId == jp.ServiceCategoryId));
+
+			// Verify that no active categories are still generating, draft, or rejected
+			bool allCompletedWithoutErrors = activeJobPosts.All(jp => 
+				jp.Status != JobPostStatus.Draft && 
+				jp.Status != JobPostStatus.GeneratingScope && 
+				jp.Status != JobPostStatus.Rejected);
+
+			if (!allPriced || !allCompletedWithoutErrors)
+			{
+				_logger.LogWarning("GenerateMasterProjectPdf was called but not all categories are priced or some are in progress/failed for Project {ProjectId}. Skipping.", projectId);
+				return;
+			}
+
+			// We are the single thread executing the generation. Run logs and SignalR updates once.
+			_logger.LogInformation("All {Count} categories priced for Project {ProjectId}. Generating Master PDF...", activeJobPosts.Count, projectId);
+
+			var jobProcessingHubContext = pdfScope.ServiceProvider.GetRequiredService<IHubContext<BuildSmart.Api.Hubs.JobProcessingHub>>();
+			await jobProcessingHubContext.Clients.Group(projectId.ToString()).SendAsync("ReceiveProcessingUpdate", 4, "Applying finishes and generating master offer...", 85);
+
 
 			// Store original culture and safely switch to project language
 			var originalCulture = CultureInfo.CurrentUICulture;
@@ -697,6 +714,13 @@ public class ScopeGenerationWorker
 						"Project"
 					);
 				}
+
+				// Enqueue the fire-and-forget email sender Hangfire job!
+				BackgroundJob.Enqueue<IEmailService>(service => service.SendProjectOfferEmailAsync(projectId));
+
+				// Complete progress updates
+				var processingHubContext = pdfScope.ServiceProvider.GetRequiredService<IHubContext<BuildSmart.Api.Hubs.JobProcessingHub>>();
+				await processingHubContext.Clients.Group(projectId.ToString()).SendAsync("ReceiveProcessingUpdate", 5, "Complete", 100);
 			}
 			finally
 			{

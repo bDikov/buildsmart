@@ -141,7 +141,7 @@ public class JobPost : BaseEntity
 
 	public void SubmitForScopeGeneration()
 	{
-		if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview || Status == JobPostStatus.GeneratingScope)
+		if (Status == JobPostStatus.Draft || Status == JobPostStatus.Rejected || Status == JobPostStatus.WaitingForUserReview || Status == JobPostStatus.GeneratingScope || Status == JobPostStatus.WaitingForAdminReview || Status == JobPostStatus.Open)
 		{
 			Status = JobPostStatus.GeneratingScope;
 			UpdatedAt = DateTime.UtcNow;

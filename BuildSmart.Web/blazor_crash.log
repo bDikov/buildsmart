@@ -13951,3 +13951,1302 @@ Object name: 'IServiceProvider'.
    at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:13 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:14 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:15 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:16 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:38:17 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 11:39:02 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:10 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:11 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:12 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:13 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:14 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:14 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:14 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:31 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:07:32 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:01 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:02 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:02 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:02 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:02 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:02 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:02 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:08:59 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[25.06.2026 г. 14:09:00 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 157
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:03 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 14:09:03 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+
+[25.06.2026 г. 14:09:03 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[25.06.2026 г. 14:09:03 ч.] InvalidOperationException: The HubConnection cannot be started if it is not in the Disconnected state.
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncInner(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

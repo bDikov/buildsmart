@@ -781,4 +781,10 @@
   <data name="Chat_NoProjectsStarted_Message" xml:space="preserve">
     <value>Трябва да стартирате поне един проект, за да използвате чата.</value>
   </data>
+  <data name="JobWizard_SubmissionError_Title" xml:space="preserve">
+    <value>Грешка при изпращане</value>
+  </data>
+  <data name="JobWizard_OK" xml:space="preserve">
+    <value>Добре</value>
+  </data>
 </root>

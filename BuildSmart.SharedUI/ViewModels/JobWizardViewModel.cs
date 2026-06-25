@@ -1,6 +1,7 @@
 using BuildSmart.SharedUI.Services;
 using BuildSmart.SharedUI.MauiMocks;
 using BuildSmart.SharedUI.GraphQL;
+using Microsoft.Extensions.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -14,6 +15,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly System.Threading.SemaphoreSlim _saveLock = new(1, 1);
 	private System.Threading.CancellationTokenSource? _saveDebounceCts;
+	private bool _isUpdatingSelection;
 
 	// --- Steps & Visibility ---
 	private List<WizardStep> _wizardSteps = new();
@@ -241,11 +243,16 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private Task? _loadCategoriesTask;
 	private readonly SignalRService? _signalRService;
+	private readonly IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources>? _localizer;
 
-	public JobWizardViewModel(IBuildSmartApiClient apiClient, SignalRService? signalRService = null)
+	public JobWizardViewModel(
+		IBuildSmartApiClient apiClient, 
+		SignalRService? signalRService = null, 
+		IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources>? localizer = null)
 	{
 		_apiClient = apiClient;
 		_signalRService = signalRService;
+		_localizer = localizer;
 		InitializeSteps();
 		_loadCategoriesTask = LoadCategoriesAsync();
 	}
@@ -404,6 +411,21 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		try
 		{
 			IsBusy = true;
+
+			// Validate authentication: Guest user shouldn't be able to proceed/create drafts at all
+			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
+			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null)
+			{
+				string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+				string okText = _localizer?["JobWizard_OK"] ?? "OK";
+				string errorMsg = userResult.Errors.Count > 0 
+					? userResult.Errors[0].Message 
+					: "You must be logged in to create a project.";
+				await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+				await AppServiceLocator.Navigation.NavigateToAsync("..");
+				return;
+			}
+
 			var result = await _apiClient.GetServiceCategories.ExecuteAsync();
 
 			if (result.Errors.Count > 0)
@@ -419,12 +441,12 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				foreach (var cat in result.Data.ServiceCategories)
 				{
 					var viewModel = new SelectableCategoryViewModel(cat);
-					viewModel.PropertyChanged += (s, e) => 
+					viewModel.PropertyChanged += async (s, e) => 
 					{
 						if (e.PropertyName == nameof(SelectableCategoryViewModel.IsSelected))
 						{
 							OnPropertyChanged(nameof(ProgressPercentage));
-							TriggerDebouncedSave();
+							await HandleCategorySelectionChangedAsync(viewModel);
 						}
 					};
 					
@@ -498,27 +520,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				}
 			}
 
-			// 2. NAVIGATE IMMEDIATELY (UX Optimization)
-			// Move to the next page so the user sees the new questions while we save in the background
-			bool movedNext = false;
-			if (CurrentStep < _wizardSteps.Count - 1)
-			{
-				CurrentStep++;
-				LoadStepData(CurrentStep);
-				movedNext = true;
-			}
-
-			// 3. BACKGROUND NETWORK CALLS
+			// 2. SAVE DRAFT (Must succeed before navigating)
+			bool saveSuccess = true;
 			if (currentStepType == WizardStepType.CategorySelection)
 			{
-				await InternalSaveDraftAsync(null, true);
+				saveSuccess = await InternalSaveDraftAsync(null, true);
 			}
 			else if (currentStepType == WizardStepType.Questions)
 			{
 				var stepTitle = _wizardSteps[currentStepIndex].Title;
 				if (stepTitle == "General Questions")
 				{
-					await InternalSaveDraftAsync(null, true);
+					saveSuccess = await InternalSaveDraftAsync(null, true);
 				}
 				else
 				{
@@ -526,31 +539,47 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					var cat = SelectableCategories.FirstOrDefault(c => c.Category.Name == categoryName);
 					if (cat != null)
 					{
-						await InternalSaveDraftAsync(cat);
-						
-						// Trigger AI Generation immediately for this category
-						if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
+						saveSuccess = await InternalSaveDraftAsync(cat);
+						if (saveSuccess)
 						{
-							var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
-							if (!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash)
+							// Trigger AI Generation immediately for this category
+							if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
 							{
-								var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
-								if (submitResult.Errors.Count > 0)
+								var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
+								if (!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash)
 								{
-									await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {categoryName}: {submitResult.Errors[0].Message}", "OK");
-								}
-								else
-								{
-									_lastSubmittedJobHashes[jobId] = answersHash;
+									var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+									if (submitResult.Errors.Count > 0)
+									{
+										await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {categoryName}: {submitResult.Errors[0].Message}", "OK");
+									}
+									else
+									{
+										_lastSubmittedJobHashes[jobId] = answersHash;
+									}
 								}
 							}
 						}
 					}
 					else
 					{
-						await InternalSaveDraftAsync();
+						saveSuccess = await InternalSaveDraftAsync();
 					}
 				}
+			}
+
+			if (!saveSuccess)
+			{
+				return;
+			}
+
+			// 3. NAVIGATE
+			bool movedNext = false;
+			if (CurrentStep < _wizardSteps.Count - 1)
+			{
+				CurrentStep++;
+				LoadStepData(CurrentStep);
+				movedNext = true;
 			}
 
 			if (!movedNext && IsEditing)
@@ -573,7 +602,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		// IsBusy is already true from GoToNextStep
 		try
 		{
-			await InternalSaveDraftAsync();
+			if (!await InternalSaveDraftAsync())
+			{
+				return;
+			}
 
 			var jobsToRegenerate = _targetJobPostId != null
 				? new List<Guid> { _targetJobPostId.Value }
@@ -683,7 +715,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				await _saveLock.WaitAsync(token);
 				try
 				{
-					await InternalSaveDraftAsync(null, false);
+					await InternalSaveDraftAsync(null, false, suppressAlert: true);
 				}
 				finally
 				{
@@ -1035,13 +1067,42 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		return true;
 	}
 
-	public async Task SaveDraftAsync(SelectableCategoryViewModel? specificCategory = null, bool projectOnly = false)
+	private async Task HandleCategorySelectionChangedAsync(SelectableCategoryViewModel categoryVm)
 	{
-		if (IsBusy) return;
+		if (_isUpdatingSelection) return;
+
 		try
 		{
 			IsBusy = true;
-			await InternalSaveDraftAsync(specificCategory, projectOnly);
+			bool success = await InternalSaveDraftAsync(specificCategory: null, projectOnly: false, suppressAlert: false);
+			if (!success)
+			{
+				_isUpdatingSelection = true;
+				categoryVm.IsSelected = !categoryVm.IsSelected;
+				OnPropertyChanged(nameof(ProgressPercentage));
+			}
+		}
+		catch (Exception ex)
+		{
+			await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+			_isUpdatingSelection = true;
+			categoryVm.IsSelected = !categoryVm.IsSelected;
+			OnPropertyChanged(nameof(ProgressPercentage));
+		}
+		finally
+		{
+			_isUpdatingSelection = false;
+			IsBusy = false;
+		}
+	}
+
+	public async Task<bool> SaveDraftAsync(SelectableCategoryViewModel? specificCategory = null, bool projectOnly = false)
+	{
+		if (IsBusy) return false;
+		try
+		{
+			IsBusy = true;
+			return await InternalSaveDraftAsync(specificCategory, projectOnly);
 		}
 		finally
 		{
@@ -1049,7 +1110,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 	}
 
-	private async Task InternalSaveDraftAsync(SelectableCategoryViewModel? specificCategory = null, bool projectOnly = false)
+	private async Task<bool> InternalSaveDraftAsync(
+		SelectableCategoryViewModel? specificCategory = null, 
+		bool projectOnly = false, 
+		bool suppressAlert = false)
 	{
 		var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 		var prefix = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Проект" : "Project";
@@ -1060,7 +1124,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
 			if (selectedCategories.Count == 0)
 			{
-				return;
+				return true;
 			}
 
 			if (string.IsNullOrWhiteSpace(ProjectTitle))
@@ -1083,14 +1147,39 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 
 			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null) return;
+			if (userResult.Errors.Count > 0)
+			{
+				if (!suppressAlert)
+				{
+					string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+					string okText = _localizer?["JobWizard_OK"] ?? "OK";
+					await AppServiceLocator.Alerts.DisplayAlert(errorTitle, userResult.Errors[0].Message, okText);
+				}
+				return false;
+			}
+			if (userResult.Data?.CurrentUser == null)
+			{
+				if (!suppressAlert)
+				{
+					string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+					string okText = _localizer?["JobWizard_OK"] ?? "OK";
+					await AppServiceLocator.Alerts.DisplayAlert(errorTitle, "User not authenticated.", okText);
+				}
+				return false;
+			}
 			var userId = userResult.Data.CurrentUser.Id;
 
 			var projectResult = await _apiClient.CreateProject.ExecuteAsync(Guid.Parse(userId), ProjectTitle, ProjectDescription, currentLang);
 			if (projectResult.Errors.Count > 0 || projectResult.Data?.CreateProject == null)
 			{
-				await AppServiceLocator.Alerts.DisplayAlert("Error", "Failed to create project draft.", "OK");
-				return;
+				if (!suppressAlert)
+				{
+					string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+					string errorMsg = projectResult.Errors.Count > 0 ? projectResult.Errors[0].Message : "Failed to create project draft.";
+					string okText = _localizer?["JobWizard_OK"] ?? "OK";
+					await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+				}
+				return false;
 			}
 			_currentProjectId = projectResult.Data.CreateProject.Id;
 			_signalRService?.NotifyNotificationsStateChanged();
@@ -1105,10 +1194,20 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					: fallbackTitle;
 			}
 
-			await _apiClient.UpdateProjectDetails.ExecuteAsync(_currentProjectId.Value, ProjectTitle, ProjectDescription, CurrentStep);
+			var updateResult = await _apiClient.UpdateProjectDetails.ExecuteAsync(_currentProjectId.Value, ProjectTitle, ProjectDescription, CurrentStep);
+			if (updateResult.Errors.Count > 0)
+			{
+				if (!suppressAlert)
+				{
+					string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+					string okText = _localizer?["JobWizard_OK"] ?? "OK";
+					await AppServiceLocator.Alerts.DisplayAlert(errorTitle, updateResult.Errors[0].Message, okText);
+				}
+				return false;
+			}
 		}
 
-		if (projectOnly) return;
+		if (projectOnly) return true;
 
 		// Delete any deselected categories from the project draft
 		if (specificCategory == null)
@@ -1119,10 +1218,17 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
 				{
 					var deleteResult = await _apiClient.DeleteJobPost.ExecuteAsync(jobId);
-					if (deleteResult.Errors.Count == 0)
+					if (deleteResult.Errors.Count > 0)
 					{
-						_currentJobPostIds.Remove(cat.Category.Id);
+						if (!suppressAlert)
+						{
+							string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+							string okText = _localizer?["JobWizard_OK"] ?? "OK";
+							await AppServiceLocator.Alerts.DisplayAlert(errorTitle, deleteResult.Errors[0].Message, okText);
+						}
+						return false;
 					}
+					_currentJobPostIds.Remove(cat.Category.Id);
 				}
 			}
 		}
@@ -1146,27 +1252,44 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					null, "EUR", new List<string>(), PreferredSiteVisitDate
 				);
 
-				if (jobResult.Errors.Count > 0)
+				if (jobResult.Errors.Count > 0 || jobResult.Data?.AddJobToProject == null)
 				{
-					await AppServiceLocator.Alerts.DisplayAlert("Error", $"AddJob Error: {jobResult.Errors[0].Message}", "OK");
+					if (!suppressAlert)
+					{
+						string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+						string errorMsg = jobResult.Errors.Count > 0 ? jobResult.Errors[0].Message : "Failed to add job to project.";
+						string okText = _localizer?["JobWizard_OK"] ?? "OK";
+						await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+					}
+					return false;
 				}
-				else if (jobResult.Data?.AddJobToProject != null)
-				{
-					_currentJobPostIds[cat.Category.Id] = jobResult.Data.AddJobToProject.Id;
-				}
+				_currentJobPostIds[cat.Category.Id] = jobResult.Data.AddJobToProject.Id;
 			}
 			else
 			{
 				var jobId = _currentJobPostIds[cat.Category.Id];
-				await _apiClient.SaveJobPostDraft.ExecuteAsync(
+				var saveJobResult = await _apiClient.SaveJobPostDraft.ExecuteAsync(
 					jobId,
 					answersJson,
 					ProjectDescription,
 					ProjectLocation,
 					null, "EUR"
 				);
+
+				if (saveJobResult.Errors.Count > 0)
+				{
+					if (!suppressAlert)
+					{
+						string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
+						string okText = _localizer?["JobWizard_OK"] ?? "OK";
+						await AppServiceLocator.Alerts.DisplayAlert(errorTitle, saveJobResult.Errors[0].Message, okText);
+					}
+					return false;
+				}
 			}
 		}
+
+		return true;
 	}
 
 	[RelayCommand]
@@ -1201,7 +1324,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 
 			// Ensure everything is saved
-			await InternalSaveDraftAsync();
+			if (!await InternalSaveDraftAsync())
+			{
+				return;
+			}
 
 			if (_currentJobPostIds.Count == 0)
 			{
@@ -1216,6 +1342,13 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				{
 					var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
 					var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+					if (submitResult.Errors.Count > 0)
+					{
+						string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Submission Error";
+						string okText = _localizer?["JobWizard_OK"] ?? "OK";
+						await AppServiceLocator.Alerts.DisplayAlert(errorTitle, submitResult.Errors[0].Message, okText);
+						return;
+					}
 					_lastSubmittedJobHashes[jobId] = answersHash;
 				}
 			}
@@ -1257,7 +1390,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 
 			// Save draft (updates dynamic questions on the server)
-			await InternalSaveDraftAsync();
+			if (!await InternalSaveDraftAsync())
+			{
+				return;
+			}
 
 			IsOfferBuilding = true;
 		}

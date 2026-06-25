@@ -295,6 +295,7 @@ public class JobPostService : IJobPostService
 			?? throw new ArgumentException("Job post not found");
 
 	jobPost.UpdateTasks(tasks);
+	jobPost.SubmitForScopeGeneration();
 
 		_unitOfWork.JobPosts.Update(jobPost);
 

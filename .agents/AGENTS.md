@@ -15,3 +15,7 @@
 
 ## 4. Code Refinements & Warning Resolution
 - **Proactive Warning Checks**: Once all tests pass and you are ready to prepare the walkthrough, use `git diff` to identify all changed files. Inspect these files and the build outputs to ensure no new compiler warnings, nullability issues, or performance warnings have been introduced, and resolve them before finalizing the walkthrough.
+
+## Secrets and Configuration Management
+- **Never Hardcode Secrets**: Do not hardcode API keys, credentials, secrets, or third-party service endpoints in the codebase.
+- **Configuration-Driven**: Always load these configurations dynamically from configuration providers (e.g., `appsettings.json`, environment variables, User Secrets, or Key Vaults).

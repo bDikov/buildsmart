@@ -778,4 +778,10 @@
   <data name="Chat_NoProjectsStarted_Message" xml:space="preserve">
     <value>You must start at least one project to use the chat feature.</value>
   </data>
+  <data name="JobWizard_SubmissionError_Title" xml:space="preserve">
+    <value>Submission Error</value>
+  </data>
+  <data name="JobWizard_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

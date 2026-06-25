@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using StrawberryShake;
 using static BuildSmart.SharedUI.ViewModels.JobWizardViewModel;
+using BuildSmart.SharedUI.Services;
 
 namespace BuildSmart.Maui.Tests;
 
@@ -28,6 +29,21 @@ public class JobWizardViewModelTests
         
         getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(responseMock.Object);
         _apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        // Mock default authenticated user for initialization
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+        var userMock = new Mock<IGetCurrentUser_CurrentUser>();
+        userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+
+        var userResultMock = new Mock<IGetCurrentUserResult>();
+        userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
+        userResponseMock.Setup(r => r.Data).Returns(userResultMock.Object);
+
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
         
         _viewModel = new JobWizardViewModel(_apiClientMock.Object);
     }
@@ -199,10 +215,11 @@ public class JobWizardViewModelTests
 
         // Attach property changed manually to mimic the internal LoadStepData behavior
         var method = typeof(JobWizardViewModel).GetMethod("EvaluateQuestionVisibility", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(method);
         
         // Act 1: Answer Q1 to show Q2
         q1.Answer = "OptionA";
-        method.Invoke(_viewModel, null);
+        method!.Invoke(_viewModel, null);
         
         // Assert 1
         q2.IsVisible.Should().BeTrue();
@@ -229,18 +246,20 @@ public class JobWizardViewModelTests
     {
         // Arrange
         var method = typeof(JobWizardViewModel).GetMethod("GetLocalizedValue", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(method);
         
         var jsonString = "{ \"bg\": \"Здравей\", \"en\": \"Hello\" }";
         var node = System.Text.Json.Nodes.JsonNode.Parse(jsonString);
+        Assert.NotNull(node);
 
         // Act & Assert
-        var resultBg = method.Invoke(_viewModel, new object[] { node, "bg", "en" });
+        var resultBg = method!.Invoke(_viewModel, new object?[] { node, "bg", "en" }) as string;
         resultBg.Should().Be("Здравей");
 
-        var resultEn = method.Invoke(_viewModel, new object[] { node, "en", "bg" });
+        var resultEn = method.Invoke(_viewModel, new object?[] { node, "en", "bg" }) as string;
         resultEn.Should().Be("Hello");
 
-        var resultFallback = method.Invoke(_viewModel, new object[] { node, "fr", "en" });
+        var resultFallback = method.Invoke(_viewModel, new object?[] { node, "fr", "en" }) as string;
         resultFallback.Should().Be("Hello");
     }
 
@@ -249,13 +268,142 @@ public class JobWizardViewModelTests
     {
         // Arrange
         var method = typeof(JobWizardViewModel).GetMethod("GetLocalizedValue", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(method);
         
         var jsonString = "\"Plain String\"";
         var node = System.Text.Json.Nodes.JsonNode.Parse(jsonString);
+        Assert.NotNull(node);
 
         // Act & Assert
-        var result = method.Invoke(_viewModel, new object[] { node, "bg", "en" });
+        var result = method!.Invoke(_viewModel, new object?[] { node, "bg", "en" }) as string;
         result.Should().Be("Plain String");
+    }
+
+    [Fact]
+    public async Task GoToNextStep_WhenSaveDraftFails_DoesNotNavigate()
+    {
+        // Arrange
+        _viewModel.CurrentStep = 0;
+        var steps = new List<WizardStep>
+        {
+            new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" },
+            new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" }
+        };
+        SetWizardSteps(_viewModel, steps);
+
+        var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
+        mockCategoryNode.Setup(c => c.Id).Returns(Guid.NewGuid());
+        mockCategoryNode.Setup(c => c.Name).Returns("Electrical");
+
+        var categoryVm = new SelectableCategoryViewModel(mockCategoryNode.Object) { IsSelected = true };
+        _viewModel.SelectableCategories = new System.Collections.ObjectModel.ObservableCollection<SelectableCategoryViewModel> { categoryVm };
+
+        var field = typeof(JobWizardViewModel).GetField("_currentProjectId", BindingFlags.NonPublic | BindingFlags.Instance);
+        field?.SetValue(_viewModel, null);
+
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        var clientErrorMock = new Mock<IClientError>();
+        clientErrorMock.Setup(e => e.Message).Returns("Mocked auth error");
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError> { clientErrorMock.Object });
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        // Act
+        await _viewModel.GoToNextStep();
+
+        // Assert
+        _viewModel.CurrentStep.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CategorySelection_WhenSaveDraftFails_RevertsIsSelected()
+    {
+        // Arrange
+        var apiClientMock = new Mock<IBuildSmartApiClient>();
+
+        var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
+        mockCategoryNode.Setup(c => c.Id).Returns(Guid.NewGuid());
+        mockCategoryNode.Setup(c => c.Name).Returns("Electrical");
+
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { mockCategoryNode.Object });
+
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        // Mock GetCurrentUser to succeed initially during load
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+        var userMock = new Mock<IGetCurrentUser_CurrentUser>();
+        userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+
+        var userResultMock = new Mock<IGetCurrentUserResult>();
+        userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
+        userResponseMock.Setup(r => r.Data).Returns(userResultMock.Object);
+
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        // Mock CreateProject to return errors (this simulates saving the draft failing)
+        var createProjectQueryMock = new Mock<ICreateProjectMutation>();
+        var createProjectResponseMock = new Mock<IOperationResult<ICreateProjectResult>>();
+        var clientErrorMock = new Mock<IClientError>();
+        clientErrorMock.Setup(e => e.Message).Returns("Mocked database error");
+        createProjectResponseMock.Setup(r => r.Errors).Returns(new List<IClientError> { clientErrorMock.Object });
+        createProjectQueryMock.Setup(q => q.ExecuteAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), default))
+            .ReturnsAsync(createProjectResponseMock.Object);
+        apiClientMock.Setup(a => a.CreateProject).Returns(createProjectQueryMock.Object);
+
+        var mockAlerts = new Mock<IAlertService>();
+        AppServiceLocator.Alerts = mockAlerts.Object;
+
+        var viewModel = new JobWizardViewModel(apiClientMock.Object);
+        await viewModel.LoadCategoriesAsync();
+
+        var categoryVm = viewModel.SelectableCategories[0];
+        categoryVm.IsSelected.Should().BeFalse();
+
+        // Act
+        categoryVm.IsSelected = true;
+        await Task.Delay(100);
+
+        // Assert
+        categoryVm.IsSelected.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LoadCategoriesAsync_WhenUnauthenticated_AbortsAndAlerts()
+    {
+        // Arrange
+        var apiClientMock = new Mock<IBuildSmartApiClient>();
+
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        userResponseMock.Setup(r => r.Data).Returns((IGetCurrentUserResult?)null);
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        var mockNavigation = new Mock<INavigationBridge>();
+        var mockAlerts = new Mock<IAlertService>();
+        AppServiceLocator.Navigation = mockNavigation.Object;
+        AppServiceLocator.Alerts = mockAlerts.Object;
+
+        // Act
+        var viewModel = new JobWizardViewModel(apiClientMock.Object);
+        await Task.Delay(100);
+
+        // Assert
+        mockAlerts.Verify(x => x.DisplayAlert(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        mockNavigation.Verify(x => x.NavigateToAsync("..", null), Times.Once);
     }
 
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)

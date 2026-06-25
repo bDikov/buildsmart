@@ -138,6 +138,7 @@ public partial class Program
 		builder.Services.AddScoped<IMediaService, BuildSmart.Infrastructure.Services.CloudflareR2MediaService>();
 		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 		builder.Services.AddScoped<IPricingEngine, PricingEngine>();
+		builder.Services.AddScoped<IEmailService, EmailService>();
 		builder.Services.AddSingleton<IActiveProjectChatTracker, ActiveProjectChatTracker>();
 		builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
 
