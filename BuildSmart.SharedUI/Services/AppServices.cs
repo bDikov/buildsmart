@@ -17,7 +17,6 @@ namespace BuildSmart.SharedUI.Services
         Task InvokeOnMainThreadAsync(Action action);
         Task InvokeOnMainThreadAsync(Func<Task> func);
     }
-
     public static class AppServiceLocator
     {
         private static INavigationBridge _navigation = null!;
@@ -25,6 +24,8 @@ namespace BuildSmart.SharedUI.Services
         private static IAppMainThread _mainThread = null!;
 
         public static Func<Type, object?>? ServiceResolver { get; set; }
+
+        public static Func<string, string, Task>? ToastAction { get; set; }
 
         public static INavigationBridge Navigation
         {

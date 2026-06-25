@@ -1,5 +1,7 @@
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Application.Interfaces;
+using Microsoft.Extensions.Configuration;
+using System;
 
 // Corrected namespace
 namespace BuildSmart.Api.GraphQL.Types;
@@ -32,6 +34,27 @@ public class UserType : ObjectType<User>
 				var user = ctx.Parent<User>();
 				var presenceService = ctx.Service<IUserPresenceService>();
 				return presenceService.IsUserOnline(user.Id.ToString());
+			});
+
+		descriptor.Field("remainingAiRequests")
+			.Type<NonNullType<IntType>>()
+			.Resolve(ctx =>
+			{
+				var user = ctx.Parent<User>();
+				var config = ctx.Service<IConfiguration>();
+				var limitStr = config["Gemini:MaxAiRequests"];
+				var maxRequests = int.TryParse(limitStr, out var limitVal) ? limitVal : 20;
+
+				var now = DateTime.UtcNow;
+				var requestCount = user.AiRequestCount;
+				if (user.LastAiRequestDate == null || 
+					user.LastAiRequestDate.Value.Month != now.Month || 
+					user.LastAiRequestDate.Value.Year != now.Year)
+				{
+					requestCount = 0;
+				}
+
+				return Math.Max(0, maxRequests - requestCount);
 			});
 
 		// Relationships will be configured here later

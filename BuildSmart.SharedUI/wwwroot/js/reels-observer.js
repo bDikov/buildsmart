@@ -372,5 +372,82 @@ window.addEventListener('keydown', (e) => {
                 window.reelsObserver.globalMuted = player.muted;
             }
         }
+    } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const videoId = activeItem.getAttribute('data-video-id');
+        if (videoId) {
+            const player = window.reelsObserver.players[videoId];
+            if (player) {
+                player.__ignoreVolumeChangeUntil = Date.now() + 200;
+                player.volume = Math.min(1.0, player.volume + 0.1);
+                if (player.muted) {
+                    player.muted = false;
+                    window.reelsObserver.globalMuted = false;
+                }
+            }
+        }
+    } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const videoId = activeItem.getAttribute('data-video-id');
+        if (videoId) {
+            const player = window.reelsObserver.players[videoId];
+            if (player) {
+                player.__ignoreVolumeChangeUntil = Date.now() + 200;
+                player.volume = Math.max(0.0, player.volume - 0.1);
+                if (player.volume === 0) {
+                    player.muted = true;
+                    window.reelsObserver.globalMuted = true;
+                }
+            }
+        }
+    } else if (e.key === 'AudioVolumeUp') {
+        const videoId = activeItem.getAttribute('data-video-id');
+        if (videoId) {
+            const player = window.reelsObserver.players[videoId];
+            if (player && player.muted) {
+                player.__ignoreVolumeChangeUntil = Date.now() + 200;
+                player.muted = false;
+                window.reelsObserver.globalMuted = false;
+            }
+        }
     }
 });
+
+window.showBuildSmartToast = function (message, type) {
+    let container = document.getElementById('bs-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'bs-toast-container';
+        container.className = 'bs-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `bs-toast bs-toast-${type || 'info'}`;
+
+    let icon = '';
+    if (type === 'success') {
+        icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+    } else if (type === 'error' || type === 'danger') {
+        icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+    } else {
+        icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    }
+
+    toast.innerHTML = `
+        <div class="bs-toast-icon">${icon}</div>
+        <div class="bs-toast-content">${message}</div>
+        <button class="bs-toast-close" onclick="this.parentElement.remove()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('bs-toast-fadeout');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 4000);
+};

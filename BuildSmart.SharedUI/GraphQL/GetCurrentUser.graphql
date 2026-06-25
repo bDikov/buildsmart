@@ -11,6 +11,9 @@ query GetCurrentUser {
     profilePictureUrl
     preferredLanguage
     preferredTheme
+    aiRequestCount
+    remainingAiRequests
+    lastAiRequestDate
     tradesmanProfile {
       id
       videoIntroductionUrl

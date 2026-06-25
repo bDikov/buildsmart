@@ -37,6 +37,7 @@ public class JobWizardViewModelTests
 
         var userMock = new Mock<IGetCurrentUser_CurrentUser>();
         userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+        userMock.Setup(u => u.RemainingAiRequests).Returns(20);
 
         var userResultMock = new Mock<IGetCurrentUserResult>();
         userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
@@ -344,6 +345,7 @@ public class JobWizardViewModelTests
 
         var userMock = new Mock<IGetCurrentUser_CurrentUser>();
         userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+        userMock.Setup(u => u.RemainingAiRequests).Returns(20);
 
         var userResultMock = new Mock<IGetCurrentUserResult>();
         userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
@@ -404,6 +406,114 @@ public class JobWizardViewModelTests
         // Assert
         mockAlerts.Verify(x => x.DisplayAlert(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         mockNavigation.Verify(x => x.NavigateToAsync("..", null), Times.Once);
+    }
+
+    [Fact]
+    public async Task CategorySelection_WhenExceedsRemainingAiRequests_RevertsIsSelected()
+    {
+        // Arrange
+        var apiClientMock = new Mock<IBuildSmartApiClient>();
+
+        var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
+        mockCategoryNode.Setup(c => c.Id).Returns(Guid.NewGuid());
+        mockCategoryNode.Setup(c => c.Name).Returns("Electrical");
+
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { mockCategoryNode.Object });
+
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        // Mock GetCurrentUser to succeed but have 0 remaining requests
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+        var userMock = new Mock<IGetCurrentUser_CurrentUser>();
+        userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+        userMock.Setup(u => u.RemainingAiRequests).Returns(0); // 0 remaining requests!
+
+        var userResultMock = new Mock<IGetCurrentUserResult>();
+        userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
+        userResponseMock.Setup(r => r.Data).Returns(userResultMock.Object);
+
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        var mockAlerts = new Mock<IAlertService>();
+        AppServiceLocator.Alerts = mockAlerts.Object;
+
+        var viewModel = new JobWizardViewModel(apiClientMock.Object);
+        await viewModel.LoadCategoriesAsync();
+
+        var categoryVm = viewModel.SelectableCategories[0];
+        categoryVm.IsSelected.Should().BeFalse();
+
+        // Act
+        categoryVm.IsSelected = true;
+        await Task.Delay(100);
+
+        // Assert
+        categoryVm.IsSelected.Should().BeFalse(); // Reverted because 1 > 0
+        mockAlerts.Verify(x => x.DisplayAlert(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public void ValidateCategoryStep_WhenExceedsRemainingAiRequests_ReturnsFalseAndAlerts()
+    {
+        // Arrange
+        var apiClientMock = new Mock<IBuildSmartApiClient>();
+
+        // Mock GetCategories to succeed (prevent NRE in constructor background task)
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories>());
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        // Mock default authenticated user with 1 remaining request
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+
+        var userMock = new Mock<IGetCurrentUser_CurrentUser>();
+        userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+        userMock.Setup(u => u.RemainingAiRequests).Returns(1); // 1 remaining request!
+
+        var userResultMock = new Mock<IGetCurrentUserResult>();
+        userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
+        userResponseMock.Setup(r => r.Data).Returns(userResultMock.Object);
+
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        var mockAlerts = new Mock<IAlertService>();
+        AppServiceLocator.Alerts = mockAlerts.Object;
+
+        var viewModel = new JobWizardViewModel(apiClientMock.Object);
+        viewModel.RemainingAiRequests = 1;
+
+        var cat1 = new SelectableCategoryViewModel(new Mock<IGetServiceCategories_ServiceCategories>().Object) { IsSelected = true };
+        var cat2 = new SelectableCategoryViewModel(new Mock<IGetServiceCategories_ServiceCategories>().Object) { IsSelected = true };
+
+        viewModel.SelectableCategories.Add(cat1);
+        viewModel.SelectableCategories.Add(cat2); // 2 selected, which exceeds 1
+
+        // Act
+        var method = typeof(JobWizardViewModel).GetMethod("ValidateCategoryStep", BindingFlags.NonPublic | BindingFlags.Instance);
+        var result = (bool?)method?.Invoke(viewModel, null);
+
+        // Assert
+        result.Should().BeFalse();
+        mockAlerts.Verify(x => x.DisplayAlert(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)

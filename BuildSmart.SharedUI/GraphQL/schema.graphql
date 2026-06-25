@@ -1529,6 +1529,7 @@ type User {
   preferredLanguage: String!
   preferredTheme: String!
   aiRequestCount: Int!
+  remainingAiRequests: Int!
   lastAiRequestDate: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!

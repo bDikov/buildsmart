@@ -178,6 +178,17 @@ public class WebAlertService : IAlertService
 
     public async Task DisplayAlert(string title, string message, string cancel)
     {
+        if (AppServiceLocator.ToastAction != null)
+        {
+            var type = "info";
+            var titleLower = title?.ToLower() ?? "";
+            if (titleLower.Contains("success") || titleLower.Contains("успех")) type = "success";
+            else if (titleLower.Contains("error") || titleLower.Contains("грешка") || titleLower.Contains("limit") || titleLower.Contains("required") || titleLower.Contains("лимит")) type = "error";
+
+            await AppServiceLocator.ToastAction(message, type);
+            return;
+        }
+
         try { await _jsRuntime.InvokeVoidAsync("alert", $"{title}\n{message}"); } catch { }
     }
 

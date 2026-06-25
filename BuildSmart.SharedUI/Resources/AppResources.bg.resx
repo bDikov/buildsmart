@@ -787,4 +787,10 @@
   <data name="JobWizard_OK" xml:space="preserve">
     <value>Добре</value>
   </data>
+  <data name="JobWizard_AiLimitReached_Title" xml:space="preserve">
+    <value>Лимитът е достигнат</value>
+  </data>
+  <data name="JobWizard_AiRequestsExceeded" xml:space="preserve">
+    <value>Моля, изберете по-малко категории, за да се вместите в оставащия ви месечен лимит от {0} заявки към изкуствения интелект. Избрали сте {1} категории. Можете също така да се свържете с поддръжката, за да надстроите профила си.</value>
+  </data>
 </root>

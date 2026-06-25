@@ -145,3 +145,36 @@ Modern browsers (iOS Safari, Chrome) strictly block audio if a video is played p
 The application maintains a `globalMuted` state so that unmuting one video unmutes all subsequent videos.
 - **Race Condition Prevention:** Because the browser's Autoplay Policy can aggressively force a video into a `muted` state if it detects a violation, this forced mute triggers a `volumechange` event that can accidentally overwrite the user's `globalMuted` preference.
 - **The Lock:** When programmatically changing the volume or falling back to a muted state, JS applies a temporary lock (`player.__ignoreVolumeChangeUntil = Date.now() + 200;`). The `volumechange` event listener must check this lock and ignore any changes made by the system within that window, ensuring only genuine user taps update the `globalMuted` state.
+
+## 8. Error Messages UX Checklist & Guidelines
+
+This section captures the design guidelines for error messages, empty states, and input validation warnings across the application, extracted from the `Error Messages Checklist (Community).fig` design system.
+
+### 8.1 Required UI Elements (The Error State Component Checklist)
+Whenever displaying a full-screen, modal, or card-based error/empty state, design and implement the following four components:
+1. **Illustration / Visual Icon:** Visually represents the issue. If an illustration is absent, the copy must be exceptionally clear to compensate.
+2. **Head Copy (Title):** Concisely and precisely describes the problem.
+3. **Sub-Copy (Body Detail):** Explains what happened in human-readable, empathetic language, providing background context where helpful.
+4. **Call to Action (CTA):** Provides a clear, actionable next step (button or link) to ensure users never get stuck.
+
+### 8.2 Copywriting Rules (Best Practices)
+When writing or reviewing error state and validation warning copy:
+
+1. **Be Action-Oriented & Actable:** Always present a clear next step or solution. Do not leave the user stranded without options.
+2. **Maintain a Positive & Conversational Tone:**
+   - Use supportive, empathetic language.
+   - Do not blame the user (e.g., avoid accusatory phrasing).
+   - Write conversationally and naturally. Use contractions (e.g., "doesn't", "couldn't") where appropriate to sound less robotic.
+   - Never use childish or defensive headers like "Ooops!" or "Whooops!" (errors are never coincidences, and these phrases do not comfort the user).
+3. **Keep it Concise & Simple:**
+   - Aim for short, clear sentences (ideally 8–10 words per sentence, prioritizing clarity).
+   - Use a subject + verb sentence structure.
+   - Avoid vague developer-facing codes (e.g., raw SQL errors, stack traces, system jargon).
+4. **Value-Driven Copy:** Never promote products, upgrade upsells, or ads directly inside a validation or system error message. It backfires and creates a frustrating user experience.
+
+### 8.3 Formatting & Mechanical Rules (STRICT)
+- **Use Sentence Case:** Only capitalize the first letter of the first word (and proper nouns). Do not use ALL CAPS.
+- **No Period inside CTAs:** Never place a period at the end of button/CTA text (e.g., use "Back home" instead of "Back home.").
+- **No Period after Text Links:** Never place a period after standalone text links or hyperlinks (e.g., "go back" or "Support Center").
+- **Oxford Comma:** Always use the Oxford comma when listing three or more items.
+- **No Blocky Text:** Avoid dense blocks of text; break content into readable paragraphs or list items.

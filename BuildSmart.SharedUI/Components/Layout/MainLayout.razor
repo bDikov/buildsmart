@@ -710,6 +710,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AppServiceLocator.ToastAction = async (message, type) =>
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("window.showBuildSmartToast", message, type);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainLayout] Toast invoke failed: {ex.Message}");
+            }
+        };
+
         SignalRService.NotificationReceived += OnNotificationReceived;
         SignalRService.NotificationsStateChanged += OnNotificationsStateChanged;
         SignalRService.ProjectMessageReceived += OnProjectMessageReceived;
@@ -953,6 +965,7 @@
 
     public void Dispose()
     {
+        AppServiceLocator.ToastAction = null;
         SignalRService.NotificationReceived -= OnNotificationReceived;
         SignalRService.NotificationsStateChanged -= OnNotificationsStateChanged;
         SignalRService.ProjectMessageReceived -= OnProjectMessageReceived;

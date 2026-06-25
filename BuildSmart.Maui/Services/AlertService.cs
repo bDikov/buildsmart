@@ -8,6 +8,16 @@ public class AlertService : IAlertService
 
 	public Task DisplayAlert(string title, string message, string cancel)
 	{
+		if (AppServiceLocator.ToastAction != null)
+		{
+			var type = "info";
+			var titleLower = title?.ToLower() ?? "";
+			if (titleLower.Contains("success") || titleLower.Contains("успех")) type = "success";
+			else if (titleLower.Contains("error") || titleLower.Contains("грешка") || titleLower.Contains("limit") || titleLower.Contains("required") || titleLower.Contains("лимит")) type = "error";
+
+			return AppServiceLocator.ToastAction(message, type);
+		}
+
 		return MainThread.InvokeOnMainThreadAsync(() =>
 			GetCurrentPage()?.DisplayAlert(title, message, cancel) ?? Task.CompletedTask);
 	}

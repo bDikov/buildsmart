@@ -784,4 +784,10 @@
   <data name="JobWizard_OK" xml:space="preserve">
     <value>OK</value>
   </data>
+  <data name="JobWizard_AiLimitReached_Title" xml:space="preserve">
+    <value>Limit reached</value>
+  </data>
+  <data name="JobWizard_AiRequestsExceeded" xml:space="preserve">
+    <value>Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.</value>
+  </data>
 </root>

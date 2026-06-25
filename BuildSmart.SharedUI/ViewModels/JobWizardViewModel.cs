@@ -218,6 +218,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private bool _isOfferBuilding;
 
+	[ObservableProperty]
+	private int _remainingAiRequests = 20;
+
 	public ObservableCollection<KeyValuePair<string, string>> AnswersList { get; } = new();
 
 	private void RefreshAnswersList()
@@ -426,6 +429,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				return;
 			}
 
+			RemainingAiRequests = userResult.Data.CurrentUser.RemainingAiRequests;
+
 			var result = await _apiClient.GetServiceCategories.ExecuteAsync();
 
 			if (result.Errors.Count > 0)
@@ -611,19 +616,35 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				? new List<Guid> { _targetJobPostId.Value }
 				: _currentJobPostIds.Values.ToList();
 
+			var actualRegenerateList = new List<Guid>();
 			foreach (var jobId in jobsToRegenerate)
 			{
 				var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
 				if (!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash)
 				{
-					var result = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
-					if (result.Errors.Count > 0)
-					{
-						await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-						return;
-					}
-					_lastSubmittedJobHashes[jobId] = answersHash;
+					actualRegenerateList.Add(jobId);
 				}
+			}
+
+			if (actualRegenerateList.Count > RemainingAiRequests)
+			{
+				string errorTitle = _localizer?["JobWizard_AiLimitReached_Title"] ?? "Limit reached";
+				string okText = _localizer?["JobWizard_OK"] ?? "OK";
+				string errorMsg = string.Format(_localizer?["JobWizard_AiRequestsExceeded"] ?? "Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.", RemainingAiRequests, actualRegenerateList.Count);
+				await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+				return;
+			}
+
+			foreach (var jobId in actualRegenerateList)
+			{
+				var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
+				var result = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+				if (result.Errors.Count > 0)
+				{
+					await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
+					return;
+				}
+				_lastSubmittedJobHashes[jobId] = answersHash;
 			}
 
 			await AppServiceLocator.Alerts.DisplayAlert("Success", "Answers updated. AI is re-generating your scope.", "OK");
@@ -1045,12 +1066,24 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private bool ValidateCategoryStep()
 	{
-		if (!SelectableCategories.Any(c => c.IsSelected))
+		var selectedCount = SelectableCategories.Count(c => c.IsSelected);
+		if (selectedCount == 0)
 		{
 			CategorySelectionHasError = true;
 			AppServiceLocator.Alerts.DisplayAlert("Required", "Please select at least one category.", "OK");
 			return false;
 		}
+
+		if (selectedCount > RemainingAiRequests)
+		{
+			CategorySelectionHasError = true;
+			string errorTitle = _localizer?["JobWizard_AiLimitReached_Title"] ?? "Limit reached";
+			string okText = _localizer?["JobWizard_OK"] ?? "OK";
+			string errorMsg = string.Format(_localizer?["JobWizard_AiRequestsExceeded"] ?? "Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.", RemainingAiRequests, selectedCount);
+			AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+			return false;
+		}
+
 		CategorySelectionHasError = false;
 		return true;
 	}
@@ -1070,6 +1103,21 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private async Task HandleCategorySelectionChangedAsync(SelectableCategoryViewModel categoryVm)
 	{
 		if (_isUpdatingSelection) return;
+
+		var selectedCount = SelectableCategories.Count(c => c.IsSelected);
+		if (selectedCount > RemainingAiRequests)
+		{
+			string errorTitle = _localizer?["JobWizard_AiLimitReached_Title"] ?? "Limit reached";
+			string okText = _localizer?["JobWizard_OK"] ?? "OK";
+			string errorMsg = string.Format(_localizer?["JobWizard_AiRequestsExceeded"] ?? "Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.", RemainingAiRequests, selectedCount);
+			await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+
+			_isUpdatingSelection = true;
+			categoryVm.IsSelected = !categoryVm.IsSelected;
+			OnPropertyChanged(nameof(ProgressPercentage));
+			_isUpdatingSelection = false;
+			return;
+		}
 
 		try
 		{
@@ -1336,21 +1384,40 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 
 			// Trigger AI Generation immediately for all selected jobs
+			var jobsToSubmit = new List<Guid>();
 			foreach (var cat in selectedCategories)
 			{
 				if (_currentJobPostIds.TryGetValue(cat.Category.Id, out var jobId))
 				{
 					var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
-					var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
-					if (submitResult.Errors.Count > 0)
+					if (!_lastSubmittedJobHashes.TryGetValue(jobId, out var lastHash) || lastHash != answersHash)
 					{
-						string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Submission Error";
-						string okText = _localizer?["JobWizard_OK"] ?? "OK";
-						await AppServiceLocator.Alerts.DisplayAlert(errorTitle, submitResult.Errors[0].Message, okText);
-						return;
+						jobsToSubmit.Add(jobId);
 					}
-					_lastSubmittedJobHashes[jobId] = answersHash;
 				}
+			}
+
+			if (jobsToSubmit.Count > RemainingAiRequests)
+			{
+				string errorTitle = _localizer?["JobWizard_AiLimitReached_Title"] ?? "Limit reached";
+				string okText = _localizer?["JobWizard_OK"] ?? "OK";
+				string errorMsg = string.Format(_localizer?["JobWizard_AiRequestsExceeded"] ?? "Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.", RemainingAiRequests, jobsToSubmit.Count);
+				await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
+				return;
+			}
+
+			foreach (var jobId in jobsToSubmit)
+			{
+				var answersHash = JsonSerializer.Serialize(_masterAnswerKey);
+				var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
+				if (submitResult.Errors.Count > 0)
+				{
+					string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Submission Error";
+					string okText = _localizer?["JobWizard_OK"] ?? "OK";
+					await AppServiceLocator.Alerts.DisplayAlert(errorTitle, submitResult.Errors[0].Message, okText);
+					return;
+				}
+				_lastSubmittedJobHashes[jobId] = answersHash;
 			}
 
 			// Increment step to the Project Details Info step (Step N)
