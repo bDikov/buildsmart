@@ -304,6 +304,19 @@ public class AppDbContext : DbContext
                     }
                     else
                     {
+                        // Update references in related tables to point to the existing clean SKU instead of the duplicate about to be deleted
+                        var affectedAiItems = await AiCalculationSkuItems.Where(item => item.ServiceSkuId == sku.Id).ToListAsync();
+                        foreach (var item in affectedAiItems)
+                        {
+                            item.ServiceSkuId = existingSku.Id;
+                        }
+
+                        var affectedTaskItems = await TaskSkuItems.Where(item => item.ServiceSkuId == sku.Id).ToListAsync();
+                        foreach (var item in affectedTaskItems)
+                        {
+                            item.ServiceSkuId = existingSku.Id;
+                        }
+
                         ServiceSkus.Remove(sku);
                     }
                 }
@@ -446,9 +459,9 @@ public class AppDbContext : DbContext
                         foreach (var marketTask in marketCat.Tasks)
                         {
                             var skuCode = $"{prefix}-{count:D3}";
-                            var existingSku = await ServiceSkus.AnyAsync(s => s.SkuCode == skuCode);
+                            var existingSkus = await ServiceSkus.Include(s => s.Translations).Where(s => s.SkuCode == skuCode).ToListAsync();
                             
-                            if (!existingSku)
+                            if (!existingSkus.Any())
                             {
                                 var skuId = Guid.NewGuid();
                                 var newSku = new ServiceSku
@@ -477,8 +490,42 @@ public class AppDbContext : DbContext
                                 });
 
                                 await ServiceSkus.AddAsync(newSku);
-                                count++;
                             }
+                            else
+                            {
+                                foreach (var existingSku in existingSkus)
+                                {
+                                    existingSku.Name = marketTask.Name;
+                                    existingSku.Description = $"{marketTask.Name} ({marketTask.Unit})";
+                                    existingSku.BasePrice = Math.Round(marketTask.MaxPrice / 1.95583m, 2);
+                                    existingSku.UnitType = MapMarketUnitToUnitType(marketTask.Unit);
+                                    existingSku.UpdatedAt = DateTime.UtcNow;
+
+                                    var translation = existingSku.Translations.FirstOrDefault(t => t.LanguageCode == "bg");
+                                    if (translation != null)
+                                    {
+                                        translation.Name = marketTask.Name;
+                                        translation.Description = $"{marketTask.Name} ({marketTask.Unit})";
+                                        translation.UnitType = marketTask.Unit;
+                                        translation.UpdatedAt = DateTime.UtcNow;
+                                    }
+                                    else
+                                    {
+                                        await ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
+                                        {
+                                            Id = Guid.NewGuid(),
+                                            SkuId = existingSku.Id,
+                                            LanguageCode = "bg",
+                                            Name = marketTask.Name,
+                                            Description = $"{marketTask.Name} ({marketTask.Unit})",
+                                            UnitType = marketTask.Unit,
+                                            CreatedAt = DateTime.UtcNow,
+                                            UpdatedAt = DateTime.UtcNow
+                                        });
+                                    }
+                                }
+                            }
+                            count++;
                         }
                     }
                 }
