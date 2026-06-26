@@ -181,6 +181,7 @@ public class GeminiAiService : IAiService
 
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), useJsonMode: true);
 			responseText = CleanJsonMarkdown(responseText);
+			responseText = EscapeRawControlCharacters(responseText);
 
 			var result = JsonSerializer.Deserialize<AiScopeBreakdownResponse>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
@@ -315,6 +316,7 @@ public class GeminiAiService : IAiService
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), useJsonMode: true);
 			var rawResponse = responseText;
 			responseText = CleanJsonMarkdown(responseText);
+			responseText = EscapeRawControlCharacters(responseText);
 
 			try
 			{
@@ -366,5 +368,68 @@ public class GeminiAiService : IAiService
 			_logger.LogError(ex, "Estimator Expert Fatal: Error pricing tasks with Gemini");
 			throw;
 		}
+	}
+
+	private string EscapeRawControlCharacters(string json)
+	{
+		if (string.IsNullOrEmpty(json)) return json;
+
+		var sb = new StringBuilder();
+		bool inString = false;
+		bool isEscaped = false;
+
+		for (int i = 0; i < json.Length; i++)
+		{
+			char c = json[i];
+
+			if (inString)
+			{
+				if (isEscaped)
+				{
+					sb.Append(c);
+					isEscaped = false;
+				}
+				else if (c == '\\')
+				{
+					sb.Append(c);
+					isEscaped = true;
+				}
+				else if (c == '"')
+				{
+					sb.Append(c);
+					inString = false;
+				}
+				else if (c == '\n')
+				{
+					sb.Append("\\n");
+				}
+				else if (c == '\r')
+				{
+					sb.Append("\\r");
+				}
+				else if (c == '\t')
+				{
+					sb.Append("\\t");
+				}
+				else if (char.IsControl(c))
+				{
+					sb.AppendFormat("\\u{0:x4}", (int)c);
+				}
+				else
+				{
+					sb.Append(c);
+				}
+			}
+			else
+			{
+				if (c == '"')
+				{
+					inString = true;
+				}
+				sb.Append(c);
+			}
+		}
+
+		return sb.ToString();
 	}
 }
