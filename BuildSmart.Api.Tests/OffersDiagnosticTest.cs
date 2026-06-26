@@ -50,10 +50,10 @@ namespace BuildSmart.Api.Tests
                 services.AddScoped<IUserRepository, UserRepository>();
                 services.AddScoped<INotificationRepository, NotificationRepository>();
 
-                // 3. Configuration with real ApiKey
+                // 3. Configuration with ApiKey
                 var configuration = new ConfigurationBuilder().Build();
                 var configMock = new Mock<IConfiguration>();
-                configMock.Setup(c => c["Gemini:ApiKey"]).Returns("AIzaSyAnDW5maHs80PWX9BxXrnUxlZ31Ysy8ER4");
+                configMock.Setup(c => c["Gemini:ApiKey"]).Returns(Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? "PLACEHOLDER_KEY");
                 services.AddSingleton<IConfiguration>(configMock.Object);
 
                 // 4. Logger
