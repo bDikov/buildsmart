@@ -594,6 +594,95 @@ public class JobWizardViewModelTests
         passedDescription.Should().Be("Electrical Category Name"); // It should not be "Global Project Description"
     }
 
+    [Fact]
+    public void QuestionAnswerChange_ShouldSyncProjLocationToProjectLocation()
+    {
+        // Arrange
+        var q = new WizardQuestionViewModel { Id = "proj_location", Type = "text", Answer = "" };
+        var step = new WizardStep { Type = WizardStepType.Info, Title = "Project Details" };
+        step.Questions.Add(q);
+        
+        SetWizardSteps(_viewModel, new List<WizardStep> { step });
+        
+        var method = typeof(JobWizardViewModel).GetMethod("LoadStepData", BindingFlags.NonPublic | BindingFlags.Instance);
+        method!.Invoke(_viewModel, new object[] { 0 });
+
+        // Act
+        q.Answer = "Plovdiv";
+
+        // Assert
+        _viewModel.ProjectLocation.Should().Be("Plovdiv");
+    }
+
+    [Fact]
+    public void LoadStepData_ShouldSyncProjectLocationToProjLocationQuestionAnswer()
+    {
+        // Arrange
+        _viewModel.ProjectLocation = "Burgas";
+        var q = new WizardQuestionViewModel { Id = "proj_location", Type = "text", Answer = "" };
+        var step = new WizardStep { Type = WizardStepType.Info, Title = "Project Details" };
+        step.Questions.Add(q);
+        
+        SetWizardSteps(_viewModel, new List<WizardStep> { step });
+        
+        var method = typeof(JobWizardViewModel).GetMethod("LoadStepData", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        // Act
+        method!.Invoke(_viewModel, new object[] { 0 });
+
+        // Assert
+        q.Answer.Should().Be("Burgas");
+        
+        var masterAnswersField = typeof(JobWizardViewModel).GetField("_masterAnswerKey", BindingFlags.NonPublic | BindingFlags.Instance);
+        var masterAnswers = masterAnswersField?.GetValue(_viewModel) as Dictionary<string, string>;
+        masterAnswers.Should().ContainKey("proj_location");
+        masterAnswers?["proj_location"].Should().Be("Burgas");
+    }
+
+    [Fact]
+    public async Task LoadExistingProject_ShouldInitializeProjectLocation_FromMasterAnswerKey()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var jobPostId = Guid.NewGuid();
+        var targetCatId = Guid.NewGuid();
+        
+        // Mock GetMyProjects
+        var getProjectsQuery = new Mock<IGetMyProjectsQuery>();
+        var projectsResponseMock = new Mock<IOperationResult<IGetMyProjectsResult>>();
+        projectsResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        
+        var resultDataMock = new Mock<IGetMyProjectsResult>();
+        var projectMock = new Mock<IGetMyProjects_MyProjects>();
+        projectMock.Setup(p => p.Id).Returns(projectId);
+        projectMock.Setup(p => p.Title).Returns("Existing Title");
+        projectMock.Setup(p => p.Description).Returns("Existing Description");
+        projectMock.Setup(p => p.Status).Returns(ProjectStatus.Draft);
+        projectMock.Setup(p => p.LastVisitedStep).Returns(0);
+        
+        var categoryMock = new Mock<IGetProjectsForReview_ProjectsForReview_JobPosts_ServiceCategory>();
+        categoryMock.Setup(c => c.Id).Returns(targetCatId);
+        
+        var jobPostMock = new Mock<IGetProjectsForReview_ProjectsForReview_JobPosts>();
+        jobPostMock.Setup(j => j.Id).Returns(jobPostId);
+        jobPostMock.Setup(j => j.Location).Returns("Sofia"); // JobPost location is Sofia
+        jobPostMock.Setup(j => j.JobDetails).Returns("{\"proj_location\":\"Varna\"}"); // Answer key location is Varna!
+        jobPostMock.Setup(j => j.ServiceCategory).Returns(categoryMock.Object);
+        
+        projectMock.Setup(p => p.JobPosts).Returns(new List<IGetProjectsForReview_ProjectsForReview_JobPosts> { jobPostMock.Object });
+        resultDataMock.Setup(d => d.MyProjects).Returns(new List<IGetMyProjects_MyProjects> { projectMock.Object });
+        projectsResponseMock.Setup(r => r.Data).Returns(resultDataMock.Object);
+        getProjectsQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(projectsResponseMock.Object);
+        _apiClientMock.Setup(a => a.GetMyProjects).Returns(getProjectsQuery.Object);
+
+        // Act
+        var method = typeof(JobWizardViewModel).GetMethod("LoadExistingProjectAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+        await (Task)method!.Invoke(_viewModel, new object[] { projectId })!;
+
+        // Assert
+        _viewModel.ProjectLocation.Should().Be("Varna"); // Should use the answer key location "Varna" over job location "Sofia"!
+    }
+
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)
     {
         var field = typeof(JobWizardViewModel).GetField("_wizardSteps", BindingFlags.NonPublic | BindingFlags.Instance);

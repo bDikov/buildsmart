@@ -392,6 +392,7 @@ public class JobPostServiceTests
         
         jobPost.ActiveHangfireJobId.Should().Be("new-job-456");
         jobPost.LastQueuedJobDetails.Should().Be(newDetails);
+        project.Status.Should().Be(ProjectStatus.Draft);
     }
 
     [Fact]
@@ -593,8 +594,9 @@ public class JobPostServiceTests
         mockJobPostRepo.Setup(r => r.GetByIdWithTasksAsync(jobPostId)).ReturnsAsync(jobPost);
         _mockUow.Setup(u => u.JobPosts).Returns(mockJobPostRepo.Object);
 
+        var project = new Project { Id = projectId, Title = "Test Project" };
         var mockProjectRepo = new Mock<IProjectRepository>();
-        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(new Project { Id = projectId, Title = "Test Project" });
+        mockProjectRepo.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
         _mockUow.Setup(u => u.Projects).Returns(mockProjectRepo.Object);
 
         var mockUserRepo = new Mock<IUserRepository>();
@@ -608,6 +610,7 @@ public class JobPostServiceTests
         jobPost.Status.Should().Be(JobPostStatus.WaitingForAdminReview);
         jobPost.UserEditedScope.Should().Be("Final AI generated scope details");
         jobPost.Description.Should().Be("Final AI generated scope details");
+        project.Status.Should().Be(ProjectStatus.UnderReview);
         _mockUow.Verify(u => u.SaveChangesAsync(default), Times.Once);
     }
 

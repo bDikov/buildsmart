@@ -61,7 +61,8 @@ namespace BuildSmart.Api.Tests
                 var bg = s.Translations.FirstOrDefault(t => t.LanguageCode == "bg")?.Name ?? "[NONE]";
                 sb.AppendLine($"Code: {s.SkuCode} | Name: {s.Name} | Translation: {bg}");
             }
-            File.WriteAllText(@"C:\Users\bonch\.gemini\antigravity\brain\e612d187-d5ab-4bfd-ae03-b4e0f879943b\scratch\db_elec_skus.txt", sb.ToString());
+            var tempPath = Path.Combine(Path.GetTempPath(), "db_elec_skus.txt");
+            File.WriteAllText(tempPath, sb.ToString());
 
             foreach (var sku in electricalSkus)
             {

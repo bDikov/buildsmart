@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using BuildSmart.SharedUI; // Correct namespace for ApiConfig
 using BuildSmart.SharedUI.MauiMocks;
+using System.Threading;
 
 namespace BuildSmart.SharedUI.Services;
 
@@ -9,6 +10,8 @@ public class SignalRService : IAsyncDisposable
 	private HubConnection? _hubConnection;
 	private HubConnection? _jobProcessingConnection;
 	private readonly IAuthService _authService;
+	private readonly SemaphoreSlim _connectionSemaphore = new(1, 1);
+	private readonly SemaphoreSlim _jobConnectionSemaphore = new(1, 1);
 
 	public event Action<string, string, object?>? NotificationReceived;
 
@@ -49,95 +52,145 @@ public class SignalRService : IAsyncDisposable
 
 	public async Task ConnectAsync()
 	{
-		if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected) return;
-
-		var token = await _authService.GetTokenAsync();
-		if (string.IsNullOrEmpty(token)) return;
-
-		var baseUrl = ApiConfig.GetBaseUrl(); // Helper to get "https://localhost:7212" or similar
-											  // Ensure no trailing slash issues
-		var hubUrl = $"{baseUrl.TrimEnd('/')}/hubs/notifications";
-
-		_hubConnection = new HubConnectionBuilder()
-			.WithUrl(hubUrl, options =>
-			{
-				options.AccessTokenProvider = () => Task.FromResult<string?>(token);
-#if DEBUG
-				options.HttpMessageHandlerFactory = (messageHandler) =>
-				{
-#pragma warning disable CA1416
-					if (!OperatingSystem.IsBrowser() && messageHandler is System.Net.Http.HttpClientHandler clientHandler)
-					{
-						clientHandler.ServerCertificateCustomValidationCallback =
-							System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-					}
-#pragma warning restore CA1416
-					return messageHandler;
-				};
-#endif
-			})
-			.WithAutomaticReconnect()
-			.Build();
-
-		_hubConnection.On<string, string, object?>("ReceiveNotification", (title, message, data) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(async () =>
-			{
-				NotificationReceived?.Invoke(title, message, data);
-
-				bool shouldShowAlert = true;
-				if (data is System.Text.Json.JsonElement element && element.TryGetProperty("route", out var routeProp))
-				{
-					if (routeProp.GetString() == "ProjectMessages")
-					{
-						shouldShowAlert = false;
-					}
-				}
-
-				if (shouldShowAlert)
-				{
-					var result = await _alerts.DisplayAlert(title, message, "View", "OK");
-					if (result && data != null)
-					{
-						await HandleDeepLinkAsync(data);
-					}
-				}
-			});
-		});
-
-		_hubConnection.On<System.Text.Json.JsonElement>("ReceiveQuestionUpdate", (payload) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(() => QuestionUpdated?.Invoke(payload));
-		});
-
-		_hubConnection.On<System.Text.Json.JsonElement>("ReceiveNewReply", (payload) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(() => NewReplyReceived?.Invoke(payload));
-		});
-
-		_hubConnection.On<Guid>("OfferRegenerated", (projectId) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(() => OfferRegenerated?.Invoke(projectId));
-		});
-
-		_hubConnection.On<System.Text.Json.JsonElement>("ReceiveProjectMessage", (payload) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(() => ProjectMessageReceived?.Invoke(payload));
-		});
-
-		_hubConnection.On<string, bool>("UserPresenceChanged", (userId, isOnline) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(() => UserPresenceChanged?.Invoke(userId, isOnline));
-		});
-
+		await _connectionSemaphore.WaitAsync();
 		try
 		{
-			await _hubConnection.StartAsync();
-			Console.WriteLine($"SignalR Connected to {hubUrl}");
+			if (_hubConnection != null)
+			{
+				if (_hubConnection.State == HubConnectionState.Connected ||
+					_hubConnection.State == HubConnectionState.Connecting ||
+					_hubConnection.State == HubConnectionState.Reconnecting)
+				{
+					return;
+				}
+
+				try
+				{
+					await _hubConnection.StartAsync();
+					return;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"SignalR Connection restart failed, rebuilding connection: {ex.Message}");
+					try
+					{
+						await _hubConnection.StopAsync();
+						await _hubConnection.DisposeAsync();
+					}
+					catch { }
+					_hubConnection = null;
+				}
+			}
+
+			var token = await _authService.GetTokenAsync();
+			if (string.IsNullOrEmpty(token)) return;
+
+			var baseUrl = ApiConfig.GetBaseUrl(); // Helper to get "https://localhost:7212" or similar
+												  // Ensure no trailing slash issues
+			var hubUrl = $"{baseUrl.TrimEnd('/')}/hubs/notifications";
+
+			_hubConnection = new HubConnectionBuilder()
+				.WithUrl(hubUrl, options =>
+				{
+					options.AccessTokenProvider = () => Task.FromResult<string?>(token);
+#if DEBUG
+					options.HttpMessageHandlerFactory = (messageHandler) =>
+					{
+#pragma warning disable CA1416
+						if (!OperatingSystem.IsBrowser() && messageHandler is System.Net.Http.HttpClientHandler clientHandler)
+						{
+							clientHandler.ServerCertificateCustomValidationCallback =
+								System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+						}
+#pragma warning restore CA1416
+						return messageHandler;
+					};
+#endif
+				})
+				.WithAutomaticReconnect()
+				.Build();
+
+			_hubConnection.On<string, string, object?>("ReceiveNotification", (title, message, data) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(async () =>
+				{
+					NotificationReceived?.Invoke(title, message, data);
+
+					bool shouldShowAlert = true;
+					if (data is System.Text.Json.JsonElement element && element.TryGetProperty("route", out var routeProp))
+					{
+						if (routeProp.GetString() == "ProjectMessages")
+						{
+							shouldShowAlert = false;
+						}
+					}
+
+					bool isOfferReady = string.Equals(title, "Offer Ready", StringComparison.OrdinalIgnoreCase) || 
+					                    string.Equals(title, "Офертата е Готова", StringComparison.OrdinalIgnoreCase);
+
+					if (isOfferReady && AppServiceLocator.ToastAction != null)
+					{
+						string? downloadUrl = null;
+						if (data is System.Text.Json.JsonElement docElement && docElement.TryGetProperty("id", out var idProp))
+						{
+							var projectId = idProp.GetString();
+							downloadUrl = $"{ApiConfig.GetBaseUrl().TrimEnd('/')}/api/offers/{projectId}/download";
+						}
+						
+						await AppServiceLocator.ToastAction(message, "success", downloadUrl);
+					}
+					else
+					{
+						if (shouldShowAlert)
+						{
+							var result = await _alerts.DisplayAlert(title, message, "View", "OK");
+							if (result && data != null)
+							{
+								await HandleDeepLinkAsync(data);
+							}
+						}
+					}
+				});
+			});
+
+			_hubConnection.On<System.Text.Json.JsonElement>("ReceiveQuestionUpdate", (payload) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() => QuestionUpdated?.Invoke(payload));
+			});
+
+			_hubConnection.On<System.Text.Json.JsonElement>("ReceiveNewReply", (payload) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() => NewReplyReceived?.Invoke(payload));
+			});
+
+			_hubConnection.On<Guid>("OfferRegenerated", (projectId) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() => OfferRegenerated?.Invoke(projectId));
+			});
+
+			_hubConnection.On<System.Text.Json.JsonElement>("ReceiveProjectMessage", (payload) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() => ProjectMessageReceived?.Invoke(payload));
+			});
+
+			_hubConnection.On<string, bool>("UserPresenceChanged", (userId, isOnline) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() => UserPresenceChanged?.Invoke(userId, isOnline));
+			});
+
+			try
+			{
+				await _hubConnection.StartAsync();
+				Console.WriteLine($"SignalR Connected to {hubUrl}");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"SignalR Connection Error: {ex.Message}");
+			}
 		}
-		catch (Exception ex)
+		finally
 		{
-			Console.WriteLine($"SignalR Connection Error: {ex.Message}");
+			_connectionSemaphore.Release();
 		}
 	}
 
@@ -224,51 +277,84 @@ public class SignalRService : IAsyncDisposable
 
 	public async Task ConnectJobProcessingAsync()
 	{
-		if (_jobProcessingConnection != null && _jobProcessingConnection.State == HubConnectionState.Connected) return;
-
-		var token = await _authService.GetTokenAsync();
-		if (string.IsNullOrEmpty(token)) return;
-
-		var baseUrl = ApiConfig.GetBaseUrl();
-		var hubUrl = $"{baseUrl.TrimEnd('/')}/jobProcessingHub";
-
-		_jobProcessingConnection = new HubConnectionBuilder()
-			.WithUrl(hubUrl, options =>
-			{
-				options.AccessTokenProvider = () => Task.FromResult<string?>(token);
-#if DEBUG
-				options.HttpMessageHandlerFactory = (messageHandler) =>
-				{
-#pragma warning disable CA1416
-					if (!OperatingSystem.IsBrowser() && messageHandler is System.Net.Http.HttpClientHandler clientHandler)
-					{
-						clientHandler.ServerCertificateCustomValidationCallback =
-							System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-					}
-#pragma warning restore CA1416
-					return messageHandler;
-				};
-#endif
-			})
-			.WithAutomaticReconnect()
-			.Build();
-
-		_jobProcessingConnection.On<int, string, int>("ReceiveProcessingUpdate", (step, message, progress) =>
-		{
-			_mainThread.BeginInvokeOnMainThread(() =>
-			{
-				ProcessingUpdateReceived?.Invoke(step, message, progress);
-			});
-		});
-
+		await _jobConnectionSemaphore.WaitAsync();
 		try
 		{
-			await _jobProcessingConnection.StartAsync();
-			Console.WriteLine($"SignalR Connected to {hubUrl}");
+			if (_jobProcessingConnection != null)
+			{
+				if (_jobProcessingConnection.State == HubConnectionState.Connected ||
+					_jobProcessingConnection.State == HubConnectionState.Connecting ||
+					_jobProcessingConnection.State == HubConnectionState.Reconnecting)
+				{
+					return;
+				}
+
+				try
+				{
+					await _jobProcessingConnection.StartAsync();
+					return;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"SignalR JobProcessing restart failed, rebuilding connection: {ex.Message}");
+					try
+					{
+						await _jobProcessingConnection.StopAsync();
+						await _jobProcessingConnection.DisposeAsync();
+					}
+					catch { }
+					_jobProcessingConnection = null;
+				}
+			}
+
+			var token = await _authService.GetTokenAsync();
+			if (string.IsNullOrEmpty(token)) return;
+
+			var baseUrl = ApiConfig.GetBaseUrl();
+			var hubUrl = $"{baseUrl.TrimEnd('/')}/jobProcessingHub";
+
+			_jobProcessingConnection = new HubConnectionBuilder()
+				.WithUrl(hubUrl, options =>
+				{
+					options.AccessTokenProvider = () => Task.FromResult<string?>(token);
+#if DEBUG
+					options.HttpMessageHandlerFactory = (messageHandler) =>
+					{
+#pragma warning disable CA1416
+						if (!OperatingSystem.IsBrowser() && messageHandler is System.Net.Http.HttpClientHandler clientHandler)
+						{
+							clientHandler.ServerCertificateCustomValidationCallback =
+								System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+						}
+#pragma warning restore CA1416
+						return messageHandler;
+					};
+#endif
+				})
+				.WithAutomaticReconnect()
+				.Build();
+
+			_jobProcessingConnection.On<int, string, int>("ReceiveProcessingUpdate", (step, message, progress) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() =>
+				{
+					ProcessingUpdateReceived?.Invoke(step, message, progress);
+				});
+			});
+
+			try
+			{
+				await _jobProcessingConnection.StartAsync();
+				Console.WriteLine($"SignalR Connected to {hubUrl}");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"SignalR JobProcessing Connection Error: {ex.Message}");
+			}
 		}
-		catch (Exception ex)
+		finally
 		{
-			Console.WriteLine($"SignalR JobProcessing Connection Error: {ex.Message}");
+			_jobConnectionSemaphore.Release();
 		}
 	}
 

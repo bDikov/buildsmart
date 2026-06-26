@@ -13,6 +13,7 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly SignalRService _signalRService;
 	private readonly IAuthService _authService;
+	private readonly GraphQL.State.BuildSmartApiClientStoreAccessor? _storeAccessor;
 
 	[ObservableProperty]
 	private bool _hasLoaded;
@@ -25,11 +26,16 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 
 	public ObservableCollection<JobPostViewModel> JobPosts { get; } = new();
 
-	public ProjectDetailViewModel(IBuildSmartApiClient apiClient, SignalRService signalRService, IAuthService authService)
+	public ProjectDetailViewModel(
+		IBuildSmartApiClient apiClient, 
+		SignalRService signalRService, 
+		IAuthService authService,
+		GraphQL.State.BuildSmartApiClientStoreAccessor? storeAccessor = null)
 	{
 		_apiClient = apiClient;
 		_signalRService = signalRService;
 		_authService = authService;
+		_storeAccessor = storeAccessor;
 
 		_signalRService.NotificationReceived += OnNotificationReceived;
 		_signalRService.QuestionUpdated += OnQuestionUpdated;
@@ -110,6 +116,11 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 			IsLoading = true;
 			_lastReloadTime = DateTime.UtcNow;
 
+			if (_storeAccessor != null)
+			{
+				try { _storeAccessor.OperationStore.Clear(); } catch { }
+			}
+
 			var result = await _apiClient.GetProjectById.ExecuteAsync(Project.Id);
 			if (result.Data?.ProjectById != null)
 			{
@@ -134,6 +145,11 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 			await _reloadSemaphore.WaitAsync();
 			IsLoading = true;
 			_lastReloadTime = DateTime.UtcNow;
+
+			if (_storeAccessor != null)
+			{
+				try { _storeAccessor.OperationStore.Clear(); } catch { }
+			}
 
 			var result = await _apiClient.GetProjectById.ExecuteAsync(projectId);
 			if (result.Data?.ProjectById != null)

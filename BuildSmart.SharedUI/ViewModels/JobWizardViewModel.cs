@@ -361,6 +361,11 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 						}
 					}
 
+					if (_masterAnswerKey.TryGetValue("proj_location", out var savedLoc) && !string.IsNullOrWhiteSpace(savedLoc))
+					{
+						ProjectLocation = savedLoc;
+					}
+
 					// Position at the correct step
 					if (_targetCategoryId != null)
 					{
@@ -693,6 +698,15 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				if (q.Id != null && _masterAnswerKey.TryGetValue(q.Id, out var savedAns))
 				{
 					q.Answer = savedAns;
+					if (q.Id == "proj_location" && !string.IsNullOrWhiteSpace(savedAns))
+					{
+						ProjectLocation = savedAns;
+					}
+				}
+				else if (q.Id == "proj_location" && !string.IsNullOrWhiteSpace(ProjectLocation))
+				{
+					q.Answer = ProjectLocation;
+					_masterAnswerKey[q.Id] = ProjectLocation;
 				}
 				q.PropertyChanged += Question_PropertyChanged;
 				Questions.Add(q);
@@ -715,6 +729,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			if (sender is WizardQuestionViewModel q && !string.IsNullOrEmpty(q.Id))
 			{
 				_masterAnswerKey[q.Id] = q.Answer ?? "";
+				if (q.Id == "proj_location")
+				{
+					ProjectLocation = q.Answer ?? "";
+				}
 				TriggerDebouncedSave();
 			}
 		}
@@ -1184,7 +1202,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 			if (string.IsNullOrWhiteSpace(ProjectLocation))
 			{
-				ProjectLocation = "Sofia";
+				if (_masterAnswerKey.TryGetValue("proj_location", out var savedLoc) && !string.IsNullOrWhiteSpace(savedLoc))
+				{
+					ProjectLocation = savedLoc;
+				}
+				else
+				{
+					ProjectLocation = "Sofia";
+				}
 			}
 
 			if (string.IsNullOrWhiteSpace(ProjectDescription))
@@ -1362,7 +1387,14 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 			if (string.IsNullOrWhiteSpace(ProjectLocation))
 			{
-				ProjectLocation = "Sofia";
+				if (_masterAnswerKey.TryGetValue("proj_location", out var savedLoc) && !string.IsNullOrWhiteSpace(savedLoc))
+				{
+					ProjectLocation = savedLoc;
+				}
+				else
+				{
+					ProjectLocation = "Sofia";
+				}
 			}
 			if (string.IsNullOrWhiteSpace(ProjectDescription))
 			{

@@ -413,7 +413,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-window.showBuildSmartToast = function (message, type) {
+window.showBuildSmartToast = function (message, type, actionUrl) {
     let container = document.getElementById('bs-toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -423,7 +423,14 @@ window.showBuildSmartToast = function (message, type) {
     }
 
     const toast = document.createElement('div');
-    toast.className = `bs-toast bs-toast-${type || 'info'}`;
+    toast.className = `bs-toast bs-toast-${type || 'info'} ${actionUrl ? 'clickable' : ''}`;
+
+    if (actionUrl) {
+        toast.addEventListener('click', (e) => {
+            if (e.target.closest('.bs-toast-close')) return;
+            window.location.href = actionUrl;
+        });
+    }
 
     let icon = '';
     if (type === 'success') {

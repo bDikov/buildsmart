@@ -17,6 +17,8 @@ namespace BuildSmart.SharedUI.Services
         Task InvokeOnMainThreadAsync(Action action);
         Task InvokeOnMainThreadAsync(Func<Task> func);
     }
+    public delegate Task ToastDelegate(string message, string type, string? actionUrl = null);
+
     public static class AppServiceLocator
     {
         private static INavigationBridge _navigation = null!;
@@ -25,7 +27,7 @@ namespace BuildSmart.SharedUI.Services
 
         public static Func<Type, object?>? ServiceResolver { get; set; }
 
-        public static Func<string, string, Task>? ToastAction { get; set; }
+        public static ToastDelegate? ToastAction { get; set; }
 
         public static INavigationBridge Navigation
         {

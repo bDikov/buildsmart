@@ -115,11 +115,18 @@ public class JobPostService : IJobPostService
 		}
 
 		_unitOfWork.JobPosts.Update(jobPost);
+
+		var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
+		if (project != null && project.Status != ProjectStatus.UnderReview)
+		{
+			project.SubmitForReview();
+			_unitOfWork.Projects.Update(project);
+		}
+
 		await _unitOfWork.SaveChangesAsync();
 
 		if (isNewTransition)
 		{
-			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
 			var projectName = project?.Title ?? "Unknown Project";
 
 			// Notify Admins
@@ -393,16 +400,6 @@ public class JobPostService : IJobPostService
 			jobPost.SubmitForScopeGeneration();
 		}
 
-		// 4. Also update Project status if needed
-		if (jobPost.ProjectId != Guid.Empty)
-		{
-			var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId);
-			if (project != null && project.Status == ProjectStatus.Draft)
-			{
-				project.SubmitForReview();
-				_unitOfWork.Projects.Update(project);
-			}
-		}
 
 		_unitOfWork.JobPosts.Update(jobPost);
 		await _unitOfWork.SaveChangesAsync();

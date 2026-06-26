@@ -710,11 +710,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AppServiceLocator.ToastAction = async (message, type) =>
+        AppServiceLocator.ToastAction = async (message, type, actionUrl) =>
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("window.showBuildSmartToast", message, type);
+                await JSRuntime.InvokeVoidAsync("window.showBuildSmartToast", message, type, actionUrl);
             }
             catch (Exception ex)
             {
