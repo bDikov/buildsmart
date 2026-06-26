@@ -1117,5 +1117,6 @@ public class JobPostService : IJobPostService
 		user.AiRequestCount++;
 		user.LastAiRequestDate = now;
 		_unitOfWork.Users.Update(user);
+		await _unitOfWork.SaveChangesAsync();
 	}
 }

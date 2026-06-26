@@ -15250,3 +15250,1059 @@ Object name: 'IServiceProvider'.
    at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(CancellationToken cancellationToken)
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetCurrentUserQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 71733
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 11:23:14 ч.] HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:7212)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Handlers.AuthHeaderHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\AuthHeaderHandler.cs:line 70
+   at BuildSmart.SharedUI.Handlers.LoggingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Handlers\LoggingHandler.cs:line 21
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at HotChocolate.Transport.Http.DefaultGraphQLHttpClient.ExecuteInternalAsync(GraphQLHttpRequest request, Uri requestUri, CancellationToken ct)
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+MoveNext()
+   at StrawberryShake.Transport.Http.ResponseEnumerable.GetAsyncEnumerator(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at StrawberryShake.OperationExecutor`2.ExecuteAsync(OperationRequest request, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.GraphQL.GetMyNotificationsQuery.ExecuteAsync(CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 72351
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:30 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:36:30 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:36:30 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:30 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:30 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:30 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:31 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:32 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:32 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:32 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:32 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:36:32 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:39 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:37:39 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:39 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:37:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:37:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:01 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:02 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:03 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:03 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:48 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:49 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:50 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:38:50 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:39:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:40 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:39:41 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:42 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:43 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 15:39:43 ч.] InvalidOperationException: The 'InvokeCoreAsync' method cannot be called if the connection is not active
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.ReconnectingConnectionState.WaitForActiveConnectionAsync(String methodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.WaitForActiveConnectionWithActivityAsync(String sendingMethodName, String invokedMethodName, CancellationToken token)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsyncCore(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.InvokeCoreAsync(String methodName, Type returnType, Object[] args, CancellationToken cancellationToken)
+   at BuildSmart.SharedUI.Services.SignalRService.LeaveAuctionGroupAsync(String jobId) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\Services\SignalRService.cs:line 210
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 16:45:57 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 16:45:59 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 16:52:06 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[26.06.2026 г. 21:37:20 ч.] HttpRequestException: Response status code does not indicate success: 401 (Unauthorized).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsyncCore(CancellationToken cancellationToken)
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

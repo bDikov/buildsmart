@@ -72,7 +72,6 @@ public class ScopeGenerationWorker
 			// Layer 1
 			await hubContext.Clients.Group(jobPost.ProjectId.ToString()).SendAsync("ReceiveProcessingUpdate", 1, "Analyzing project requirements and building context...", 10);
 
-
 			// 1. Build Human Readable Q&A Context
 			var allCategories = await unitOfWork.ServiceCategories.GetAllAsync();
 			var relevantCategories = allCategories.Where(c => c.Id == jobPost.ServiceCategoryId || c.IsGlobal).ToList();
@@ -168,6 +167,10 @@ public class ScopeGenerationWorker
 			await scopeGenerationQueue.QueuePricingUpdateAsync(jobPostId, CancellationToken.None);
 
 			_logger.LogDebug("Scope generated successfully for Job {JobId}.", jobPostId);
+		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+		{
+			_logger.LogInformation("Job scope generation for Job {JobId} was gracefully canceled by the system (app pool recycle or server restart).", jobPostId);
 		}
 		catch (Exception ex)
 		{
@@ -275,7 +278,7 @@ public class ScopeGenerationWorker
 		try
 		{
 			_logger.LogDebug("Processing pricing for JobPost {JobId} with {TaskCount} tasks.", jobPostId, jobPost.JobTasks.Count);
-			
+
 			var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<BuildSmart.Api.Hubs.JobProcessingHub>>();
 
 			// Layer 2
@@ -409,7 +412,7 @@ public class ScopeGenerationWorker
 							// 🚀 STRIPPING MATH FROM AI:
 							// Pass the calculation formula from the DB and the user's raw answers to the C# Pricing Engine.
 							var computedQuantity = pricingEngine.CalculateQuantity(matchedSku.CalculationFormula, jobPost.JobDetails);
-							
+
 							decimal finalQuantity = skuDto.Quantity;
 
 							// If the engine computed a valid quantity based on the formula, override the AI's guess.
@@ -436,7 +439,7 @@ public class ScopeGenerationWorker
 								Quantity = finalQuantity,
 								EstimatedPrice = skuEstimatedPrice
 							});
-							
+
 							_logger.LogDebug("Mapped SKU {SkuCode} x {Quantity} to Task {TaskId}.", matchedSku.SkuCode, finalQuantity, parsedGuid);
 						}
 					}
@@ -446,7 +449,7 @@ public class ScopeGenerationWorker
 					}
 
 					calcTask.EstimatedPrice = taskTotal;
-					
+
 					// Only add the task to the final calculation if it has a non-zero price
 					// This prevents the PDF from being cluttered with €0.00 tasks that were hallucinated by the AI
 					if (taskTotal > 0)
@@ -483,7 +486,7 @@ public class ScopeGenerationWorker
 					// 2. Get all current calculations for this project
 					var projectCalcs = (await saveUnitOfWork.AiCalculations.GetByProjectWithTasksAsync(freshJobPost.ProjectId)).ToList();
 
-					// 3. Are all active job posts fully done? 
+					// 3. Are all active job posts fully done?
 					// We check if every active job post has a matching calculation entry
 					bool allPriced = activeJobPosts.All(jp => projectCalcs.Any(c => c.ServiceCategoryId == jp.ServiceCategoryId));
 
@@ -503,7 +506,7 @@ public class ScopeGenerationWorker
 				catch (Exception pdfEx)
 				{
 					_logger.LogError(pdfEx, "Failed to generate Master PDF for Project {ProjectId}", freshJobPost.ProjectId);
-					
+
 					var errorProject = await saveUnitOfWork.Projects.GetByIdAsync(freshJobPost.ProjectId);
 					if (errorProject != null)
 					{
@@ -515,6 +518,11 @@ public class ScopeGenerationWorker
 			}
 
 			_logger.LogDebug("Pricing processed successfully for Job {JobId}.", jobPostId);
+		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+		{
+			_logger.LogInformation("Pricing process for Job {JobId} was gracefully canceled by the system (app pool recycle or server restart).", jobPostId);
+			throw;
 		}
 		catch (Exception ex)
 		{
@@ -571,9 +579,9 @@ public class ScopeGenerationWorker
 			bool allPriced = activeJobPosts.All(jp => projectCalcs.Any(c => c.ServiceCategoryId == jp.ServiceCategoryId));
 
 			// Verify that no active categories are still generating, draft, or rejected
-			bool allCompletedWithoutErrors = activeJobPosts.All(jp => 
-				jp.Status != JobPostStatus.Draft && 
-				jp.Status != JobPostStatus.GeneratingScope && 
+			bool allCompletedWithoutErrors = activeJobPosts.All(jp =>
+				jp.Status != JobPostStatus.Draft &&
+				jp.Status != JobPostStatus.GeneratingScope &&
 				jp.Status != JobPostStatus.Rejected);
 
 			if (!allPriced || !allCompletedWithoutErrors)
@@ -587,7 +595,6 @@ public class ScopeGenerationWorker
 
 			var jobProcessingHubContext = pdfScope.ServiceProvider.GetRequiredService<IHubContext<BuildSmart.Api.Hubs.JobProcessingHub>>();
 			await jobProcessingHubContext.Clients.Group(projectId.ToString()).SendAsync("ReceiveProcessingUpdate", 4, "Applying finishes and generating master offer...", 85);
-
 
 			// Store original culture and safely switch to project language
 			var originalCulture = CultureInfo.CurrentUICulture;
