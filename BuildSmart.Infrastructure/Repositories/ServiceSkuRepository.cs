@@ -19,6 +19,11 @@ public class ServiceSkuRepository : IServiceSkuRepository
         return await _context.ServiceSkus.FindAsync(id);
     }
 
+    public async Task<IEnumerable<ServiceSku>> GetAllAsync()
+    {
+        return await _context.ServiceSkus.ToListAsync();
+    }
+
     public async Task<IEnumerable<ServiceSku>> GetByCategoryAsync(Guid categoryId)
     {
         return await _context.ServiceSkus

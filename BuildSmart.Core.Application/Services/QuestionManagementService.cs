@@ -286,11 +286,13 @@ public class QuestionManagementService : IQuestionManagementService
         var questions = await _unitOfWork.Questions.GetAllAsync();
         var formulas = await _unitOfWork.Formulas.GetAllAsync();
         var categories = await GetAllCategoriesInternalAsync(cancellationToken);
+        var skus = await _unitOfWork.ServiceSkus.GetAllAsync();
 
         var data = new
         {
             ExportedAt = DateTime.UtcNow,
             Categories = categories.Select(c => new { c.Id, c.Name, c.IsGlobal }),
+            Skus = skus.Select(s => new { s.Id, s.SkuCode }),
             Questions = questions.Select(q => new
             {
                 q.Id,
@@ -323,6 +325,46 @@ public class QuestionManagementService : IQuestionManagementService
     {
         using var doc = JsonDocument.Parse(jsonContent);
         var root = doc.RootElement;
+
+        // 1. Build category ID mapping (exportedId -> liveId)
+        var dbCategories = await _unitOfWork.ServiceCategories.GetAllAsync();
+        var exportedCategoryIds = new Dictionary<Guid, Guid>();
+        if (root.TryGetProperty("Categories", out var categoriesArr))
+        {
+            foreach (var cJson in categoriesArr.EnumerateArray())
+            {
+                var expId = cJson.GetProperty("Id").GetGuid();
+                var name = cJson.GetProperty("Name").GetString();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    var liveCat = dbCategories.FirstOrDefault(c => c.Name == name);
+                    if (liveCat != null)
+                    {
+                        exportedCategoryIds[expId] = liveCat.Id;
+                    }
+                }
+            }
+        }
+
+        // 2. Build SKU ID mapping (exportedId -> liveId)
+        var dbSkus = await _unitOfWork.ServiceSkus.GetAllAsync();
+        var exportedSkuIds = new Dictionary<Guid, Guid>();
+        if (root.TryGetProperty("Skus", out var skusArr))
+        {
+            foreach (var sJson in skusArr.EnumerateArray())
+            {
+                var expId = sJson.GetProperty("Id").GetGuid();
+                var code = sJson.GetProperty("SkuCode").GetString();
+                if (!string.IsNullOrEmpty(code))
+                {
+                    var liveSku = dbSkus.FirstOrDefault(s => s.SkuCode == code);
+                    if (liveSku != null)
+                    {
+                        exportedSkuIds[expId] = liveSku.Id;
+                    }
+                }
+            }
+        }
 
         // Import Formulas
         if (root.TryGetProperty("Formulas", out var formulasArr))
@@ -376,10 +418,25 @@ public class QuestionManagementService : IQuestionManagementService
                 var order = qJson.GetProperty("DisplayOrder").GetInt32();
                 var condition = qJson.TryGetProperty("VisibilityCondition", out var vProp) ? vProp.GetString() : null;
 
-                var skuIds = new List<Guid>();
-                if (qJson.TryGetProperty("SkuIds", out var skusArr))
+                // Resolve live Category ID
+                Guid? mappedCategoryId = null;
+                if (categoryId.HasValue && exportedCategoryIds.TryGetValue(categoryId.Value, out var liveCid))
                 {
-                    skuIds = skusArr.EnumerateArray().Select(s => s.GetGuid()).ToList();
+                    mappedCategoryId = liveCid;
+                }
+
+                // Resolve live SKU IDs
+                var skuIds = new List<Guid>();
+                if (qJson.TryGetProperty("SkuIds", out var skusJsonArr))
+                {
+                    foreach (var sVal in skusJsonArr.EnumerateArray())
+                    {
+                        var expSkuId = sVal.GetGuid();
+                        if (exportedSkuIds.TryGetValue(expSkuId, out var liveSkuId))
+                        {
+                            skuIds.Add(liveSkuId);
+                        }
+                    }
                 }
 
                 var formulaIds = new List<Guid>();
@@ -389,6 +446,8 @@ public class QuestionManagementService : IQuestionManagementService
                 }
 
                 var existing = await _unitOfWork.Questions.GetByIdAsync(id);
+                Question targetQuestion;
+
                 if (existing != null)
                 {
                     existing.QuestionCode = code;
@@ -397,7 +456,7 @@ public class QuestionManagementService : IQuestionManagementService
                     existing.IsRequired = required;
                     existing.OptionsJson = options;
                     existing.HintText = hint;
-                    existing.ServiceCategoryId = categoryId;
+                    existing.ServiceCategoryId = mappedCategoryId;
                     existing.ParentQuestionId = parentId;
                     existing.DisplayOrder = order;
                     existing.VisibilityCondition = condition;
@@ -405,6 +464,7 @@ public class QuestionManagementService : IQuestionManagementService
                     existing.FormulaIds = formulaIds;
                     existing.UpdatedAt = DateTime.UtcNow;
                     _unitOfWork.Questions.Update(existing);
+                    targetQuestion = existing;
                 }
                 else
                 {
@@ -417,7 +477,7 @@ public class QuestionManagementService : IQuestionManagementService
                         IsRequired = required,
                         OptionsJson = options,
                         HintText = hint,
-                        ServiceCategoryId = categoryId,
+                        ServiceCategoryId = mappedCategoryId,
                         ParentQuestionId = parentId,
                         DisplayOrder = order,
                         VisibilityCondition = condition,
@@ -427,22 +487,34 @@ public class QuestionManagementService : IQuestionManagementService
                         UpdatedAt = DateTime.UtcNow
                     };
                     await _unitOfWork.Questions.AddAsync(question);
+                    targetQuestion = question;
+                }
+
+                // Explicitly sync many-to-many relationship with live SKU instances in context
+                targetQuestion.Skus.Clear();
+                foreach (var skuId in skuIds)
+                {
+                    var sku = dbSkus.FirstOrDefault(s => s.Id == skuId);
+                    if (sku != null)
+                    {
+                        targetQuestion.Skus.Add(sku);
+                    }
                 }
             }
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Sync all categories
+        // Sync all categories templates
         var allCategoryIds = (await _unitOfWork.Questions.GetAllAsync())
             .Select(q => q.ServiceCategoryId)
             .Where(cid => cid.HasValue)
             .Select(cid => cid!.Value)
             .Distinct();
 
-        foreach (var categoryId in allCategoryIds)
+        foreach (var catId in allCategoryIds)
         {
-            await SyncCategoryTemplateAsync(categoryId, cancellationToken);
+            await SyncCategoryTemplateAsync(catId, cancellationToken);
         }
     }
 
