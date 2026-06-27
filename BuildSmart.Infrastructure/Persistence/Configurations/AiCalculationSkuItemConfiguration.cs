@@ -17,6 +17,6 @@ public class AiCalculationSkuItemConfiguration : IEntityTypeConfiguration<AiCalc
         builder.HasOne(s => s.ServiceSku)
             .WithMany()
             .HasForeignKey(s => s.ServiceSkuId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
