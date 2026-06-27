@@ -936,7 +936,8 @@ public class Mutation
 		decimal basePrice,
 		string unitType,
 		[Service] IUnitOfWork unitOfWork,
-		[Service] AppDbContext context)
+		[Service] AppDbContext context,
+		string? calculationFormula = null)
 	{
 		var sku = new ServiceSku
 		{
@@ -947,6 +948,7 @@ public class Mutation
 			Description = description,
 			BasePrice = basePrice,
 			UnitType = unitType,
+			CalculationFormula = calculationFormula ?? "",
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};
@@ -979,7 +981,8 @@ public class Mutation
 		decimal basePrice,
 		string unitType,
 		[Service] IUnitOfWork unitOfWork,
-		[Service] AppDbContext context)
+		[Service] AppDbContext context,
+		string? calculationFormula = null)
 	{
 		var sku = await unitOfWork.ServiceSkus.GetByIdAsync(id)
 			?? throw new GraphQLException("SKU not found.");
@@ -989,6 +992,7 @@ public class Mutation
 		sku.Description = description;
 		sku.BasePrice = basePrice;
 		sku.UnitType = unitType;
+		sku.CalculationFormula = calculationFormula ?? "";
 		sku.UpdatedAt = DateTime.UtcNow;
 
 		unitOfWork.ServiceSkus.Update(sku);

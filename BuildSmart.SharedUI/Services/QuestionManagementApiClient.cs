@@ -52,6 +52,7 @@ public class ServiceSkuDto
     public decimal BasePrice { get; set; }
     public string UnitType { get; set; } = string.Empty;
     public Guid ServiceCategoryId { get; set; }
+    public string CalculationFormula { get; set; } = string.Empty;
 }
 
 
@@ -68,6 +69,7 @@ public class GraphEdgeDto
     public string From { get; set; } = string.Empty;
     public string To { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
+    public string? Label { get; set; }
 }
 
 public class QuestionGraphDto
@@ -111,7 +113,9 @@ public interface IQuestionManagementApiClient
     Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
     Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input);
     Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input);
+    Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input);
     Task<bool> DeleteServiceSkuAsync(Guid id);
+    Task<List<ServiceSkuDto>> GetServiceSkusByCategoryAsync(Guid categoryId);
 }
 
 public class QuestionManagementApiClient : IQuestionManagementApiClient
@@ -201,6 +205,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                         from
                         to
                         type
+                        label
                     }
                 }
             }";
@@ -549,7 +554,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
     public async Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input)
     {
         var query = @"
-            mutation($categoryId: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!) {
+            mutation($categoryId: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!, $calculationFormula: String!) {
                 createServiceSku(
                     categoryId: $categoryId
                     skuCode: $skuCode
@@ -557,6 +562,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     description: $description
                     basePrice: $basePrice
                     unitType: $unitType
+                    calculationFormula: $calculationFormula
                 ) {
                     id
                     skuCode
@@ -565,6 +571,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     basePrice
                     unitType
                     serviceCategoryId
+                    calculationFormula
                 }
             }";
 
@@ -575,11 +582,52 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
             name = input.Name,
             description = input.Description ?? "",
             basePrice = input.BasePrice,
-            unitType = input.UnitType ?? ""
+            unitType = input.UnitType ?? "",
+            calculationFormula = input.CalculationFormula ?? ""
         };
 
         var data = await SendQueryAsync(query, variables);
         var resultJson = data.GetProperty("createServiceSku").GetRawText();
+        return JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+    }
+
+    public async Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input)
+    {
+        var query = @"
+            mutation($id: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!, $calculationFormula: String!) {
+                updateServiceSku(
+                    id: $id
+                    skuCode: $skuCode
+                    name: $name
+                    description: $description
+                    basePrice: $basePrice
+                    unitType: $unitType
+                    calculationFormula: $calculationFormula
+                ) {
+                    id
+                    skuCode
+                    name
+                    description
+                    basePrice
+                    unitType
+                    serviceCategoryId
+                    calculationFormula
+                }
+            }";
+
+        var variables = new
+        {
+            id = input.Id,
+            skuCode = input.SkuCode,
+            name = input.Name,
+            description = input.Description ?? "",
+            basePrice = input.BasePrice,
+            unitType = input.UnitType ?? "",
+            calculationFormula = input.CalculationFormula ?? ""
+        };
+
+        var data = await SendQueryAsync(query, variables);
+        var resultJson = data.GetProperty("updateServiceSku").GetRawText();
         return JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
 
@@ -593,5 +641,27 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         var variables = new { id = id };
         var data = await SendQueryAsync(query, variables);
         return data.GetProperty("deleteServiceSku").GetBoolean();
+    }
+
+    public async Task<List<ServiceSkuDto>> GetServiceSkusByCategoryAsync(Guid categoryId)
+    {
+        var query = @"
+            query($categoryId: UUID!) {
+                serviceSkusByCategory(categoryId: $categoryId) {
+                    id
+                    skuCode
+                    name
+                    description
+                    basePrice
+                    unitType
+                    serviceCategoryId
+                    calculationFormula
+                }
+            }";
+
+        var variables = new { categoryId = categoryId };
+        var data = await SendQueryAsync(query, variables);
+        var skusJson = data.GetProperty("serviceSkusByCategory").GetRawText();
+        return JsonSerializer.Deserialize<List<ServiceSkuDto>>(skusJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
     }
 }

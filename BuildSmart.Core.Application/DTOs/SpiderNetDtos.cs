@@ -16,6 +16,7 @@ public class GraphEdgeDto
     public string From { get; set; } = string.Empty;
     public string To { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty; // "question-to-sku" | "question-to-formula" | "question-to-question"
+    public string? Label { get; set; }
 }
 
 public class OfferSimulationResultDto

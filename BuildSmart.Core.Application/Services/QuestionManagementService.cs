@@ -208,18 +208,39 @@ public class QuestionManagementService : IQuestionManagementService
                 {
                     From = q.ParentQuestionId.Value.ToString(),
                     To = q.Id.ToString(),
-                    Type = "question-to-question"
+                    Type = "question-to-question",
+                    Label = string.IsNullOrEmpty(q.VisibilityCondition) ? null : q.VisibilityCondition
                 });
             }
 
             // Sku linkages
             foreach (var skuId in q.SkuIds)
             {
+                var sku = skuList.FirstOrDefault(s => s.Id == skuId);
+                string? edgeLabel = null;
+                if (sku != null && !string.IsNullOrEmpty(sku.CalculationFormula))
+                {
+                    var formula = sku.CalculationFormula;
+                    if (formula.Contains(q.QuestionCode))
+                    {
+                        if (formula.StartsWith("if(", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int firstComma = FindFirstTopLevelComma(formula, 3);
+                            if (firstComma > 3)
+                            {
+                                var conditionPart = formula.Substring(3, firstComma - 3).Trim();
+                                edgeLabel = CleanConditionLabel(conditionPart, q.QuestionCode);
+                            }
+                        }
+                    }
+                }
+
                 edges.Add(new GraphEdgeDto
                 {
                     From = q.Id.ToString(),
                     To = skuId.ToString(),
-                    Type = "question-to-sku"
+                    Type = "question-to-sku",
+                    Label = edgeLabel
                 });
             }
 
@@ -275,6 +296,45 @@ public class QuestionManagementService : IQuestionManagementService
         }
 
         return (nodes, edges);
+    }
+
+    private int FindFirstTopLevelComma(string str, int startIndex)
+    {
+        int parenDepth = 0;
+        for (int i = startIndex; i < str.Length; i++)
+        {
+            char c = str[i];
+            if (c == '(') parenDepth++;
+            else if (c == ')') parenDepth--;
+            else if (c == ',' && parenDepth == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private string CleanConditionLabel(string condition, string questionCode)
+    {
+        var matches = System.Text.RegularExpressions.Regex.Matches(
+            condition, 
+            @"Contains\(\s*" + System.Text.RegularExpressions.Regex.Escape(questionCode) + @"\s*,\s*['""]?(.*?)['""]?\s*\)", 
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+
+        if (matches.Count > 0)
+        {
+            var values = matches.Cast<System.Text.RegularExpressions.Match>().Select(m => m.Groups[1].Value).ToList();
+            return string.Join(" | ", values);
+        }
+        
+        var eqMatch = System.Text.RegularExpressions.Regex.Match(condition, System.Text.RegularExpressions.Regex.Escape(questionCode) + @"\s*==\s*['""]?(.*?)['""]?", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (eqMatch.Success)
+        {
+            return eqMatch.Groups[1].Value;
+        }
+
+        return condition.Replace(questionCode, "Answer").Trim();
     }
 
     #endregion

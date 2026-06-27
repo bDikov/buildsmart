@@ -28,6 +28,8 @@ public class ServiceSkuType : ObjectType<ServiceSku>
         descriptor.Field(s => s.UnitType)
             .Type<NonNullType<StringType>>()
             .ResolveWith<ServiceSkuResolvers>(r => r.GetUnitType(default!, default!, default!));
+
+        descriptor.Field(s => s.CalculationFormula).Type<StringType>();
     }
 }
 

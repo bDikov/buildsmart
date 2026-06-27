@@ -27,11 +27,11 @@ public class MutationType : ObjectType<Mutation>
             .Description("Creates a new service category with a smart blueprint template.")
             .Authorize(roles: new[] { "Admin" }); // Only Admin
 
-        descriptor.Field(m => m.CreateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.CreateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Creates a new billable SKU for a service category.")
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(m => m.UpdateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.UpdateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Updates an existing billable SKU.")
             .Authorize(roles: new[] { "Admin" });
 

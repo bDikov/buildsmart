@@ -23,6 +23,9 @@
             <button class="bs-btn-primary ml-2" @onclick="OpenAddFormulaModal">
                 ➕ New Formula
             </button>
+            <button class="bs-btn-primary ml-2" @onclick="OpenAddSkuModal">
+                ➕ New SKU
+            </button>
         </div>
     </div>
 
@@ -65,6 +68,7 @@
         <button class="tab-button @(activeTab == "graph" ? "active" : "")" @onclick='() => SetActiveTab("graph")'>🕸️ Graph Map</button>
         <button class="tab-button @(activeTab == "questions" ? "active" : "")" @onclick='() => SetActiveTab("questions")'>❓ Questions (@GetFilteredQuestions().Count())</button>
         <button class="tab-button @(activeTab == "formulas" ? "active" : "")" @onclick='() => SetActiveTab("formulas")'>🧮 Formulas (@formulas.Count)</button>
+        <button class="tab-button @(activeTab == "skus" ? "active" : "")" @onclick='() => SetActiveTab("skus")'>🏷️ SKUs (@GetFilteredSkus().Count())</button>
         <button class="tab-button @(activeTab == "simulation" ? "active" : "")" @onclick='() => SetActiveTab("simulation")'>🧪 Run Simulation</button>
         <button class="tab-button @(activeTab == "sync" ? "active" : "")" @onclick='() => SetActiveTab("sync")'>💾 Import/Export</button>
     </div>
@@ -118,6 +122,24 @@
                             </div>
                             <h3 class="card-title">@f.Description</h3>
                             <code class="formula-code">@f.Expression</code>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- SKUS VIEW -->
+            <div class="tab-content @(activeTab == "skus" ? "show" : "hidden")">
+                <div class="grid-layout">
+                    @foreach (var s in GetFilteredSkus())
+                    {
+                        <div class="bs-card item-card @(selectedSku?.Id == s.Id ? "highlighted" : "")" @onclick="() => SelectSku(s)">
+                            <div class="card-header">
+                                <span class="badge badge-sku">@s.SkuCode</span>
+                                <span class="badge bg-dark">@s.UnitType</span>
+                            </div>
+                            <h3 class="card-title">@s.Name</h3>
+                            <p class="card-desc">@s.Description</p>
+                            <div class="card-meta" style="font-weight: 700; color: var(--accent-color); margin-top: 8px;">Base Price: @s.BasePrice lv.</div>
                         </div>
                     }
                 </div>
@@ -479,6 +501,134 @@
                     </button>
                 </div>
             }
+            else if (selectedSku != null)
+            {
+                <div class="drawer-header">
+                    <h2>Edit SKU</h2>
+                    <button class="remove-btn text-danger" @onclick="() => DeleteSkuAsync(selectedSku.Id)">🗑️ Delete</button>
+                </div>
+                <div class="drawer-body">
+                    <div class="form-group">
+                        <label>SKU Code (e.g. ELEC-001)</label>
+                        <input type="text" class="bs-input" @bind="selectedSku.SkuCode" />
+                    </div>
+                    <div class="form-group">
+                        <label>Service Category</label>
+                        <select class="bs-select" @bind="selectedSku.ServiceCategoryId">
+                            @foreach (var cat in serviceCategories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Name / Label</label>
+                        <input type="text" class="bs-input" @bind="selectedSku.Name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="bs-input" @bind="selectedSku.Description" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Base Price (lv.)</label>
+                        <input type="number" class="bs-input" @bind="selectedSku.BasePrice" step="0.01" />
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Type (e.g. pcs, sqm, lm)</label>
+                        <input type="text" class="bs-input" @bind="selectedSku.UnitType" />
+                    </div>
+                    <div class="form-group">
+                        <label>Calculation Formula (NCalc Expression)</label>
+                        <textarea class="bs-input code-textarea" @bind="selectedSku.CalculationFormula" rows="3" placeholder="e.g. if(Contains(paint_finish_level, 'Q5'), global_total_sqm * 2.5, 0)"></textarea>
+                    </div>
+
+                    <button class="bs-btn-primary w-100 mt-4" @onclick="SaveSkuAsync">
+                        💾 Save SKU Details
+                    </button>
+                </div>
+            }
+            else if (selectedEdge != null)
+            {
+                <div class="drawer-header">
+                    <h2>Edit Link Condition</h2>
+                </div>
+                <div class="drawer-body">
+                    <div class="form-group">
+                        <label>From Node (Question)</label>
+                        <input type="text" class="bs-input" readonly value="@GetNodeLabel(selectedEdge.From)" />
+                    </div>
+                    <div class="form-group">
+                        <label>To Node (@(selectedEdge.Type == "question-to-sku" ? "SKU" : "Question"))</label>
+                        <input type="text" class="bs-input" readonly value="@GetNodeLabel(selectedEdge.To)" />
+                    </div>
+                    <div class="form-group">
+                        <label>Link Type</label>
+                        <input type="text" class="bs-input" readonly value="@(selectedEdge.Type == "question-to-sku" ? "SKU Activation Condition" : "Question Visibility Condition")" />
+                    </div>
+                    <div class="form-group">
+                        <label>Condition Value / Trigger Options</label>
+                        @if (selectedEdgeFromQuestion != null && (selectedEdgeFromQuestion.Type == "choice" || selectedEdgeFromQuestion.Type == "multiselect"))
+                        {
+                            var optionsList = new List<string>();
+                            try
+                            {
+                                optionsList = string.IsNullOrEmpty(selectedEdgeFromQuestion.OptionsJson) 
+                                    ? new List<string>() 
+                                    : System.Text.Json.JsonSerializer.Deserialize<List<string>>(selectedEdgeFromQuestion.OptionsJson) ?? new List<string>();
+                            }
+                            catch {}
+
+                            @if (optionsList.Count == 0)
+                            {
+                                <p class="help-text text-warning">💡 Question has no options configured yet.</p>
+                            }
+                            else
+                            {
+                                <div class="checkbox-list mt-1" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; max-height: 200px; overflow-y: auto;">
+                                    @foreach (var opt in optionsList)
+                                    {
+                                        <label class="checkbox-item" style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px; user-select: none;">
+                                            <input type="checkbox" checked="@IsEdgeOptionSelected(opt)" @onchange='(e) => ToggleEdgeOption(opt, e.Value)' />
+                                            <span style="color: #ffffff; font-size: 13px;">@opt</span>
+                                        </label>
+                                    }
+                                </div>
+                            }
+                        }
+                        else if (selectedEdgeFromQuestion != null && selectedEdgeFromQuestion.Type == "boolean")
+                        {
+                            <div class="checkbox-list mt-1" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                                <label class="checkbox-item" style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px; user-select: none;">
+                                    <input type="checkbox" checked='@IsEdgeOptionSelected("True")' @onchange='(e) => ToggleEdgeOption("True", e.Value)' />
+                                    <span style="color: #ffffff; font-size: 13px;">Yes / Checked (True)</span>
+                                </label>
+                                <label class="checkbox-item" style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px; user-select: none;">
+                                    <input type="checkbox" checked='@IsEdgeOptionSelected("False")' @onchange='(e) => ToggleEdgeOption("False", e.Value)' />
+                                    <span style="color: #ffffff; font-size: 13px;">No / Unchecked (False)</span>
+                                </label>
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="text" class="bs-input" @bind="edgeConditionBuffer" />
+                        }
+                        <p class="help-text">
+                            @if (selectedEdge.Type == "question-to-sku")
+                            {
+                                <span>💡 This will update the triggering options inside the SKU's formula (e.g. `paint_scope contains 'Стандартен'`).</span>
+                            }
+                            else
+                            {
+                                <span>💡 This will update the triggering parent options for the question's visibility.</span>
+                            }
+                        </p>
+                    </div>
+
+                    <button class="bs-btn-primary w-100 mt-4" @onclick="SaveEdgeConditionAsync">
+                        💾 Save Link Condition
+                    </button>
+                </div>
+            }
             else
             {
                 <div class="empty-state text-center mt-5">
@@ -688,6 +838,11 @@
     .badge-formula {
         background: rgba(255, 193, 7, 0.15);
         color: #ffd54f;
+    }
+
+    .badge-sku {
+        background: rgba(40, 167, 69, 0.15);
+        color: #69f0ae;
     }
 
     .bg-dark {
@@ -978,6 +1133,10 @@
 
     private QuestionDto? selectedQuestion;
     private FormulaDto? selectedFormula;
+    private ServiceSkuDto? selectedSku;
+    private GraphEdgeDto? selectedEdge;
+    private QuestionDto? selectedEdgeFromQuestion;
+    private string edgeConditionBuffer = "";
 
     private ElementReference graphContainer;
     private IJSObjectReference? module;
@@ -1016,18 +1175,13 @@
             graphData = await ApiClient.GetQuestionGraphAsync();
             serviceCategories = await ApiClient.GetServiceCategoriesAsync();
 
-            // Fetch SKUs by loading them from categories (or generic list)
-            // Let's create a custom list of SKUs by fetching from the graph nodes that are "sku"
-            availableSkus = graphData.Nodes
-                .Where(n => n.Type == "sku")
-                .Select(n => new ServiceSkuDto 
-                { 
-                    Id = Guid.Parse(n.Id), 
-                    SkuCode = n.Label, 
-                    Name = n.Category,
-                    ServiceCategoryId = serviceCategories.FirstOrDefault(c => c.Name.Equals(n.Category, StringComparison.OrdinalIgnoreCase))?.Id ?? Guid.Empty
-                })
-                .ToList();
+            // Fetch fully populated SKUs from the database via GraphQL for each category
+            availableSkus.Clear();
+            foreach (var cat in serviceCategories)
+            {
+                var skus = await ApiClient.GetServiceSkusByCategoryAsync(cat.Id);
+                availableSkus.AddRange(skus);
+            }
 
             // Extract unique categories from questions to build filter list
             var categoryGroups = questions
@@ -1055,6 +1209,9 @@
     private async Task SetActiveTab(string tab)
     {
         activeTab = tab;
+        selectedQuestion = null;
+        selectedFormula = null;
+        selectedSku = null;
         if (tab == "graph")
         {
             await Task.Delay(50); // Let UI render container div first
@@ -1161,9 +1318,12 @@
 
             var edges = filteredEdges.Select(e => new
             {
+                id = $"{e.From}_{e.To}",
                 from = e.From,
                 to = e.To,
-                arrows = "to"
+                arrows = "to",
+                label = e.Label,
+                dashes = !string.IsNullOrEmpty(e.Label)
             }).ToList();
 
             await module.InvokeVoidAsync("initializeGraph", graphContainer, nodes, edges, dotNetHelper);
@@ -1175,6 +1335,9 @@
     {
         selectedQuestion = null;
         selectedFormula = null;
+        selectedSku = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
 
         var matchingNode = graphData.Nodes.FirstOrDefault(n => n.Id == nodeId);
         if (matchingNode != null)
@@ -1187,20 +1350,344 @@
             {
                 selectedFormula = formulas.FirstOrDefault(f => f.Id.ToString() == nodeId);
             }
+            else if (matchingNode.Type == "sku")
+            {
+                selectedSku = availableSkus.FirstOrDefault(s => s.Id.ToString() == nodeId);
+            }
         }
         StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnEdgeSelected(string edgeId)
+    {
+        selectedQuestion = null;
+        selectedFormula = null;
+        selectedSku = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
+
+        var parts = edgeId.Split('_');
+        if (parts.Length == 2)
+        {
+            var fromId = parts[0];
+            var toId = parts[1];
+
+            selectedEdge = graphData.Edges.FirstOrDefault(e => e.From == fromId && e.To == toId);
+            if (selectedEdge != null)
+            {
+                selectedEdgeFromQuestion = questions.FirstOrDefault(q => q.Id.ToString() == selectedEdge.From);
+                if (selectedEdge.Type == "question-to-question")
+                {
+                    var destQ = questions.FirstOrDefault(q => q.Id.ToString() == selectedEdge.To);
+                    edgeConditionBuffer = destQ?.VisibilityCondition ?? "";
+                }
+                else if (selectedEdge.Type == "question-to-sku")
+                {
+                    edgeConditionBuffer = selectedEdge.Label ?? "";
+                }
+                else
+                {
+                    edgeConditionBuffer = "";
+                }
+            }
+        }
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnDeselectAll()
+    {
+        selectedQuestion = null;
+        selectedFormula = null;
+        selectedSku = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
+        StateHasChanged();
+    }
+
+    private bool IsEdgeOptionSelected(string option)
+    {
+        if (string.IsNullOrEmpty(edgeConditionBuffer))
+            return false;
+
+        var selected = edgeConditionBuffer.Split('|').Select(s => s.Trim()).ToHashSet();
+        return selected.Contains(option);
+    }
+
+    private void ToggleEdgeOption(string option, object? isChecked)
+    {
+        var check = isChecked is bool b && b;
+        var selected = string.IsNullOrEmpty(edgeConditionBuffer)
+            ? new List<string>()
+            : edgeConditionBuffer.Split('|').Select(s => s.Trim()).ToList();
+
+        if (check)
+        {
+            if (!selected.Contains(option))
+                selected.Add(option);
+        }
+        else
+        {
+            selected.Remove(option);
+        }
+
+        edgeConditionBuffer = string.Join(" | ", selected);
+        StateHasChanged();
+    }
+
+    private string GetNodeLabel(string nodeId)
+    {
+        var matchingNode = graphData.Nodes.FirstOrDefault(n => n.Id == nodeId);
+        if (matchingNode != null)
+        {
+            if (matchingNode.Type == "question")
+            {
+                var q = questions.FirstOrDefault(x => x.Id.ToString() == nodeId);
+                if (q != null)
+                {
+                    return $"[{q.QuestionCode}] {q.Text}";
+                }
+            }
+            else if (matchingNode.Type == "sku")
+            {
+                var s = availableSkus.FirstOrDefault(x => x.Id.ToString() == nodeId);
+                if (s != null)
+                {
+                    return $"[{s.SkuCode}] {s.Name}";
+                }
+            }
+            else if (matchingNode.Type == "formula")
+            {
+                var f = formulas.FirstOrDefault(x => x.Id.ToString() == nodeId);
+                if (f != null)
+                {
+                    return $"[{f.Name}] {f.Description}";
+                }
+            }
+            return $"{matchingNode.Label} ({matchingNode.Type})";
+        }
+        return nodeId;
+    }
+
+    private async Task SaveEdgeConditionAsync()
+    {
+        if (selectedEdge == null) return;
+
+        try
+        {
+            if (selectedEdge.Type == "question-to-question")
+            {
+                var destQ = questions.FirstOrDefault(q => q.Id.ToString() == selectedEdge.To);
+                if (destQ != null)
+                {
+                    destQ.VisibilityCondition = edgeConditionBuffer;
+                    var result = await ApiClient.UpdateQuestionAsync(destQ);
+                    await ShowToastMessage("Question visibility trigger successfully updated.", "success");
+                    await LoadDataAsync();
+                }
+            }
+            else if (selectedEdge.Type == "question-to-sku")
+            {
+                var fromQ = questions.FirstOrDefault(q => q.Id.ToString() == selectedEdge.From);
+                var toSku = availableSkus.FirstOrDefault(s => s.Id.ToString() == selectedEdge.To);
+                if (fromQ != null && toSku != null)
+                {
+                    // Rebuild calculation formula
+                    string updatedFormula = UpdateFormulaCondition(toSku.CalculationFormula, fromQ.QuestionCode, edgeConditionBuffer);
+                    toSku.CalculationFormula = updatedFormula;
+                    
+                    var result = await ApiClient.UpdateServiceSkuAsync(toSku);
+                    await ShowToastMessage("SKU condition formula successfully updated.", "success");
+                    await LoadDataAsync();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowToastMessage($"Error saving link condition: {ex.Message}", "danger");
+        }
+    }
+
+    private string UpdateFormulaCondition(string formula, string questionCode, string newValue)
+    {
+        if (string.IsNullOrEmpty(formula))
+            return $"if(Contains({questionCode}, '{newValue}'), 0, 0)"; // Fallback structure
+
+        if (!formula.StartsWith("if(", StringComparison.OrdinalIgnoreCase))
+        {
+            // If it's a static calculation, wrap it in a conditional or if-then
+            return $"if(Contains({questionCode}, '{newValue}'), {formula}, 0)";
+        }
+
+        int firstComma = FindFirstTopLevelComma(formula, 3);
+        if (firstComma <= 3) return formula;
+
+        string conditionPart = formula.Substring(3, firstComma - 3).Trim();
+        string remainingPart = formula.Substring(firstComma);
+
+        string newConditionPart = conditionPart;
+        if (conditionPart.Contains("Contains"))
+        {
+            var regex = new System.Text.RegularExpressions.Regex(@"Contains\(\s*" + System.Text.RegularExpressions.Regex.Escape(questionCode) + @"\s*,\s*['""](.*?)['""]\s*\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (regex.IsMatch(conditionPart))
+            {
+                newConditionPart = regex.Replace(conditionPart, $"Contains({questionCode}, '{newValue}')");
+            }
+            else
+            {
+                newConditionPart = $"Contains({questionCode}, '{newValue}')";
+            }
+        }
+        else if (conditionPart.Contains("=="))
+        {
+            var regex = new System.Text.RegularExpressions.Regex(System.Text.RegularExpressions.Regex.Escape(questionCode) + @"\s*==\s*['""](.*?)['""]", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (regex.IsMatch(conditionPart))
+            {
+                newConditionPart = regex.Replace(conditionPart, $"{questionCode} == '{newValue}'");
+            }
+            else
+            {
+                newConditionPart = $"{questionCode} == '{newValue}'";
+            }
+        }
+        else
+        {
+            newConditionPart = $"Contains({questionCode}, '{newValue}')";
+        }
+
+        return $"if({newConditionPart}{remainingPart}";
+    }
+
+    private int FindFirstTopLevelComma(string str, int startIndex)
+    {
+        int parenDepth = 0;
+        for (int i = startIndex; i < str.Length; i++)
+        {
+            char c = str[i];
+            if (c == '(') parenDepth++;
+            else if (c == ')') parenDepth--;
+            else if (c == ',' && parenDepth == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void SelectQuestion(QuestionDto q)
     {
         selectedQuestion = q;
         selectedFormula = null;
+        selectedSku = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
     }
 
     private void SelectFormula(FormulaDto f)
     {
         selectedFormula = f;
         selectedQuestion = null;
+        selectedSku = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
+    }
+
+    private void SelectSku(ServiceSkuDto s)
+    {
+        selectedSku = s;
+        selectedQuestion = null;
+        selectedFormula = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
+    }
+
+    private void OpenAddSkuModal()
+    {
+        selectedSku = new ServiceSkuDto
+        {
+            Id = Guid.NewGuid(),
+            SkuCode = "NEW-SKU-001",
+            Name = serviceCategories.FirstOrDefault()?.Name ?? "Global Questions",
+            Description = "Enter SKU Description",
+            BasePrice = 0.00m,
+            UnitType = "pcs",
+            ServiceCategoryId = serviceCategories.FirstOrDefault()?.Id ?? Guid.Empty
+        };
+        selectedQuestion = null;
+        selectedFormula = null;
+    }
+
+    private async Task SaveSkuAsync()
+    {
+        if (selectedSku == null) return;
+
+        try
+        {
+            var isNew = !availableSkus.Any(s => s.Id == selectedSku.Id);
+            if (isNew)
+            {
+                await ApiClient.CreateServiceSkuAsync(selectedSku);
+            }
+            else
+            {
+                await ApiClient.UpdateServiceSkuAsync(selectedSku);
+            }
+
+            statusMessage = $"SKU '{selectedSku.SkuCode}' successfully saved.";
+            errorMessage = "";
+            await LoadDataAsync();
+            await ShowToastMessage(statusMessage, "success");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving SKU: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private async Task DeleteSkuAsync(Guid id)
+    {
+        try
+        {
+            var ok = await ApiClient.DeleteServiceSkuAsync(id);
+            if (ok)
+            {
+                statusMessage = "SKU deleted successfully.";
+                selectedSku = null;
+                await LoadDataAsync();
+                await ShowToastMessage(statusMessage, "success");
+            }
+            else
+            {
+                errorMessage = "Could not delete SKU (it may be locked by constraints).";
+                await ShowToastMessage(errorMessage, "danger");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting SKU: {ex.Message}";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private IEnumerable<ServiceSkuDto> GetFilteredSkus()
+    {
+        if (selectedCategoryFilter == "All") return availableSkus;
+        
+        var categoryObj = serviceCategories.FirstOrDefault(c => c.Id.ToString() == selectedCategoryFilter);
+        if (categoryObj != null)
+        {
+            return availableSkus.Where(s => s.ServiceCategoryId == categoryObj.Id || s.Name.Equals(categoryObj.Name, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        if (selectedCategoryFilter == "Global")
+        {
+            return availableSkus.Where(s => s.ServiceCategoryId == Guid.Empty || s.Name.Equals("Global Questions", StringComparison.OrdinalIgnoreCase));
+        }
+        
+        return availableSkus;
     }
 
     private void OpenAddQuestionModal()
@@ -1215,6 +1702,7 @@
             DisplayOrder = questions.Count + 1
         };
         selectedFormula = null;
+        selectedSku = null;
     }
 
     private void OpenAddFormulaModal()
@@ -1227,6 +1715,7 @@
             Expression = "global_total_sqm * 2.5"
         };
         selectedQuestion = null;
+        selectedSku = null;
     }
 
     private async Task SaveQuestionAsync()
