@@ -202,4 +202,42 @@ public class FormulaValidationTests
         }
         return variables;
     }
+
+    [Fact]
+    public void LocalizedTemplates_ShouldBeParsableByScopeGenerationLogic()
+    {
+        var rootDir = FindSolutionRoot();
+        var templatesPath = Path.Combine(rootDir, "BuildSmart.Infrastructure", "Categories_Seed_Templates.json");
+        var json = File.ReadAllText(templatesPath);
+        using var doc = JsonDocument.Parse(json);
+        
+        foreach (var prop in doc.RootElement.EnumerateObject())
+        {
+            var templateStructure = prop.Value.GetProperty("templateStructure").GetRawText();
+            using var templateDoc = JsonDocument.Parse(templateStructure);
+            if (templateDoc.RootElement.TryGetProperty("questions", out var questionsElement))
+            {
+                foreach (var q in questionsElement.EnumerateArray())
+                {
+                    if (q.TryGetProperty("text", out var textProp))
+                    {
+                        if (textProp.ValueKind == JsonValueKind.Object)
+                        {
+                            // Verify the old logic (calling GetString() on object valuekind) would have thrown InvalidOperationException
+                            Assert.Throws<InvalidOperationException>(() => textProp.GetString());
+
+                            // Verify the new logic successfully extracts the Bulgarian translation
+                            var bgText = textProp.TryGetProperty("bg", out var bgProp) ? bgProp.GetString() : null;
+                            FluentAssertions.AssertionExtensions.Should(bgText).NotBeNullOrEmpty();
+                        }
+                        else
+                        {
+                            var stringText = textProp.GetString();
+                            FluentAssertions.AssertionExtensions.Should(stringText).NotBeNullOrEmpty();
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

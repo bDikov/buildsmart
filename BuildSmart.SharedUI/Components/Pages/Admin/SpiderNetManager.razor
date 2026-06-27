@@ -26,6 +26,9 @@
             <button class="bs-btn-primary ml-2" @onclick="OpenAddSkuModal">
                 ➕ New SKU
             </button>
+            <button class="bs-btn-primary ml-2" @onclick="OpenAddCategoryModal">
+                ➕ New Category
+            </button>
         </div>
     </div>
 
@@ -71,6 +74,7 @@
         <button class="tab-button @(activeTab == "skus" ? "active" : "")" @onclick='() => SetActiveTab("skus")'>🏷️ SKUs (@GetFilteredSkus().Count())</button>
         <button class="tab-button @(activeTab == "simulation" ? "active" : "")" @onclick='() => SetActiveTab("simulation")'>🧪 Run Simulation</button>
         <button class="tab-button @(activeTab == "sync" ? "active" : "")" @onclick='() => SetActiveTab("sync")'>💾 Import/Export</button>
+        <button class="tab-button @(activeTab == "categories" ? "active" : "")" @onclick='() => SetActiveTab("categories")'>📁 Categories (@serviceCategories.Count)</button>
     </div>
 
     <div class="manager-body">
@@ -140,6 +144,23 @@
                             <h3 class="card-title">@s.Name</h3>
                             <p class="card-desc">@s.Description</p>
                             <div class="card-meta" style="font-weight: 700; color: var(--accent-color); margin-top: 8px;">Base Price: @s.BasePrice lv.</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- CATEGORIES VIEW -->
+            <div class="tab-content @(activeTab == "categories" ? "show" : "hidden")">
+                <div class="grid-layout">
+                    @foreach (var c in serviceCategories)
+                    {
+                        <div class="bs-card item-card @(selectedCategory?.Id == c.Id ? "highlighted" : "")" @onclick="() => SelectCategory(c)">
+                            <div class="card-header">
+                                <span class="badge @(c.IsGlobal ? "badge-formula" : "badge-sku")">@(c.IsGlobal ? "Global" : "Specific")</span>
+                                <span class="badge bg-dark">@(string.IsNullOrEmpty(c.Status) ? "Draft" : c.Status)</span>
+                            </div>
+                            <h3 class="card-title">@c.Name</h3>
+                            <p class="card-desc">@c.Description</p>
                         </div>
                     }
                 </div>
@@ -544,6 +565,43 @@
 
                     <button class="bs-btn-primary w-100 mt-4" @onclick="SaveSkuAsync">
                         💾 Save SKU Details
+                    </button>
+                </div>
+            }
+            else if (selectedCategory != null)
+            {
+                <div class="drawer-header">
+                    <h2>Edit Category</h2>
+                    <button class="remove-btn text-danger" @onclick="() => DeleteCategoryAsync(selectedCategory.Id)">🗑️ Delete</button>
+                </div>
+                <div class="drawer-body">
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" class="bs-input" @bind="selectedCategory.Name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="bs-input" @bind="selectedCategory.Description" rows="2"></textarea>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 12px; margin-bottom: 12px;">
+                        <input type="checkbox" @bind="selectedCategory.IsGlobal" id="chkGlobalCat" />
+                        <label for="chkGlobalCat" style="margin-bottom: 0; user-select: none;">Is Global Category (Wizard Setup)</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="bs-select" @bind="selectedCategory.Status">
+                            <option value="ACTIVE">Active</option>
+                            <option value="DRAFT">Draft</option>
+                            <option value="ARCHIVED">Archived</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Template Structure (Questions JSON)</label>
+                        <textarea class="bs-input code-textarea" @bind="selectedCategory.TemplateStructure" rows="12" placeholder="e.g. { &quot;questions&quot;: [] }"></textarea>
+                    </div>
+
+                    <button class="bs-btn-primary w-100 mt-4" @onclick="SaveCategoryDetailsAsync">
+                        💾 Save Category Details
                     </button>
                 </div>
             }
@@ -1134,6 +1192,7 @@
     private QuestionDto? selectedQuestion;
     private FormulaDto? selectedFormula;
     private ServiceSkuDto? selectedSku;
+    private ServiceCategoryDto? selectedCategory;
     private GraphEdgeDto? selectedEdge;
     private QuestionDto? selectedEdgeFromQuestion;
     private string edgeConditionBuffer = "";
@@ -1212,6 +1271,9 @@
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
+        selectedCategory = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
         if (tab == "graph")
         {
             await Task.Delay(50); // Let UI render container div first
@@ -1336,6 +1398,7 @@
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
+        selectedCategory = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
 
@@ -1364,6 +1427,7 @@
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
+        selectedCategory = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
 
@@ -1401,6 +1465,7 @@
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
+        selectedCategory = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
         StateHasChanged();
@@ -1580,8 +1645,84 @@
         selectedQuestion = q;
         selectedFormula = null;
         selectedSku = null;
+        selectedCategory = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
+    }
+
+    private void SelectCategory(ServiceCategoryDto c)
+    {
+        selectedCategory = c;
+        selectedQuestion = null;
+        selectedFormula = null;
+        selectedSku = null;
+        selectedEdge = null;
+        selectedEdgeFromQuestion = null;
+    }
+
+    private void OpenAddCategoryModal()
+    {
+        selectedCategory = new ServiceCategoryDto
+        {
+            Id = Guid.Empty,
+            Name = "New Category",
+            Description = "Enter category description",
+            IsGlobal = false,
+            TemplateStructure = "{\n  \"questions\": []\n}",
+            Status = "DRAFT"
+        };
+        selectedQuestion = null;
+        selectedFormula = null;
+        selectedSku = null;
+    }
+
+    private async Task SaveCategoryDetailsAsync()
+    {
+        if (selectedCategory == null) return;
+
+        try
+        {
+            var saved = await ApiClient.SaveCategoryAsync(selectedCategory);
+            statusMessage = $"Category '{saved.Name}' successfully saved.";
+            errorMessage = "";
+            await LoadDataAsync();
+            await ShowToastMessage(statusMessage, "success");
+            selectedCategory = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving category: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private async Task DeleteCategoryAsync(Guid id)
+    {
+        try
+        {
+            var ok = await ApiClient.DeleteServiceCategoryAsync(id);
+            if (ok)
+            {
+                statusMessage = "Category deleted successfully.";
+                errorMessage = "";
+                selectedCategory = null;
+                await LoadDataAsync();
+                await ShowToastMessage(statusMessage, "success");
+            }
+            else
+            {
+                errorMessage = "Could not delete category (it may be locked by database foreign keys).";
+                statusMessage = "";
+                await ShowToastMessage(errorMessage, "danger");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting category: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
     }
 
     private void SelectFormula(FormulaDto f)
@@ -1589,6 +1730,7 @@
         selectedFormula = f;
         selectedQuestion = null;
         selectedSku = null;
+        selectedCategory = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
     }
@@ -1598,6 +1740,7 @@
         selectedSku = s;
         selectedQuestion = null;
         selectedFormula = null;
+        selectedCategory = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
     }
@@ -1616,6 +1759,7 @@
         };
         selectedQuestion = null;
         selectedFormula = null;
+        selectedCategory = null;
     }
 
     private async Task SaveSkuAsync()
@@ -1695,14 +1839,15 @@
         selectedQuestion = new QuestionDto
         {
             Id = Guid.NewGuid(),
-            QuestionCode = "new_question_var",
-            Text = "Enter Question Text?",
-            Type = "text",
-            IsRequired = true,
+            QuestionCode = "NEW-Q-001",
+            Text = "Enter Question Text",
+            Type = "choice",
+            OptionsJson = "[\"Option 1\", \"Option 2\"]",
             DisplayOrder = questions.Count + 1
         };
         selectedFormula = null;
         selectedSku = null;
+        selectedCategory = null;
     }
 
     private void OpenAddFormulaModal()
@@ -1710,12 +1855,13 @@
         selectedFormula = new FormulaDto
         {
             Id = Guid.NewGuid(),
-            Name = "new_formula_var",
-            Description = "Enter description",
+            Name = "NEW_FORMULA",
+            Description = "Enter Description",
             Expression = "global_total_sqm * 2.5"
         };
         selectedQuestion = null;
         selectedSku = null;
+        selectedCategory = null;
     }
 
     private async Task SaveQuestionAsync()

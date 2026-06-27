@@ -212,5 +212,9 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.RunOfferSimulation(default!, default!, default!, default!))
             .Description("Runs a simulation of the pricing engine using the selected questions and answers.")
             .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.DeleteServiceCategory(default!, default!, default!))
+            .Description("Deletes an existing service category and its translation. (Admin only)")
+            .Authorize(roles: new[] { "Admin" });
     }
 }

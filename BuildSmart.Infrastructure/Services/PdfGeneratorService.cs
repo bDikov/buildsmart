@@ -82,16 +82,16 @@ namespace BuildSmart.Infrastructure.Services
 
 				// Intercept requests to prevent redirect crashes on scripts/fonts
 				await page.SetRequestInterceptionAsync(true);
-				page.Request += (sender, e) =>
+				page.Request += async (sender, e) =>
 				{
-				    if (e.Request.ResourceType == ResourceType.Script || e.Request.ResourceType == ResourceType.Font)
-				    {
-				        e.Request.ContinueAsync(); // Allow, but if it fails we just want to avoid crashing the whole page
-				    }
-				    else
-				    {
-				        e.Request.ContinueAsync();
-				    }
+					try
+					{
+						await e.Request.ContinueAsync();
+					}
+					catch (Exception ex)
+					{
+						_logger.LogDebug(ex, "Puppeteer request interception exception ignored.");
+					}
 				};
 
 				try

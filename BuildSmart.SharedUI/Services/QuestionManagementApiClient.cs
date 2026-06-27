@@ -112,6 +112,7 @@ public interface IQuestionManagementApiClient
     Task<OfferSimulationResultDto> RunOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson);
     Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
     Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input);
+    Task<bool> DeleteServiceCategoryAsync(Guid id);
     Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input);
     Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input);
     Task<bool> DeleteServiceSkuAsync(Guid id);
@@ -663,5 +664,17 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         var data = await SendQueryAsync(query, variables);
         var skusJson = data.GetProperty("serviceSkusByCategory").GetRawText();
         return JsonSerializer.Deserialize<List<ServiceSkuDto>>(skusJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+    }
+
+    public async Task<bool> DeleteServiceCategoryAsync(Guid id)
+    {
+        var query = @"
+            mutation($id: UUID!) {
+                deleteServiceCategory(id: $id)
+            }";
+
+        var variables = new { id = id };
+        var data = await SendQueryAsync(query, variables);
+        return data.GetProperty("deleteServiceCategory").GetBoolean();
     }
 }

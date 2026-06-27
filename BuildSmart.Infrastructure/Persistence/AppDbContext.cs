@@ -428,10 +428,7 @@ public class AppDbContext : DbContext
                     });
                 }
                 
-                if (string.IsNullOrWhiteSpace(category.TemplateStructure) || category.TemplateStructure == "{}")
-                {
-                    category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
-                }
+                category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
             }
 
             await SaveChangesAsync();

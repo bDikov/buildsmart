@@ -102,6 +102,7 @@ namespace BuildSmart.Infrastructure.Services
 				mail.Attachments.Add(attachment);
 
 				using var smtp = new SmtpClient(smtpServer, smtpPort);
+				smtp.UseDefaultCredentials = false;
 				smtp.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
 				smtp.EnableSsl = true; // Use TLS (Port 587)
 

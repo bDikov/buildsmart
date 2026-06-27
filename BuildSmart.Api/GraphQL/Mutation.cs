@@ -928,6 +928,26 @@ public class Mutation
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> DeleteServiceCategory(
+		Guid id,
+		[Service] IUnitOfWork unitOfWork,
+		[Service] AppDbContext context)
+	{
+		var category = await unitOfWork.ServiceCategories.GetByIdAsync(id);
+		if (category == null) return false;
+
+		// Remove translations
+		var translations = await context.ServiceCategoryTranslations
+			.Where(t => t.CategoryId == id)
+			.ToListAsync();
+		context.ServiceCategoryTranslations.RemoveRange(translations);
+
+		await unitOfWork.ServiceCategories.DeleteAsync(id);
+		await unitOfWork.SaveChangesAsync();
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<ServiceSku> CreateServiceSku(
 		Guid categoryId,
 		string skuCode,
