@@ -272,7 +272,8 @@ public class AppDbContext : DbContext
             { "Къртене и извозване (Demolition)", "Къртене и извозване" },
             { "Сухо строителство (Drywall)", "Сухо строителство" },
             { "Подови и стенни настилки (Tiling)", "Подови и стенни настилки" },
-            { "Микроцимент (Microcement)", "Микроцимент" }
+            { "Микроцимент (Microcement)", "Микроцимент" },
+            { "Електрическа Инсталация ", "Електрическа Инсталация" }
         };
 
         foreach (var entry in suffixMap)
@@ -294,6 +295,14 @@ public class AppDbContext : DbContext
             else
             {
                 Console.WriteLine($"Merging category '{suffixName}' into '{cleanName}'...");
+
+                // Questions
+                var questions = await Questions.Where(q => q.ServiceCategoryId == suffixCategory.Id).ToListAsync();
+                foreach (var question in questions)
+                {
+                    question.ServiceCategoryId = cleanCategory.Id;
+                    question.UpdatedAt = DateTime.UtcNow;
+                }
 
                 // ServiceSkus
                 var skus = await ServiceSkus.Where(s => s.ServiceCategoryId == suffixCategory.Id).ToListAsync();
@@ -649,13 +658,81 @@ public class AppDbContext : DbContext
             }
         }
         
-        await HealLegacySkuFormulasAsync();
+        await CleanupObsoleteLegacySkusAsync();
 
         await SaveChangesAsync();
         
         var finalCount = await ServiceSkus.CountAsync();
         Console.WriteLine($"--- SKU SEEDING FINISHED. Total SKUs: {finalCount} ---");
         SentrySdk.CaptureMessage($"Seeding Complete. Total SKUs: {finalCount}", SentryLevel.Info);
+    }
+
+    private async Task CleanupObsoleteLegacySkusAsync()
+    {
+        Console.WriteLine("--- CLEANING UP OBSOLETE LEGACY SKUS START ---");
+        
+        var legacyToNewMap = new Dictionary<string, string>
+        {
+            { "PANT-001", "PANT-PRIMER" },
+            { "PANT-002", "PANT-SPACKLE-STD" },
+            { "PANT-003", "PANT-PAINT-WHITE" },
+            { "PANT-005", "PANT-TRIM" },
+            { "PANT-006", "PANT-SPACKLE-Q5" },
+            { "TILE-001", "TILE-STD" },
+            { "TILE-003", "TILE-LAMINATE" },
+            { "TILE-004", "TILE-PREP-LEVEL" },
+            { "DEMO-001", "DEMO-FLOOR-TILE" },
+            { "DEMO-002", "DEMO-WALL-CONC" }
+        };
+
+        foreach (var entry in legacyToNewMap)
+        {
+            var oldCode = entry.Key;
+            var newCode = entry.Value;
+
+            var oldSku = await ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == oldCode);
+            if (oldSku == null) continue;
+
+            var newSku = await ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == newCode);
+            if (newSku != null)
+            {
+                Console.WriteLine($"Merging obsolete legacy SKU '{oldCode}' into new SKU '{newCode}'...");
+
+                // Re-link related items to the new SKU
+                var affectedAiItems = await AiCalculationSkuItems.Where(item => item.ServiceSkuId == oldSku.Id).ToListAsync();
+                foreach (var item in affectedAiItems)
+                {
+                    item.ServiceSkuId = newSku.Id;
+                }
+
+                var affectedTaskItems = await TaskSkuItems.Where(item => item.ServiceSkuId == oldSku.Id).ToListAsync();
+                foreach (var item in affectedTaskItems)
+                {
+                    item.ServiceSkuId = newSku.Id;
+                }
+
+                ServiceSkus.Remove(oldSku);
+            }
+            else
+            {
+                // If the new SKU is not seeded yet, rename the old one to the new code
+                oldSku.SkuCode = newCode;
+                oldSku.UpdatedAt = DateTime.UtcNow;
+                Console.WriteLine($"Renamed legacy SKU '{oldCode}' to '{newCode}'");
+            }
+        }
+
+        // Also delete remaining duplicate obsolete paint codes (e.g. PANT-004 has no direct single equivalent)
+        var remainingObsoleteCodes = new[] { "PANT-004" };
+        foreach (var code in remainingObsoleteCodes)
+        {
+            var oldSku = await ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == code);
+            if (oldSku != null)
+            {
+                ServiceSkus.Remove(oldSku);
+                Console.WriteLine($"Deleted obsolete legacy SKU '{code}'");
+            }
+        }
     }
 
     public static readonly Dictionary<string, (string Formula, string UnitType, decimal? BasePrice)> LegacySkuFormulas = new()
@@ -677,46 +754,6 @@ public class AppDbContext : DbContext
         { "DEMO-001", ("if(demo_floor_sqm > 0, demo_floor_sqm, global_total_sqm * 0.3)", "sqm", null) },
         { "DEMO-002", ("if(demo_conc_sqm > 0, demo_conc_sqm, global_total_sqm * 0.2)", "sqm", null) }
     };
-
-    private async Task HealLegacySkuFormulasAsync()
-    {
-        Console.WriteLine("--- HEALING LEGACY SKU FORMULAS START ---");
-        
-        foreach (var entry in LegacySkuFormulas)
-        {
-            var skuCode = entry.Key;
-            var (formula, unitType, basePrice) = entry.Value;
-
-            var sku = await ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == skuCode);
-            if (sku != null)
-            {
-                bool modified = false;
-                if (sku.CalculationFormula != formula)
-                {
-                    sku.CalculationFormula = formula;
-                    modified = true;
-                }
-                if (sku.UnitType != unitType)
-                {
-                    sku.UnitType = unitType;
-                    modified = true;
-                }
-                if (basePrice.HasValue && sku.BasePrice != basePrice.Value)
-                {
-                    sku.BasePrice = basePrice.Value;
-                    modified = true;
-                }
-
-                if (modified)
-                {
-                    sku.UpdatedAt = DateTime.UtcNow;
-                    Console.WriteLine($"Healed legacy SKU formula/properties for: {skuCode}");
-                }
-            }
-        }
-        
-        Console.WriteLine("--- HEALING LEGACY SKU FORMULAS FINISHED ---");
-    }
 
     public async Task SeedQuestionsAndFormulasAsync()
     {

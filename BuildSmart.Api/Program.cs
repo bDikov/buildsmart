@@ -356,6 +356,39 @@ public partial class Program
 
 						await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
 						context.ChangeTracker.Clear();
+
+						if (!await context.ServiceCategories.AnyAsync())
+						{
+							Console.WriteLine("Database is empty. Seeding initial categories, SKUs, and default users...");
+							await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
+							context.ChangeTracker.Clear();
+							await context.SeedSkusAsync(); // Seed the SKUs from JSON data
+							context.ChangeTracker.Clear();
+							await context.SeedQuestionsAndFormulasAsync(); // Seed relational questions/formulas
+							context.ChangeTracker.Clear();
+							await context.SeedAdminUser(); // Seed the admin user
+							context.ChangeTracker.Clear();
+							await context.SeedHomeownerUser(); // Seed the homeowner user
+							context.ChangeTracker.Clear();
+							await context.SeedTradesmanUser(); // Seed the painter tradesman
+							context.ChangeTracker.Clear();
+						}
+						else
+						{
+							Console.WriteLine("Database already initialized. Skipping initial seeders.");
+						}
+
+						await transaction.CommitAsync();
+					}
+				}
+				else
+				{
+					await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
+					context.ChangeTracker.Clear();
+
+					if (!await context.ServiceCategories.AnyAsync())
+					{
+						Console.WriteLine("Database is empty. Seeding initial categories, SKUs, and default users...");
 						await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
 						context.ChangeTracker.Clear();
 						await context.SeedSkusAsync(); // Seed the SKUs from JSON data
@@ -368,26 +401,11 @@ public partial class Program
 						context.ChangeTracker.Clear();
 						await context.SeedTradesmanUser(); // Seed the painter tradesman
 						context.ChangeTracker.Clear();
-
-						await transaction.CommitAsync();
 					}
-				}
-				else
-				{
-					await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
-					context.ChangeTracker.Clear();
-					await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
-					context.ChangeTracker.Clear();
-					await context.SeedSkusAsync(); // Seed the SKUs from JSON data
-					context.ChangeTracker.Clear();
-					await context.SeedQuestionsAndFormulasAsync(); // Seed relational questions/formulas
-					context.ChangeTracker.Clear();
-					await context.SeedAdminUser(); // Seed the admin user
-					context.ChangeTracker.Clear();
-					await context.SeedHomeownerUser(); // Seed the homeowner user
-					context.ChangeTracker.Clear();
-					await context.SeedTradesmanUser(); // Seed the painter tradesman
-					context.ChangeTracker.Clear();
+					else
+					{
+						Console.WriteLine("Database already initialized. Skipping initial seeders.");
+					}
 				}
 			}
 			catch (Exception ex)

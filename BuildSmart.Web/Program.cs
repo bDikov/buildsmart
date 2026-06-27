@@ -166,6 +166,14 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
 
+if (localizationOptions.SupportedCultures != null)
+{
+    foreach (var culture in localizationOptions.SupportedCultures)
+    {
+        culture.NumberFormat.CurrencySymbol = "€";
+    }
+}
+
 app.UseRequestLocalization(localizationOptions);
 
 app.UseAuthentication();
