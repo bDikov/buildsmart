@@ -25,7 +25,7 @@ namespace BuildSmart.Api.Tests
 {
     public class OffersDiagnosticTest
     {
-        [Fact]
+        [Fact(Skip = "Local diagnostics only")]
         public async Task DiagnoseOfferGeneration()
         {
             var sb = new StringBuilder();
@@ -149,7 +149,9 @@ namespace BuildSmart.Api.Tests
                 sb.AppendLine(ex.ToString());
             }
 
-            File.WriteAllText(@"C:\Users\bonch\.gemini\antigravity\brain\1f2ab587-6018-4f53-bca7-ec6c0de3eb25\scratch\diagnostics_run.txt", sb.ToString());
+            var targetDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Diagnostics");
+            Directory.CreateDirectory(targetDir);
+            File.WriteAllText(Path.Combine(targetDir, "diagnostics_run.txt"), sb.ToString());
         }
     }
 }
