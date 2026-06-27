@@ -33,6 +33,28 @@ public class FormulaDto
     public string Expression { get; set; } = string.Empty;
 }
 
+public class ServiceCategoryDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsGlobal { get; set; }
+    public string TemplateStructure { get; set; } = "{}";
+    public string? Status { get; set; }
+}
+
+public class ServiceSkuDto
+{
+    public Guid Id { get; set; }
+    public string SkuCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public decimal BasePrice { get; set; }
+    public string UnitType { get; set; } = string.Empty;
+    public Guid ServiceCategoryId { get; set; }
+}
+
+
 public class GraphNodeDto
 {
     public string Id { get; set; } = string.Empty;
@@ -86,6 +108,10 @@ public interface IQuestionManagementApiClient
     Task<FormulaDto> UpdateFormulaAsync(FormulaDto input);
     Task<bool> DeleteFormulaAsync(Guid formulaId);
     Task<OfferSimulationResultDto> RunOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson);
+    Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
+    Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input);
+    Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input);
+    Task<bool> DeleteServiceSkuAsync(Guid id);
 }
 
 public class QuestionManagementApiClient : IQuestionManagementApiClient
@@ -463,5 +489,109 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         };
         
         return finalResult;
+    }
+
+    public async Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync()
+    {
+        var query = @"
+            query {
+                allServiceCategories {
+                    id
+                    name
+                    description
+                    isGlobal
+                    templateStructure
+                    status
+                }
+            }";
+
+        var data = await SendQueryAsync(query);
+        var resultJson = data.GetProperty("allServiceCategories").GetRawText();
+        return JsonSerializer.Deserialize<List<ServiceCategoryDto>>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+    }
+
+    public async Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input)
+    {
+        var query = @"
+            mutation($id: UUID, $name: String!, $description: String, $isGlobal: Boolean!, $templateStructure: String!, $status: CategoryStatus) {
+                saveCategory(
+                    id: $id
+                    name: $name
+                    description: $description
+                    isGlobal: $isGlobal
+                    templateStructure: $templateStructure
+                    status: $status
+                ) {
+                    id
+                    name
+                    description
+                    isGlobal
+                    templateStructure
+                    status
+                }
+            }";
+
+        var variables = new
+        {
+            id = input.Id == Guid.Empty ? null : (Guid?)input.Id,
+            name = input.Name,
+            description = input.Description,
+            isGlobal = input.IsGlobal,
+            templateStructure = input.TemplateStructure ?? "{}",
+            status = input.Status?.ToUpper() ?? "DRAFT"
+        };
+
+        var data = await SendQueryAsync(query, variables);
+        var resultJson = data.GetProperty("saveCategory").GetRawText();
+        return JsonSerializer.Deserialize<ServiceCategoryDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+    }
+
+    public async Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input)
+    {
+        var query = @"
+            mutation($categoryId: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!) {
+                createServiceSku(
+                    categoryId: $categoryId
+                    skuCode: $skuCode
+                    name: $name
+                    description: $description
+                    basePrice: $basePrice
+                    unitType: $unitType
+                ) {
+                    id
+                    skuCode
+                    name
+                    description
+                    basePrice
+                    unitType
+                    serviceCategoryId
+                }
+            }";
+
+        var variables = new
+        {
+            categoryId = input.ServiceCategoryId,
+            skuCode = input.SkuCode,
+            name = input.Name,
+            description = input.Description ?? "",
+            basePrice = input.BasePrice,
+            unitType = input.UnitType ?? ""
+        };
+
+        var data = await SendQueryAsync(query, variables);
+        var resultJson = data.GetProperty("createServiceSku").GetRawText();
+        return JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+    }
+
+    public async Task<bool> DeleteServiceSkuAsync(Guid id)
+    {
+        var query = @"
+            mutation($id: UUID!) {
+                deleteServiceSku(id: $id)
+            }";
+
+        var variables = new { id = id };
+        var data = await SendQueryAsync(query, variables);
+        return data.GetProperty("deleteServiceSku").GetBoolean();
     }
 }
