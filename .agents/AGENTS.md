@@ -20,3 +20,9 @@
 ## Secrets and Configuration Management
 - **Never Hardcode Secrets**: Do not hardcode API keys, credentials, secrets, or third-party service endpoints in the codebase.
 - **Configuration-Driven**: Always load these configurations dynamically from configuration providers (e.g., `appsettings.json`, environment variables, User Secrets, or Key Vaults).
+
+## 5. Testing & Database Isolation
+- **InMemory database provider**: Always use the EF Core InMemory database provider (`UseInMemoryDatabase`) for unit/integration tests that require a database context. 
+- **Database isolation**: Never attempt to connect to a real, local, or external PostgreSQL database inside tests (never use `UseNpgsql` or hardcoded connection strings).
+- **Isolated database names**: For each test method/scenario, initialize the InMemory database with a unique database name (e.g. `$"PricingSimulationDb_{Guid.NewGuid()}"`) to ensure total isolation between concurrent test executions.
+- **Separate seeding context**: Perform all test database setup and seeding in a separate, scoped `DbContext` instance before querying and executing assertions in a new `DbContext` instance to clear the EF Core tracking cache.
