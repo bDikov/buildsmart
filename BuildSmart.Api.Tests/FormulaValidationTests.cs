@@ -53,8 +53,8 @@ public class FormulaValidationTests
         File.Exists(infraTemplatesPath).Should().BeTrue($"Infrastructure templates file must exist at: {infraTemplatesPath}");
 
         // Compare contents
-        var rootContent = File.ReadAllText(rootTemplatesPath).Trim();
-        var infraContent = File.ReadAllText(infraTemplatesPath).Trim();
+        var rootContent = File.ReadAllText(rootTemplatesPath).Replace("\r\n", "\n").Trim();
+        var infraContent = File.ReadAllText(infraTemplatesPath).Replace("\r\n", "\n").Trim();
 
         rootContent.Should().Be(infraContent, "because the root Categories_Seed_Templates.json and the one in BuildSmart.Infrastructure must be kept in sync.");
     }
