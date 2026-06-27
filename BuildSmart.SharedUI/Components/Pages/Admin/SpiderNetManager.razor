@@ -595,10 +595,122 @@
                             <option value="ARCHIVED">Archived</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Template Structure (Questions JSON)</label>
-                        <textarea class="bs-input code-textarea" @bind="selectedCategory.TemplateStructure" rows="12" placeholder="e.g. { &quot;questions&quot;: [] }"></textarea>
-                    </div>
+
+                    @if (editingTemplateQuestion != null)
+                    {
+                        <div style="border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-top: 16px; background-color: rgba(255,255,255,0.02);">
+                            <h4 style="margin-top: 0; color: var(--accent-color);">
+                                @(isEditingNewTemplateQuestion ? "➕ Add Question" : "✏️ Edit Question")
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>Question ID (e.g. wall_height)</label>
+                                <input type="text" class="bs-input" @bind="editingTemplateQuestion.Id" placeholder="Use lowercase and underscores" readonly="@(!isEditingNewTemplateQuestion)" />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select class="bs-select" @bind="editingTemplateQuestion.Type">
+                                    <option value="text">Text Input</option>
+                                    <option value="number">Number Input</option>
+                                    <option value="choice">Single Choice Dropdown</option>
+                                    <option value="multiselect">Multi-select Checklist</option>
+                                    <option value="boolean">Yes / No Switch</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Question Text (Bulgarian)</label>
+                                <input type="text" class="bs-input" @bind="editingTemplateQuestion.TextBg" placeholder="Каква е квадратурата?" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Question Text (English)</label>
+                                <input type="text" class="bs-input" @bind="editingTemplateQuestion.TextEn" placeholder="What is the square footage?" />
+                            </div>
+
+                            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 12px; margin-bottom: 12px;">
+                                <input type="checkbox" @bind="editingTemplateQuestion.Required" id="chkReqTemplateQ" />
+                                <label for="chkReqTemplateQ" style="margin-bottom: 0; user-select: none;">Mandatory / Required Field</label>
+                            </div>
+
+                            @if (editingTemplateQuestion.Type == "choice" || editingTemplateQuestion.Type == "multiselect")
+                            {
+                                <div class="form-group">
+                                    <label>Options (One per line)</label>
+                                    <textarea class="bs-input" @bind="editingTemplateQuestionOptionsBuffer" rows="4" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                </div>
+                            }
+
+                            <div class="form-group" style="border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 12px;">
+                                <label style="font-weight: 600; color: var(--text-muted);">Conditional Visibility (Optional)</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Depends On Question ID</label>
+                                <input type="text" class="bs-input" @bind="editingTemplateQuestion.DependsOn" placeholder="e.g. global_property_type" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Depends On Value</label>
+                                <input type="text" class="bs-input" @bind="editingTemplateQuestion.DependsOnValue" placeholder="e.g. Апартамент" />
+                            </div>
+
+                            <div style="display: flex; gap: 8px; margin-top: 16px;">
+                                <button type="button" class="bs-btn-primary" style="flex: 1;" @onclick="ApplyTemplateQuestionChanges">✔️ Apply</button>
+                                <button type="button" class="bs-btn-secondary" @onclick="() => editingTemplateQuestion = null">❌ Cancel</button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-color);">❓ Questions in Category</h3>
+                                <button type="button" class="bs-btn-secondary" style="padding: 4px 8px; font-size: 0.85rem;" @onclick="StartAddTemplateQuestion">➕ Add Question</button>
+                            </div>
+
+                            <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; background: rgba(0,0,0,0.15);">
+                                @if (categoryQuestions.Count == 0)
+                                {
+                                    <div style="padding: 12px; text-align: center; color: var(--text-muted); font-style: italic;">No questions defined yet.</div>
+                                }
+                                else
+                                {
+                                    @foreach (var q in categoryQuestions)
+                                    {
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px;">
+                                            <div style="flex: 1; min-width: 0;">
+                                                <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    [@q.Id] (@q.Type)
+                                                </div>
+                                                <div style="font-size: 0.8rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    @q.TextBg
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 4px;">
+                                                <button type="button" class="bs-btn-secondary" style="padding: 2px 6px; font-size: 0.75rem;" @onclick="() => StartEditTemplateQuestion(q)">✏️</button>
+                                                <button type="button" class="bs-btn-secondary" style="padding: 2px 6px; font-size: 0.75rem; color: var(--danger-color);" @onclick="() => RemoveTemplateQuestion(q)">❌</button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>Raw JSON Template Structure</label>
+                                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
+                                    <input type="checkbox" @bind="showRawJsonTemplate" /> Show Raw Code
+                                </label>
+                            </div>
+                            @if (showRawJsonTemplate)
+                            {
+                                <textarea class="bs-input code-textarea" value="@selectedCategory.TemplateStructure" @oninput="OnRawJsonTemplateChanged" rows="8" placeholder="e.g. { &quot;questions&quot;: [] }"></textarea>
+                            }
+                        </div>
+                    }
 
                     <button class="bs-btn-primary w-100 mt-4" @onclick="SaveCategoryDetailsAsync">
                         💾 Save Category Details
@@ -1197,6 +1309,24 @@
     private QuestionDto? selectedEdgeFromQuestion;
     private string edgeConditionBuffer = "";
 
+    public class TemplateQuestionModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string TextBg { get; set; } = string.Empty;
+        public string TextEn { get; set; } = string.Empty;
+        public string Type { get; set; } = "text";
+        public bool Required { get; set; }
+        public List<string> Options { get; set; } = new();
+        public string? DependsOn { get; set; }
+        public string? DependsOnValue { get; set; }
+    }
+
+    private List<TemplateQuestionModel> categoryQuestions = new();
+    private TemplateQuestionModel? editingTemplateQuestion;
+    private bool isEditingNewTemplateQuestion;
+    private string editingTemplateQuestionOptionsBuffer = "";
+    private bool showRawJsonTemplate = false;
+
     private ElementReference graphContainer;
     private IJSObjectReference? module;
     private DotNetObjectReference<SpiderNetManager>? dotNetHelper;
@@ -1658,6 +1788,8 @@
         selectedSku = null;
         selectedEdge = null;
         selectedEdgeFromQuestion = null;
+        editingTemplateQuestion = null;
+        categoryQuestions = ParseTemplateQuestions(c.TemplateStructure);
     }
 
     private void OpenAddCategoryModal()
@@ -1674,6 +1806,8 @@
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
+        editingTemplateQuestion = null;
+        categoryQuestions = ParseTemplateQuestions(selectedCategory.TemplateStructure);
     }
 
     private async Task SaveCategoryDetailsAsync()
@@ -2421,6 +2555,161 @@
             StateHasChanged();
         }
         catch (TaskCanceledException) {}
+    }
+
+    private List<TemplateQuestionModel> ParseTemplateQuestions(string? json)
+    {
+        var list = new List<TemplateQuestionModel>();
+        if (string.IsNullOrWhiteSpace(json)) return list;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("questions", out var questionsElement) && questionsElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var q in questionsElement.EnumerateArray())
+                {
+                    var model = new TemplateQuestionModel();
+                    if (q.TryGetProperty("id", out var idProp)) model.Id = idProp.GetString() ?? string.Empty;
+                    if (q.TryGetProperty("type", out var typeProp)) model.Type = typeProp.GetString() ?? "text";
+                    if (q.TryGetProperty("required", out var reqProp))
+                    {
+                        model.Required = reqProp.ValueKind == System.Text.Json.JsonValueKind.True || reqProp.ValueKind == System.Text.Json.JsonValueKind.False 
+                            ? reqProp.GetBoolean() 
+                            : (reqProp.ValueKind == System.Text.Json.JsonValueKind.String && bool.TryParse(reqProp.GetString(), out var rb) && rb);
+                    }
+                    
+                    // Parse text (string or localized object)
+                    if (q.TryGetProperty("text", out var textProp))
+                    {
+                        if (textProp.ValueKind == System.Text.Json.JsonValueKind.Object)
+                        {
+                            if (textProp.TryGetProperty("bg", out var bgProp)) model.TextBg = bgProp.GetString() ?? string.Empty;
+                            if (textProp.TryGetProperty("en", out var enProp)) model.TextEn = enProp.GetString() ?? string.Empty;
+                        }
+                        else
+                        {
+                            model.TextBg = textProp.GetString() ?? string.Empty;
+                            model.TextEn = textProp.GetString() ?? string.Empty;
+                        }
+                    }
+
+                    // Parse options
+                    if (q.TryGetProperty("options", out var optsProp) && optsProp.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        foreach (var opt in optsProp.EnumerateArray())
+                        {
+                            model.Options.Add(opt.GetString() ?? string.Empty);
+                        }
+                    }
+
+                    // Parse dependsOn / dependsOnValue
+                    if (q.TryGetProperty("dependsOn", out var depProp)) model.DependsOn = depProp.GetString();
+                    if (q.TryGetProperty("dependsOnValue", out var depValProp)) model.DependsOnValue = depValProp.GetString();
+
+                    list.Add(model);
+                }
+            }
+        }
+        catch {}
+        return list;
+    }
+
+    private string SerializeTemplateQuestions(List<TemplateQuestionModel> models)
+    {
+        var obj = new
+        {
+            questions = models.Select(m => new
+            {
+                id = m.Id,
+                text = new { bg = m.TextBg, en = m.TextEn },
+                type = m.Type,
+                required = m.Required,
+                options = m.Options.Count > 0 ? m.Options : null,
+                dependsOn = string.IsNullOrEmpty(m.DependsOn) ? null : m.DependsOn,
+                dependsOnValue = string.IsNullOrEmpty(m.DependsOnValue) ? null : m.DependsOnValue
+            }).ToList()
+        };
+        return System.Text.Json.JsonSerializer.Serialize(obj, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    private void StartAddTemplateQuestion()
+    {
+        editingTemplateQuestion = new TemplateQuestionModel
+        {
+            Id = "new_question_id",
+            Type = "text",
+            Required = false
+        };
+        isEditingNewTemplateQuestion = true;
+        editingTemplateQuestionOptionsBuffer = "";
+    }
+
+    private void StartEditTemplateQuestion(TemplateQuestionModel q)
+    {
+        editingTemplateQuestion = new TemplateQuestionModel
+        {
+            Id = q.Id,
+            Type = q.Type,
+            TextBg = q.TextBg,
+            TextEn = q.TextEn,
+            Required = q.Required,
+            Options = new List<string>(q.Options),
+            DependsOn = q.DependsOn,
+            DependsOnValue = q.DependsOnValue
+        };
+        isEditingNewTemplateQuestion = false;
+        editingTemplateQuestionOptionsBuffer = string.Join("\n", q.Options);
+    }
+
+    private void ApplyTemplateQuestionChanges()
+    {
+        if (editingTemplateQuestion == null || selectedCategory == null) return;
+
+        // Clean options from buffer
+        editingTemplateQuestion.Options = editingTemplateQuestionOptionsBuffer
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(o => o.Trim())
+            .Where(o => !string.IsNullOrEmpty(o))
+            .ToList();
+
+        if (isEditingNewTemplateQuestion)
+        {
+            // Add if ID doesn't exist
+            if (!categoryQuestions.Any(q => q.Id.Equals(editingTemplateQuestion.Id, StringComparison.OrdinalIgnoreCase)))
+            {
+                categoryQuestions.Add(editingTemplateQuestion);
+            }
+        }
+        else
+        {
+            // Replace matching ID
+            var idx = categoryQuestions.FindIndex(q => q.Id.Equals(editingTemplateQuestion.Id, StringComparison.OrdinalIgnoreCase));
+            if (idx >= 0)
+            {
+                categoryQuestions[idx] = editingTemplateQuestion;
+            }
+        }
+
+        // Serialize and update raw JSON string
+        selectedCategory.TemplateStructure = SerializeTemplateQuestions(categoryQuestions);
+        editingTemplateQuestion = null;
+    }
+
+    private void RemoveTemplateQuestion(TemplateQuestionModel q)
+    {
+        if (selectedCategory == null) return;
+        categoryQuestions.Remove(q);
+        selectedCategory.TemplateStructure = SerializeTemplateQuestions(categoryQuestions);
+    }
+
+    private void OnRawJsonTemplateChanged(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString() ?? "{}";
+        if (selectedCategory != null)
+        {
+            selectedCategory.TemplateStructure = raw;
+        }
+        categoryQuestions = ParseTemplateQuestions(raw);
     }
 
     public void Dispose()

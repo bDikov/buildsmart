@@ -39,7 +39,23 @@ public class PricingEngine : IPricingEngine
                     }
                     else if (prop.Value.ValueKind == JsonValueKind.String)
                     {
-                        parameters[prop.Name] = prop.Value.GetString() ?? string.Empty;
+                        var strVal = prop.Value.GetString() ?? string.Empty;
+                        if (decimal.TryParse(strVal, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var parsedDecimal))
+                        {
+                            parameters[prop.Name] = parsedDecimal;
+                        }
+                        else if (decimal.TryParse(strVal, out var parsedLocalDecimal))
+                        {
+                            parameters[prop.Name] = parsedLocalDecimal;
+                        }
+                        else if (bool.TryParse(strVal, out var parsedBool))
+                        {
+                            parameters[prop.Name] = parsedBool;
+                        }
+                        else
+                        {
+                            parameters[prop.Name] = strVal;
+                        }
                     }
                     else if (prop.Value.ValueKind == JsonValueKind.Array)
                     {

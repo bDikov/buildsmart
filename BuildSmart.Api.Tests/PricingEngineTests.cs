@@ -167,4 +167,20 @@ public class PricingEngineTests
         
         result.Should().Be(1.75m);
     }
+
+    [Fact]
+    public void CalculateQuantity_ShouldParseStringNumbersAndBooleans()
+    {
+        var json = @"{ 
+            ""global_total_sqm"": ""100"", 
+            ""global_protection"": ""True"",
+            ""global_floor"": ""3""
+        }";
+        
+        var formula = "if(global_protection, global_total_sqm * global_floor, 0)";
+        
+        var result = _engine.CalculateQuantity(formula, json);
+        
+        result.Should().Be(300m);
+    }
 }
