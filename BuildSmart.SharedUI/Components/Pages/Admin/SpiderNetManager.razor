@@ -1443,9 +1443,16 @@
                     var f = JsonSerializer.Deserialize<FormulaDto>(fJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (f != null)
                     {
-                        var exists = formulas.Any(x => x.Id == f.Id);
-                        if (exists) await ApiClient.UpdateFormulaAsync(f);
-                        else await ApiClient.CreateFormulaAsync(f);
+                        var existingFormula = formulas.FirstOrDefault(x => x.Id == f.Id || x.Name.Equals(f.Name, StringComparison.OrdinalIgnoreCase));
+                        if (existingFormula != null)
+                        {
+                            f.Id = existingFormula.Id; // Bind to existing live ID
+                            await ApiClient.UpdateFormulaAsync(f);
+                        }
+                        else
+                        {
+                            await ApiClient.CreateFormulaAsync(f);
+                        }
                     }
                 }
             }
@@ -1457,9 +1464,10 @@
                     var q = JsonSerializer.Deserialize<QuestionDto>(qJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (q != null)
                     {
-                        var exists = questions.Any(x => x.Id == q.Id);
-                        if (exists)
+                        var existingQuestion = questions.FirstOrDefault(x => x.Id == q.Id || x.QuestionCode.Equals(q.QuestionCode, StringComparison.OrdinalIgnoreCase));
+                        if (existingQuestion != null)
                         {
+                            q.Id = existingQuestion.Id; // Bind to existing live ID
                             await ApiClient.UpdateQuestionAsync(q);
                             await ApiClient.UpdateQuestionLinksAsync(q.Id, q.SkuIds, q.FormulaIds);
                         }
