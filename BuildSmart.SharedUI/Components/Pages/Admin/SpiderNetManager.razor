@@ -1,0 +1,1587 @@
+@page "/admin/spider-net"
+@using BuildSmart.SharedUI.Services
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject IQuestionManagementApiClient ApiClient
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+
+<div class="admin-container">
+    <div class="header-section">
+        <div class="title-group">
+            <h1 class="page-title">Spider-Net Manager</h1>
+            <p class="page-subtitle">Visualize and edit questions, formulas, SKU linkages, and Vis-Network dependency maps.</p>
+        </div>
+        <div class="header-actions">
+            <button class="bs-btn-secondary" @onclick="LoadDataAsync">
+                🔄 Refresh Data
+            </button>
+            <button class="bs-btn-primary" @onclick="OpenAddQuestionModal">
+                ➕ New Question
+            </button>
+            <button class="bs-btn-primary ml-2" @onclick="OpenAddFormulaModal">
+                ➕ New Formula
+            </button>
+        </div>
+    </div>
+
+    <!-- Error/Success Alerts -->
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert alert-success">@statusMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <!-- Category & Question Filters -->
+    <div class="filter-section mb-3" style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; background: rgba(255, 255, 255, 0.03); padding: 12px 18px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-weight: 700; font-size: 14px; color: var(--text-muted);">Filter Category:</span>
+            <select class="bs-select" style="max-width: 320px;" @onchange="OnCategoryFilterChanged">
+                <option value="All">All Categories</option>
+                @foreach (var cat in filterCategories)
+                {
+                    <option value="@cat.Id">@cat.Name</option>
+                }
+            </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-weight: 700; font-size: 14px; color: var(--text-muted);">Focus Question:</span>
+            <select class="bs-select" style="max-width: 400px;" @onchange="OnQuestionFilterChanged" value="@selectedQuestionFilter">
+                <option value="All">Show All Questions in Category</option>
+                @foreach (var q in GetFilteredQuestionsForDropdown())
+                {
+                    <option value="@q.Id">[@q.QuestionCode] @(q.Text.Length > 50 ? q.Text.Substring(0, 47) + "..." : q.Text)</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <button class="tab-button @(activeTab == "graph" ? "active" : "")" @onclick='() => SetActiveTab("graph")'>🕸️ Graph Map</button>
+        <button class="tab-button @(activeTab == "questions" ? "active" : "")" @onclick='() => SetActiveTab("questions")'>❓ Questions (@GetFilteredQuestions().Count())</button>
+        <button class="tab-button @(activeTab == "formulas" ? "active" : "")" @onclick='() => SetActiveTab("formulas")'>🧮 Formulas (@formulas.Count)</button>
+        <button class="tab-button @(activeTab == "simulation" ? "active" : "")" @onclick='() => SetActiveTab("simulation")'>🧪 Run Simulation</button>
+        <button class="tab-button @(activeTab == "sync" ? "active" : "")" @onclick='() => SetActiveTab("sync")'>💾 Import/Export</button>
+    </div>
+
+    <div class="manager-body">
+        <div class="main-content-panel">
+            <!-- GRAPH VIEW -->
+            <div class="tab-content @(activeTab == "graph" ? "show" : "hidden")">
+                <div class="graph-wrapper bs-card">
+                    <div @ref="graphContainer" class="graph-container"></div>
+                    <div class="graph-legend">
+                        <span class="legend-item"><span class="legend-dot legend-question"></span> Question Node</span>
+                        <span class="legend-item"><span class="legend-dot legend-formula"></span> Formula Node</span>
+                        <span class="legend-item"><span class="legend-dot legend-sku"></span> SKU Node</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUESTIONS VIEW -->
+            <div class="tab-content @(activeTab == "questions" ? "show" : "hidden")">
+                <div class="grid-layout">
+                    @foreach (var q in GetFilteredQuestions())
+                    {
+                        <div class="bs-card item-card @(selectedQuestion?.Id == q.Id ? "highlighted" : "")" @onclick="() => SelectQuestion(q)">
+                            <div class="card-header">
+                                <span class="badge badge-question">@q.QuestionCode</span>
+                                <span class="badge bg-dark">Order: @q.DisplayOrder</span>
+                            </div>
+                            <h3 class="card-title">@q.Text</h3>
+                            <p class="card-desc">Type: <strong>@q.Type</strong> | Required: <strong>@(q.IsRequired ? "Yes" : "No")</strong></p>
+                            @if (!string.IsNullOrEmpty(q.HintText))
+                            {
+                                <p class="help-text">💡 @q.HintText</p>
+                            }
+                            <div class="card-links">
+                                🔗 Skus: <span class="link-count">@q.SkuIds.Count</span> | Formulas: <span class="link-count">@q.FormulaIds.Count</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- FORMULAS VIEW -->
+            <div class="tab-content @(activeTab == "formulas" ? "show" : "hidden")">
+                <div class="grid-layout">
+                    @foreach (var f in formulas)
+                    {
+                        <div class="bs-card item-card @(selectedFormula?.Id == f.Id ? "highlighted" : "")" @onclick="() => SelectFormula(f)">
+                            <div class="card-header">
+                                <span class="badge badge-formula">@f.Name</span>
+                            </div>
+                            <h3 class="card-title">@f.Description</h3>
+                            <code class="formula-code">@f.Expression</code>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- SIMULATION VIEW -->
+            <div class="tab-content @(activeTab == "simulation" ? "show" : "hidden")">
+                <div class="simulation-panel bs-card">
+                    <h2>Execute Offer Simulation</h2>
+                    <p class="help-text">Select the questions you want to activate, fill out mock answers, and run the calculation engine.</p>
+                    
+                    <div class="sim-columns">
+                        <div class="sim-left">
+                            <h3>1. Select Questions to Answer</h3>
+                            <div class="checkbox-list">
+                                @foreach (var q in questions)
+                                {
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" @onchange='(e) => ToggleSimQuestion(q.Id, e.Value)' checked="@simSelectedQuestionIds.Contains(q.Id)" />
+                                        <span><strong>@q.QuestionCode</strong> (@q.Text)</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                        <div class="sim-right">
+                            <h3>2. Fill Out Mock Answers</h3>
+                            <div class="answers-form">
+                                @foreach (var qId in simSelectedQuestionIds)
+                                {
+                                    var question = questions.FirstOrDefault(q => q.Id == qId);
+                                    if (question == null) continue;
+
+                                    <div class="form-group">
+                                        <label>@question.Text (@question.QuestionCode)</label>
+                                        @if (question.Type == "boolean" || question.Type == "bool")
+                                        {
+                                            <select class="bs-select" @onchange='(e) => UpdateSimAnswer(question.QuestionCode, e.Value?.ToString() == "true")'>
+                                                <option value="false">No / False</option>
+                                                <option value="true">Yes / True</option>
+                                            </select>
+                                        }
+                                        else if (question.Type == "choice" && !string.IsNullOrEmpty(question.OptionsJson))
+                                        {
+                                            var opts = DeserializeOptions(question.OptionsJson);
+                                            <select class="bs-select" @onchange='(e) => UpdateSimAnswer(question.QuestionCode, e.Value?.ToString())'>
+                                                <option value="">-- Choose Option --</option>
+                                                @foreach (var opt in opts)
+                                                {
+                                                    <option value="@opt">@opt</option>
+                                                }
+                                            </select>
+                                        }
+                                        else if (question.Type == "number")
+                                        {
+                                            <input type="number" class="bs-input" placeholder="Enter numeric value" @onchange='(e) => UpdateSimAnswer(question.QuestionCode, decimal.TryParse(e.Value?.ToString(), out var v) ? v : 0m)' />
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="bs-input" placeholder="Enter text value" @onchange='(e) => UpdateSimAnswer(question.QuestionCode, e.Value?.ToString())' />
+                                        }
+                                    </div>
+                                }
+                                @if (simSelectedQuestionIds.Count == 0)
+                                {
+                                    <p class="help-text text-center">Select questions from the left to start answering.</p>
+                                }
+                            </div>
+                            
+                            <button class="bs-btn-primary w-100 mt-4" @onclick="RunSimulationAsync" disabled="@(simSelectedQuestionIds.Count == 0)">
+                                ⚡ Run Calculations
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Result -->
+                    @if (simulationResult != null)
+                    {
+                        <div class="simulation-results mt-5">
+                            <h3>Calculation Results</h3>
+                            <div class="results-meta">
+                                <div class="total-price-badge">
+                                    Grand Total: <span>@simulationResult.TotalPrice.ToString("C2")</span>
+                                </div>
+                            </div>
+
+                            @if (simulationResult.Warnings.Count > 0)
+                            {
+                                <div class="alert alert-warning mt-3">
+                                    <strong>Warnings:</strong>
+                                    <ul>
+                                        @foreach (var warning in simulationResult.Warnings)
+                                        {
+                                            <li>@warning</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            <table class="results-table mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>SKU Code</th>
+                                        <th>Task Title</th>
+                                        <th>Calculated Qty</th>
+                                        <th>Unit</th>
+                                        <th>Base Price</th>
+                                        <th>Total Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var task in simulationResult.Tasks)
+                                    {
+                                        <tr>
+                                            <td><code>@task.SkuCode</code></td>
+                                            <td>@task.Title</td>
+                                            <td>@task.Quantity.ToString("F2")</td>
+                                            <td>@task.UnitType</td>
+                                            <td>@task.BasePrice.ToString("C2")</td>
+                                            <td class="font-weight-bold">@task.TotalPrice.ToString("C2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- IMPORT/EXPORT VIEW -->
+            <div class="tab-content @(activeTab == "sync" ? "show" : "hidden")">
+                <div class="sync-panel bs-card">
+                    <h2>Import/Export Spider-Net Configuration</h2>
+                    <p class="help-text">Backup or restore all questions, visibility logic, formulas, and connections in one JSON block.</p>
+                    
+                    <div class="form-group mt-3">
+                        <label>Configuration JSON</label>
+                        <textarea class="bs-input code-textarea" rows="12" @bind="syncJson" placeholder="Paste your backup JSON here..."></textarea>
+                    </div>
+
+                    <div class="sync-actions mt-3">
+                        <button class="bs-btn-secondary" @onclick="ExportDataAsync">Export Configuration</button>
+                        <button class="bs-btn-primary ml-2" @onclick="ImportDataAsync">Import & Sync Schema</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE DETAILS DRAWER -->
+        <div class="details-panel bs-card">
+            @if (selectedQuestion != null)
+            {
+                <div class="drawer-header">
+                    <h2>Edit Question</h2>
+                    <button class="remove-btn text-danger" @onclick="() => DeleteQuestionAsync(selectedQuestion.Id)">🗑️ Delete</button>
+                </div>
+                <div class="drawer-body">
+                    <div class="form-group">
+                        <label>Question Code (Unique Variable Name)</label>
+                        <input type="text" class="bs-input" @bind="selectedQuestion.QuestionCode" />
+                    </div>
+                    <div class="form-group">
+                        <label>Display Text</label>
+                        <textarea class="bs-input" @bind="selectedQuestion.Text" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Input Type</label>
+                        <select class="bs-select" @bind="selectedQuestion.Type">
+                            <option value="text">Text Input</option>
+                            <option value="number">Number Input</option>
+                            <option value="boolean">Boolean Switch (Yes/No)</option>
+                            <option value="choice">Single-Choice Dropdown</option>
+                            <option value="multiselect">Multi-Choice Checklist</option>
+                        </select>
+                    </div>
+                    <div class="form-group checkbox-row">
+                        <label>Is Field Required?</label>
+                        <input type="checkbox" @bind="selectedQuestion.IsRequired" />
+                    </div>
+                    <div class="form-group">
+                        <label>Hint/Tooltip Text</label>
+                        <input type="text" class="bs-input" @bind="selectedQuestion.HintText" />
+                    </div>
+                    <div class="form-group">
+                        <label>Display Order (Sorting)</label>
+                        <input type="number" class="bs-input" @bind="selectedQuestion.DisplayOrder" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Parent Question (Visibility Trigger)</label>
+                        <select class="bs-select" @bind="selectedQuestion.ParentQuestionId">
+                            <option value="">-- None (Always Visible) --</option>
+                            @foreach (var group in questions
+                                .Where(x => x.Id != selectedQuestion.Id)
+                                .GroupBy(q => q.ServiceCategoryId))
+                            {
+                                var categoryName = group.Key == null 
+                                    ? "Global Questions" 
+                                    : (graphData.Nodes.FirstOrDefault(n => n.Id == group.First().Id.ToString())?.Category ?? "Other Category");
+                                    
+                                <optgroup label="@categoryName">
+                                    @foreach (var q in group)
+                                    {
+                                        <option value="@q.Id">[@q.QuestionCode] @(q.Text.Length > 55 ? q.Text.Substring(0, 52) + "..." : q.Text)</option>
+                                    }
+                                </optgroup>
+                            }
+                        </select>
+                    </div>
+
+                    @if (selectedQuestion.ParentQuestionId.HasValue && selectedQuestion.ParentQuestionId.Value != Guid.Empty)
+                    {
+                        var parentQ = questions.FirstOrDefault(q => q.Id == selectedQuestion.ParentQuestionId.Value);
+                        if (parentQ != null)
+                        {
+                            @if (parentQ.Type == "choice" || parentQ.Type == "multiselect")
+                            {
+                                var parentOptions = new List<string>();
+                                try
+                                {
+                                    parentOptions = string.IsNullOrEmpty(parentQ.OptionsJson) 
+                                        ? new List<string>() 
+                                        : System.Text.Json.JsonSerializer.Deserialize<List<string>>(parentQ.OptionsJson) ?? new List<string>();
+                                }
+                                catch {}
+
+                                <div class="form-group mb-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px;">Triggering Parent Options:</span>
+                                    @if (parentOptions.Count == 0)
+                                    {
+                                        <p class="help-text text-warning" style="margin: 0; font-size: 12px;">💡 Parent question has no options configured yet.</p>
+                                    }
+                                    @foreach (var opt in parentOptions)
+                                    {
+                                        <label class="checkbox-item" style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px; user-select: none;">
+                                            <input type="checkbox" checked="@IsParentOptionSelected(opt)" @onchange='(e) => ToggleParentOption(opt, e.Value)' />
+                                            <span style="color: #ffffff; font-size: 13px;">@opt</span>
+                                        </label>
+                                    }
+                                </div>
+                            }
+                            else if (parentQ.Type == "boolean")
+                            {
+                                <div class="form-group mb-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px;">Triggering Parent Options:</span>
+                                    <label class="checkbox-item" style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px; user-select: none;">
+                                        <input type="checkbox" checked='@IsParentOptionSelected("True")' @onchange='(e) => ToggleParentOption("True", e.Value)' />
+                                        <span style="color: #ffffff; font-size: 13px;">Yes / Checked (True)</span>
+                                    </label>
+                                    <label class="checkbox-item" style="display: flex; align-items: center; gap: 8px; user-select: none;">
+                                        <input type="checkbox" checked='@IsParentOptionSelected("False")' @onchange='(e) => ToggleParentOption("False", e.Value)' />
+                                        <span style="color: #ffffff; font-size: 13px;">No / Unchecked (False)</span>
+                                    </label>
+                                </div>
+                            }
+                        }
+                    }
+
+                    <div class="form-group">
+                        <label>Parent Value Condition (e.g. 'Yes' or 'Апартамент')</label>
+                        <input type="text" class="bs-input" @bind="selectedQuestion.VisibilityCondition" placeholder="Visibility Condition Value" />
+                    </div>
+                    @if (selectedQuestion.Type == "choice" || selectedQuestion.Type == "multiselect")
+                    {
+                        <div class="form-group" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                            <label style="font-weight: 700; color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 8px;">Choice Options List:</label>
+                            
+                            @{
+                                var currentOpts = GetQuestionOptionsList(selectedQuestion);
+                            }
+                            
+                            @if (currentOpts.Count == 0)
+                            {
+                                <p class="help-text" style="color: var(--text-muted); font-size: 12px; margin: 0 0 10px 0;">No options configured yet.</p>
+                            }
+                            else
+                            {
+                                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
+                                    @foreach (var opt in currentOpts)
+                                    {
+                                        <div style="display: flex; align-items: center; justify-content: space-between; background: #16171a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                                            <span style="font-size: 13px; color: #ffffff;">@opt</span>
+                                            <button type="button" class="btn-link text-danger" style="background: transparent; border: none; cursor: pointer; padding: 0; font-size: 14px;" @onclick="() => RemoveOptionFromQuestion(selectedQuestion, opt)">❌</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" class="bs-input" style="flex: 1; padding: 6px 10px; font-size: 13px;" placeholder="Add new option..." @bind="newOptionBuffer" />
+                                <button type="button" class="bs-btn-primary" style="padding: 6px 12px; font-size: 13px;" @onclick="() => AddOptionToQuestion(selectedQuestion)">➕ Add</button>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <label>Choice Options JSON Array (for choice/multiselect)</label>
+                        <textarea class="bs-input" @bind="selectedQuestion.OptionsJson" rows="2" placeholder='["Option 1", "Option 2"]'></textarea>
+                    </div>
+
+                    <!-- LINK MANAGEMENT -->
+                    <div class="links-section mt-4">
+                        <h3>Sku & Formula Connections</h3>
+                        <p class="help-text">Link this question to formulas and SKUs to route answers into price calculations.</p>
+                        
+                        <div class="link-scroller">
+                            <strong>Formula Links:</strong>
+                            <div class="checkbox-list mt-1">
+                                @foreach (var f in formulas)
+                                {
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" @onchange='(e) => ToggleFormulaLink(f.Id, e.Value)' checked="@selectedQuestion.FormulaIds.Contains(f.Id)" />
+                                        <span>@f.Name</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="link-scroller mt-3">
+                            <strong>SKU Links:</strong>
+                            <div class="checkbox-list mt-1">
+                                @foreach (var s in availableSkus)
+                                {
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" @onchange='(e) => ToggleSkuLink(s.Id, e.Value)' checked="@selectedQuestion.SkuIds.Contains(s.Id)" />
+                                        <span>@s.SkuCode (@s.Name)</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="bs-btn-primary w-100 mt-4" @onclick="SaveQuestionAsync">
+                        💾 Save Question Details
+                    </button>
+                </div>
+            }
+            else if (selectedFormula != null)
+            {
+                <div class="drawer-header">
+                    <h2>Edit Formula</h2>
+                    <button class="remove-btn text-danger" @onclick="() => DeleteFormulaAsync(selectedFormula.Id)">🗑️ Delete</button>
+                </div>
+                <div class="drawer-body">
+                    <div class="form-group">
+                        <label>Formula Variable Name (e.g. wall_area_calc)</label>
+                        <input type="text" class="bs-input" @bind="selectedFormula.Name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="bs-input" @bind="selectedFormula.Description" />
+                    </div>
+                    <div class="form-group">
+                        <label>NCalc Expression (e.g. global_total_sqm * 2.8)</label>
+                        <textarea class="bs-input code-textarea" @bind="selectedFormula.Expression" rows="3"></textarea>
+                    </div>
+
+                    <button class="bs-btn-primary w-100 mt-4" @onclick="SaveFormulaAsync">
+                        💾 Save Formula
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state text-center mt-5">
+                    <p class="help-text">Click a node in the graph map or select an item from the lists to view and edit details here.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- FLOATING TOAST SYSTEM -->
+@if (showToast)
+{
+    <div class="bs-toast @toastType">
+        <div class="toast-icon">
+            @if (toastType == "success")
+            {
+                <span>✔️</span>
+            }
+            else
+            {
+                <span>❌</span>
+            }
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">@(toastType == "success" ? "Success" : "Error")</div>
+            <div class="toast-body">@toastMessage</div>
+        </div>
+        <button class="toast-close" @onclick="() => showToast = false">×</button>
+    </div>
+}
+
+<!-- STYLING -->
+<style>
+    .admin-container {
+        padding: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+        min-height: 100vh;
+        font-family: 'Outfit', 'Inter', sans-serif;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 36px;
+        font-weight: 800;
+        margin: 0 0 8px 0;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .tabs-container {
+        display: flex;
+        gap: 8px;
+        border-bottom: 2px solid var(--border-color);
+        margin-bottom: 30px;
+        padding-bottom: 1px;
+    }
+
+    .tab-button {
+        padding: 12px 24px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .tab-button.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+    }
+
+    .tab-button:hover {
+        color: var(--text-primary);
+    }
+
+    .manager-body {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .main-content-panel {
+        min-height: 500px;
+    }
+
+    .tab-content.hidden {
+        display: none;
+    }
+
+    .tab-content.show {
+        display: block;
+    }
+
+    .bs-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .graph-wrapper {
+        position: relative;
+        padding: 0;
+        overflow: hidden;
+        border-radius: 16px;
+    }
+
+    .graph-container {
+        height: 600px;
+        width: 100%;
+        background-color: #121316;
+    }
+
+    .graph-legend {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(18, 19, 22, 0.85);
+        backdrop-filter: blur(8px);
+        padding: 12px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        display: flex;
+        gap: 15px;
+    }
+
+    .legend-item {
+        font-size: 13px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .legend-question { background-color: #512bd4; }
+    .legend-formula { background-color: #ffc107; }
+    .legend-sku { background-color: #00bcd4; }
+
+    .grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .item-card {
+        cursor: pointer;
+        transition: transform 0.2s, border-color 0.2s;
+        border-left: 4px solid transparent;
+    }
+
+    .item-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--text-muted);
+    }
+
+    .item-card.highlighted {
+        border-color: var(--color-primary);
+        border-left-color: var(--color-primary);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .badge {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .badge-question {
+        background: rgba(81, 43, 212, 0.15);
+        color: #9c82ef;
+    }
+
+    .badge-formula {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffd54f;
+    }
+
+    .bg-dark {
+        background-color: #1e1e24;
+        color: var(--text-muted);
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: var(--text-primary);
+    }
+
+    .card-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin: 0 0 10px 0;
+    }
+
+    .formula-code {
+        display: block;
+        padding: 10px;
+        background-color: #16171a;
+        color: #a9b2c3;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        word-break: break-all;
+    }
+
+    .card-links {
+        font-size: 12px;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border-color);
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+
+    .link-count {
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    .details-panel {
+        position: sticky;
+        top: 20px;
+        min-height: 400px;
+    }
+
+    .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .drawer-header h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .form-group.checkbox-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-muted);
+    }
+
+    .bs-input, .bs-select {
+        background-color: #16171a;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: #ffffff;
+        padding: 10px 14px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .code-textarea {
+        font-family: monospace;
+        font-size: 13px;
+        background-color: #0b0c0e;
+        color: #72f1b8;
+    }
+
+    .links-section {
+        border-top: 1px solid var(--border-color);
+        padding-top: 20px;
+    }
+
+    .links-section h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .link-scroller {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #16171a;
+    }
+
+    .checkbox-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .checkbox-item input {
+        accent-color: var(--color-primary);
+    }
+
+    .sim-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .results-table th, .results-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 14px;
+    }
+
+    .results-table th {
+        font-weight: 700;
+        color: var(--text-muted);
+    }
+
+    .total-price-badge {
+        font-size: 20px;
+        font-weight: 800;
+        background-color: rgba(81, 43, 212, 0.15);
+        color: #9c82ef;
+        padding: 12px 20px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .total-price-badge span {
+        color: #ffffff;
+    }
+
+    .alert {
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .alert-success { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
+    .alert-danger { background: rgba(244, 67, 54, 0.15); color: #f44336; }
+    .alert-warning { background: rgba(255, 152, 0, 0.15); color: #ff9800; }
+
+    /* FLOATING TOAST STYLES */
+    .bs-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 320px;
+        max-width: 400px;
+        padding: 16px;
+        background: rgba(22, 23, 26, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        border-left: 4px solid var(--color-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .bs-toast.success {
+        border-left: 4px solid #4caf50;
+    }
+
+    .bs-toast.danger {
+        border-left: 4px solid #f44336;
+    }
+
+    .toast-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 14px;
+    }
+
+    .toast-content {
+        flex: 1;
+    }
+
+    .toast-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: #ffffff;
+        margin-bottom: 2px;
+    }
+
+    .toast-body {
+        font-size: 13px;
+        color: #a9b2c3;
+        line-height: 1.4;
+    }
+
+    .toast-close {
+        background: transparent;
+        border: none;
+        color: #a9b2c3;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0 4px;
+        transition: color 0.2s;
+    }
+
+    .toast-close:hover {
+        color: #ffffff;
+    }
+
+    @@keyframes slideInUp {
+        from {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+</style>
+
+@code {
+    private string activeTab = "graph";
+    private List<QuestionDto> questions = new();
+    private List<FormulaDto> formulas = new();
+    private List<ServiceSkuDto> availableSkus = new();
+    private QuestionGraphDto graphData = new();
+    private string selectedCategoryFilter = "All";
+    private string selectedQuestionFilter = "All";
+    private List<(string Id, string Name)> filterCategories = new();
+    private string newOptionBuffer = "";
+
+    // Toast Notification variables
+    private string? toastMessage;
+    private string toastType = "success";
+    private bool showToast = false;
+
+    private QuestionDto? selectedQuestion;
+    private FormulaDto? selectedFormula;
+
+    private ElementReference graphContainer;
+    private IJSObjectReference? module;
+    private DotNetObjectReference<SpiderNetManager>? dotNetHelper;
+
+    private string statusMessage = "";
+    private string errorMessage = "";
+    private string syncJson = "";
+
+    // Simulation fields
+    private List<Guid> simSelectedQuestionIds = new();
+    private Dictionary<string, object> simAnswers = new();
+    private OfferSimulationResultDto? simulationResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dotNetHelper = DotNetObjectReference.Create(this);
+        await LoadDataAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/BuildSmart.SharedUI/Components/Pages/Admin/SpiderNetManager.razor.js");
+            await RenderGraphAsync();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            questions = await ApiClient.GetQuestionsAsync();
+            formulas = await ApiClient.GetFormulasAsync();
+            graphData = await ApiClient.GetQuestionGraphAsync();
+
+            // Fetch SKUs by loading them from categories (or generic list)
+            // Let's create a custom list of SKUs by fetching from the graph nodes that are "sku"
+            availableSkus = graphData.Nodes
+                .Where(n => n.Type == "sku")
+                .Select(n => new ServiceSkuDto { Id = Guid.Parse(n.Id), SkuCode = n.Label, Name = n.Category })
+                .ToList();
+
+            // Extract unique categories from questions to build filter list
+            var categoryGroups = questions
+                .GroupBy(q => q.ServiceCategoryId)
+                .Select(g => new { 
+                    Id = g.Key?.ToString() ?? "Global", 
+                    Name = g.Key == null ? "Global Questions" : (graphData.Nodes.FirstOrDefault(n => n.Id == g.First().Id.ToString())?.Category ?? "Other Category")
+                })
+                .ToList();
+
+            filterCategories = categoryGroups.Select(cg => (cg.Id, cg.Name)).ToList();
+
+            statusMessage = "Data successfully loaded from database.";
+            errorMessage = "";
+            StateHasChanged();
+
+            await RenderGraphAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+        }
+    }
+
+    private async Task SetActiveTab(string tab)
+    {
+        activeTab = tab;
+        if (tab == "graph")
+        {
+            await Task.Delay(50); // Let UI render container div first
+            await RenderGraphAsync();
+        }
+    }
+
+    private async Task OnCategoryFilterChanged(ChangeEventArgs e)
+    {
+        selectedCategoryFilter = e.Value?.ToString() ?? "All";
+        selectedQuestionFilter = "All";
+        await RenderGraphAsync();
+    }
+
+    private async Task OnQuestionFilterChanged(ChangeEventArgs e)
+    {
+        selectedQuestionFilter = e.Value?.ToString() ?? "All";
+        await RenderGraphAsync();
+    }
+
+    private IEnumerable<QuestionDto> GetFilteredQuestionsForDropdown()
+    {
+        return GetFilteredQuestions();
+    }
+
+    private IEnumerable<QuestionDto> GetFilteredQuestions()
+    {
+        if (selectedCategoryFilter == "All") return questions;
+        if (selectedCategoryFilter == "Global") return questions.Where(q => q.ServiceCategoryId == null);
+        return questions.Where(q => q.ServiceCategoryId?.ToString() == selectedCategoryFilter);
+    }
+
+    private async Task RenderGraphAsync()
+    {
+        if (module != null && graphContainer.Id != null)
+        {
+            var filteredQuestions = GetFilteredQuestions().ToList();
+
+            if (selectedQuestionFilter != "All")
+            {
+                var targetQ = questions.FirstOrDefault(q => q.Id.ToString() == selectedQuestionFilter);
+                if (targetQ != null)
+                {
+                    // Show only this question, its parent question, its child questions
+                    var relatedQuestionIds = new HashSet<Guid> { targetQ.Id };
+                    if (targetQ.ParentQuestionId.HasValue)
+                    {
+                        relatedQuestionIds.Add(targetQ.ParentQuestionId.Value);
+                    }
+                    
+                    var childrenIds = questions
+                        .Where(q => q.ParentQuestionId == targetQ.Id)
+                        .Select(q => q.Id);
+                    foreach (var cid in childrenIds)
+                    {
+                        relatedQuestionIds.Add(cid);
+                    }
+
+                    filteredQuestions = questions.Where(q => relatedQuestionIds.Contains(q.Id)).ToList();
+                }
+            }
+
+            var questionIds = filteredQuestions.Select(q => q.Id.ToString()).ToHashSet();
+
+            // Find SKUs and Formulas connected to the filtered questions
+            var skuIdsToKeep = new HashSet<string>();
+            var formulaIdsToKeep = new HashSet<string>();
+            if (selectedQuestionFilter != "All")
+            {
+                var targetQ = questions.FirstOrDefault(q => q.Id.ToString() == selectedQuestionFilter);
+                if (targetQ != null)
+                {
+                    skuIdsToKeep = targetQ.SkuIds.Select(id => id.ToString()).ToHashSet();
+                    formulaIdsToKeep = targetQ.FormulaIds.Select(id => id.ToString()).ToHashSet();
+                }
+            }
+            else
+            {
+                skuIdsToKeep = filteredQuestions.SelectMany(q => q.SkuIds).Select(id => id.ToString()).ToHashSet();
+                formulaIdsToKeep = filteredQuestions.SelectMany(q => q.FormulaIds).Select(id => id.ToString()).ToHashSet();
+            }
+
+            // Filter graph nodes
+            var filteredNodes = graphData.Nodes.Where(n => 
+                (n.Type == "question" && questionIds.Contains(n.Id)) ||
+                (n.Type == "sku" && skuIdsToKeep.Contains(n.Id)) ||
+                (n.Type == "formula" && formulaIdsToKeep.Contains(n.Id))
+            ).ToList();
+
+            var nodeIdsToKeep = filteredNodes.Select(n => n.Id).ToHashSet();
+
+            // Filter graph edges connecting these nodes
+            var filteredEdges = graphData.Edges.Where(e => 
+                nodeIdsToKeep.Contains(e.From) && nodeIdsToKeep.Contains(e.To)
+            ).ToList();
+
+            var nodes = filteredNodes.Select(n => new
+            {
+                id = n.Id,
+                label = n.Label,
+                group = n.Type,
+                color = n.Type == "question" ? (n.Id == selectedQuestionFilter ? "#e91e63" : "#512bd4") : (n.Type == "formula" ? "#ffc107" : "#00bcd4")
+            }).ToList();
+
+            var edges = filteredEdges.Select(e => new
+            {
+                from = e.From,
+                to = e.To,
+                arrows = "to"
+            }).ToList();
+
+            await module.InvokeVoidAsync("initializeGraph", graphContainer, nodes, edges, dotNetHelper);
+        }
+    }
+
+    [JSInvokable]
+    public void OnNodeSelected(string nodeId)
+    {
+        selectedQuestion = null;
+        selectedFormula = null;
+
+        var matchingNode = graphData.Nodes.FirstOrDefault(n => n.Id == nodeId);
+        if (matchingNode != null)
+        {
+            if (matchingNode.Type == "question")
+            {
+                selectedQuestion = questions.FirstOrDefault(q => q.Id.ToString() == nodeId);
+            }
+            else if (matchingNode.Type == "formula")
+            {
+                selectedFormula = formulas.FirstOrDefault(f => f.Id.ToString() == nodeId);
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void SelectQuestion(QuestionDto q)
+    {
+        selectedQuestion = q;
+        selectedFormula = null;
+    }
+
+    private void SelectFormula(FormulaDto f)
+    {
+        selectedFormula = f;
+        selectedQuestion = null;
+    }
+
+    private void OpenAddQuestionModal()
+    {
+        selectedQuestion = new QuestionDto
+        {
+            Id = Guid.NewGuid(),
+            QuestionCode = "new_question_var",
+            Text = "Enter Question Text?",
+            Type = "text",
+            IsRequired = true,
+            DisplayOrder = questions.Count + 1
+        };
+        selectedFormula = null;
+    }
+
+    private void OpenAddFormulaModal()
+    {
+        selectedFormula = new FormulaDto
+        {
+            Id = Guid.NewGuid(),
+            Name = "new_formula_var",
+            Description = "Enter description",
+            Expression = "global_total_sqm * 2.5"
+        };
+        selectedQuestion = null;
+    }
+
+    private async Task SaveQuestionAsync()
+    {
+        if (selectedQuestion == null) return;
+
+        try
+        {
+            var isNew = !questions.Any(q => q.Id == selectedQuestion.Id);
+            if (isNew)
+            {
+                await ApiClient.CreateQuestionAsync(selectedQuestion);
+            }
+            else
+            {
+                await ApiClient.UpdateQuestionAsync(selectedQuestion);
+                // Sync many-to-many linkages
+                await ApiClient.UpdateQuestionLinksAsync(selectedQuestion.Id, selectedQuestion.SkuIds, selectedQuestion.FormulaIds);
+            }
+
+            statusMessage = $"Question '{selectedQuestion.QuestionCode}' successfully saved.";
+            errorMessage = "";
+            await LoadDataAsync();
+            await ShowToastMessage(statusMessage, "success");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving question: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private async Task SaveFormulaAsync()
+    {
+        if (selectedFormula == null) return;
+
+        try
+        {
+            var isNew = !formulas.Any(f => f.Id == selectedFormula.Id);
+            if (isNew)
+            {
+                await ApiClient.CreateFormulaAsync(selectedFormula);
+            }
+            else
+            {
+                await ApiClient.UpdateFormulaAsync(selectedFormula);
+            }
+
+            statusMessage = $"Formula '{selectedFormula.Name}' successfully saved.";
+            errorMessage = "";
+            await LoadDataAsync();
+            await ShowToastMessage(statusMessage, "success");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving formula: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private async Task DeleteQuestionAsync(Guid id)
+    {
+        try
+        {
+            var result = await ApiClient.DeleteQuestionAsync(id);
+            if (result)
+            {
+                statusMessage = "Question successfully deleted.";
+                errorMessage = "";
+                selectedQuestion = null;
+                await LoadDataAsync();
+                await ShowToastMessage(statusMessage, "success");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting question: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private async Task DeleteFormulaAsync(Guid id)
+    {
+        try
+        {
+            var result = await ApiClient.DeleteFormulaAsync(id);
+            if (result)
+            {
+                statusMessage = "Formula successfully deleted.";
+                errorMessage = "";
+                selectedFormula = null;
+                await LoadDataAsync();
+                await ShowToastMessage(statusMessage, "success");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting formula: {ex.Message}";
+            statusMessage = "";
+            await ShowToastMessage(errorMessage, "danger");
+        }
+    }
+
+    private void ToggleSkuLink(Guid skuId, object? val)
+    {
+        if (selectedQuestion == null) return;
+        var check = val is bool b && b;
+        if (check && !selectedQuestion.SkuIds.Contains(skuId))
+        {
+            selectedQuestion.SkuIds.Add(skuId);
+        }
+        else if (!check && selectedQuestion.SkuIds.Contains(skuId))
+        {
+            selectedQuestion.SkuIds.Remove(skuId);
+        }
+    }
+
+    private void ToggleFormulaLink(Guid formulaId, object? val)
+    {
+        if (selectedQuestion == null) return;
+        var check = val is bool b && b;
+        if (check && !selectedQuestion.FormulaIds.Contains(formulaId))
+        {
+            selectedQuestion.FormulaIds.Add(formulaId);
+        }
+        else if (!check && selectedQuestion.FormulaIds.Contains(formulaId))
+        {
+            selectedQuestion.FormulaIds.Remove(formulaId);
+        }
+    }
+
+    // Simulation methods
+    private void ToggleSimQuestion(Guid id, object? val)
+    {
+        var check = val is bool b && b;
+        if (check && !simSelectedQuestionIds.Contains(id))
+        {
+            simSelectedQuestionIds.Add(id);
+        }
+        else if (!check && simSelectedQuestionIds.Contains(id))
+        {
+            simSelectedQuestionIds.Remove(id);
+        }
+    }
+
+    private void UpdateSimAnswer(string questionCode, object val)
+    {
+        simAnswers[questionCode] = val;
+    }
+
+    private async Task RunSimulationAsync()
+    {
+        try
+        {
+            var answersJson = JsonSerializer.Serialize(simAnswers);
+            simulationResult = await ApiClient.RunOfferSimulationAsync(simSelectedQuestionIds, answersJson);
+            statusMessage = "Simulation calculation completed successfully.";
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Simulation run failed: {ex.Message}";
+        }
+    }
+
+    private List<string> DeserializeOptions(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(json) ?? new();
+        }
+        catch
+        {
+            return new();
+        }
+    }
+
+    // Sync methods
+    private async Task ExportDataAsync()
+    {
+        try
+        {
+            // Trigger export from server
+            // Since we want the full raw JSON backup, we can compose it locally or make a call.
+            // Let's call the GraphQL API schema exporter or just compose it in JSON here:
+            var fullData = new
+            {
+                ExportedAt = DateTime.UtcNow,
+                Questions = questions,
+                Formulas = formulas
+            };
+            syncJson = JsonSerializer.Serialize(fullData, new JsonSerializerOptions { WriteIndented = true });
+            statusMessage = "Schema successfully exported. You can copy the configuration below.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Export failed: {ex.Message}";
+        }
+    }
+
+    private async Task ImportDataAsync()
+    {
+        if (string.IsNullOrWhiteSpace(syncJson))
+        {
+            errorMessage = "Please paste a valid JSON configuration first.";
+            return;
+        }
+
+        try
+        {
+            // We parse the imported JSON and restore it using our client calls!
+            using var doc = JsonDocument.Parse(syncJson);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("Formulas", out var formulasArr))
+            {
+                foreach (var fJson in formulasArr.EnumerateArray())
+                {
+                    var f = JsonSerializer.Deserialize<FormulaDto>(fJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (f != null)
+                    {
+                        var exists = formulas.Any(x => x.Id == f.Id);
+                        if (exists) await ApiClient.UpdateFormulaAsync(f);
+                        else await ApiClient.CreateFormulaAsync(f);
+                    }
+                }
+            }
+
+            if (root.TryGetProperty("Questions", out var questionsArr))
+            {
+                foreach (var qJson in questionsArr.EnumerateArray())
+                {
+                    var q = JsonSerializer.Deserialize<QuestionDto>(qJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (q != null)
+                    {
+                        var exists = questions.Any(x => x.Id == q.Id);
+                        if (exists)
+                        {
+                            await ApiClient.UpdateQuestionAsync(q);
+                            await ApiClient.UpdateQuestionLinksAsync(q.Id, q.SkuIds, q.FormulaIds);
+                        }
+                        else
+                        {
+                            await ApiClient.CreateQuestionAsync(q);
+                        }
+                    }
+                }
+            }
+
+            statusMessage = "Configuration successfully imported and synchronized.";
+            errorMessage = "";
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Import failed: {ex.Message}";
+        }
+    }
+
+    private bool IsParentOptionSelected(string option)
+    {
+        if (selectedQuestion == null || string.IsNullOrEmpty(selectedQuestion.VisibilityCondition))
+            return false;
+
+        var selected = selectedQuestion.VisibilityCondition
+            .Split('|')
+            .Select(s => s.Trim())
+            .ToHashSet();
+
+        return selected.Contains(option);
+    }
+
+    private void ToggleParentOption(string option, object? isChecked)
+    {
+        if (selectedQuestion == null) return;
+
+        var selected = string.IsNullOrEmpty(selectedQuestion.VisibilityCondition)
+            ? new List<string>()
+            : selectedQuestion.VisibilityCondition.Split('|').Select(s => s.Trim()).ToList();
+
+        bool check = isChecked is bool b && b;
+
+        if (check)
+        {
+            if (!selected.Contains(option))
+            {
+                selected.Add(option);
+            }
+        }
+        else
+        {
+            selected.Remove(option);
+        }
+
+        selectedQuestion.VisibilityCondition = selected.Count > 0 ? string.Join(" | ", selected) : "";
+    }
+    private List<string> GetQuestionOptionsList(QuestionDto q)
+    {
+        if (string.IsNullOrEmpty(q.OptionsJson)) return new List<string>();
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(q.OptionsJson) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
+    }
+
+    private void AddOptionToQuestion(QuestionDto q)
+    {
+        if (string.IsNullOrWhiteSpace(newOptionBuffer)) return;
+        var list = GetQuestionOptionsList(q);
+        if (!list.Contains(newOptionBuffer.Trim()))
+        {
+            list.Add(newOptionBuffer.Trim());
+            q.OptionsJson = System.Text.Json.JsonSerializer.Serialize(list);
+        }
+        newOptionBuffer = "";
+    }
+
+    private void RemoveOptionFromQuestion(QuestionDto q, string option)
+    {
+        var list = GetQuestionOptionsList(q);
+        if (list.Remove(option))
+        {
+            q.OptionsJson = list.Count > 0 ? System.Text.Json.JsonSerializer.Serialize(list) : "";
+        }
+    }
+
+    private System.Threading.CancellationTokenSource? toastCts;
+    private async Task ShowToastMessage(string message, string type = "success")
+    {
+        toastCts?.Cancel();
+        toastCts = new System.Threading.CancellationTokenSource();
+        var token = toastCts.Token;
+
+        toastMessage = message;
+        toastType = type;
+        showToast = true;
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(3000, token);
+            showToast = false;
+            StateHasChanged();
+        }
+        catch (TaskCanceledException) {}
+    }
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+
+    public class ServiceSkuDto
+    {
+        public Guid Id { get; set; }
+        public string SkuCode { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
+}

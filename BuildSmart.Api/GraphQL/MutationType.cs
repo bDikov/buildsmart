@@ -180,5 +180,37 @@ public class MutationType : ObjectType<Mutation>
 
         descriptor.Field(m => m.StartAnonymousSupportChat(default!, default!))
             .Description("Initiates an anonymous support session and returns a JWT token.");
+
+        descriptor.Field(m => m.CreateQuestion(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
+            .Description("Creates a new question template.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.UpdateQuestion(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
+            .Description("Updates an existing question template.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.UpdateQuestionLinks(default!, default!, default!, default!, default!))
+            .Description("Updates linked SKUs and formulas for a question.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.DeleteQuestion(default!, default!, default!))
+            .Description("Deletes a question template.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.CreateFormula(default!, default!, default!, default!, default!))
+            .Description("Creates a new pricing formula.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.UpdateFormula(default!, default!, default!, default!, default!, default!))
+            .Description("Updates an existing pricing formula.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.DeleteFormula(default!, default!, default!))
+            .Description("Deletes a pricing formula.")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.RunOfferSimulation(default!, default!, default!, default!))
+            .Description("Runs a simulation of the pricing engine using the selected questions and answers.")
+            .Authorize(roles: new[] { "Admin" });
     }
 }

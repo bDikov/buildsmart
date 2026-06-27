@@ -1,4 +1,4 @@
-﻿namespace BuildSmart.Api.Tests;
+namespace BuildSmart.Api.Tests;
 
 public class UnitTest1
 {

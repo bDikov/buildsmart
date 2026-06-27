@@ -102,6 +102,13 @@ builder.Services.AddBuildSmartApiClient()
         .AddHttpMessageHandler<AuthHeaderHandler>();
     });
 
+builder.Services.AddHttpClient<IQuestionManagementApiClient, QuestionManagementApiClient>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    })
+    .AddHttpMessageHandler<AuthHeaderHandler>();
+
 // ViewModels
 builder.Services.AddTransient<LoginPageViewModel>();
 builder.Services.AddTransient<DetailedViewPageViewModel>();
@@ -158,6 +165,14 @@ var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture(supportedCultures[0])
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
+
+if (localizationOptions.SupportedCultures != null)
+{
+    foreach (var culture in localizationOptions.SupportedCultures)
+    {
+        culture.NumberFormat.CurrencySymbol = "€";
+    }
+}
 
 app.UseRequestLocalization(localizationOptions);
 

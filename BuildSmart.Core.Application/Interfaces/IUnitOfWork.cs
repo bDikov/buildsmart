@@ -32,6 +32,8 @@ public interface IUnitOfWork
 	IServiceCategoryRepository ServiceCategories { get; }
     
     IServiceSkuRepository ServiceSkus { get; }
+    IQuestionRepository Questions { get; }
+    IFormulaRepository Formulas { get; }
 
     IProjectRepository Projects { get; }
     IJobPostRepository JobPosts { get; }

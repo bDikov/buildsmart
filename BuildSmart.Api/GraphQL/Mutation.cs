@@ -1207,6 +1207,157 @@ public class Mutation
 			ProjectId = supportProject.Id
 		};
 	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<Question> CreateQuestion(
+		string questionCode,
+		string text,
+		string type,
+		bool isRequired,
+		string? optionsJson,
+		string? hintText,
+		Guid? serviceCategoryId,
+		Guid? parentQuestionId,
+		int displayOrder,
+		string? visibilityCondition,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		var question = new Question
+		{
+			QuestionCode = questionCode,
+			Text = text,
+			Type = type,
+			IsRequired = isRequired,
+			OptionsJson = optionsJson,
+			HintText = hintText,
+			ServiceCategoryId = serviceCategoryId,
+			ParentQuestionId = parentQuestionId,
+			DisplayOrder = displayOrder,
+			VisibilityCondition = visibilityCondition,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
+		};
+		return await questionService.CreateQuestionAsync(question, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<Question> UpdateQuestion(
+		Guid id,
+		string questionCode,
+		string text,
+		string type,
+		bool isRequired,
+		string? optionsJson,
+		string? hintText,
+		Guid? serviceCategoryId,
+		Guid? parentQuestionId,
+		int displayOrder,
+		string? visibilityCondition,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		var question = await questionService.GetQuestionByIdAsync(id, cancellationToken);
+		if (question == null)
+		{
+			throw new GraphQLException($"Question with ID {id} not found.");
+		}
+
+		question.QuestionCode = questionCode;
+		question.Text = text;
+		question.Type = type;
+		question.IsRequired = isRequired;
+		question.OptionsJson = optionsJson;
+		question.HintText = hintText;
+		question.ServiceCategoryId = serviceCategoryId;
+		question.ParentQuestionId = parentQuestionId;
+		question.DisplayOrder = displayOrder;
+		question.VisibilityCondition = visibilityCondition;
+		question.UpdatedAt = DateTime.UtcNow;
+
+		return await questionService.UpdateQuestionAsync(question, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<Question> UpdateQuestionLinks(
+		Guid questionId,
+		List<Guid> skuIds,
+		List<Guid> formulaIds,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		return await questionService.UpdateQuestionLinksAsync(questionId, skuIds, formulaIds, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> DeleteQuestion(
+		Guid questionId,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		await questionService.DeleteQuestionAsync(questionId, cancellationToken);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<Formula> CreateFormula(
+		string name,
+		string description,
+		string expression,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		var formula = new Formula
+		{
+			Name = name,
+			Description = description,
+			Expression = expression,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
+		};
+		return await questionService.CreateFormulaAsync(formula, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<Formula> UpdateFormula(
+		Guid id,
+		string name,
+		string description,
+		string expression,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		var formula = new Formula
+		{
+			Id = id,
+			Name = name,
+			Description = description,
+			Expression = expression,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
+		};
+		return await questionService.UpdateFormulaAsync(formula, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<bool> DeleteFormula(
+		Guid id,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		await questionService.DeleteFormulaAsync(id, cancellationToken);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<BuildSmart.Core.Application.DTOs.OfferSimulationResultDto> RunOfferSimulation(
+		List<Guid> selectedQuestionIds,
+		string jobDetailsJson,
+		[Service] IQuestionManagementService questionService,
+		CancellationToken cancellationToken)
+	{
+		return await questionService.ExecuteOfferSimulationAsync(selectedQuestionIds, jobDetailsJson, cancellationToken);
+	}
 }
 
 public class AnonymousChatPayload

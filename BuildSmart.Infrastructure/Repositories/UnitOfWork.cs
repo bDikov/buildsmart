@@ -24,6 +24,8 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 	public ICertificationRepository Certifications { get; }
 	public IServiceSkuRepository ServiceSkus { get; }
 	public IProjectMessageRepository ProjectMessages { get; }
+	public IQuestionRepository Questions { get; }
+	public IFormulaRepository Formulas { get; }
 
 	public UnitOfWork(AppDbContext context)
 	{
@@ -47,6 +49,8 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 		Certifications = new CertificationRepository(_context);
 		ServiceSkus = new BuildSmart.Infrastructure.Repositories.ServiceSkuRepository(_context);
 		ProjectMessages = new BuildSmart.Infrastructure.Repositories.ProjectMessageRepository(_context);
+		Questions = new BuildSmart.Infrastructure.Repositories.QuestionRepository(_context);
+		Formulas = new BuildSmart.Infrastructure.Repositories.FormulaRepository(_context);
 	}
 
 	/// <summary>

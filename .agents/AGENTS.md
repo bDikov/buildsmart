@@ -5,6 +5,7 @@
 - **Single Source of Truth**: Update the JSON template and SKU seed files in the `BuildSmart.Infrastructure` project. 
 - **JSON File Sync**: Always synchronize updated SKU and Category JSON seed files between `BuildSmart.Infrastructure` and `BuildSmart.Api` to keep configurations aligned across folders.
 - **Price Conversion**: The database seeder expects base prices in BGN and automatically converts them to EUR using `Math.Round(price / 1.95583m, 2)`. Define all seed prices in BGN.
+- **No Background DB Modifications or Seeding Runs**: The AI assistant must never automatically execute tests, scripts, or database queries to modify, seed, or migrate the user's database. The user will manually initiate all migrations, seeding commands, and database updates.
 
 ## 2. Startup Concurrency & Advisory Locks
 - Seeding tasks in `Program.cs` must run under a PostgreSQL transaction-level advisory lock (`pg_advisory_xact_lock(748291)`) to coordinate concurrent startups of the API and Hangfire worker servers safely.

@@ -100,6 +100,13 @@ public static class MauiProgram
 				.AddHttpMessageHandler<AuthHeaderHandler>();
 			});
 
+		builder.Services.AddHttpClient<IQuestionManagementApiClient, QuestionManagementApiClient>()
+			.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+			{
+				ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+			})
+			.AddHttpMessageHandler<AuthHeaderHandler>();
+
 		builder.Services.AddSingleton<LoginPage>(); builder.Services.AddSingleton<LoginPageViewModel>();
 		builder.Services.AddTransient<DetailedViewPageViewModel>();
 		builder.Services.AddTransient<CreateAccountPage>();
