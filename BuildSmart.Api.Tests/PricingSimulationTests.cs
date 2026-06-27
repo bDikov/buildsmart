@@ -59,9 +59,9 @@ public class PricingSimulationTests
                     { "global_total_sqm", 100m },
                     { "paint_tasks", new[] { "Грундиране и боядисване" } }
                 },
-                ExpectedMinTotal = 2800m,
-                ExpectedMaxTotal = 3100m,
-                ExpectedSkuCodes = new List<string> { "GEN-002", "PANT-001", "PANT-003" }
+                ExpectedMinTotal = 1500m,
+                ExpectedMaxTotal = 1700m,
+                ExpectedSkuCodes = new List<string> { "GEN-001", "GEN-002", "GEN-003", "PANT-PAINT-WHITE", "PANT-PRIMER", "PANT-TAPE-CORNER" }
             }
         };
 
