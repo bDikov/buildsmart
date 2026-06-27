@@ -16,6 +16,8 @@ namespace BuildSmart.Api.Tests;
 
 public class PricingSimulationTests
 {
+    private static readonly System.Threading.SemaphoreSlim DbLock = new(1, 1);
+    private static bool _isDbInitialized = false;
     private readonly ITestOutputHelper _output;
 
     public PricingSimulationTests(ITestOutputHelper output)
@@ -134,6 +136,27 @@ public class PricingSimulationTests
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql("Server=localhost;Port=5432;Database=buildsmart_db;Username=postgres;Password=postgres")
             .Options;
+
+        await DbLock.WaitAsync();
+        try
+        {
+            if (!_isDbInitialized)
+            {
+                using var initContext = new AppDbContext(options);
+                await initContext.Database.MigrateAsync();
+                if (!await initContext.ServiceCategories.AnyAsync())
+                {
+                    await initContext.SeedCategoriesAndQuestionsAsync();
+                    await initContext.SeedSkusAsync();
+                    await initContext.SeedQuestionsAndFormulasAsync();
+                }
+                _isDbInitialized = true;
+            }
+        }
+        finally
+        {
+            DbLock.Release();
+        }
 
         using var context = new AppDbContext(options);
         var pricingEngine = new PricingEngine(new NullLogger<PricingEngine>());
