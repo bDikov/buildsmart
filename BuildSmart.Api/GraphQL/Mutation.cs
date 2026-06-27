@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Hangfire;
+using BuildSmart.Infrastructure.Persistence;
 
 namespace BuildSmart.Api.GraphQL;
 
@@ -865,7 +866,8 @@ public class Mutation
 		bool isGlobal,
 		string templateStructure,
 		CategoryStatus? status,
-		[Service] IUnitOfWork unitOfWork)
+		[Service] IUnitOfWork unitOfWork,
+		[Service] AppDbContext context)
 	{
 		ServiceCategory category;
 		if (id.HasValue && id.Value != Guid.Empty)
@@ -887,6 +889,7 @@ public class Mutation
 			// Create new
 			category = new ServiceCategory
 			{
+				Id = Guid.NewGuid(),
 				Name = name,
 				Description = description,
 				IsGlobal = isGlobal,
@@ -895,6 +898,31 @@ public class Mutation
 			};
 			await unitOfWork.ServiceCategories.AddAsync(category);
 		}
+
+		// Add/Update Bulgarian Translation
+		var existingTranslation = await context.ServiceCategoryTranslations
+			.FirstOrDefaultAsync(t => t.CategoryId == category.Id && t.LanguageCode == "bg");
+		if (existingTranslation != null)
+		{
+			existingTranslation.Name = name;
+			existingTranslation.Description = description;
+			existingTranslation.UpdatedAt = DateTime.UtcNow;
+			context.ServiceCategoryTranslations.Update(existingTranslation);
+		}
+		else
+		{
+			await context.ServiceCategoryTranslations.AddAsync(new ServiceCategoryTranslation
+			{
+				Id = Guid.NewGuid(),
+				CategoryId = category.Id,
+				LanguageCode = "bg",
+				Name = name,
+				Description = description,
+				CreatedAt = DateTime.UtcNow,
+				UpdatedAt = DateTime.UtcNow
+			});
+		}
+
 		await unitOfWork.SaveChangesAsync();
 		return category;
 	}
@@ -907,7 +935,8 @@ public class Mutation
 		string description,
 		decimal basePrice,
 		string unitType,
-		[Service] IUnitOfWork unitOfWork)
+		[Service] IUnitOfWork unitOfWork,
+		[Service] AppDbContext context)
 	{
 		var sku = new ServiceSku
 		{
@@ -923,6 +952,20 @@ public class Mutation
 		};
 
 		await unitOfWork.ServiceSkus.AddAsync(sku);
+
+		// Add Bulgarian Translation
+		await context.ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
+		{
+			Id = Guid.NewGuid(),
+			SkuId = sku.Id,
+			LanguageCode = "bg",
+			Name = name,
+			Description = description ?? "",
+			UnitType = unitType ?? "",
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
+		});
+
 		await unitOfWork.SaveChangesAsync();
 		return sku;
 	}
@@ -935,7 +978,8 @@ public class Mutation
 		string description,
 		decimal basePrice,
 		string unitType,
-		[Service] IUnitOfWork unitOfWork)
+		[Service] IUnitOfWork unitOfWork,
+		[Service] AppDbContext context)
 	{
 		var sku = await unitOfWork.ServiceSkus.GetByIdAsync(id)
 			?? throw new GraphQLException("SKU not found.");
@@ -948,6 +992,33 @@ public class Mutation
 		sku.UpdatedAt = DateTime.UtcNow;
 
 		unitOfWork.ServiceSkus.Update(sku);
+
+		// Add/Update Bulgarian Translation
+		var existingTranslation = await context.ServiceSkuTranslations
+			.FirstOrDefaultAsync(t => t.SkuId == sku.Id && t.LanguageCode == "bg");
+		if (existingTranslation != null)
+		{
+			existingTranslation.Name = name;
+			existingTranslation.Description = description ?? "";
+			existingTranslation.UnitType = unitType ?? "";
+			existingTranslation.UpdatedAt = DateTime.UtcNow;
+			context.ServiceSkuTranslations.Update(existingTranslation);
+		}
+		else
+		{
+			await context.ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
+			{
+				Id = Guid.NewGuid(),
+				SkuId = sku.Id,
+				LanguageCode = "bg",
+				Name = name,
+				Description = description ?? "",
+				UnitType = unitType ?? "",
+				CreatedAt = DateTime.UtcNow,
+				UpdatedAt = DateTime.UtcNow
+			});
+		}
+
 		await unitOfWork.SaveChangesAsync();
 		return sku;
 	}
