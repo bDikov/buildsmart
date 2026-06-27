@@ -462,7 +462,13 @@ public class JobPostService : IJobPostService
 								(answerProp.ValueKind == System.Text.Json.JsonValueKind.String && string.IsNullOrWhiteSpace(answerProp.GetString())) ||
 								answerProp.ValueKind == System.Text.Json.JsonValueKind.Null)
 							{
-								var qText = q.TryGetProperty("text", out var textProp) ? textProp.GetString() : "Unknown Question";
+								var qText = "Unknown Question";
+								if (q.TryGetProperty("text", out var textProp))
+								{
+									qText = textProp.ValueKind == System.Text.Json.JsonValueKind.String 
+										? textProp.GetString() 
+										: (textProp.TryGetProperty("bg", out var bgProp) ? bgProp.GetString() : textProp.GetRawText());
+								}
 								throw new InvalidOperationException($"Missing mandatory answer for: {qText}");
 							}
 						}

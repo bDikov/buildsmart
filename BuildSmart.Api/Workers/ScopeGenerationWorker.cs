@@ -215,7 +215,13 @@ public class ScopeGenerationWorker
 					foreach (var q in questionsElement.EnumerateArray())
 					{
 						var qId = q.GetProperty("id").GetString();
-						var qText = q.TryGetProperty("text", out var textProp) ? textProp.GetString() : "Unknown Question";
+						var qText = "Unknown Question";
+						if (q.TryGetProperty("text", out var textProp))
+						{
+							qText = textProp.ValueKind == JsonValueKind.String 
+								? textProp.GetString() 
+								: (textProp.TryGetProperty("bg", out var bgProp) ? bgProp.GetString() : textProp.GetRawText());
+						}
 						if (!string.IsNullOrEmpty(qId) && !string.IsNullOrEmpty(qText))
 						{
 							questionMap[qId] = qText;
