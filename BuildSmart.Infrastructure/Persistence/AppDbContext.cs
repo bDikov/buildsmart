@@ -2,6 +2,7 @@ using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Entities.JoinEntities;
 using BuildSmart.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Sentry;
@@ -24,6 +25,8 @@ public class AppDbContext : DbContext
 	public DbSet<JobPostQuestion> JobPostQuestions { get; set; } = null!;
     public DbSet<JobPostFeedback> JobPostFeedbacks { get; set; } = null!;
 	public DbSet<Bid> Bids { get; set; } = null!;
+	public DbSet<Question> Questions { get; set; } = null!;
+	public DbSet<Formula> Formulas { get; set; } = null!;
 	public DbSet<JobTask> JobTasks { get; set; } = null!;
 	public DbSet<TaskSkuItem> TaskSkuItems { get; set; } = null!;
 	public DbSet<TaskAcceptanceCriteria> TaskAcceptanceCriteria { get; set; } = null!;
@@ -416,7 +419,10 @@ public class AppDbContext : DbContext
                     });
                 }
                 
-                category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
+                if (string.IsNullOrWhiteSpace(category.TemplateStructure) || category.TemplateStructure == "{}")
+                {
+                    category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
+                }
             }
 
             await SaveChangesAsync();
@@ -710,6 +716,189 @@ public class AppDbContext : DbContext
         }
         
         Console.WriteLine("--- HEALING LEGACY SKU FORMULAS FINISHED ---");
+    }
+
+    public async Task SeedQuestionsAndFormulasAsync()
+    {
+        Console.WriteLine("--- QUESTIONS AND FORMULAS SEEDING START ---");
+
+        var categories = await ServiceCategories.ToListAsync();
+        var allSkus = await ServiceSkus.ToListAsync();
+
+        // Load existing database questions
+        var existingQuestions = await Questions.ToDictionaryAsync(q => q.QuestionCode);
+        var seededQuestions = new Dictionary<string, Question>(existingQuestions);
+
+        foreach (var category in categories)
+        {
+            if (string.IsNullOrWhiteSpace(category.TemplateStructure) || category.TemplateStructure == "{}")
+                continue;
+
+            try
+            {
+                using var doc = JsonDocument.Parse(category.TemplateStructure);
+                if (doc.RootElement.TryGetProperty("questions", out var questionsArr))
+                {
+                    int displayOrder = 1;
+                    foreach (var qJson in questionsArr.EnumerateArray())
+                    {
+                        var code = qJson.GetProperty("id").GetString();
+                        if (string.IsNullOrEmpty(code)) continue;
+
+                        var textProp = qJson.GetProperty("text");
+                        var text = textProp.ValueKind == JsonValueKind.String 
+                            ? textProp.GetString() ?? string.Empty 
+                            : (textProp.TryGetProperty("bg", out var bgProp) ? bgProp.GetString() : textProp.GetRawText()) ?? string.Empty;
+
+                        var type = qJson.GetProperty("type").GetString() ?? "text";
+                        var required = qJson.TryGetProperty("required", out var reqProp) && reqProp.GetBoolean();
+                        var hintText = qJson.TryGetProperty("hintText", out var hintProp) ? hintProp.GetString() : null;
+                        
+                        string? optionsJson = null;
+                        if (qJson.TryGetProperty("options", out var optProp) && optProp.ValueKind == JsonValueKind.Array)
+                        {
+                            optionsJson = optProp.GetRawText();
+                        }
+
+                        var dependsOn = qJson.TryGetProperty("dependsOn", out var depProp) ? depProp.GetString() : null;
+                        var dependsOnValue = qJson.TryGetProperty("dependsOnValue", out var depValProp) ? depValProp.GetString() : null;
+
+                        if (!seededQuestions.TryGetValue(code, out var question))
+                        {
+                            question = new Question
+                            {
+                                Id = Guid.NewGuid(),
+                                QuestionCode = code,
+                                Text = text,
+                                Type = type,
+                                IsRequired = required,
+                                HintText = hintText,
+                                OptionsJson = optionsJson,
+                                ServiceCategoryId = category.Id,
+                                DisplayOrder = displayOrder++,
+                                VisibilityCondition = dependsOnValue,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+                            await Questions.AddAsync(question);
+                            seededQuestions[code] = question;
+                        }
+                        else
+                        {
+                            // Preserve existing question state to prevent seeding from overwriting custom admin-panel changes on startup.
+                            if (question.ServiceCategoryId == null)
+                            {
+                                question.ServiceCategoryId = category.Id;
+                                question.UpdatedAt = DateTime.UtcNow;
+                                if (existingQuestions.ContainsKey(code))
+                                {
+                                    Questions.Update(question);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing category {category.Name} template structure during seeding: {ex.Message}");
+            }
+        }
+
+        await SaveChangesAsync();
+
+        // 2. Set ParentQuestionId (dependsOn relations)
+        var allQuestions = await Questions.ToListAsync();
+        foreach (var category in categories)
+        {
+            if (string.IsNullOrWhiteSpace(category.TemplateStructure) || category.TemplateStructure == "{}")
+                continue;
+
+            try
+            {
+                using var doc = JsonDocument.Parse(category.TemplateStructure);
+                if (doc.RootElement.TryGetProperty("questions", out var questionsArr))
+                {
+                    foreach (var qJson in questionsArr.EnumerateArray())
+                    {
+                        var code = qJson.GetProperty("id").GetString();
+                        var dependsOn = qJson.TryGetProperty("dependsOn", out var depProp) ? depProp.GetString() : null;
+
+                        if (!string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(dependsOn))
+                        {
+                            var childQ = allQuestions.FirstOrDefault(q => q.QuestionCode == code);
+                            var parentQ = allQuestions.FirstOrDefault(q => q.QuestionCode == dependsOn);
+                            if (childQ != null && parentQ != null && childQ.ParentQuestionId != parentQ.Id)
+                            {
+                                childQ.ParentQuestionId = parentQ.Id;
+                                Questions.Update(childQ);
+                            }
+                        }
+                    }
+                }
+            }
+            catch {}
+        }
+
+        await SaveChangesAsync();
+
+        // 3. Link Questions to SKUs based on SKU calculationFormula matching question codes
+        allQuestions = await Questions.ToListAsync();
+        foreach (var sku in allSkus)
+        {
+            if (string.IsNullOrWhiteSpace(sku.CalculationFormula)) continue;
+
+            // Simple parser: check if formula mentions any question codes
+            foreach (var q in allQuestions)
+            {
+                if (sku.CalculationFormula.Contains(q.QuestionCode))
+                {
+                    // Check if link exists
+                    var linkExists = await Entry(q).Collection(x => x.Skus).Query().AnyAsync(s => s.Id == sku.Id);
+                    if (!linkExists)
+                    {
+                        q.Skus.Add(sku);
+                        if (!q.SkuIds.Contains(sku.Id))
+                        {
+                            q.SkuIds.Add(sku.Id);
+                        }
+                        Questions.Update(q);
+                    }
+                }
+            }
+        }
+
+        await SaveChangesAsync();
+
+        // 4. Seed Standard Formulas
+        var standardFormulas = new List<(string Name, string Description, string Expression)>
+        {
+            ("paint_area_calc", "Изчислява общата площ на стени и тавани за боядисване", "global_total_sqm * if(Contains(global_ceiling_height, 'Висока'), 2.8, 2.5)"),
+            ("tiling_area_calc", "Стандартна площ за лепене на плочки", "if(tile_std_sqm > 0, tile_std_sqm, global_total_sqm * 0.3)"),
+            ("drywall_area_calc", "Приблизителна площ за монтаж на гипсокартон", "global_total_sqm * 1.2")
+        };
+
+        foreach (var sf in standardFormulas)
+        {
+            var exists = await Formulas.AnyAsync(f => f.Name == sf.Name);
+            if (!exists)
+            {
+                var formula = new Formula
+                {
+                    Id = Guid.NewGuid(),
+                    Name = sf.Name,
+                    Description = sf.Description,
+                    Expression = sf.Expression,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await Formulas.AddAsync(formula);
+            }
+        }
+
+        await SaveChangesAsync();
+
+        Console.WriteLine("--- QUESTIONS AND FORMULAS SEEDING COMPLETE ---");
     }
 
     private string MapMarketCategoryToDbName(string marketName)

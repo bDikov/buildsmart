@@ -1090,6 +1090,13 @@ public class JobPostService : IJobPostService
 
 	private async Task CheckAndIncrementAiRequestCountAsync(JobPost jobPost)
 	{
+		var enableLimitsStr = _configuration["Gemini:EnableRequestLimits"];
+		var enableLimits = enableLimitsStr == null || !bool.TryParse(enableLimitsStr, out var val) || val;
+		if (!enableLimits)
+		{
+			return;
+		}
+
 		var project = await _unitOfWork.Projects.GetByIdAsync(jobPost.ProjectId)
 			?? throw new ArgumentException("Project not found");
 

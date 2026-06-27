@@ -109,6 +109,8 @@ public partial class Program
 		});
 		// Add Repositories and UnitOfWork
 		builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+		builder.Services.AddScoped<IQuestionRepository, BuildSmart.Infrastructure.Repositories.QuestionRepository>();
+		builder.Services.AddScoped<IFormulaRepository, BuildSmart.Infrastructure.Repositories.FormulaRepository>();
 		builder.Services.AddScoped<IUserRepository, UserRepository>();
 		builder.Services.AddScoped<ITradesmanProfileRepository, TradesmanProfileRepository>();
 		builder.Services.AddScoped<IBookingRepository, BookingRepository>();
@@ -128,6 +130,7 @@ public partial class Program
 		builder.Services.AddScoped<ITradesmanProfileService, TradesmanProfileService>();
 		builder.Services.AddScoped<IReviewService, ReviewService>();
 		builder.Services.AddScoped<IJobPostService, JobPostService>();
+		builder.Services.AddScoped<IQuestionManagementService, BuildSmart.Core.Application.Services.QuestionManagementService>();
 		builder.Services.AddScoped<IPaymentService, PaymentService>();
 		builder.Services.AddScoped<IJobsNotificationService, BuildSmart.Api.Services.JobsNotificationService>();
 		builder.Services.AddScoped<DataMigrationService>();
@@ -357,6 +360,8 @@ public partial class Program
 						context.ChangeTracker.Clear();
 						await context.SeedSkusAsync(); // Seed the SKUs from JSON data
 						context.ChangeTracker.Clear();
+						await context.SeedQuestionsAndFormulasAsync(); // Seed relational questions/formulas
+						context.ChangeTracker.Clear();
 						await context.SeedAdminUser(); // Seed the admin user
 						context.ChangeTracker.Clear();
 						await context.SeedHomeownerUser(); // Seed the homeowner user
@@ -374,6 +379,8 @@ public partial class Program
 					await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
 					context.ChangeTracker.Clear();
 					await context.SeedSkusAsync(); // Seed the SKUs from JSON data
+					context.ChangeTracker.Clear();
+					await context.SeedQuestionsAndFormulasAsync(); // Seed relational questions/formulas
 					context.ChangeTracker.Clear();
 					await context.SeedAdminUser(); // Seed the admin user
 					context.ChangeTracker.Clear();

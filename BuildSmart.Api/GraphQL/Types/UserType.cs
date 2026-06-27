@@ -40,8 +40,15 @@ public class UserType : ObjectType<User>
 			.Type<NonNullType<IntType>>()
 			.Resolve(ctx =>
 			{
-				var user = ctx.Parent<User>();
 				var config = ctx.Service<IConfiguration>();
+				var enableLimitsStr = config["Gemini:EnableRequestLimits"];
+				var enableLimits = enableLimitsStr == null || !bool.TryParse(enableLimitsStr, out var val) || val;
+				if (!enableLimits)
+				{
+					return 9999;
+				}
+
+				var user = ctx.Parent<User>();
 				var limitStr = config["Gemini:MaxAiRequests"];
 				var maxRequests = int.TryParse(limitStr, out var limitVal) ? limitVal : 20;
 

@@ -102,6 +102,13 @@ builder.Services.AddBuildSmartApiClient()
         .AddHttpMessageHandler<AuthHeaderHandler>();
     });
 
+builder.Services.AddHttpClient<IQuestionManagementApiClient, QuestionManagementApiClient>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    })
+    .AddHttpMessageHandler<AuthHeaderHandler>();
+
 // ViewModels
 builder.Services.AddTransient<LoginPageViewModel>();
 builder.Services.AddTransient<DetailedViewPageViewModel>();

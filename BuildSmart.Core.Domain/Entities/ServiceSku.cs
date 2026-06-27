@@ -1,4 +1,5 @@
 using BuildSmart.Core.Domain.Common;
+using System.Collections.Generic;
 
 namespace BuildSmart.Core.Domain.Entities;
 
@@ -17,4 +18,5 @@ public class ServiceSku : BaseEntity
     public string CalculationFormula { get; set; } = string.Empty; 
     
     public ICollection<ServiceSkuTranslation> Translations { get; set; } = new List<ServiceSkuTranslation>();
+    public ICollection<Question> Questions { get; set; } = new List<Question>();
 }

@@ -414,6 +414,35 @@ public class Query
 
 		return activeChats;
 	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<IEnumerable<Question>> GetQuestions([Service] IQuestionManagementService questionService, CancellationToken cancellationToken)
+	{
+		return await questionService.GetAllQuestionsAsync(cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<IEnumerable<Formula>> GetFormulas([Service] IQuestionManagementService questionService, CancellationToken cancellationToken)
+	{
+		return await questionService.GetAllFormulasAsync(cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<QuestionGraphResponse> GetQuestionGraph([Service] IQuestionManagementService questionService, CancellationToken cancellationToken)
+	{
+		var (nodes, edges) = await questionService.GetGraphDataAsync(cancellationToken);
+		return new QuestionGraphResponse
+		{
+			Nodes = nodes,
+			Edges = edges
+		};
+	}
+}
+
+public class QuestionGraphResponse
+{
+	public IEnumerable<BuildSmart.Core.Application.DTOs.GraphNodeDto> Nodes { get; set; } = Array.Empty<BuildSmart.Core.Application.DTOs.GraphNodeDto>();
+	public IEnumerable<BuildSmart.Core.Application.DTOs.GraphEdgeDto> Edges { get; set; } = Array.Empty<BuildSmart.Core.Application.DTOs.GraphEdgeDto>();
 }
 
 public class ProjectChatSummary

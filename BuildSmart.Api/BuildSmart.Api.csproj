@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -43,6 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="9.0.0" />
+    <PackageReference Include="JsonPatch.Net" Version="2.1.0" />
+    <PackageReference Include="JsonPath.Net" Version="1.0.5" />
+    <PackageReference Include="JsonSchema.Net" Version="7.3.4" />
+    <PackageReference Include="Json.More.Net" Version="2.1.1" />
     <ProjectReference Include="..\BuildSmart.Core.Application\BuildSmart.Core.Application.csproj" />
     <ProjectReference Include="..\BuildSmart.Infrastructure\BuildSmart.Infrastructure.csproj" />
   </ItemGroup>
