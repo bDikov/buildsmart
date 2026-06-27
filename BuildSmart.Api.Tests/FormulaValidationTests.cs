@@ -21,7 +21,6 @@ public class FormulaValidationTests
         "global_bathroom_count",
         "global_current_state",
         "global_logistics",
-        "global_materials_supply",
         "global_protection",
         "global_floor",
         "global_wall_material"
