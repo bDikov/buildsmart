@@ -184,7 +184,7 @@ public class FormulaValidationTests
         var variables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
         // Remove string literals to prevent matching text inside quotes
-        var cleanedFormula = Regex.Replace(formula, @"'[^']*'", "");
+        var cleanedFormula = Regex.Replace(formula, @"'[^']*'|""[^""]*""", "");
         
         // Find all word tokens
         var matches = Regex.Matches(cleanedFormula, @"\b[a-zA-Z_][a-zA-Z0-9_]*\b");
