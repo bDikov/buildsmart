@@ -1020,7 +1020,13 @@
             // Let's create a custom list of SKUs by fetching from the graph nodes that are "sku"
             availableSkus = graphData.Nodes
                 .Where(n => n.Type == "sku")
-                .Select(n => new ServiceSkuDto { Id = Guid.Parse(n.Id), SkuCode = n.Label, Name = n.Category })
+                .Select(n => new ServiceSkuDto 
+                { 
+                    Id = Guid.Parse(n.Id), 
+                    SkuCode = n.Label, 
+                    Name = n.Category,
+                    ServiceCategoryId = serviceCategories.FirstOrDefault(c => c.Name.Equals(n.Category, StringComparison.OrdinalIgnoreCase))?.Id ?? Guid.Empty
+                })
                 .ToList();
 
             // Extract unique categories from questions to build filter list
@@ -1544,13 +1550,35 @@
                         var localId = s.Id;
                         
                         // Map Category ID for the SKU
-                        if (s.ServiceCategoryId != Guid.Empty)
+                        Guid liveCatId = Guid.Empty;
+                        if (s.ServiceCategoryId != Guid.Empty && categoryMap.TryGetValue(s.ServiceCategoryId, out var mappedId))
                         {
-                            if (categoryMap.TryGetValue(s.ServiceCategoryId, out var liveCatId))
+                            liveCatId = mappedId;
+                        }
+                        else if (!string.IsNullOrEmpty(s.Name))
+                        {
+                            // Fallback to match category by name (since Name holds Category Name in local.json SKUs)
+                            var matchedCat = liveCategories.FirstOrDefault(lc => lc.Name.Equals(s.Name, StringComparison.OrdinalIgnoreCase));
+                            if (matchedCat != null)
                             {
-                                s.ServiceCategoryId = liveCatId;
+                                if (categoryMap.TryGetValue(matchedCat.Id, out var mappedCatId))
+                                {
+                                    liveCatId = mappedCatId;
+                                }
+                                else
+                                {
+                                    liveCatId = matchedCat.Id;
+                                }
                             }
                         }
+
+                        if (liveCatId == Guid.Empty)
+                        {
+                            // Skip SKU if no category matches, to prevent foreign key errors
+                            continue;
+                        }
+
+                        s.ServiceCategoryId = liveCatId;
 
                         // Check if a SKU with this SkuCode already exists on live (because it couldn't be deleted)
                         var existingSku = availableSkus.FirstOrDefault(x => x.SkuCode.Equals(s.SkuCode, StringComparison.OrdinalIgnoreCase));
