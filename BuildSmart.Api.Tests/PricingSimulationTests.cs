@@ -16,8 +16,6 @@ namespace BuildSmart.Api.Tests;
 
 public class PricingSimulationTests
 {
-    private static readonly System.Threading.SemaphoreSlim DbLock = new(1, 1);
-    private static bool _isDbInitialized = false;
     private readonly ITestOutputHelper _output;
 
     public PricingSimulationTests(ITestOutputHelper output)
@@ -134,32 +132,42 @@ public class PricingSimulationTests
     public async Task VerifyPricingAccuracy(PricingTestCase testCase)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql("Server=localhost;Port=5432;Database=buildsmart_db;Username=postgres;Password=postgres")
+            .UseInMemoryDatabase($"PricingSimulationDb_{Guid.NewGuid()}")
             .Options;
 
-        await DbLock.WaitAsync();
-        try
+        using (var seedContext = new AppDbContext(options))
         {
-            if (!_isDbInitialized)
-            {
-                using var initContext = new AppDbContext(options);
-                await initContext.Database.MigrateAsync();
-                if (!await initContext.ServiceCategories.AnyAsync())
-                {
-                    await initContext.SeedCategoriesAndQuestionsAsync();
-                    await initContext.SeedSkusAsync();
-                    await initContext.SeedQuestionsAndFormulasAsync();
-                }
-                _isDbInitialized = true;
-            }
-        }
-        finally
-        {
-            DbLock.Release();
+            await seedContext.Database.EnsureCreatedAsync();
+            await seedContext.SeedCategoriesAndQuestionsAsync();
+            await seedContext.SeedSkusAsync();
+            await seedContext.SeedQuestionsAndFormulasAsync();
         }
 
         using var context = new AppDbContext(options);
         var pricingEngine = new PricingEngine(new NullLogger<PricingEngine>());
+
+        // Resolve active category GUIDs dynamically by name to support any seeding strategy
+        var dbCategories = await context.ServiceCategories.ToListAsync();
+        var activeCategoryIds = new List<Guid>();
+        
+        var globalCat = dbCategories.FirstOrDefault(c => c.Name == "Global Questions");
+        if (globalCat != null) activeCategoryIds.Add(globalCat.Id);
+
+        if (testCase.ScenarioName.Contains("Paint"))
+        {
+            var paintCat = dbCategories.FirstOrDefault(c => c.Name == "Бояджийски и шпакловъчни услуги");
+            if (paintCat != null) activeCategoryIds.Add(paintCat.Id);
+        }
+        else if (testCase.ScenarioName.Contains("Elec"))
+        {
+            var elecCat = dbCategories.FirstOrDefault(c => c.Name == "Електрическа Инсталация");
+            if (elecCat != null) activeCategoryIds.Add(elecCat.Id);
+        }
+        else if (testCase.ScenarioName.Contains("Drywall"))
+        {
+            var drywallCat = dbCategories.FirstOrDefault(c => c.Name == "Сухо строителство");
+            if (drywallCat != null) activeCategoryIds.Add(drywallCat.Id);
+        }
 
         // 1. Fetch questions, formulas, and category templates
         var allQuestions = await context.Questions.ToListAsync();
@@ -184,7 +192,7 @@ public class PricingSimulationTests
 
         // 4. Fetch SKUs for active categories
         var skus = await context.ServiceSkus
-            .Where(s => testCase.ActiveCategoryIds.Contains(s.ServiceCategoryId))
+            .Where(s => activeCategoryIds.Contains(s.ServiceCategoryId))
             .ToListAsync();
 
         var calculatedTasks = new List<CalculatedTaskDto>();
