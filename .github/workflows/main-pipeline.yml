@@ -116,17 +116,12 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
+            set -e
             cd /opt/buildsmart
             
             # Extract tarball and clean it up
             tar -xzf buildsmart.tar.gz
             rm buildsmart.tar.gz
-            
-            echo "=== VPS DIRECTORY DEBUG ==="
-            pwd
-            ls -la
-            ls -la BuildSmart.Web/Components/ || echo "No components dir"
-            cat BuildSmart.Web/Components/App.razor | grep -E "app.css|reels-observer" || echo "No App.razor"
             
             # Create an environment file from GitHub Secrets to be used by docker-compose
             echo "POSTGRES_USER=${{ secrets.DB_USER }}" > .env
