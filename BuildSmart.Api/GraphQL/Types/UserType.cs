@@ -21,6 +21,8 @@ public class UserType : ObjectType<User>
 		descriptor.Field(u => u.Bio).Type<StringType>();
 		descriptor.Field(u => u.Location).Type<StringType>();
 		descriptor.Field(u => u.ProfilePictureUrl).Type<StringType>();
+		descriptor.Field(u => u.EmailOnOfferReady).Type<NonNullType<BooleanType>>();
+		descriptor.Field(u => u.EmailOnNewChatMessage).Type<NonNullType<BooleanType>>();
 
 		descriptor.Field(u => u.HashedPassword).Ignore(); // Do not expose password hash
 

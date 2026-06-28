@@ -27,6 +27,9 @@ public class User : BaseEntity
 	public int AiRequestCount { get; set; } = 0;
 	public DateTime? LastAiRequestDate { get; set; }
 
+	public bool EmailOnOfferReady { get; set; } = true;
+	public bool EmailOnNewChatMessage { get; set; } = false;
+
 	public virtual HomeownerProfile? HomeownerProfile { get; set; }
 	public virtual TradesmanProfile? TradesmanProfile { get; set; }
 }

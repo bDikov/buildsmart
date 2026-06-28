@@ -79,6 +79,29 @@ public class NotificationService : INotificationService
             CultureInfo.CurrentUICulture = originalCulture;
         }
 
+        if (titleKey == "Notification_NewMessage_Title" && targetUser != null && targetUser.EmailOnNewChatMessage && !string.IsNullOrWhiteSpace(targetUser.Email))
+        {
+            try
+            {
+                string emailSubject = title;
+                string emailBody = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <h2>Здравейте, {targetUser.FirstName}!</h2>
+                    <p>{message}</p>
+                    <br/>
+                    <p>Поздрави,<br/>Екипът на BuildSmart</p>
+                </body>
+                </html>";
+
+                Hangfire.BackgroundJob.Enqueue<IEmailService>(x => x.SendGenericEmailAsync(targetUser.Email, emailSubject, emailBody));
+            }
+            catch
+            {
+                // Ignore email queue failures to not disrupt SignalR/Notification persistence
+            }
+        }
+
         // Persist and send the localized version
         await SendNotificationAsync(userId, title, message, relatedEntityId, relatedEntityType, data);
     }

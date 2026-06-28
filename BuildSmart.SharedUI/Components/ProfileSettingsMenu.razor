@@ -42,6 +42,43 @@
         </select>
     </div>
 
+    @if (_userRole == "Admin")
+    {
+        <!-- Email Notification for Chat messages -->
+        <div class="menu-item-row">
+            <div class="d-flex align-items-center gap-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <span class="fw-bold" style="color: var(--text-primary); font-size: 14px;">
+                    @(System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "bg" ? "Имейл известия за чат" : "Email notifications for chat")
+                </span>
+            </div>
+            <div class="form-check form-switch m-0 d-flex align-items-center">
+                <input class="form-check-input" type="checkbox" role="switch" checked="@_emailOnNewChatMessage" @onchange="ToggleEmailOnChat" style="cursor: pointer; width: 36px; height: 18px;" />
+            </div>
+        </div>
+    }
+    else if (_userRole == "Homeowner")
+    {
+        <!-- Email Notification for Offer ready -->
+        <div class="menu-item-row">
+            <div class="d-flex align-items-center gap-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <span class="fw-bold" style="color: var(--text-primary); font-size: 14px;">
+                    @(System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "bg" ? "Имейл при готова оферта" : "Email when offer is ready")
+                </span>
+            </div>
+            <div class="form-check form-switch m-0 d-flex align-items-center">
+                <input class="form-check-input" type="checkbox" role="switch" checked="@_emailOnOfferReady" @onchange="ToggleEmailOnOffer" style="cursor: pointer; width: 36px; height: 18px;" />
+            </div>
+        </div>
+    }
+
     <hr style="border-color: var(--border-color); margin: 15px 0;" />
 
     <a href="/faq" class="menu-item-link">
@@ -107,6 +144,9 @@
 @code {
     private string _currentLang = "en";
     private string _currentTheme = "system";
+    private string _userRole = string.Empty;
+    private bool _emailOnOfferReady = true;
+    private bool _emailOnNewChatMessage = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,12 +157,42 @@
             var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
             if (userResult.Data?.CurrentUser != null)
             {
-                _currentTheme = userResult.Data.CurrentUser.PreferredTheme ?? "system";
+                var user = userResult.Data.CurrentUser;
+                _currentTheme = user.PreferredTheme ?? "system";
+                _userRole = user.Role.ToString();
+                _emailOnOfferReady = user.EmailOnOfferReady;
+                _emailOnNewChatMessage = user.EmailOnNewChatMessage;
             }
         }
         catch (Exception)
         {
             // Ignore API fetch errors on init, rely on local defaults
+        }
+    }
+
+    private async Task ToggleEmailOnChat(ChangeEventArgs e)
+    {
+        _emailOnNewChatMessage = (bool)(e.Value ?? false);
+        try
+        {
+            await ApiClient.UpdateUserEmailNotifications.ExecuteAsync(_emailOnOfferReady, _emailOnNewChatMessage);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Settings] Failed to update email notifications: {ex.Message}");
+        }
+    }
+
+    private async Task ToggleEmailOnOffer(ChangeEventArgs e)
+    {
+        _emailOnOfferReady = (bool)(e.Value ?? true);
+        try
+        {
+            await ApiClient.UpdateUserEmailNotifications.ExecuteAsync(_emailOnOfferReady, _emailOnNewChatMessage);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Settings] Failed to update email notifications: {ex.Message}");
         }
     }
 

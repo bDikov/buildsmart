@@ -11,6 +11,8 @@ query GetCurrentUser {
     profilePictureUrl
     preferredLanguage
     preferredTheme
+    emailOnOfferReady
+    emailOnNewChatMessage
     aiRequestCount
     remainingAiRequests
     lastAiRequestDate

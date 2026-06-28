@@ -976,6 +976,7 @@ type Mutation {
   sendProjectMessage(projectId: UUID! messageText: String!): ProjectMessage!
   updateUserLanguage(languageCode: String!): User!
   updateUserTheme(theme: String!): User!
+  updateUserEmailNotifications(emailOnOfferReady: Boolean! emailOnNewChatMessage: Boolean!): User!
   updateUserProfile(userId: UUID! firstName: String! lastName: String! bio: String location: String profilePictureUrl: String phoneNumber: String email: String): User!
   deleteProject(projectId: UUID!): Boolean!
   deleteJobPost(jobPostId: UUID!): Boolean!
@@ -1528,6 +1529,8 @@ type User {
   emailVerificationTokenExpires: DateTime
   preferredLanguage: String!
   preferredTheme: String!
+  emailOnOfferReady: Boolean!
+  emailOnNewChatMessage: Boolean!
   aiRequestCount: Int!
   remainingAiRequests: Int!
   lastAiRequestDate: DateTime

@@ -46,6 +46,12 @@ namespace BuildSmart.Infrastructure.Services
 				return;
 			}
 
+			if (!homeowner.EmailOnOfferReady)
+			{
+				_logger.LogInformation("Homeowner for Project {ProjectId} has disabled email notifications. Skipping send.", projectId);
+				return;
+			}
+
 			// Read SMTP settings (configured from appsettings.json / secrets)
 			var smtpServer = _config["Smtp:Server"] ?? throw new InvalidOperationException("SMTP Server configuration is missing (Smtp:Server).");
 			var smtpPortStr = _config["Smtp:Port"] ?? throw new InvalidOperationException("SMTP Port configuration is missing (Smtp:Port).");
@@ -113,6 +119,44 @@ namespace BuildSmart.Infrastructure.Services
 			{
 				_logger.LogError(ex, "Failed to send offer PDF email to {Email} for Project {ProjectId}", homeowner.Email, projectId);
 				throw; // Let Hangfire handle retries if SMTP transient error occurs
+			}
+		}
+
+		public async Task SendGenericEmailAsync(string toEmail, string subject, string body)
+		{
+			var smtpServer = _config["Smtp:Server"] ?? throw new InvalidOperationException("SMTP Server configuration is missing (Smtp:Server).");
+			var smtpPortStr = _config["Smtp:Port"] ?? throw new InvalidOperationException("SMTP Port configuration is missing (Smtp:Port).");
+			var smtpUsername = _config["Smtp:Username"] ?? throw new InvalidOperationException("SMTP Username configuration is missing (Smtp:Username).");
+			var smtpPassword = _config["Smtp:Password"] ?? throw new InvalidOperationException("SMTP Password configuration is missing (Smtp:Password).");
+			var senderEmail = _config["Smtp:SenderEmail"] ?? throw new InvalidOperationException("SMTP SenderEmail configuration is missing (Smtp:SenderEmail).");
+			var senderName = _config["Smtp:SenderName"] ?? "BuildSmart";
+
+			if (!int.TryParse(smtpPortStr, out var smtpPort))
+			{
+				smtpPort = 587;
+			}
+
+			try
+			{
+				using var mail = new MailMessage();
+				mail.From = new MailAddress(senderEmail, senderName);
+				mail.To.Add(new MailAddress(toEmail));
+				mail.Subject = subject;
+				mail.Body = body;
+				mail.IsBodyHtml = true;
+
+				using var smtp = new SmtpClient(smtpServer, smtpPort);
+				smtp.UseDefaultCredentials = false;
+				smtp.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+				smtp.EnableSsl = true;
+
+				await smtp.SendMailAsync(mail);
+				_logger.LogInformation("Successfully sent generic email to {Email}", toEmail);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to send generic email to {Email}", toEmail);
+				throw;
 			}
 		}
 	}

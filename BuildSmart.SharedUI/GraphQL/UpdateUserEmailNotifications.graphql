@@ -1,0 +1,7 @@
+mutation UpdateUserEmailNotifications($emailOnOfferReady: Boolean!, $emailOnNewChatMessage: Boolean!) {
+  updateUserEmailNotifications(emailOnOfferReady: $emailOnOfferReady, emailOnNewChatMessage: $emailOnNewChatMessage) {
+    id
+    emailOnOfferReady
+    emailOnNewChatMessage
+  }
+}

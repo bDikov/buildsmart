@@ -130,6 +130,12 @@ jobs:
             echo "CLOUDFLARE_R2_PUBLIC_URL=${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" >> .env
             echo "CLOUDFLARE_R2_BUCKET_NAME=${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}" >> .env
             echo "CLOUDFLARE_R2_ACCESS_KEY=${{ secrets.CLOUDFLARE_R2_ACCESS_KEY }}" >> .env
+            echo "SMTP_SERVER=${{ secrets.SMTP_SERVER }}" >> .env
+            echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+            echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> .env
+            echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
+            echo "SMTP_SENDER_EMAIL=${{ secrets.SMTP_SENDER_EMAIL }}" >> .env
+            echo "SMTP_SENDER_NAME=${{ secrets.SMTP_SENDER_NAME }}" >> .env
             
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build
