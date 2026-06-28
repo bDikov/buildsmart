@@ -97,6 +97,13 @@ public class CalculatedTaskDto
     public decimal TotalPrice { get; set; }
 }
 
+public class ImportResultDto
+{
+    public bool Success { get; set; }
+    public List<string> LogLines { get; set; } = new();
+    public string? ErrorMessage { get; set; }
+}
+
 public interface IQuestionManagementApiClient
 {
     Task<List<QuestionDto>> GetQuestionsAsync();
@@ -117,6 +124,7 @@ public interface IQuestionManagementApiClient
     Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input);
     Task<bool> DeleteServiceSkuAsync(Guid id);
     Task<List<ServiceSkuDto>> GetServiceSkusByCategoryAsync(Guid categoryId);
+    Task<ImportResultDto> ImportSpiderNetConfigAsync(string json);
 }
 
 public class QuestionManagementApiClient : IQuestionManagementApiClient
@@ -676,5 +684,22 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         var variables = new { id = id };
         var data = await SendQueryAsync(query, variables);
         return data.GetProperty("deleteServiceCategory").GetBoolean();
+    }
+
+    public async Task<ImportResultDto> ImportSpiderNetConfigAsync(string json)
+    {
+        var query = @"
+            mutation($json: String!) {
+                importSpiderNetConfig(json: $json) {
+                    success
+                    logLines
+                    errorMessage
+                }
+            }";
+
+        var variables = new { json = json };
+        var data = await SendQueryAsync(query, variables);
+        var resultJson = data.GetProperty("importSpiderNetConfig").GetRawText();
+        return JsonSerializer.Deserialize<ImportResultDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
 }

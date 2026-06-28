@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using Hangfire;
 using BuildSmart.Infrastructure.Persistence;
+using System.Text.Json;
 
 namespace BuildSmart.Api.GraphQL;
 
@@ -1452,6 +1453,448 @@ public class Mutation
 		CancellationToken cancellationToken)
 	{
 		return await questionService.ExecuteOfferSimulationAsync(selectedQuestionIds, jobDetailsJson, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<BuildSmart.Api.DTOs.ImportResultDto> ImportSpiderNetConfig(
+		string json,
+		[Service] AppDbContext db)
+	{
+		var result = new BuildSmart.Api.DTOs.ImportResultDto();
+		
+		void LogInfo(string msg) => result.LogLines.Add($"[INFO] {DateTime.Now:HH:mm:ss} - {msg}");
+		void LogSuccess(string msg) => result.LogLines.Add($"[SUCCESS] {DateTime.Now:HH:mm:ss} - {msg}");
+		void LogWarning(string msg) => result.LogLines.Add($"[WARNING] {DateTime.Now:HH:mm:ss} - {msg}");
+		void LogError(string msg) => result.LogLines.Add($"[ERROR] {DateTime.Now:HH:mm:ss} - {msg}");
+
+		LogInfo("Starting transactional import...");
+
+		using var transaction = await db.Database.BeginTransactionAsync();
+		try
+		{
+			LogInfo("Parsing sync JSON configuration...");
+			using var doc = System.Text.Json.JsonDocument.Parse(json);
+			var root = doc.RootElement;
+
+			LogInfo("Fetching active schema from database...");
+			var liveCategories = await db.ServiceCategories.ToListAsync();
+			var liveFormulas = await db.Formulas.ToListAsync();
+			var liveQuestions = await db.Questions.ToListAsync();
+			var liveSkus = await db.ServiceSkus.ToListAsync();
+			LogInfo($"Loaded active schema: {liveCategories.Count} categories, {liveFormulas.Count} formulas, {liveQuestions.Count} questions.");
+
+			// 0. Clear and remove all existing live Questions, Formulas, and SKUs (where possible)
+			LogInfo("Analyzing database dependencies before cleanup...");
+			foreach (var q in liveQuestions)
+			{
+				if (q.ParentQuestionId.HasValue)
+				{
+					q.ParentQuestionId = null;
+					db.Questions.Update(q);
+				}
+			}
+			await db.SaveChangesAsync();
+			
+			var failedToDeleteQuestions = new List<Question>();
+			LogInfo("Attempting to delete old questions...");
+			foreach (var q in liveQuestions)
+			{
+				try
+				{
+					db.Questions.Remove(q);
+					await db.SaveChangesAsync();
+					LogInfo($"Deleted old question: {q.QuestionCode}");
+				}
+				catch (Exception ex)
+				{
+					db.Entry(q).State = EntityState.Unchanged; // Reset state
+					failedToDeleteQuestions.Add(q);
+					LogWarning($"Failed to delete question '{q.QuestionCode}' (linked to existing projects). Retained in database: {ex.Message}");
+				}
+			}
+
+			var failedToDeleteFormulas = new List<Formula>();
+			LogInfo("Attempting to delete old formulas...");
+			foreach (var f in liveFormulas)
+			{
+				try
+				{
+					db.Formulas.Remove(f);
+					await db.SaveChangesAsync();
+					LogInfo($"Deleted old formula: {f.Name}");
+				}
+				catch (Exception ex)
+				{
+					db.Entry(f).State = EntityState.Unchanged; // Reset state
+					failedToDeleteFormulas.Add(f);
+					LogWarning($"Failed to delete formula '{f.Name}' (referenced by other objects). Retained: {ex.Message}");
+				}
+			}
+
+			LogInfo("Attempting to clean unused service SKUs...");
+			var failedToDeleteSkus = new List<ServiceSku>();
+			foreach (var s in liveSkus)
+			{
+				try
+				{
+					db.ServiceSkus.Remove(s);
+					await db.SaveChangesAsync();
+					LogInfo($"Deleted SKU: {s.SkuCode}");
+				}
+				catch (Exception ex)
+				{
+					db.Entry(s).State = EntityState.Unchanged; // Reset state
+					failedToDeleteSkus.Add(s);
+					LogInfo($"Retained active SKU in database: {s.SkuCode} ({ex.Message})");
+				}
+			}
+
+			liveQuestions = failedToDeleteQuestions;
+			liveFormulas = failedToDeleteFormulas;
+			liveSkus = failedToDeleteSkus;
+
+			var categoryMap = new Dictionary<Guid, Guid>();
+			var formulaMap = new Dictionary<Guid, Guid>();
+			var skuMap = new Dictionary<Guid, Guid>();
+			var questionMap = new Dictionary<Guid, Guid>();
+
+			// 1. Sync / Import Service Categories
+			if (root.TryGetProperty("Categories", out var categoriesArr))
+			{
+				LogInfo($"Processing {categoriesArr.GetArrayLength()} categories from import block...");
+				foreach (var cJson in categoriesArr.EnumerateArray())
+				{
+					var cName = cJson.GetProperty("Name").GetString() ?? "";
+					var cDesc = cJson.TryGetProperty("Description", out var dProp) ? dProp.GetString() : null;
+					var cIsGlobal = cJson.TryGetProperty("IsGlobal", out var igProp) && igProp.GetBoolean();
+					var cTemplate = cJson.TryGetProperty("TemplateStructure", out var tProp) ? tProp.GetString() : "{}";
+					var cStatusStr = cJson.TryGetProperty("Status", out var stProp) ? stProp.GetString() : "ACTIVE";
+					Enum.TryParse<CategoryStatus>(cStatusStr, true, out var cStatus);
+					var localId = cJson.GetProperty("Id").GetGuid();
+
+					var existingCategory = liveCategories.FirstOrDefault(x => x.Id == localId || x.Name.Equals(cName, StringComparison.OrdinalIgnoreCase));
+					if (existingCategory != null)
+					{
+						existingCategory.Name = cName;
+						existingCategory.Description = cDesc;
+						existingCategory.IsGlobal = cIsGlobal;
+						existingCategory.TemplateStructure = cTemplate ?? "{}";
+						existingCategory.Status = cStatus;
+						db.ServiceCategories.Update(existingCategory);
+						await db.SaveChangesAsync();
+						categoryMap[localId] = existingCategory.Id;
+						LogSuccess($"Synced existing category: {cName}");
+					}
+					else
+					{
+						var created = new ServiceCategory
+						{
+							Id = Guid.NewGuid(),
+							Name = cName,
+							Description = cDesc,
+							IsGlobal = cIsGlobal,
+							TemplateStructure = cTemplate ?? "{}",
+							Status = cStatus
+						};
+						db.ServiceCategories.Add(created);
+						await db.SaveChangesAsync();
+						categoryMap[localId] = created.Id;
+						LogSuccess($"Created new category: {cName}");
+					}
+				}
+			}
+
+			// 2. Sync / Import Formulas
+			if (root.TryGetProperty("Formulas", out var formulasArr))
+			{
+				LogInfo($"Processing {formulasArr.GetArrayLength()} formulas from import block...");
+				foreach (var fJson in formulasArr.EnumerateArray())
+				{
+					var fName = fJson.GetProperty("Name").GetString() ?? "";
+					var fDesc = fJson.TryGetProperty("Description", out var fdProp) ? fdProp.GetString() ?? "" : "";
+					var fExpr = fJson.GetProperty("Expression").GetString() ?? "";
+					var localId = fJson.GetProperty("Id").GetGuid();
+
+					var existingFormula = liveFormulas.FirstOrDefault(x => x.Id == localId || x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase));
+					if (existingFormula != null)
+					{
+						existingFormula.Name = fName;
+						existingFormula.Description = fDesc;
+						existingFormula.Expression = fExpr;
+						db.Formulas.Update(existingFormula);
+						await db.SaveChangesAsync();
+						formulaMap[localId] = existingFormula.Id;
+						LogSuccess($"Synced existing formula variable: {fName}");
+					}
+					else
+					{
+						var created = new Formula
+						{
+							Id = Guid.NewGuid(),
+							Name = fName,
+							Description = fDesc,
+							Expression = fExpr
+						};
+						db.Formulas.Add(created);
+						await db.SaveChangesAsync();
+						formulaMap[localId] = created.Id;
+						LogSuccess($"Created new formula variable: {fName}");
+					}
+				}
+			}
+
+			// 3. Sync / Import SKUs
+			if (root.TryGetProperty("Skus", out var skusArr))
+			{
+				LogInfo($"Processing {skusArr.GetArrayLength()} SKUs from import block...");
+				foreach (var sJson in skusArr.EnumerateArray())
+				{
+					var sCode = sJson.GetProperty("SkuCode").GetString() ?? "";
+					var sName = sJson.GetProperty("Name").GetString() ?? "";
+					var sDesc = sJson.TryGetProperty("Description", out var sdProp) ? sdProp.GetString() : null;
+					var sPrice = sJson.GetProperty("BasePrice").GetDecimal();
+					var sUnit = sJson.GetProperty("UnitType").GetString() ?? "";
+					var sFormula = sJson.TryGetProperty("CalculationFormula", out var sfProp) ? sfProp.GetString() ?? "" : "";
+					var sCatId = sJson.GetProperty("ServiceCategoryId").GetGuid();
+					var localId = sJson.GetProperty("Id").GetGuid();
+					
+					Guid liveCatId = Guid.Empty;
+					if (sCatId != Guid.Empty && categoryMap.TryGetValue(sCatId, out var mappedId))
+					{
+						liveCatId = mappedId;
+					}
+					else if (!string.IsNullOrEmpty(sName))
+					{
+						var matchedCat = liveCategories.FirstOrDefault(lc => lc.Name.Equals(sName, StringComparison.OrdinalIgnoreCase));
+						if (matchedCat != null)
+						{
+							if (categoryMap.TryGetValue(matchedCat.Id, out var mappedCatId))
+							{
+								liveCatId = mappedCatId;
+							}
+							else
+							{
+								liveCatId = matchedCat.Id;
+							}
+						}
+					}
+
+					if (liveCatId == Guid.Empty)
+					{
+						LogError($"Skipping SKU {sCode} ({sName}): No matching service category could be resolved.");
+						continue;
+					}
+
+					var existingSku = liveSkus.FirstOrDefault(x => x.SkuCode.Equals(sCode, StringComparison.OrdinalIgnoreCase));
+					if (existingSku != null)
+					{
+						existingSku.Name = sName;
+						existingSku.Description = sDesc;
+						existingSku.BasePrice = sPrice;
+						existingSku.UnitType = sUnit;
+						existingSku.CalculationFormula = sFormula;
+						existingSku.ServiceCategoryId = liveCatId;
+						db.ServiceSkus.Update(existingSku);
+						await db.SaveChangesAsync();
+						skuMap[localId] = existingSku.Id;
+						LogSuccess($"Synced SKU: {sCode} ({sName}) -> Formula: '{sFormula}', Unit: {sUnit}");
+					}
+					else
+					{
+						var created = new ServiceSku
+						{
+							Id = Guid.NewGuid(),
+							SkuCode = sCode,
+							Name = sName,
+							Description = sDesc,
+							BasePrice = sPrice,
+							UnitType = sUnit,
+							CalculationFormula = sFormula,
+							ServiceCategoryId = liveCatId
+						};
+						db.ServiceSkus.Add(created);
+						await db.SaveChangesAsync();
+						skuMap[localId] = created.Id;
+						LogSuccess($"Created SKU: {sCode} ({sName}) -> Formula: '{sFormula}', Unit: {sUnit}");
+					}
+				}
+			}
+
+			// 4. Import / Sync Questions (Pass 1 - Create/Update with ParentQuestionId = null)
+			var importedQuestions = new List<(Question TempQuestion, Guid LocalId, List<Guid> SkuLinks, List<Guid> FormulaLinks)>();
+			if (root.TryGetProperty("Questions", out var questionsArr))
+			{
+				LogInfo($"Processing {questionsArr.GetArrayLength()} questions (Pass 1 - creation)...");
+				foreach (var qJson in questionsArr.EnumerateArray())
+				{
+					var qCode = qJson.GetProperty("QuestionCode").GetString() ?? "";
+					var qText = qJson.GetProperty("Text").GetString() ?? "";
+					var qType = qJson.GetProperty("Type").GetString() ?? "";
+					var qReq = qJson.GetProperty("IsRequired").GetBoolean();
+					var qOptions = qJson.TryGetProperty("OptionsJson", out var qoProp) ? qoProp.GetString() : null;
+					var qHint = qJson.TryGetProperty("HintText", out var qhProp) ? qhProp.GetString() : null;
+					var qCatId = qJson.TryGetProperty("ServiceCategoryId", out var qcProp) && qcProp.ValueKind != JsonValueKind.Null ? qcProp.GetGuid() : (Guid?)null;
+					var qParentId = qJson.TryGetProperty("ParentQuestionId", out var qpProp) && qpProp.ValueKind != JsonValueKind.Null ? qpProp.GetGuid() : (Guid?)null;
+					var qOrder = qJson.GetProperty("DisplayOrder").GetInt32();
+					var qVis = qJson.TryGetProperty("VisibilityCondition", out var qvProp) ? qvProp.GetString() : null;
+					
+					var localId = qJson.GetProperty("Id").GetGuid();
+
+					Guid? liveCatId = null;
+					if (qCatId.HasValue)
+					{
+						if (categoryMap.TryGetValue(qCatId.Value, out var mappedId))
+						{
+							liveCatId = mappedId;
+						}
+					}
+
+					var existingQuestion = liveQuestions.FirstOrDefault(x => x.Id == localId || x.QuestionCode.Equals(qCode, StringComparison.OrdinalIgnoreCase));
+					Question activeQ;
+					if (existingQuestion != null)
+					{
+						existingQuestion.QuestionCode = qCode;
+						existingQuestion.Text = qText;
+						existingQuestion.Type = qType;
+						existingQuestion.IsRequired = qReq;
+						existingQuestion.OptionsJson = qOptions;
+						existingQuestion.HintText = qHint;
+						existingQuestion.ServiceCategoryId = liveCatId;
+						existingQuestion.ParentQuestionId = null; // null for Pass 1
+						existingQuestion.DisplayOrder = qOrder;
+						existingQuestion.VisibilityCondition = qVis;
+						db.Questions.Update(existingQuestion);
+						await db.SaveChangesAsync();
+						questionMap[localId] = existingQuestion.Id;
+						activeQ = existingQuestion;
+						LogSuccess($"Synced question: {qCode}");
+					}
+					else
+					{
+						var created = new Question
+						{
+							Id = Guid.NewGuid(),
+							QuestionCode = qCode,
+							Text = qText,
+							Type = qType,
+							IsRequired = qReq,
+							OptionsJson = qOptions,
+							HintText = qHint,
+							ServiceCategoryId = liveCatId,
+							ParentQuestionId = null, // null for Pass 1
+							DisplayOrder = qOrder,
+							VisibilityCondition = qVis
+						};
+						db.Questions.Add(created);
+						await db.SaveChangesAsync();
+						questionMap[localId] = created.Id;
+						activeQ = created;
+						LogSuccess($"Created question: {qCode}");
+					}
+
+					// Fetch SKU and Formula links from JSON
+					var skuLinks = new List<Guid>();
+					if (qJson.TryGetProperty("SkuIds", out var skusLinkArr))
+					{
+						foreach (var item in skusLinkArr.EnumerateArray())
+						{
+							skuLinks.Add(item.GetGuid());
+						}
+					}
+					var formulaLinks = new List<Guid>();
+					if (qJson.TryGetProperty("FormulaIds", out var formulasLinkArr))
+					{
+						foreach (var item in formulasLinkArr.EnumerateArray())
+						{
+							formulaLinks.Add(item.GetGuid());
+						}
+					}
+
+					importedQuestions.Add((activeQ, localId, skuLinks, formulaLinks));
+				}
+			}
+
+			// 5. Update Links
+			LogInfo("Updating question links...");
+			foreach (var item in importedQuestions)
+			{
+				var mappedSkuIds = item.SkuLinks
+					.Select(localSkuId => skuMap.TryGetValue(localSkuId, out var liveSkuId) ? liveSkuId : (Guid?)null)
+					.Where(id => id.HasValue)
+					.Select(id => id!.Value)
+					.ToList();
+
+				var mappedFormulaIds = item.FormulaLinks
+					.Select(localFormulaId => formulaMap.TryGetValue(localFormulaId, out var liveFormulaId) ? liveFormulaId : (Guid?)null)
+					.Where(id => id.HasValue)
+					.Select(id => id!.Value)
+					.ToList();
+
+				var q = await db.Questions
+					.Include(x => x.Skus)
+					.Include(x => x.Formulas)
+					.FirstAsync(x => x.Id == item.TempQuestion.Id);
+
+				q.SkuIds = mappedSkuIds;
+				q.Skus.Clear();
+				foreach (var skuId in mappedSkuIds)
+				{
+					var sku = await db.ServiceSkus.FindAsync(skuId);
+					if (sku != null) q.Skus.Add(sku);
+				}
+
+				q.FormulaIds = mappedFormulaIds;
+				q.Formulas.Clear();
+				foreach (var fId in mappedFormulaIds)
+				{
+					var f = await db.Formulas.FindAsync(fId);
+					if (f != null) q.Formulas.Add(f);
+				}
+
+				db.Questions.Update(q);
+				await db.SaveChangesAsync();
+				if (mappedSkuIds.Any() || mappedFormulaIds.Any())
+				{
+					LogInfo($"  Linked {item.TempQuestion.QuestionCode} -> SKUs: {mappedSkuIds.Count}, Formulas: {mappedFormulaIds.Count}");
+				}
+			}
+
+			// 6. Link Parents (Pass 2)
+			LogInfo("Linking question dependencies (Pass 2)...");
+			foreach (var item in importedQuestions)
+			{
+				var parentIdProp = root.GetProperty("Questions")
+					.EnumerateArray()
+					.First(x => x.GetProperty("Id").GetGuid() == item.LocalId)
+					.TryGetProperty("ParentQuestionId", out var pProp) && pProp.ValueKind != JsonValueKind.Null ? pProp.GetGuid() : (Guid?)null;
+
+				if (parentIdProp.HasValue)
+				{
+					if (questionMap.TryGetValue(parentIdProp.Value, out var liveParentId))
+					{
+						item.TempQuestion.ParentQuestionId = liveParentId;
+						db.Questions.Update(item.TempQuestion);
+						await db.SaveChangesAsync();
+						LogInfo($"  Dependency set: {item.TempQuestion.QuestionCode} depends on parent.");
+					}
+				}
+			}
+
+			LogSuccess("All steps completed successfully. Committing transaction...");
+			await transaction.CommitAsync();
+			result.Success = true;
+			result.ErrorMessage = null;
+		}
+		catch (Exception ex)
+		{
+			LogError($"FATAL ERROR: {ex.Message}");
+			LogWarning("Rolling back transaction! No database changes have been applied.");
+			await transaction.RollbackAsync();
+			result.Success = false;
+			result.ErrorMessage = ex.Message;
+		}
+
+		return result;
 	}
 }
 

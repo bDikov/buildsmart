@@ -308,6 +308,25 @@
                         <button class="bs-btn-secondary" @onclick="ExportDataAsync">Export Configuration</button>
                         <button class="bs-btn-primary ml-2" @onclick="ImportDataAsync">Import & Sync Schema</button>
                     </div>
+
+                    @if (importLogLines.Any())
+                    {
+                        <div class="form-group mt-4">
+                            <label style="font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px;">Import Activity Log</label>
+                            <div class="bs-input log-display" style="background-color: #11141e; color: #a9b2c3; font-family: monospace; font-size: 12px; max-height: 250px; overflow-y: auto; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); line-height: 1.6;">
+                                @foreach (var line in importLogLines)
+                                {
+                                    var color = "#a9b2c3";
+                                    if (line.Contains("[ERROR]")) color = "#f87171";
+                                    else if (line.Contains("[WARNING]")) color = "#fbbf24";
+                                    else if (line.Contains("[SUCCESS]")) color = "#34d399";
+                                    else if (line.Contains("[INFO]")) color = "#60a5fa";
+                                    
+                                    <div style="color: @color; white-space: pre-wrap; margin-bottom: 3px;">@line</div>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -1425,6 +1444,31 @@
     private string statusMessage = "";
     private string errorMessage = "";
     private string syncJson = "";
+    private List<string> importLogLines = new();
+
+    private void LogInfo(string msg)
+    {
+        importLogLines.Add($"[INFO] {DateTime.Now:HH:mm:ss} - {msg}");
+        StateHasChanged();
+    }
+    
+    private void LogSuccess(string msg)
+    {
+        importLogLines.Add($"[SUCCESS] {DateTime.Now:HH:mm:ss} - {msg}");
+        StateHasChanged();
+    }
+    
+    private void LogWarning(string msg)
+    {
+        importLogLines.Add($"[WARNING] {DateTime.Now:HH:mm:ss} - {msg}");
+        StateHasChanged();
+    }
+    
+    private void LogError(string msg)
+    {
+        importLogLines.Add($"[ERROR] {DateTime.Now:HH:mm:ss} - {msg}");
+        StateHasChanged();
+    }
 
     // Simulation fields
     private List<Guid> simSelectedQuestionIds = new();
@@ -2348,271 +2392,45 @@
 
     private async Task ImportDataAsync()
     {
+        importLogLines.Clear();
         if (string.IsNullOrWhiteSpace(syncJson))
         {
             errorMessage = "Please paste a valid JSON configuration first.";
+            LogError(errorMessage);
             return;
         }
 
+        LogInfo("Initiating transactional schema sync on the server...");
+
         try
         {
-            using var doc = JsonDocument.Parse(syncJson);
-            var root = doc.RootElement;
-
-            // Fetch latest live categories, formulas, and questions for mapping and validation
-            var liveCategories = await ApiClient.GetServiceCategoriesAsync();
-            var liveFormulas = await ApiClient.GetFormulasAsync();
-            var liveQuestions = await ApiClient.GetQuestionsAsync();
-
-            // 0. Clear and remove all existing live Questions, Formulas, and SKUs (where possible)
-            foreach (var q in liveQuestions)
+            var result = await ApiClient.ImportSpiderNetConfigAsync(syncJson);
+            
+            // Render all logs returned by the server
+            foreach (var line in result.LogLines)
             {
-                if (q.ParentQuestionId.HasValue)
-                {
-                    q.ParentQuestionId = null;
-                    await ApiClient.UpdateQuestionAsync(q);
-                }
-            }
-            foreach (var q in liveQuestions)
-            {
-                await ApiClient.DeleteQuestionAsync(q.Id);
-            }
-            foreach (var f in liveFormulas)
-            {
-                await ApiClient.DeleteFormulaAsync(f.Id);
-            }
-            foreach (var s in availableSkus)
-            {
-                try
-                {
-                    await ApiClient.DeleteServiceSkuAsync(s.Id);
-                }
-                catch {}
+                importLogLines.Add(line);
             }
 
-            liveQuestions = new List<QuestionDto>();
-            liveFormulas = new List<FormulaDto>();
-
-            graphData = await ApiClient.GetQuestionGraphAsync();
-            availableSkus.Clear();
-            foreach (var cat in liveCategories)
+            if (result.Success)
             {
-                var skus = await ApiClient.GetServiceSkusByCategoryAsync(cat.Id);
-                availableSkus.AddRange(skus);
+                statusMessage = "Configuration successfully imported and synchronized transactionally!";
+                errorMessage = "";
+                await LoadDataAsync();
+                await ShowToastMessage(statusMessage, "success");
             }
-
-            var categoryMap = new Dictionary<Guid, Guid>();
-            var formulaMap = new Dictionary<Guid, Guid>();
-            var skuMap = new Dictionary<Guid, Guid>();
-            var questionMap = new Dictionary<Guid, Guid>();
-
-            // 1. Sync / Import Service Categories
-            if (root.TryGetProperty("Categories", out var categoriesArr))
+            else
             {
-                foreach (var cJson in categoriesArr.EnumerateArray())
-                {
-                    var c = JsonSerializer.Deserialize<ServiceCategoryDto>(cJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    if (c != null)
-                    {
-                        var localId = c.Id;
-                        var existingCategory = liveCategories.FirstOrDefault(x => x.Id == c.Id || x.Name.Equals(c.Name, StringComparison.OrdinalIgnoreCase));
-                        if (existingCategory != null)
-                        {
-                            c.Id = existingCategory.Id;
-                            var updated = await ApiClient.SaveCategoryAsync(c);
-                            categoryMap[localId] = updated.Id;
-                        }
-                        else
-                        {
-                            c.Id = Guid.Empty; // Create new
-                            var created = await ApiClient.SaveCategoryAsync(c);
-                            categoryMap[localId] = created.Id;
-                        }
-                    }
-                }
+                errorMessage = $"Import failed: {result.ErrorMessage}";
+                LogError($"Transactional sync failed: {result.ErrorMessage}");
+                await ShowToastMessage(errorMessage, "danger");
             }
-
-            // 2. Sync / Import Formulas
-            if (root.TryGetProperty("Formulas", out var formulasArr))
-            {
-                foreach (var fJson in formulasArr.EnumerateArray())
-                {
-                    var f = JsonSerializer.Deserialize<FormulaDto>(fJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    if (f != null)
-                    {
-                        var localId = f.Id;
-                        var existingFormula = liveFormulas.FirstOrDefault(x => x.Id == f.Id || x.Name.Equals(f.Name, StringComparison.OrdinalIgnoreCase));
-                        if (existingFormula != null)
-                        {
-                            f.Id = existingFormula.Id;
-                            var updated = await ApiClient.UpdateFormulaAsync(f);
-                            formulaMap[localId] = updated.Id;
-                        }
-                        else
-                        {
-                            var created = await ApiClient.CreateFormulaAsync(f);
-                            formulaMap[localId] = created.Id;
-                        }
-                    }
-                }
-            }
-
-            // 3. Sync / Import SKUs
-            if (root.TryGetProperty("Skus", out var skusArr))
-            {
-                foreach (var sJson in skusArr.EnumerateArray())
-                {
-                    var s = JsonSerializer.Deserialize<ServiceSkuDto>(sJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    if (s != null)
-                    {
-                        var localId = s.Id;
-                        
-                        // Map Category ID for the SKU
-                        Guid liveCatId = Guid.Empty;
-                        if (s.ServiceCategoryId != Guid.Empty && categoryMap.TryGetValue(s.ServiceCategoryId, out var mappedId))
-                        {
-                            liveCatId = mappedId;
-                        }
-                        else if (!string.IsNullOrEmpty(s.Name))
-                        {
-                            // Fallback to match category by name (since Name holds Category Name in local.json SKUs)
-                            var matchedCat = liveCategories.FirstOrDefault(lc => lc.Name.Equals(s.Name, StringComparison.OrdinalIgnoreCase));
-                            if (matchedCat != null)
-                            {
-                                if (categoryMap.TryGetValue(matchedCat.Id, out var mappedCatId))
-                                {
-                                    liveCatId = mappedCatId;
-                                }
-                                else
-                                {
-                                    liveCatId = matchedCat.Id;
-                                }
-                            }
-                        }
-
-                        if (liveCatId == Guid.Empty)
-                        {
-                            // Skip SKU if no category matches, to prevent foreign key errors
-                            continue;
-                        }
-
-                        s.ServiceCategoryId = liveCatId;
-
-                        // Check if a SKU with this SkuCode already exists on live (because it couldn't be deleted)
-                        var existingSku = availableSkus.FirstOrDefault(x => x.SkuCode.Equals(s.SkuCode, StringComparison.OrdinalIgnoreCase));
-                        if (existingSku != null)
-                        {
-                            s.Id = existingSku.Id; // Update existing database record
-                            var updated = await ApiClient.UpdateServiceSkuAsync(s);
-                            skuMap[localId] = updated.Id;
-                        }
-                        else
-                        {
-                            s.Id = Guid.Empty; // Create new
-                            var created = await ApiClient.CreateServiceSkuAsync(s);
-                            skuMap[localId] = created.Id;
-                        }
-                    }
-                }
-            }
-
-            // 4. Import / Sync Questions (Pass 1 - Create/Update with ParentQuestionId = null)
-            var importedQuestions = new List<(QuestionDto TempQuestion, Guid LocalId)>();
-            if (root.TryGetProperty("Questions", out var questionsArr))
-            {
-                foreach (var qJson in questionsArr.EnumerateArray())
-                {
-                    var q = JsonSerializer.Deserialize<QuestionDto>(qJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    if (q != null)
-                    {
-                        var localId = q.Id;
-                        
-                        // Map Service Category ID
-                        if (q.ServiceCategoryId.HasValue)
-                        {
-                            if (categoryMap.TryGetValue(q.ServiceCategoryId.Value, out var liveCatId))
-                            {
-                                q.ServiceCategoryId = liveCatId;
-                            }
-                            else if (liveCategories.Any(lc => lc.Id == q.ServiceCategoryId.Value))
-                            {
-                                // Keep as-is if it's already a valid live Category ID
-                            }
-                            else
-                            {
-                                q.ServiceCategoryId = null; // Unmapped category from local, clear it to avoid FK errors
-                            }
-                        }
-
-                        // Store imported data for Pass 2 before changing parent relationship
-                        var originalParentQuestionId = q.ParentQuestionId;
-                        q.ParentQuestionId = null; // Temporarily set to null for Pass 1
-
-                        var existingQuestion = liveQuestions.FirstOrDefault(x => x.Id == q.Id || x.QuestionCode.Equals(q.QuestionCode, StringComparison.OrdinalIgnoreCase));
-                        if (existingQuestion != null)
-                        {
-                            q.Id = existingQuestion.Id;
-                            var updated = await ApiClient.UpdateQuestionAsync(q);
-                            questionMap[localId] = updated.Id;
-                        }
-                        else
-                        {
-                            var created = await ApiClient.CreateQuestionAsync(q);
-                            questionMap[localId] = created.Id;
-                            q.Id = created.Id;
-                        }
-
-                        // Map SKUs and Formulas links
-                        var mappedSkuIds = q.SkuIds
-                            .Select(localSkuId => skuMap.TryGetValue(localSkuId, out var liveSkuId) ? liveSkuId : (Guid?)null)
-                            .Where(id => id.HasValue)
-                            .Select(id => id!.Value)
-                            .ToList();
-
-                        var mappedFormulaIds = q.FormulaIds
-                            .Select(localFormulaId => formulaMap.TryGetValue(localFormulaId, out var liveFormulaId) ? liveFormulaId : (Guid?)null)
-                            .Where(id => id.HasValue)
-                            .Select(id => id!.Value)
-                            .ToList();
-
-                        await ApiClient.UpdateQuestionLinksAsync(q.Id, mappedSkuIds, mappedFormulaIds);
-
-                        // Save the mapped question and original local parent question ID for Pass 2
-                        q.ParentQuestionId = originalParentQuestionId;
-                        importedQuestions.Add((q, localId));
-                    }
-                }
-            }
-
-            // 5. Import / Sync Questions (Pass 2 - Link Parents)
-            foreach (var item in importedQuestions)
-            {
-                if (item.TempQuestion.ParentQuestionId.HasValue)
-                {
-                    var liveId = questionMap[item.LocalId];
-                    if (questionMap.TryGetValue(item.TempQuestion.ParentQuestionId.Value, out var liveParentId))
-                    {
-                        item.TempQuestion.Id = liveId;
-                        item.TempQuestion.ParentQuestionId = liveParentId;
-                        await ApiClient.UpdateQuestionAsync(item.TempQuestion);
-                    }
-                    else if (liveQuestions.Any(lq => lq.Id == item.TempQuestion.ParentQuestionId.Value))
-                    {
-                        // Parent is already a valid live question ID
-                        item.TempQuestion.Id = liveId;
-                        item.TempQuestion.ParentQuestionId = item.TempQuestion.ParentQuestionId.Value;
-                        await ApiClient.UpdateQuestionAsync(item.TempQuestion);
-                    }
-                }
-            }
-
-            statusMessage = "Configuration successfully imported and synchronized.";
-            errorMessage = "";
-            await LoadDataAsync();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Import failed: {ex.Message}";
+            errorMessage = $"Import communication failed: {ex.Message}";
+            LogError($"FATAL API COMMUNICATION EXCEPTION: {ex.Message}");
+            await ShowToastMessage(errorMessage, "danger");
         }
     }
 

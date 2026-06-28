@@ -216,5 +216,9 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.DeleteServiceCategory(default!, default!, default!))
             .Description("Deletes an existing service category and its translation. (Admin only)")
             .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.ImportSpiderNetConfig(default!, default!))
+            .Description("Transactional import and synchronization of the entire Spider-Net schema (Categories, SKUs, Questions, Formulas).")
+            .Authorize(roles: new[] { "Admin" });
     }
 }
