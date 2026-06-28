@@ -57,3 +57,9 @@
 - **Prune Builder Cache**: Always run or instruct the user to run `docker builder prune -a -f` before launching new builds to ensure that unused build cache is completely cleared.
 - **Clean Volumes**: When deploying or testing changes locally with Docker Compose, use `docker-compose down -v --remove-orphans` to clear stale volumes and cache, preventing old configuration or migration states from persisting.
 
+## 10. CI/CD Pipeline & VPS Deployment Rules
+- **Enforce Error Propagation (`set -e`)**: Any multi-line SSH deployment script (e.g., using `appleboy/ssh-action`) must start with `set -e`. This ensures the workflow aborts immediately if any command (like `docker compose build`) fails, preventing silent fallbacks to stale cached images.
+- **Avoid Custom Package Mirrors**: Do not replace standard package manager mirrors (like replacing `deb.debian.org` with `mirrors.cloudflare.com` inside Dockerfiles) because they can fail to resolve under specific VPS network configurations, causing builds to fail.
+- **Post-Deploy Asset Verifications**: When verifying deployments, always check that the live site (e.g., `https://buildsmart.bg`) is serving the new asset version suffixes (e.g., `v=1.2`) to confirm that the fresh build is live.
+
+
