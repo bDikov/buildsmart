@@ -196,9 +196,9 @@
                                         }
                                     </div>
 
-                                    @if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
-                                    {
-                                        <div id="reels-feed-container" class="bs-reels-container">
+                                    <div id="reels-feed-container" class="bs-reels-container">
+                                        @if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+                                        {
                                             @foreach (var video in ViewModel.FeedVideos)
                                             {
                                                 var videoId = $"video_{video.Id}";
@@ -236,14 +236,14 @@
                                                     }
                                                 </div>
                                             }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="text-center p-5 bg-card border-radius-lg">
-                                            <p class="text-muted mb-0">@Loc["Feed_NoMediaFound"]</p>
-                                        </div>
-                                    }
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex align-items-center justify-content-center h-100 w-100 p-5 text-center" style="min-height: 200px;">
+                                                <p class="text-muted mb-0">@Loc["Feed_NoMediaFound"]</p>
+                                            </div>
+                                        }
+                                    </div>
 
                                     <!-- Video Disclaimer (Visible under the videos on desktop) -->
                                     <div class="bs-video-disclaimer mt-3 px-2 text-start" style="max-width: 440px;">

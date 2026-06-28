@@ -52,3 +52,8 @@
   - **ToolName**: `"mcp_fig_get_tree_summary"` (gets tree structure) or `"mcp_fig_get_node_details"` (gets node coordinates, spacing, and styles).
   - **Arguments**: `{"path": "C:\\absolute\\path\\to\\design.fig"}`
 
+## 9. Docker Builds & Cache Clean Policy
+- **No-Cache Builds**: To prevent Docker from serving stale code or cached layers on the live server, always build with the `--no-cache` flag (e.g. `docker-compose build --no-cache` or `docker build --no-cache`).
+- **Prune Builder Cache**: Always run or instruct the user to run `docker builder prune -a -f` before launching new builds to ensure that unused build cache is completely cleared.
+- **Clean Volumes**: When deploying or testing changes locally with Docker Compose, use `docker-compose down -v --remove-orphans` to clear stale volumes and cache, preventing old configuration or migration states from persisting.
+
