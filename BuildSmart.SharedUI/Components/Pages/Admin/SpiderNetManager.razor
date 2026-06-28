@@ -64,6 +64,10 @@
                 }
             </select>
         </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 250px;">
+            <span style="font-weight: 700; font-size: 14px; color: var(--text-muted);">Search:</span>
+            <input type="text" class="bs-input" style="padding: 6px 10px; font-size: 13px;" placeholder="Search questions by code/text..." value="@questionSearchText" @oninput="OnQuestionSearchInput" />
+        </div>
     </div>
 
     <!-- Tabs -->
@@ -479,13 +483,25 @@
                         </div>
 
                         <div class="link-scroller mt-3">
-                            <strong>SKU Links:</strong>
-                            <div class="checkbox-list mt-1">
-                                @foreach (var s in availableSkus)
+                            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+                                <strong>SKU Links:</strong>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" class="bs-input" style="flex: 1; padding: 6px 10px; font-size: 13px;" placeholder="Search SKUs by code/name..." @bind="skuLinkSearchText" @bind:event="oninput" />
+                                    <select class="bs-select" style="max-width: 150px; padding: 6px; font-size: 13px;" @bind="skuLinkCategoryFilter">
+                                        <option value="All">All Trades</option>
+                                        @foreach (var cat in serviceCategories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="checkbox-list mt-1" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px;">
+                                @foreach (var s in GetFilteredSkusForLinking())
                                 {
-                                    <label class="checkbox-item">
+                                    <label class="checkbox-item" style="margin-bottom: 6px; display: flex; align-items: center; gap: 8px; user-select: none;">
                                         <input type="checkbox" @onchange='(e) => ToggleSkuLink(s.Id, e.Value)' checked="@selectedQuestion.SkuIds.Contains(s.Id)" />
-                                        <span>@s.SkuCode (@s.Name)</span>
+                                        <span style="font-size: 13px; color: #ffffff;">@s.SkuCode (@s.Name)</span>
                                     </label>
                                 }
                             </div>
@@ -1366,6 +1382,9 @@
     private string selectedQuestionFilter = "All";
     private List<(string Id, string Name)> filterCategories = new();
     private string newOptionBuffer = "";
+    private string skuLinkSearchText = "";
+    private string skuLinkCategoryFilter = "All";
+    private string questionSearchText = "";
 
     // Toast Notification variables
     private string? toastMessage;
@@ -1496,6 +1515,12 @@
         await RenderGraphAsync();
     }
 
+    private async Task OnQuestionSearchInput(ChangeEventArgs e)
+    {
+        questionSearchText = e.Value?.ToString() ?? "";
+        await RenderGraphAsync();
+    }
+
     private IEnumerable<QuestionDto> GetFilteredQuestionsForDropdown()
     {
         return GetFilteredQuestions();
@@ -1503,9 +1528,26 @@
 
     private IEnumerable<QuestionDto> GetFilteredQuestions()
     {
-        if (selectedCategoryFilter == "All") return questions;
-        if (selectedCategoryFilter == "Global") return questions.Where(q => q.ServiceCategoryId == null);
-        return questions.Where(q => q.ServiceCategoryId?.ToString() == selectedCategoryFilter);
+        IEnumerable<QuestionDto> result = questions;
+        if (selectedCategoryFilter != "All")
+        {
+            if (selectedCategoryFilter == "Global")
+            {
+                result = result.Where(q => q.ServiceCategoryId == null);
+            }
+            else
+            {
+                result = result.Where(q => q.ServiceCategoryId?.ToString() == selectedCategoryFilter);
+            }
+        }
+        
+        if (!string.IsNullOrWhiteSpace(questionSearchText))
+        {
+            var search = questionSearchText.Trim().ToLower();
+            result = result.Where(q => q.QuestionCode.ToLower().Contains(search) || q.Text.ToLower().Contains(search));
+        }
+        
+        return result;
     }
 
     private async Task RenderGraphAsync()
@@ -2054,6 +2096,24 @@
         }
         
         return availableSkus;
+    }
+
+    private IEnumerable<ServiceSkuDto> GetFilteredSkusForLinking()
+    {
+        IEnumerable<ServiceSkuDto> result = availableSkus;
+        
+        if (skuLinkCategoryFilter != "All")
+        {
+            result = result.Where(s => s.ServiceCategoryId.ToString() == skuLinkCategoryFilter);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(skuLinkSearchText))
+        {
+            var search = skuLinkSearchText.Trim().ToLower();
+            result = result.Where(s => s.SkuCode.ToLower().Contains(search) || s.Name.ToLower().Contains(search));
+        }
+        
+        return result.OrderBy(s => s.SkuCode);
     }
 
     private void OpenAddQuestionModal()
