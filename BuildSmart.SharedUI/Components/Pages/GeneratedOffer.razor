@@ -53,33 +53,29 @@
                                     <p class="mb-4" style="font-size: 0.95rem; color: var(--text-muted);">@task.Description</p>
                                 }
 
-                                <hr style="border-color: var(--border-color); opacity: 0.5;" />
-                                <h6 class="fw-bold mb-3" style="color: var(--color-primary);">@Loc["GeneratedOffer_BillableSKUs"]</h6>
-
                                 @if (task.SkuItems != null && task.SkuItems.Count > 0)
                                 {
+                                    <hr style="border-color: var(--border-color); opacity: 0.5;" />
+                                    <h6 class="fw-bold mb-3" style="color: var(--color-primary);">@Loc["GeneratedOffer_BillableSKUs"]</h6>
+
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach (var sku in task.SkuItems)
-                                        {
-                                            <div class="d-flex justify-content-between align-items-center p-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap; gap: 10px;">
-                                                <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
-                                                    <div style="min-width: 0; flex: 1;">
-                                                        <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.Name</div>
-                                                        <div style="color: var(--text-muted); font-size: 0.8rem; word-break: break-word; overflow-wrap: break-word;">
-                                                            @sku.Quantity @(sku.ServiceSku.UnitType.ToString().ToLower()) × €@sku.ServiceSku.BasePrice.ToString("F2") / @(sku.ServiceSku.UnitType.ToString().ToLower())
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <span class="fw-bold" style="color: var(--color-success); flex-shrink: 0;">
-                                                    €@sku.EstimatedPrice.ToString("F2")
-                                                </span>
-                                            </div>
-                                        }
+                                         @foreach (var sku in task.SkuItems)
+                                         {
+                                             <div class="d-flex justify-content-between align-items-center p-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                                                 <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
+                                                     <div style="min-width: 0; flex: 1;">
+                                                         <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.Name</div>
+                                                         <div style="color: var(--text-muted); font-size: 0.8rem; word-break: break-word; overflow-wrap: break-word;">
+                                                             @((sku.ServiceSku.BasePrice > 0 ? (sku.EstimatedPrice / sku.ServiceSku.BasePrice) : sku.Quantity).ToString("0.##")) @(sku.ServiceSku.UnitType.ToString().ToLower()) × €@sku.ServiceSku.BasePrice.ToString("F2") / @(sku.ServiceSku.UnitType.ToString().ToLower())
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                                 <span class="fw-bold" style="color: var(--color-success); flex-shrink: 0;">
+                                                     €@sku.EstimatedPrice.ToString("F2")
+                                                 </span>
+                                             </div>
+                                         }
                                     </div>
-                                }
-                                else
-                                {
-                                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0;">@Loc["GeneratedOffer_NoSKUs"]</p>
                                 }
                             </div>
                         }
