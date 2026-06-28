@@ -3,6 +3,7 @@ WORKDIR /app
 EXPOSE 8080
 
 # Install dependencies required by PuppeteerSharp / Headless Chrome
+RUN sed -i 's/deb.debian.org/mirrors.cloudflare.com/g' /etc/apt/sources.list.d/debian.sources || sed -i 's/deb.debian.org/mirrors.cloudflare.com/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \

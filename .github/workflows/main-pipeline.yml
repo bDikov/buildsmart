@@ -131,9 +131,8 @@ jobs:
             echo "CLOUDFLARE_R2_BUCKET_NAME=${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}" >> .env
             echo "CLOUDFLARE_R2_ACCESS_KEY=${{ secrets.CLOUDFLARE_R2_ACCESS_KEY }}" >> .env
             
-            # Force a clean update to ensure JSON files and new code are active
             docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml build --no-cache
+            docker compose -f docker-compose.prod.yml build
             docker compose -f docker-compose.prod.yml up -d --force-recreate db api web caddy
             
             # Wait for database to initialize before injecting the SKUs
