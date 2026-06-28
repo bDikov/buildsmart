@@ -221,11 +221,6 @@ public class WebNavigationBridge : INavigationBridge
         if (url == "..")
         {
             var path = new Uri(_navigationManager.Uri).AbsolutePath.ToLower();
-            if (path.Contains("/category-detail"))
-            {
-                _navigationManager.NavigateTo("/category-management");
-                return Task.CompletedTask;
-            }
             if (path.Contains("/user-edit"))
             {
                 _navigationManager.NavigateTo("/user-management");
@@ -275,9 +270,9 @@ public class WebNavigationBridge : INavigationBridge
                 "BookingDashboard" => "/booking-dashboard",
                 "LoginPage" => "/login",
                 "BlazorHost" => "/",
-                "CategoryManagement" => "/category-management",
-                "CategoryDetail" => "/category-detail",
-                "AdminCategorySkus" => "/admin-category-skus",
+                "CategoryManagement" => "/admin/spider-net",
+                "CategoryDetail" => "/admin/spider-net",
+                "AdminCategorySkus" => "/admin/spider-net",
                 _ => pathPart
             };
             url = mappedPath + queryPart;

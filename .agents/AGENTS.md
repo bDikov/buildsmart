@@ -26,3 +26,15 @@
 - **Database isolation**: Never attempt to connect to a real, local, or external PostgreSQL database inside tests (never use `UseNpgsql` or hardcoded connection strings).
 - **Isolated database names**: For each test method/scenario, initialize the InMemory database with a unique database name (e.g. `$"PricingSimulationDb_{Guid.NewGuid()}"`) to ensure total isolation between concurrent test executions.
 - **Separate seeding context**: Perform all test database setup and seeding in a separate, scoped `DbContext` instance before querying and executing assertions in a new `DbContext` instance to clear the EF Core tracking cache.
+
+## 6. Spider-Net Feature & Pricing Engine
+- **Unified Manager Route**: `/admin/spider-net` is the single unified admin page ([SpiderNetManager.razor](file:///C:/Users/bonch/source/repos/BuildSmart/BuildSmart.SharedUI/Components/Pages/Admin/SpiderNetManager.razor)) for managing all categories, questions, pricing formulas, and service SKUs.
+- **Config Import/Export**: The entire questionnaire structure (Questions, Formulas, SKUs, Categories) is synced using a single exported JSON schema.
+- **Importer Logic**: 
+  - To prevent database duplications, if an imported SKU already exists in the database by `SkuCode`, the importer updates it using `UpdateServiceSkuAsync` instead of creating a duplicate or leaving its price/formula empty.
+  - Suffix duplicate categories (e.g. `Category_1`) must be avoided. Legacy duplicate SKUs should be merged or deleted to ensure `SkuCode` is semantically unique.
+- **Pricing Engine (`PricingEngine.cs`)**:
+  - Homeowner answers from the UI wizard are stored as **strings** (e.g. `"6"`, `"True"`) in the `JobDetails` JSON.
+  - The pricing engine dynamically parses string numbers into `decimal` and string booleans into `bool` before NCalc formula evaluation.
+  - If a task evaluates to `€0.00` total, it is automatically dropped from the final offer to prevent empty tasks from showing on the PDF/UI. Every formula must evaluate to a positive decimal for its corresponding task to be included.
+- **System Categories**: Under the Category Edit Form, checking **"Is Project Details (System Category)"** serializes `"isProjectDetails": true` at the root of the category's `TemplateStructure` JSON. The wizard checks `IsProjectDetailsCategory` to identify this category for project-wide details (such as location and budget) and filters it out of the selectable trade categories step.

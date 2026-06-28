@@ -161,9 +161,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<PassedAuctionsViewModel>();
 
 		// Admin Pages
-		builder.Services.AddTransient<CategoryManagementViewModel>();
-		builder.Services.AddTransient<CategoryDetailViewModel>();
-		builder.Services.AddTransient<AdminCategorySkusViewModel>();
+
 
 		builder.Services.AddTransient<AdminJobReviewPage>();
 		builder.Services.AddTransient<AdminJobReviewViewModel>();

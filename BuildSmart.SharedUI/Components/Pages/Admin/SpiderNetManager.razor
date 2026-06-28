@@ -583,9 +583,19 @@
                         <label>Description</label>
                         <textarea class="bs-input" @bind="selectedCategory.Description" rows="2"></textarea>
                     </div>
-                    <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 12px; margin-bottom: 12px;">
-                        <input type="checkbox" @bind="selectedCategory.IsGlobal" id="chkGlobalCat" />
-                        <label for="chkGlobalCat" style="margin-bottom: 0; user-select: none;">Is Global Category (Wizard Setup)</label>
+                    <div class="form-group checkbox-row" style="margin-top: 12px; margin-bottom: 12px;">
+                        <label for="chkGlobalCat" style="margin-bottom: 0; user-select: none; cursor: pointer;">Is Global Category (Wizard Setup)</label>
+                        <label class="switch">
+                            <input type="checkbox" @bind="selectedCategory.IsGlobal" id="chkGlobalCat" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group checkbox-row" style="margin-top: 12px; margin-bottom: 12px;">
+                        <label for="chkProjDetailsCat" style="margin-bottom: 0; user-select: none; cursor: pointer;">Is Project Details (System Category - Hidden from Wizard)</label>
+                        <label class="switch">
+                            <input type="checkbox" @bind="isProjectDetails" id="chkProjDetailsCat" />
+                            <span class="slider"></span>
+                        </label>
                     </div>
                     <div class="form-group">
                         <label>Status</label>
@@ -629,9 +639,12 @@
                                 <input type="text" class="bs-input" @bind="editingTemplateQuestion.TextEn" placeholder="What is the square footage?" />
                             </div>
 
-                            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 12px; margin-bottom: 12px;">
-                                <input type="checkbox" @bind="editingTemplateQuestion.Required" id="chkReqTemplateQ" />
-                                <label for="chkReqTemplateQ" style="margin-bottom: 0; user-select: none;">Mandatory / Required Field</label>
+                            <div class="form-group checkbox-row" style="margin-top: 12px; margin-bottom: 12px;">
+                                <label for="chkReqTemplateQ" style="margin-bottom: 0; user-select: none; cursor: pointer;">Mandatory / Required Field</label>
+                                <label class="switch">
+                                    <input type="checkbox" @bind="editingTemplateQuestion.Required" id="chkReqTemplateQ" />
+                                    <span class="slider"></span>
+                                </label>
                             </div>
 
                             @if (editingTemplateQuestion.Type == "choice" || editingTemplateQuestion.Type == "multiselect")
@@ -700,9 +713,13 @@
 
                         <div class="form-group" style="margin-top: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <label>Raw JSON Template Structure</label>
-                                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-                                    <input type="checkbox" @bind="showRawJsonTemplate" /> Show Raw Code
+                                <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Raw JSON Template Structure</label>
+                                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                                    <span>Show Raw Code</span>
+                                    <label class="switch" style="transform: scale(0.8); transform-origin: right;">
+                                        <input type="checkbox" @bind="showRawJsonTemplate" />
+                                        <span class="slider"></span>
+                                    </label>
                                 </label>
                             </div>
                             @if (showRawJsonTemplate)
@@ -1089,6 +1106,60 @@
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    /* Modern premium switch styles */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        margin: 0;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: .3s;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+    }
+
+    .switch input:checked + .slider {
+        background-color: #ffd54f; /* Accent Gold matching standard formulas badge */
+        border-color: #ffd54f;
+    }
+
+    .switch input:checked + .slider:before {
+        transform: translateX(20px);
+        background-color: #16171a;
     }
 
     .form-group label {
@@ -1326,6 +1397,7 @@
     private bool isEditingNewTemplateQuestion;
     private string editingTemplateQuestionOptionsBuffer = "";
     private bool showRawJsonTemplate = false;
+    private bool isProjectDetails = false;
 
     private ElementReference graphContainer;
     private IJSObjectReference? module;
@@ -1790,6 +1862,20 @@
         selectedEdgeFromQuestion = null;
         editingTemplateQuestion = null;
         categoryQuestions = ParseTemplateQuestions(c.TemplateStructure);
+        
+        isProjectDetails = false;
+        if (!string.IsNullOrEmpty(c.TemplateStructure))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(c.TemplateStructure);
+                if (doc.RootElement.TryGetProperty("isProjectDetails", out var ipdProp))
+                {
+                    isProjectDetails = ipdProp.GetBoolean();
+                }
+            }
+            catch {}
+        }
     }
 
     private void OpenAddCategoryModal()
@@ -1807,12 +1893,14 @@
         selectedFormula = null;
         selectedSku = null;
         editingTemplateQuestion = null;
+        isProjectDetails = false;
         categoryQuestions = ParseTemplateQuestions(selectedCategory.TemplateStructure);
     }
 
     private async Task SaveCategoryDetailsAsync()
     {
         if (selectedCategory == null) return;
+        selectedCategory.TemplateStructure = SerializeTemplateQuestions(categoryQuestions);
 
         try
         {
@@ -2242,15 +2330,16 @@
                 catch {}
             }
 
-            // Reload live questions, formulas, and remaining SKUs after deletions
             liveQuestions = new List<QuestionDto>();
             liveFormulas = new List<FormulaDto>();
 
             graphData = await ApiClient.GetQuestionGraphAsync();
-            availableSkus = graphData.Nodes
-                .Where(n => n.Type == "sku")
-                .Select(n => new ServiceSkuDto { Id = Guid.Parse(n.Id), SkuCode = n.Label, Name = n.Category })
-                .ToList();
+            availableSkus.Clear();
+            foreach (var cat in liveCategories)
+            {
+                var skus = await ApiClient.GetServiceSkusByCategoryAsync(cat.Id);
+                availableSkus.AddRange(skus);
+            }
 
             var categoryMap = new Dictionary<Guid, Guid>();
             var formulaMap = new Dictionary<Guid, Guid>();
@@ -2353,7 +2442,9 @@
                         var existingSku = availableSkus.FirstOrDefault(x => x.SkuCode.Equals(s.SkuCode, StringComparison.OrdinalIgnoreCase));
                         if (existingSku != null)
                         {
-                            skuMap[localId] = existingSku.Id;
+                            s.Id = existingSku.Id; // Update existing database record
+                            var updated = await ApiClient.UpdateServiceSkuAsync(s);
+                            skuMap[localId] = updated.Id;
                         }
                         else
                         {
@@ -2618,6 +2709,7 @@
     {
         var obj = new
         {
+            isProjectDetails = isProjectDetails ? (bool?)true : null,
             questions = models.Select(m => new
             {
                 id = m.Id,
@@ -2710,6 +2802,17 @@
             selectedCategory.TemplateStructure = raw;
         }
         categoryQuestions = ParseTemplateQuestions(raw);
+        
+        isProjectDetails = false;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(raw);
+            if (doc.RootElement.TryGetProperty("isProjectDetails", out var ipdProp))
+            {
+                isProjectDetails = ipdProp.GetBoolean();
+            }
+        }
+        catch {}
     }
 
     public void Dispose()

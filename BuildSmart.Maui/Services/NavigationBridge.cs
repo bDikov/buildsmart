@@ -60,9 +60,9 @@ public class NavigationBridge : INavigationBridge
                         "TradesmanBookingDashboard" => "/tradesman-booking-dashboard",
                         "Checkout" => "/checkout",
                         "BookingDashboard" => "/booking-dashboard",
-                        "CategoryManagement" => "/category-management",
-                        "CategoryDetail" => "/category-detail",
-                        "AdminCategorySkus" => "/admin-category-skus",
+                        "CategoryManagement" => "/admin/spider-net",
+                        "CategoryDetail" => "/admin/spider-net",
+                        "AdminCategorySkus" => "/admin/spider-net",
                         _ => pathPart
                     };
                     blazorUrl = mappedPath + queryPart;

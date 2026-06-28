@@ -679,7 +679,9 @@ public class AppDbContext : DbContext
             { "TILE-003", "TILE-LAMINATE" },
             { "TILE-004", "TILE-PREP-LEVEL" },
             { "DEMO-001", "DEMO-FLOOR-TILE" },
-            { "DEMO-002", "DEMO-WALL-CONC" }
+            { "DEMO-002", "DEMO-WALL-CONC" },
+            { "DRYW-INSUL-WALL", "DRYW-INSUL-PARTITION" },
+            { "DRYW-INSULATION", "DRYW-INSUL-PARTITION" }
         };
 
         foreach (var entry in legacyToNewMap)

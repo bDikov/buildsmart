@@ -134,9 +134,7 @@ builder.Services.AddTransient<PlaceBidViewModel>();
 builder.Services.AddTransient<PassedAuctionsViewModel>();
 
 // Admin ViewModels
-builder.Services.AddTransient<CategoryManagementViewModel>();
-builder.Services.AddTransient<CategoryDetailViewModel>();
-builder.Services.AddTransient<AdminCategorySkusViewModel>();
+
 builder.Services.AddTransient<AdminJobReviewViewModel>();
 builder.Services.AddTransient<UserManagementViewModel>();
 builder.Services.AddTransient<UserEditViewModel>();
