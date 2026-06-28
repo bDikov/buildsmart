@@ -36,11 +36,11 @@
                     </button>
                     <div class="header-content">
                         <h2 class="page-title">@ViewModel.Project.Title</h2>
-                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@Loc[$"Status_{ViewModel.Project.Status}"]</span>
-                        @if (ViewModel.Project.Status == ProjectStatus.UnderReview)
+                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@GetProjectDisplayStatus()</span>
+                        @if (ShouldShowConsultationBadge())
                         {
                             <span class="status-badge status-underreview ms-2" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
-                                Заявена Консултация
+                                @(IsBulgarian() ? "Заявена Консултация" : "Consultation Requested")
                             </span>
                         }
                     </div>
@@ -269,6 +269,44 @@
     private bool IsBulgarian()
     {
         return System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetProjectDisplayStatus()
+    {
+        if (ViewModel.Project == null) return string.Empty;
+
+        if (ViewModel.Project.Status == ProjectStatus.UnderReview)
+        {
+            var jobs = ViewModel.Project.JobPosts;
+            if (jobs != null && jobs.Any())
+            {
+                if (jobs.Any(jp => jp.Status == JobPostStatus.Draft || jp.Status == JobPostStatus.GeneratingScope))
+                {
+                    return Loc["Status_GeneratingScope"];
+                }
+                
+                if (jobs.Any(jp => jp.Status == JobPostStatus.WaitingForUserReview))
+                {
+                    return Loc["Status_WaitingForUserReview"];
+                }
+            }
+        }
+
+        return Loc[$"Status_{ViewModel.Project.Status}"];
+    }
+
+    private bool ShouldShowConsultationBadge()
+    {
+        if (ViewModel.Project == null) return false;
+        if (ViewModel.Project.Status != ProjectStatus.UnderReview) return false;
+        
+        var jobs = ViewModel.Project.JobPosts;
+        if (jobs == null || !jobs.Any()) return true;
+        
+        return !jobs.Any(jp => 
+            jp.Status == JobPostStatus.WaitingForUserReview || 
+            jp.Status == JobPostStatus.Draft || 
+            jp.Status == JobPostStatus.GeneratingScope);
     }
 
     private async Task ScrollToJobPosts()

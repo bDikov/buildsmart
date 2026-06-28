@@ -88,12 +88,12 @@
                                 <h3 class="project-title">@(string.IsNullOrEmpty(project.Title) ? Loc["Projects_Untitled"] : project.Title)</h3>
                                 <div class="status-badge-container">
                                     <span class="status-pill status-@project.Status.ToString().ToLower()">
-                                        @FormatStatus(project.Status)
+                                        @GetProjectDisplayStatus(project)
                                     </span>
-                                    @if (project.Status == ProjectStatus.UnderReview)
+                                    @if (ShouldShowConsultationBadge(project))
                                     {
                                         <span class="status-pill status-underreview" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
-                                            Заявена Консултация
+                                            @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase) ? "Заявена Консултация" : "Consultation Requested")
                                         </span>
                                     }
                                 </div>
@@ -615,9 +615,39 @@
         return (int)(total / project.JobPosts.Count);
     }
 
-    private string FormatStatus(ProjectStatus status)
+    private string GetProjectDisplayStatus(BuildSmart.SharedUI.GraphQL.IProjectDetails project)
     {
-        return Loc[$"Status_{status}"];
+        if (project.Status == ProjectStatus.UnderReview)
+        {
+            var jobs = project.JobPosts;
+            if (jobs != null && jobs.Any())
+            {
+                if (jobs.Any(jp => jp.Status == JobPostStatus.Draft || jp.Status == JobPostStatus.GeneratingScope))
+                {
+                    return Loc["Status_GeneratingScope"];
+                }
+                
+                if (jobs.Any(jp => jp.Status == JobPostStatus.WaitingForUserReview))
+                {
+                    return Loc["Status_WaitingForUserReview"];
+                }
+            }
+        }
+
+        return Loc[$"Status_{project.Status}"];
+    }
+
+    private bool ShouldShowConsultationBadge(BuildSmart.SharedUI.GraphQL.IProjectDetails project)
+    {
+        if (project.Status != ProjectStatus.UnderReview) return false;
+        
+        var jobs = project.JobPosts;
+        if (jobs == null || !jobs.Any()) return true;
+        
+        return !jobs.Any(jp => 
+            jp.Status == JobPostStatus.WaitingForUserReview || 
+            jp.Status == JobPostStatus.Draft || 
+            jp.Status == JobPostStatus.GeneratingScope);
     }
 
     private void HandleProjectClick(BuildSmart.SharedUI.GraphQL.IProjectDetails project)
