@@ -54,64 +54,65 @@
 
                 @if (ViewModel.HasAnyEstimatedPrices || IsGeneratingScope())
                 {
-                    <div class="overall-total-card @(IsGeneratingScope() ? "generating" : "") d-flex flex-column align-items-center justify-content-center p-4 text-center mb-3">
+                    <div class="overall-total-card @(IsGeneratingScope() ? "generating" : "") @(CanScrollToTasks() ? "interactive" : "") text-center mb-3" @onclick="HandleCardClick">
                         @if (IsGeneratingScope())
                         {
-                            <div class="d-flex justify-content-center align-items-center gap-3 mb-2 flex-wrap">
-                                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
-                                @if (ViewModel.HasAnyEstimatedPrices)
-                                {
-                                    <span class="overall-total-label">@Loc["GeneratedOffer_TotalValue"] @(IsBulgarian() ? "(останалите се изчисляват...)" : "(remaining are being calculated...)"):</span>
-                                    <span class="overall-total-value font-monospace">€@ViewModel.OverallTotalEstimatedPrice.ToString("F2")</span>
-                                }
-                                else
-                                {
-                                    <span class="overall-total-label" style="color: var(--color-primary); font-weight: 800;">@(IsBulgarian() ? "Изчисляваме подробния разчет в реално време..." : "Calculating detailed estimate in real-time...")</span>
-                                }
+                            <div class="total-status-badge calculating">
+                                <span class="status-dot"></span>
+                                <span>@(IsBulgarian() ? "Изчисляване в реално време..." : "Calculating in real-time...")</span>
                             </div>
-                            <p class="overall-total-desc mb-3">
-                                @if (IsBulgarian())
-                                {
-                                    <span>Нашият AI строителен мениджър изготвя подробен Количествено-стойностен разчет. Можете да <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">следите прогреса по-долу</a> в реално време.</span>
-                                }
-                                else
-                                {
-                                    <span>Our AI construction manager is preparing a detailed Quantity-Cost estimate. You can <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">track the progress below</a> in real-time.</span>
-                                }
-                            </p>
+                            
                             @if (ViewModel.HasAnyEstimatedPrices)
                             {
-                                <div class="d-flex gap-3 justify-content-center flex-wrap w-100" style="max-width: 500px;">
-                                    <button type="button" class="cta-link-btn primary flex-grow-1" @onclick="ScrollToJobPosts">
-                                        🔍 @(IsBulgarian() ? "Разгледайте Задачите" : "Inspect Tasks & Pricing")
-                                    </button>
+                                <div class="overall-total-label">@Loc["GeneratedOffer_TotalValue"] @(IsBulgarian() ? "(останалите се изчисляват...)" : "(remaining are being calculated...)")</div>
+                                <div class="price-display">
+                                    <span class="price-currency">€</span>
+                                    <span class="price-amount-integer">@GetFormattedIntegerPart(ViewModel.OverallTotalEstimatedPrice)</span>
+                                    <span class="price-amount-decimal">@GetDecimalSeparator()@GetFormattedDecimalPart(ViewModel.OverallTotalEstimatedPrice)</span>
                                 </div>
                             }
+                            else
+                            {
+                                <div class="price-display loading-text">
+                                    <span>@(IsBulgarian() ? "Подготовка..." : "Preparing...")</span>
+                                </div>
+                            }
+                            
+                            <p class="overall-total-desc mb-0">
+                                @if (IsBulgarian())
+                                {
+                                    <span>Нашият AI строителен мениджър изготвя подробен Количествено-стойностен разчет. Можете да следите прогреса по-долу в реално време.</span>
+                                }
+                                else
+                                {
+                                    <span>Our AI construction manager is preparing a detailed Quantity-Cost estimate. You can track the progress below in real-time.</span>
+                                }
+                            </p>
                         }
                         else
                         {
-                            <div class="d-flex justify-content-center align-items-center gap-3 mb-2 flex-wrap">
-                                <span class="overall-total-label">@Loc["GeneratedOffer_TotalValue"]:</span>
-                                <span class="overall-total-value font-monospace">€@ViewModel.OverallTotalEstimatedPrice.ToString("F2")</span>
+                            <div class="total-status-badge ready">
+                                <span class="status-dot"></span>
+                                <span>@(IsBulgarian() ? "Готов индивидуален разчет" : "Individual Estimate Ready")</span>
                             </div>
-                            <p class="overall-total-desc mb-3" style="font-weight: 500; font-size: 0.95rem;">
+                            
+                            <div class="overall-total-label">@Loc["GeneratedOffer_TotalValue"]</div>
+                            <div class="price-display">
+                                <span class="price-currency">€</span>
+                                <span class="price-amount-integer">@GetFormattedIntegerPart(ViewModel.OverallTotalEstimatedPrice)</span>
+                                <span class="price-amount-decimal">@GetDecimalSeparator()@GetFormattedDecimalPart(ViewModel.OverallTotalEstimatedPrice)</span>
+                            </div>
+                            
+                            <p class="overall-total-desc mb-0">
                                 @if (IsBulgarian())
                                 {
-                                    <span>Вашият индивидуален ценови разчет е готов! <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">Разгледайте задачите по категории</a> или директно <a href="" @onclick="HandleNextAction" @onclick:preventDefault class="cta-inline-link">@GetNextActionInlineText()</a>.</span>
+                                    <span>Вашият индивидуален ценови разчет е готов! Кликнете тук, за да разгледате разчета по категории, или изтеглете офертата от следващите стъпки по-долу.</span>
                                 }
                                 else
                                 {
-                                    <span>Your custom price estimate is ready! <a href="" @onclick="ScrollToJobPosts" @onclick:preventDefault class="cta-inline-link">Review the category breakdowns</a> or directly <a href="" @onclick="HandleNextAction" @onclick:preventDefault class="cta-inline-link">@GetNextActionInlineText()</a>.</span>
+                                    <span>Your custom price estimate is ready! Click here to inspect the category breakdowns, or download the offer from the next steps below.</span>
                                 }
                             </p>
-                            <div class="d-flex gap-3 justify-content-center flex-wrap w-100" style="max-width: 500px;">
-                                <button type="button" class="cta-link-btn primary flex-grow-1" @onclick="ScrollToJobPosts">
-                                    📋 @(IsBulgarian() ? "Разгледайте Задачите" : "Inspect Tasks & Pricing")
-                                </button>
-                                <button type="button" class="cta-link-btn success flex-grow-1" @onclick="HandleNextAction">
-                                    @GetNextActionButtonText()
-                                </button>
-                            </div>
                         }
                     </div>
                 }
@@ -318,15 +319,46 @@
         
         if (isMasterOfferReady)
         {
-            return IsBulgarian() ? "📥 Изтеглете Офертата" : "📥 Download Offer";
+            return IsBulgarian() ? "Изтеглете Офертата" : "Download Offer";
         }
         else if (draftJobs != null && draftJobs.Any())
         {
-            return IsBulgarian() ? "✍️ Продължете Въпросника" : "✍️ Resume Questionnaire";
+            return IsBulgarian() ? "Продължете Въпросника" : "Resume Questionnaire";
         }
         else
         {
-            return IsBulgarian() ? "🚀 Изпратете за Преглед" : "🚀 Submit for Review";
+            return IsBulgarian() ? "Изпратете за Преглед" : "Submit for Review";
+        }
+    }
+
+    private string GetFormattedIntegerPart(decimal price)
+    {
+        var rounded = Math.Truncate(price);
+        return rounded.ToString("N0", System.Globalization.CultureInfo.CurrentUICulture);
+    }
+
+    private string GetFormattedDecimalPart(decimal price)
+    {
+        var cents = Math.Round((price - Math.Truncate(price)) * 100);
+        if (cents < 0) cents = -cents;
+        return cents.ToString("00");
+    }
+
+    private string GetDecimalSeparator()
+    {
+        return System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator;
+    }
+
+    private bool CanScrollToTasks()
+    {
+        return !IsGeneratingScope() || ViewModel.HasAnyEstimatedPrices;
+    }
+
+    private async Task HandleCardClick()
+    {
+        if (CanScrollToTasks())
+        {
+            await ScrollToJobPosts();
         }
     }
 
