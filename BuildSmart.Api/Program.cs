@@ -58,6 +58,33 @@ public partial class Program
 				o.Debug = true; // Helpful for initial setup verification
 				o.TracesSampleRate = 1.0;
 				o.EnableLogs = true; // Enable Sentry logging
+				o.SetBeforeSend((@event, hint) => 
+				{
+					if (@event.Exception != null)
+					{
+						var exType = @event.Exception.GetType().FullName;
+						var exMessage = @event.Exception.Message;
+						
+						if (exType != null && exType.Contains("Puppeteer") && exMessage != null && exMessage.Contains("Response body is unavailable"))
+						{
+							return null; // Don't report to Sentry
+						}
+						
+						if (@event.Exception is AggregateException aggEx)
+						{
+							foreach (var inner in aggEx.InnerExceptions)
+							{
+								var innerType = inner.GetType().FullName;
+								var innerMsg = inner.Message;
+								if (innerType != null && innerType.Contains("Puppeteer") && innerMsg != null && innerMsg.Contains("Response body is unavailable"))
+								{
+									return null; // Don't report
+								}
+							}
+						}
+					}
+					return @event;
+				});
 			});
 		}
 
