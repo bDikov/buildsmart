@@ -749,22 +749,22 @@
     <value>We manage the entire process so you don't have to.</value>
   </data>
   <data name="Feed_BenefitNoAdvanceTitle" xml:space="preserve">
-    <value>0% Advance Payments</value>
+    <value>0% Advance. Pay for completed work!</value>
   </data>
   <data name="Feed_BenefitNoAdvanceDesc" xml:space="preserve">
-    <value>Pay only after each task is fully completed.</value>
+    <value>No risk for you – any mistakes are resolved entirely at our own expense.</value>
   </data>
   <data name="Feed_BenefitNoVisitsTitle" xml:space="preserve">
-    <value>No Site-Visit Costs</value>
+    <value>Competitive pricing, zero hidden fees.</value>
   </data>
   <data name="Feed_BenefitNoVisitsDesc" xml:space="preserve">
-    <value>Get transparent calculations without wasting time or money.</value>
+    <value>We want your project to be yet another testament to our professionalism!</value>
   </data>
   <data name="Feed_BenefitNoStressTitle" xml:space="preserve">
-    <value>Zero Stress Management</value>
+    <value>Renovation without frayed nerves!</value>
   </data>
   <data name="Feed_BenefitNoStressDesc" xml:space="preserve">
-    <value>We manage tradesmen, transport, and cleanup. You deal only with the app.</value>
+    <value>Your peace of mind is our responsibility; your dreams are our well-done job!</value>
   </data>
   <data name="Feed_FaqSectionLink" xml:space="preserve">
     <value>Learn More in our FAQ</value>
@@ -789,5 +789,21 @@
   </data>
   <data name="JobWizard_AiRequestsExceeded" xml:space="preserve">
     <value>Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.</value>
+  </data>
+  <data name="Feed_HeroTitle" xml:space="preserve">
+    <value>Making dreams come true!</value>
+  </data>
+  <data name="Feed_HeroMiniSlogan" xml:space="preserve">
+    <value>Your smart renovation partner</value>
+  </data>
+
+  <data name="Feed_HeroSubtitle" xml:space="preserve">
+    <value>Like Pinterest and Instagram, but in your own home – and completely filter-free. Find out exactly how much your renovation will cost now: zero paid visits, annoying calls, or runaround.</value>
+  </data>
+  <data name="Feed_HeroCta" xml:space="preserve">
+    <value>Calculate your renovation cost now, for FREE</value>
+  </data>
+  <data name="Feed_VideoCaption" xml:space="preserve">
+    <value>All videos show real projects completed by our own builders with fixed deadlines and clear conditions.</value>
   </data>
 </root>

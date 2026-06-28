@@ -752,22 +752,22 @@
     <value>Ние управляваме целия процес, за да не се налага на вас.</value>
   </data>
   <data name="Feed_BenefitNoAdvanceTitle" xml:space="preserve">
-    <value>0% авансово плащане</value>
+    <value>0% Аванс. - Плащате за свършена работа!</value>
   </data>
   <data name="Feed_BenefitNoAdvanceDesc" xml:space="preserve">
-    <value>Плащайте само след като задачата е напълно завършена.</value>
+    <value>Няма риск за вас – ако направим грешка, я коригираме изцяло за наша сметка.</value>
   </data>
   <data name="Feed_BenefitNoVisitsTitle" xml:space="preserve">
-    <value>Без платени огледи</value>
+    <value>Конкурентни цени без скрити такси.</value>
   </data>
   <data name="Feed_BenefitNoVisitsDesc" xml:space="preserve">
-    <value>Вземете прозрачна цена предварително, без излишни посещения.</value>
+    <value>Искаме вашият проект да бъде поредното доказателство за нашия професионализъм!</value>
   </data>
   <data name="Feed_BenefitNoStressTitle" xml:space="preserve">
-    <value>Нулев стрес и организация</value>
+    <value>Ремонт без скъсани нерви!</value>
   </data>
   <data name="Feed_BenefitNoStressDesc" xml:space="preserve">
-    <value>Ние организираме майстори, транспорт и почистване. Комуникирате само с приложението.</value>
+    <value>Вашето спокойствие е наша отговорност, а мечтите ви – нашата добре свършена работа!</value>
   </data>
   <data name="Feed_FaqSectionLink" xml:space="preserve">
     <value>Научете повече в Често задавани въпроси</value>
@@ -792,5 +792,21 @@
   </data>
   <data name="JobWizard_AiRequestsExceeded" xml:space="preserve">
     <value>Моля, изберете по-малко категории, за да се вместите в оставащия ви месечен лимит от {0} заявки към изкуствения интелект. Избрали сте {1} категории. Можете също така да се свържете с поддръжката, за да надстроите профила си.</value>
+  </data>
+  <data name="Feed_HeroTitle" xml:space="preserve">
+    <value>Сбъдваме мечти!</value>
+  </data>
+  <data name="Feed_HeroMiniSlogan" xml:space="preserve">
+    <value>Вашият интелигентен съдружник за ремонти</value>
+  </data>
+
+  <data name="Feed_HeroSubtitle" xml:space="preserve">
+    <value>Като Pinterest и Instagram, но във вашия собствен дом – и напълно без филтри. Разберете колко точно ще струва вашият ремонт сега: без платени огледи, досадни разговори и излишно овъртане.</value>
+  </data>
+  <data name="Feed_HeroCta" xml:space="preserve">
+    <value>Пресметнете вашия ремонт веднага, БЕЗПЛАТНО</value>
+  </data>
+  <data name="Feed_VideoCaption" xml:space="preserve">
+    <value>Всички видеа показват реални обекти, изпълнени от нашите собствени майстори при фиксирани срокове и напълно ясни условия.</value>
   </data>
 </root>

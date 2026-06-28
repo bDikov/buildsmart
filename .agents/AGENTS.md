@@ -38,3 +38,17 @@
   - The pricing engine dynamically parses string numbers into `decimal` and string booleans into `bool` before NCalc formula evaluation.
   - If a task evaluates to `€0.00` total, it is automatically dropped from the final offer to prevent empty tasks from showing on the PDF/UI. Every formula must evaluate to a positive decimal for its corresponding task to be included.
 - **System Categories**: Under the Category Edit Form, checking **"Is Project Details (System Category)"** serializes `"isProjectDetails": true` at the root of the category's `TemplateStructure` JSON. The wizard checks `IsProjectDetailsCategory` to identify this category for project-wide details (such as location and budget) and filters it out of the selectable trade categories step.
+
+## 7. Frontend, Theme Compliance & Localization
+- **Style and Theme Compliance**: Always adhere strictly to the project's CSS design system. Never hardcode colors (e.g., `#FFFFFF`, `rgba(0,0,0,0.1)`) inside Razor components or stylesheets. Always use CSS variables (e.g., `var(--bg-card)`, `var(--text-primary)`, `var(--color-primary)`) to ensure native Dark/Light mode theme parity.
+- **Typography Sizing**: Never hardcode font sizes, line heights, or font weights individually. Use the official typography tokens (`font: var(--font-h0)` to `font: var(--font-h6)`, `var(--font-body-1)`, `var(--font-body-2)`) through the CSS `font` shorthand property.
+- **Strict Text Localization**: Hardcoded user-facing strings or placeholders in Razor components are prohibited. Always define localized values in the localization resource files (`AppResources.resx` and `AppResources.bg.resx`) and bind them dynamically using the `@Loc["ResourceKey"]` pattern.
+- **Prohibition of Emojis**: Do not use emojis (such as 🛡️, 🚀, ⚙️) in any user-facing text, buttons, labels, or captions. They are prohibited by project policy to maintain a clean, premium, and professional aesthetic.
+
+## 8. Figma MCP Server Configuration
+- **Figma MCP Server Name**: The local Figma parser is registered under the server name `"fig"` (not `"figma"`, `"figma-local"`, or `"local_figma"`). It runs the `@bilalba/fig-mcp` package configured in `settings.json`.
+- **Invoking Figma MCP Tools**: When querying local `.fig` files, call tools like `mcp_fig_get_tree_summary` or `mcp_fig_get_node_details` specifically on the `"fig"` server:
+  - **ServerName**: `"fig"`
+  - **ToolName**: `"mcp_fig_get_tree_summary"` (gets tree structure) or `"mcp_fig_get_node_details"` (gets node coordinates, spacing, and styles).
+  - **Arguments**: `{"path": "C:\\absolute\\path\\to\\design.fig"}`
+

@@ -2,6 +2,7 @@
 @attribute [AllowAnonymous]
 @layout BuildSmart.SharedUI.Components.Layout.BlankLayout
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <div class="legal-page-container">
     <div class="legal-card bs-card">
@@ -346,9 +347,9 @@
         activeTab[index] = tab;
     }
 
-    private void GoBack()
+    private async Task GoBack()
     {
-        NavManager.NavigateTo("/user-profile");
+        await JSRuntime.InvokeVoidAsync("history.back");
     }
 
     private class FaqItem

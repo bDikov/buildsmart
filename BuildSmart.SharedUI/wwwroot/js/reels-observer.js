@@ -100,6 +100,16 @@ window.reelsObserver = {
         const element = document.getElementById(wrapperId);
         const videoElement = document.getElementById(videoId);
 
+        if (videoElement) {
+            const existingPlayer = this.players[videoId];
+            if (existingPlayer && existingPlayer.media !== videoElement) {
+                try {
+                    existingPlayer.destroy();
+                } catch(e) {}
+                delete this.players[videoId];
+            }
+        }
+
         if (videoElement && !this.players[videoId]) {
             this.players[videoId] = new Plyr(videoElement, {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
@@ -250,6 +260,11 @@ window.reelsObserver = {
         }
         this.players = {};
         this.playPromises = {};
+        
+        const container = document.getElementById("reels-feed-container");
+        if (container) {
+            container.scrollTop = 0;
+        }
     },
 
     togglePlayback: function (videoId) {
