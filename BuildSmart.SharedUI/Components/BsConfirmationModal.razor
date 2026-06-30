@@ -1,0 +1,163 @@
+@namespace BuildSmart.SharedUI.Components
+
+@if (IsVisible)
+{
+    <div class="bs-modal-overlay" @onclick="HandleCancel">
+        <div class="bs-modal-card bs-card" @onclick:stopPropagation="true">
+            <div class="bs-modal-icon-container">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            
+            <h3 class="bs-modal-title">@Title</h3>
+            <p class="bs-modal-message">@Message</p>
+            
+            <div class="bs-modal-actions">
+                <button type="button" class="bs-modal-btn bs-btn-cancel" @onclick="HandleCancel">@CancelText</button>
+                <button type="button" class="bs-modal-btn bs-btn-confirm" @onclick="HandleConfirm">@AcceptText</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .bs-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+        animation: bsModalFadeIn 0.2s ease-out;
+    }
+
+    .bs-modal-card {
+        width: 100%;
+        max-width: 400px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        padding: 32px 24px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-sizing: border-box;
+        animation: bsModalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bs-modal-icon-container {
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+        background-color: rgba(99, 102, 241, 0.1);
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .bs-modal-title {
+        font-family: var(--font-heading), sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 12px 0;
+    }
+
+    .bs-modal-message {
+        font-family: var(--font-primary), sans-serif;
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0 0 28px 0;
+    }
+
+    .bs-modal-actions {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .bs-modal-btn {
+        flex: 1;
+        padding: 12px 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .bs-btn-confirm {
+        background-color: var(--color-primary);
+        color: #ffffff;
+    }
+
+    .bs-btn-confirm:hover {
+        background-color: var(--color-primary-hover, var(--color-primary));
+        transform: translateY(-1px);
+    }
+
+    .bs-btn-cancel {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .bs-btn-cancel:hover {
+        background-color: var(--border-color);
+    }
+
+    @@keyframes bsModalFadeIn {
+        from { background: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
+        to { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); }
+    }
+
+    @@keyframes bsModalSlideUp {
+        from { transform: translateY(20px) scale(0.95); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public string AcceptText { get; set; } = "Proceed";
+
+    [Parameter]
+    public string CancelText { get; set; } = "Stay";
+
+    [Parameter]
+    public EventCallback<bool> OnConfirmationChanged { get; set; }
+
+    private async Task HandleConfirm()
+    {
+        await OnConfirmationChanged.InvokeAsync(true);
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnConfirmationChanged.InvokeAsync(false);
+    }
+}

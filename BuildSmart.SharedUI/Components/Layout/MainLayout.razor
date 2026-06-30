@@ -184,7 +184,7 @@
                     </div>
                 </div>
             }
-            <button class="logout-btn" @onclick="LogoutAsync" @onclick:preventDefault title="@(_isGuest ? "Exit Chat" : "Logout")">
+            <button class="logout-btn" @onclick="ShowLogoutConfirmation" @onclick:preventDefault title="@(_isGuest ? "Exit Chat" : "Logout")">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2 2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </button>
         </div>
@@ -251,6 +251,21 @@
             </a>
         </div>
     }
+    <!-- Auth Prompt Modal -->
+    <BsConfirmationModal IsVisible="_showAuthModal"
+                         Title="@Loc["Feed_AuthAlert_Title"]"
+                         Message="@Loc["Feed_AuthAlert_Message"]"
+                         AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+                         CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+                         OnConfirmationChanged="OnAuthConfirmationChanged" />
+
+    <!-- Logout Confirmation Modal -->
+    <BsConfirmationModal IsVisible="_showLogoutModal"
+                         Title="@Loc["MainLayout_LogoutAlert_Title"]"
+                         Message="@Loc["MainLayout_LogoutAlert_Message"]"
+                         AcceptText="@Loc["MainLayout_LogoutAlert_Accept"]"
+                         CancelText="@Loc["MainLayout_LogoutAlert_Cancel"]"
+                         OnConfirmationChanged="OnLogoutConfirmationChanged" />
 </div>
 
 <style>
@@ -859,10 +874,55 @@
         _isSidebarOpen = false;
     }
 
+    private bool _showAuthModal = false;
+    private bool _showLogoutModal = false;
+    private string? _pendingNavigationRoute;
+
     private void Navigate(string route)
     {
         CloseSidebar();
+        
+        bool isRestricted = route.Contains("/my-projects") || 
+                            route.Contains("/user-profile") || 
+                            route.Contains("/job-wizard");
+                            
+        if (isRestricted && AuthService != null && !AuthService.IsAuthenticated)
+        {
+            _pendingNavigationRoute = route;
+            _showAuthModal = true;
+            StateHasChanged();
+            return;
+        }
+
         NavigationBridge.NavigateToAsync(route);
+    }
+
+    private void OnAuthConfirmationChanged(bool proceed)
+    {
+        _showAuthModal = false;
+        if (proceed && !string.IsNullOrEmpty(_pendingNavigationRoute))
+        {
+            NavigationBridge.NavigateToAsync(_pendingNavigationRoute);
+        }
+        _pendingNavigationRoute = null;
+        StateHasChanged();
+    }
+
+    private void ShowLogoutConfirmation()
+    {
+        CloseSidebar();
+        _showLogoutModal = true;
+        StateHasChanged();
+    }
+
+    private async Task OnLogoutConfirmationChanged(bool confirmed)
+    {
+        _showLogoutModal = false;
+        if (confirmed)
+        {
+            await LogoutAsync();
+        }
+        StateHasChanged();
     }
 
     private async Task LogoutAsync()

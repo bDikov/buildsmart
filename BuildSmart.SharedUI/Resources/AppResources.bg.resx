@@ -119,7 +119,7 @@
     <value>Създай акаунт</value>
   </data>
   <data name="Nav_Marketplace" xml:space="preserve">
-    <value>Пазар</value>
+    <value>Начало</value>
   </data>
   <data name="Nav_MyProjects" xml:space="preserve">
     <value>Моите Проекти</value>
@@ -853,5 +853,29 @@
   </data>
   <data name="Projects_LoadMore" xml:space="preserve">
     <value>Зареди още проекти ({0} оставащи)</value>
+  </data>
+  <data name="Feed_AuthAlert_Title" xml:space="preserve">
+    <value>Нямате профил</value>
+  </data>
+  <data name="Feed_AuthAlert_Message" xml:space="preserve">
+    <value>Не сте влезли в профила си. Искате ли да продължите към вход или да останете на страницата?</value>
+  </data>
+  <data name="Feed_AuthAlert_Accept" xml:space="preserve">
+    <value>Продължи</value>
+  </data>
+  <data name="Feed_AuthAlert_Cancel" xml:space="preserve">
+    <value>Остани</value>
+  </data>
+  <data name="MainLayout_LogoutAlert_Title" xml:space="preserve">
+    <value>Изход</value>
+  </data>
+  <data name="MainLayout_LogoutAlert_Message" xml:space="preserve">
+    <value>Сигурни ли сте, че искате да излезете от профила си?</value>
+  </data>
+  <data name="MainLayout_LogoutAlert_Accept" xml:space="preserve">
+    <value>Изход</value>
+  </data>
+  <data name="MainLayout_LogoutAlert_Cancel" xml:space="preserve">
+    <value>Отказ</value>
   </data>
 </root>

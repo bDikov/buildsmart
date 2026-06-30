@@ -50,7 +50,7 @@
 			                <span>@Loc["Profile_PrivacyLink"]</span>
 			            </a>
 			            
-			            <button type="button" class="legal-card-link logout-link-mobile" @onclick="LogoutAsync" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); width: 100%; text-align: left; cursor: pointer; box-sizing: border-box; font-family: inherit;">
+			            <button type="button" class="legal-card-link logout-link-mobile" @onclick="ShowLogoutConfirmation" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); width: 100%; text-align: left; cursor: pointer; box-sizing: border-box; font-family: inherit;">
 			                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgb(255, 107, 107)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 			                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
 			                    <polyline points="16 17 21 12 16 7"></polyline>
@@ -111,6 +111,13 @@
 			</div>
 		}
 	}
+	<!-- Logout Confirmation Modal -->
+	<BsConfirmationModal IsVisible="_showLogoutModal"
+						 Title="@Loc["MainLayout_LogoutAlert_Title"]"
+						 Message="@Loc["MainLayout_LogoutAlert_Message"]"
+						 AcceptText="@Loc["MainLayout_LogoutAlert_Accept"]"
+						 CancelText="@Loc["MainLayout_LogoutAlert_Cancel"]"
+						 OnConfirmationChanged="OnLogoutConfirmationChanged" />
 </div>
 
 <style>
@@ -351,6 +358,22 @@
 	{
 		await ViewModel.SaveProfileCommand.ExecuteAsync(null);
 		_showEditModal = false;
+	}
+
+	private bool _showLogoutModal = false;
+
+	private void ShowLogoutConfirmation()
+	{
+		_showLogoutModal = true;
+	}
+
+	private async Task OnLogoutConfirmationChanged(bool confirmed)
+	{
+		_showLogoutModal = false;
+		if (confirmed)
+		{
+			await LogoutAsync();
+		}
 	}
 
 	private async Task LogoutAsync()

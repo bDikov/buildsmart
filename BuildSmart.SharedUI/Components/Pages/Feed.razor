@@ -9,6 +9,7 @@
 @inject FeedPageViewModel ViewModel
 @inject NavigationManager NavManager
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
 
 <ErrorBoundary>
     <ChildContent>
@@ -78,7 +79,7 @@
                                                 
                                                 <!-- Main CTA Button -->
                                                 <button class="bs-btn-primary bs-hero-cta py-3 px-4 w-100 mb-3" 
-                                                        @onclick='() => NavManager.NavigateTo(ViewModel.SelectedCategoryId.HasValue ? $"/job-wizard?TargetCategoryId={ViewModel.SelectedCategoryId.Value}" : "/job-wizard")'>
+                                                        @onclick="HandleCreateProjectClick">
                                                     @Loc["Feed_HeroCta"]
                                                 </button>
 
@@ -319,6 +320,13 @@
     </ErrorContent>
 </ErrorBoundary>
 
+<BsConfirmationModal IsVisible="_showAuthModal"
+                     Title="@Loc["Feed_AuthAlert_Title"]"
+                     Message="@Loc["Feed_AuthAlert_Message"]"
+                     AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+                     CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+                     OnConfirmationChanged="OnAuthConfirmationChanged" />
+
 <style>
     /* --- SWIPE CAROUSEL --- */
     .bs-carousel-container {
@@ -346,6 +354,8 @@
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
+        align-items: center;
+        text-align: center;
     }
     .bs-carousel-indicators {
         display: flex;
@@ -792,6 +802,11 @@
         .bs-hero-cta {
             margin: 0;
         }
+
+        .bs-carousel-slide {
+            align-items: flex-start;
+            text-align: left;
+        }
     }
 
     @@media (max-width: 991px) {
@@ -1118,6 +1133,37 @@
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    private bool _showAuthModal = false;
+
+    private void HandleCreateProjectClick()
+    {
+        if (AuthService != null && !AuthService.IsAuthenticated)
+        {
+            _showAuthModal = true;
+        }
+        else
+        {
+            NavigateToWizard();
+        }
+    }
+
+    private void OnAuthConfirmationChanged(bool proceed)
+    {
+        _showAuthModal = false;
+        if (proceed)
+        {
+            NavigateToWizard();
+        }
+    }
+
+    private void NavigateToWizard()
+    {
+        string targetUrl = ViewModel.SelectedCategoryId.HasValue 
+            ? $"/job-wizard?TargetCategoryId={ViewModel.SelectedCategoryId.Value}" 
+            : "/job-wizard";
+        NavManager.NavigateTo(targetUrl);
     }
 
     public async ValueTask DisposeAsync()
