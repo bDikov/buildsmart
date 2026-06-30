@@ -427,4 +427,78 @@ public class JobCreationTests : TestBase
         var validationErrors = Page.Locator(".text-danger"); // Standard bootstrap validation
         await Expect(validationErrors).ToHaveCountAsync(0);
     }
+
+    [Test]
+    public async Task GuestUser_JobWizard_ProceedsWithoutAuth_AndShowsUserCategoryStep()
+    {
+        // 0. SEED DATA
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // Clear seeded global categories to avoid interfering
+        await dbContext.ServiceCategories.Where(c => c.IsGlobal).ExecuteDeleteAsync();
+        await dbContext.ServiceCategories.Where(c => c.Name == "Project Details").ExecuteDeleteAsync();
+        await dbContext.ServiceCategories.Where(c => c.Name == "User Information").ExecuteDeleteAsync();
+
+        var uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
+        var categoryName = $"Electrical-{uniqueId}";
+
+        var testCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = categoryName,
+            Status = CategoryStatus.Active,
+            Type = CategoryType.CategorySpecific,
+            TemplateStructure = "{\"questions\": [{\"id\":\"q1\",\"text\":\"How many sockets?\",\"type\":\"number\"}]}"
+        };
+
+        var userCategory = new ServiceCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = "User Information",
+            Status = CategoryStatus.Active,
+            Type = CategoryType.UserType,
+            TemplateStructure = @"{
+                ""questions"": [
+                    { ""id"": ""user_name"", ""text"": ""Full Name"", ""type"": ""text"", ""required"": true },
+                    { ""id"": ""user_email"", ""text"": ""Email Address"", ""type"": ""text"", ""required"": true },
+                    { ""id"": ""user_phone"", ""text"": ""Phone Number"", ""type"": ""text"", ""required"": true }
+                ]
+            }"
+        };
+
+        dbContext.ServiceCategories.Add(testCategory);
+        dbContext.ServiceCategories.Add(userCategory);
+        await dbContext.SaveChangesAsync();
+
+        // 1. Act - Navigate to Job Wizard directly without logging in (guest)
+        await Page.GotoAsync(BaseUrl + "/job-wizard");
+        Console.WriteLine($"[Test] Immediate URL: {Page.Url}");
+        await Task.Delay(3000);
+        Console.WriteLine($"[Test] URL after 3s delay: {Page.Url}");
+
+        // 2. Step 0: Category Selection
+        var wizardPage = new JobWizardPage(Page);
+        await wizardPage.SelectCategoryAsync(categoryName);
+        await wizardPage.ClickNextAsync();
+
+        // 3. Step 1: User Information (Should be injected since we are unauthenticated)
+        await wizardPage.ExpectQuestionVisibleAsync("Full Name");
+        await wizardPage.ExpectQuestionVisibleAsync("Email Address");
+        await wizardPage.ExpectQuestionVisibleAsync("Phone Number");
+
+        // Fill in guest details
+        await wizardPage.FillTextInputAsync("Full Name", "Guest User");
+        await wizardPage.FillTextInputAsync("Email Address", $"guest{uniqueId}@example.com");
+        await wizardPage.FillTextInputAsync("Phone Number", "0888123456");
+        await wizardPage.ClickNextAsync();
+
+        // 4. Step 2: Specific Category Questions
+        await wizardPage.ExpectQuestionVisibleAsync("How many sockets?");
+        await wizardPage.FillNumberInputAsync("How many sockets?", "5");
+        await wizardPage.ClickNextAsync();
+
+        // 5. Step 3: Review & Submit (Pre-final step)
+        await wizardPage.ClickNextAsync();
+    }
 }

@@ -18,8 +18,9 @@
             
             if (string.IsNullOrEmpty(token))
             {
-                // Truly unauthenticated, go to login
-                NavigationManager.NavigateTo("/login");
+                var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+                var returnUrl = "/" + relativePath;
+                NavigationManager.NavigateTo($"/login?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
             }
             else
             {

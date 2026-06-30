@@ -809,4 +809,49 @@
   <data name="Feed_VideoCaption" xml:space="preserve">
     <value>Всички видеа показват реални обекти, изпълнени от нашите собствени майстори при фиксирани срокове и напълно ясни условия.</value>
   </data>
+  <data name="TrustBadge_Guarantee_Title" xml:space="preserve">
+    <value>BuildSmart Гаранция</value>
+  </data>
+  <data name="TrustBadge_Guarantee_Desc" xml:space="preserve">
+    <value>Проверени изпълнители и гарантирано качество</value>
+  </data>
+  <data name="TrustBadge_Secure_Title" xml:space="preserve">
+    <value>Сигурност и Конфиденциалност</value>
+  </data>
+  <data name="TrustBadge_Secure_Desc" xml:space="preserve">
+    <value>Вашите данни са напълно защитени и GDPR съвместими</value>
+  </data>
+  <data name="TrustBadge_PriceLock_Title" xml:space="preserve">
+    <value>Гаранция на Цената</value>
+  </data>
+  <data name="TrustBadge_PriceLock_Desc" xml:space="preserve">
+    <value>Запазва офертните цени непроменени за 14 дни</value>
+  </data>
+  <data name="JobWizard_SelectCategories" xml:space="preserve">
+    <value>Изберете категории</value>
+  </data>
+  <data name="JobWizard_GeneralQuestions" xml:space="preserve">
+    <value>Общи въпроси</value>
+  </data>
+  <data name="JobWizard_CategoryQuestions" xml:space="preserve">
+    <value>Въпроси за {0}</value>
+  </data>
+  <data name="JobWizard_InfoStepTitle" xml:space="preserve">
+    <value>Данни за проекта</value>
+  </data>
+  <data name="JobWizard_Validation_Required" xml:space="preserve">
+    <value>Задължително</value>
+  </data>
+  <data name="JobWizard_Validation_ProjectDetails" xml:space="preserve">
+    <value>Моля, въведете заглавие, описание и местоположение на проекта.</value>
+  </data>
+  <data name="JobWizard_Validation_SelectCategory" xml:space="preserve">
+    <value>Моля, изберете поне една категория.</value>
+  </data>
+  <data name="JobWizard_Validation_RequiredQuestions" xml:space="preserve">
+    <value>Моля, отговорете на всички задължителни въпроси, отбелязани със (*).</value>
+  </data>
+  <data name="Projects_LoadMore" xml:space="preserve">
+    <value>Зареди още проекти ({0} оставащи)</value>
+  </data>
 </root>

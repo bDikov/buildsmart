@@ -384,7 +384,13 @@ public class AppDbContext : DbContext
             foreach (var kvp in seedData)
             {
                 var categoryName = kvp.Value.Name;
-                var isGlobal = kvp.Key == "global_category";
+                var categoryType = kvp.Key switch {
+                    "user_category" => CategoryType.UserType,
+                    "global_category" => CategoryType.Global,
+                    "project_details_category" => CategoryType.ProjectDetails,
+                    _ => CategoryType.CategorySpecific
+                };
+                var isGlobal = categoryType == CategoryType.Global;
 
                 var category = await ServiceCategories.Include(c => c.Translations).FirstOrDefaultAsync(c => c.Name == categoryName);
                 if (category == null)
@@ -395,6 +401,7 @@ public class AppDbContext : DbContext
                         Name = categoryName,
                         Status = CategoryStatus.Active,
                         IsGlobal = isGlobal,
+                        Type = categoryType,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -403,6 +410,7 @@ public class AppDbContext : DbContext
                 else
                 {
                     category.IsGlobal = isGlobal;
+                    category.Type = categoryType;
                 }
 
                 // Add or update BG translation for the UI

@@ -119,7 +119,12 @@ namespace BuildSmart.SharedUI.ViewModels
 		private async Task<bool> EnsureRoleDetectedAsync()
 		{
 			var token = await _authService.GetTokenAsync();
-			if (string.IsNullOrEmpty(token)) return false;
+			if (string.IsNullOrEmpty(token))
+			{
+				IsTradesman = false;
+				IsHomeowner = true;
+				return true;
+			}
 
 			var role = _authService.GetUserRoleFromToken(token);
 
@@ -221,7 +226,15 @@ namespace BuildSmart.SharedUI.ViewModels
 				}
 				else
 				{
-					await LoadHomeownerProjectsAsync();
+					var token = await _authService.GetTokenAsync();
+					if (!string.IsNullOrEmpty(token))
+					{
+						await LoadHomeownerProjectsAsync();
+					}
+					else
+					{
+						HasProjects = false;
+					}
 					await LoadCategoriesAsync();
 					await LoadFeedMediaAsync();
 				}
@@ -262,8 +275,8 @@ namespace BuildSmart.SharedUI.ViewModels
 						Categories.Clear();
 						var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
-						// Filter only Active categories and exclude Global category / Project Details category
-						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.IsGlobal != true && !IsProjectDetailsCategory(c.TemplateStructure)))
+						// Filter only Active categories of CategorySpecific type
+						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.Type == CategoryType.CategorySpecific))
 						{
 							// Find translation for current culture, fallback to default English name
 							var translation = cat.Translations?.FirstOrDefault(t => string.Equals(t.LanguageCode, currentCulture, StringComparison.OrdinalIgnoreCase));
@@ -490,20 +503,46 @@ namespace BuildSmart.SharedUI.ViewModels
 			FeedVideos.Add(CreateFeedMediaItem(media));
 		}
 
+		private string NormalizeLocalUrl(string? url)
+		{
+			if (string.IsNullOrEmpty(url)) return string.Empty;
+
+			// If it's a relative URL, prepend the API BaseUrl
+			if (url.StartsWith("/"))
+			{
+				var config = BuildSmart.SharedUI.Services.AppServiceLocator.ServiceResolver?.Invoke(typeof(Microsoft.Extensions.Configuration.IConfiguration)) as Microsoft.Extensions.Configuration.IConfiguration;
+				var baseUrl = config?["ApiConfig:BaseUrl"] ?? "https://localhost:7212";
+				return $"{baseUrl.TrimEnd('/')}{url}";
+			}
+
+			// If it contains http://localhost:5086 (API HTTP port) or http://localhost:5486 (IIS Express HTTP port),
+			// map it to the corresponding HTTPS endpoint to prevent Schemeful Same-Site issues
+			if (url.StartsWith("http://localhost:5086", StringComparison.OrdinalIgnoreCase))
+			{
+				return url.Replace("http://localhost:5086", "https://localhost:7212");
+			}
+			if (url.StartsWith("http://localhost:5486", StringComparison.OrdinalIgnoreCase))
+			{
+				return url.Replace("http://localhost:5486", "https://localhost:44378");
+			}
+
+			return url;
+		}
+
 		private FeedMediaItem CreateFeedMediaItem(IGetFeedMedia_FeedMedia_Items media)
 		{
 			return new FeedMediaItem
 			{
 				Id = Guid.Parse(media.Id.ToString()),
 				TradesmanId = media.TradesmanId.ToString(),
-				VideoUrl = media.VideoUrl,
-				MobileVideoUrl = media.MobileVideoUrl,
-				ImageUrl = media.ImageUrl,
+				VideoUrl = NormalizeLocalUrl(media.VideoUrl),
+				MobileVideoUrl = NormalizeLocalUrl(media.MobileVideoUrl),
+				ImageUrl = NormalizeLocalUrl(media.ImageUrl),
 				Name = $"{media.TradesmanProfile?.User?.FirstName} {media.TradesmanProfile?.User?.LastName}",
 				Role = media.ServiceCategory?.Name ?? media.TradesmanProfile?.Skills?.FirstOrDefault()?.ServiceCategory?.Name ?? "Professional",
 				Location = media.TradesmanProfile?.User?.Location ?? "",
 				Rating = media.TradesmanProfile?.AverageRating ?? 0,
-				ProfilePictureUrl = media.TradesmanProfile?.User?.ProfilePictureUrl ?? ""
+				ProfilePictureUrl = NormalizeLocalUrl(media.TradesmanProfile?.User?.ProfilePictureUrl ?? "")
 			};
 		}
 

@@ -806,4 +806,49 @@
   <data name="Feed_VideoCaption" xml:space="preserve">
     <value>All videos show real projects completed by our own builders with fixed deadlines and clear conditions.</value>
   </data>
+  <data name="TrustBadge_Guarantee_Title" xml:space="preserve">
+    <value>BuildSmart Guarantee</value>
+  </data>
+  <data name="TrustBadge_Guarantee_Desc" xml:space="preserve">
+    <value>Vetted contractors &amp; verified quality reviews</value>
+  </data>
+  <data name="TrustBadge_Secure_Title" xml:space="preserve">
+    <value>Secure &amp; Confidential</value>
+  </data>
+  <data name="TrustBadge_Secure_Desc" xml:space="preserve">
+    <value>Your details are safe and GDPR compliant</value>
+  </data>
+  <data name="TrustBadge_PriceLock_Title" xml:space="preserve">
+    <value>Instant Price Lock</value>
+  </data>
+  <data name="TrustBadge_PriceLock_Desc" xml:space="preserve">
+    <value>Locks in estimate prices for 14 days</value>
+  </data>
+  <data name="JobWizard_SelectCategories" xml:space="preserve">
+    <value>Select Categories</value>
+  </data>
+  <data name="JobWizard_GeneralQuestions" xml:space="preserve">
+    <value>General Questions</value>
+  </data>
+  <data name="JobWizard_CategoryQuestions" xml:space="preserve">
+    <value>{0} Questions</value>
+  </data>
+  <data name="JobWizard_InfoStepTitle" xml:space="preserve">
+    <value>Project Details</value>
+  </data>
+  <data name="JobWizard_Validation_Required" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="JobWizard_Validation_ProjectDetails" xml:space="preserve">
+    <value>Please enter a project title, description, and location.</value>
+  </data>
+  <data name="JobWizard_Validation_SelectCategory" xml:space="preserve">
+    <value>Please select at least one category.</value>
+  </data>
+  <data name="JobWizard_Validation_RequiredQuestions" xml:space="preserve">
+    <value>Please answer all required questions marked with (*).</value>
+  </data>
+  <data name="Projects_LoadMore" xml:space="preserve">
+    <value>Load More Projects ({0} remaining)</value>
+  </data>
 </root>

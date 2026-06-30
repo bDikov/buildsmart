@@ -161,6 +161,7 @@ type ServiceCategory {
   description: String
   status: CategoryStatus!
   isGlobal: Boolean!
+  type: CategoryType!
   templateStructure: String!
   translations: [ServiceCategoryTranslation!]!
   createdAt: DateTime!
@@ -199,6 +200,13 @@ enum CategoryStatus {
   DRAFT
   ACTIVE
   ARCHIVED
+}
+
+enum CategoryType {
+  USER_TYPE
+  GLOBAL
+  CATEGORY_SPECIFIC
+  PROJECT_DETAILS
 }
 
 "Represents a specific task or phase within a job post."

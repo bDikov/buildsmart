@@ -153,6 +153,7 @@ public partial class Program
 		builder.Services.AddScoped<IProjectMessageRepository, BuildSmart.Infrastructure.Repositories.ProjectMessageRepository>();
 
 		// Add Application Services (Business Logic)
+		builder.Services.AddScoped<IServiceCategoryOrchestrator, BuildSmart.Core.Application.Services.ServiceCategoryOrchestrator>();
 		builder.Services.AddScoped<IBookingService, BookingService>();
 		builder.Services.AddScoped<ITradesmanProfileService, TradesmanProfileService>();
 		builder.Services.AddScoped<IReviewService, ReviewService>();
@@ -384,11 +385,13 @@ public partial class Program
 						await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
 						context.ChangeTracker.Clear();
 
+						// Always run SeedCategoriesAndQuestionsAsync to keep category types synchronized
+						await context.SeedCategoriesAndQuestionsAsync();
+						context.ChangeTracker.Clear();
+
 						if (!await context.ServiceCategories.AnyAsync())
 						{
 							Console.WriteLine("Database is empty. Seeding initial categories, SKUs, and default users...");
-							await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
-							context.ChangeTracker.Clear();
 							await context.SeedSkusAsync(); // Seed the SKUs from JSON data
 							context.ChangeTracker.Clear();
 							await context.SeedQuestionsAndFormulasAsync(); // Seed relational questions/formulas
@@ -402,7 +405,7 @@ public partial class Program
 						}
 						else
 						{
-							Console.WriteLine("Database already initialized. Skipping initial seeders.");
+							Console.WriteLine("Database already initialized. Initial seeders skipped (except categories type sync).");
 						}
 
 						await transaction.CommitAsync();
@@ -413,11 +416,13 @@ public partial class Program
 					await context.CleanupAndMergeCategoriesAsync(); // Auto-heal suffix duplicate categories
 					context.ChangeTracker.Clear();
 
+					// Always run SeedCategoriesAndQuestionsAsync to keep category types synchronized
+					await context.SeedCategoriesAndQuestionsAsync();
+					context.ChangeTracker.Clear();
+
 					if (!await context.ServiceCategories.AnyAsync())
 					{
 						Console.WriteLine("Database is empty. Seeding initial categories, SKUs, and default users...");
-						await context.SeedCategoriesAndQuestionsAsync(); // Seed the categories and questionnaire templates
-						context.ChangeTracker.Clear();
 						await context.SeedSkusAsync(); // Seed the SKUs from JSON data
 						context.ChangeTracker.Clear();
 						await context.SeedQuestionsAndFormulasAsync(); // Seed relational questions/formulas
@@ -431,7 +436,7 @@ public partial class Program
 					}
 					else
 					{
-						Console.WriteLine("Database already initialized. Skipping initial seeders.");
+						Console.WriteLine("Database already initialized. Initial seeders skipped (except categories type sync).");
 					}
 				}
 			}

@@ -152,16 +152,28 @@ public class WebAuthService : IAuthService
 
     public Task<string?> AuthenticateWithGoogleAsync()
     {
-        // Navigate the whole window to the API external auth endpoint. 
-        // We set returnUrl to the absolute URL of the Blazor Web App so the API redirects back here instead of to itself.
-        var returnUrl = _navigationManager.ToAbsoluteUri("/login").ToString();
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        string returnDest = "/";
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+        {
+            returnDest = returnUrlValues.FirstOrDefault() ?? "/";
+        }
+
+        var returnUrl = _navigationManager.ToAbsoluteUri($"/login?ReturnUrl={Uri.EscapeDataString(returnDest)}").ToString();
         _navigationManager.NavigateTo($"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/externalauth/google-login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
         return Task.FromResult<string?>(null);
     }
 
     public Task<string?> AuthenticateWithAppleAsync()
     {
-        var returnUrl = _navigationManager.ToAbsoluteUri("/login").ToString();
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        string returnDest = "/";
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+        {
+            returnDest = returnUrlValues.FirstOrDefault() ?? "/";
+        }
+
+        var returnUrl = _navigationManager.ToAbsoluteUri($"/login?ReturnUrl={Uri.EscapeDataString(returnDest)}").ToString();
         _navigationManager.NavigateTo($"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/externalauth/apple-login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
         return Task.FromResult<string?>(null);
     }

@@ -1,4 +1,4 @@
-﻿using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -25,6 +25,10 @@ public class ServiceCategoryConfiguration : IEntityTypeConfiguration<ServiceCate
         // Map TemplateStructure to JSONB for PostgreSQL
         builder.Property(sc => sc.TemplateStructure)
             .HasColumnType("jsonb")
+            .IsRequired();
+
+        builder.Property(sc => sc.Type)
+            .HasConversion<string>()
             .IsRequired();
 
         // Relationship is now handled via TradesmanSkill join entity

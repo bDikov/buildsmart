@@ -66,6 +66,21 @@
             <span>@Loc["Login_NoAccountPrompt"]<a href="#" @onclick="() => ViewModel.CreateAccountCommand.Execute(null)" @onclick:preventDefault>@Loc["Login_SignUp"]</a></span>
         </div>
 
+        <div class="guest-prompt" style="text-align: center; margin-top: 15px;">
+            @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
+            {
+                <a href="#" @onclick="ContinueAsGuest" @onclick:preventDefault style="color: var(--text-secondary); font-weight: 500; text-decoration: underline;">
+                    Продължи като гост
+                </a>
+            }
+            else
+            {
+                <a href="#" @onclick="ContinueAsGuest" @onclick:preventDefault style="color: var(--text-secondary); font-weight: 500; text-decoration: underline;">
+                    Continue as Guest
+                </a>
+            }
+        </div>
+
     </div>
 </div>
 
@@ -249,6 +264,10 @@
     [SupplyParameterFromQuery(Name = "token")]
     public string? Token { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "ReturnUrl")]
+    public string? ReturnUrl { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         // Extract token safely
@@ -273,8 +292,25 @@
                 var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
                 authStateProvider?.NotifyAuthenticationStateChanged();
 
+                string destination = "/";
+                var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+                if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+                {
+                    destination = returnUrlValues.FirstOrDefault() ?? "/";
+                }
+                else if (!string.IsNullOrEmpty(ReturnUrl))
+                {
+                    destination = ReturnUrl;
+                }
+
+                // Prevent open redirect vulnerabilities
+                if (!destination.StartsWith("/") || destination.StartsWith("//"))
+                {
+                    destination = "/";
+                }
+
                 // Force load to ensure the browser sends the new cookie to the server
-                NavManager.NavigateTo("/", forceLoad: true);
+                NavManager.NavigateTo(destination, forceLoad: true);
             }
             catch (Microsoft.AspNetCore.Components.NavigationException)
             {
@@ -284,6 +320,28 @@
             catch (Exception ex)
             {
                 Console.WriteLine($"[Login] Failed to process token: {ex.Message}");
-            }        }
+            }
+        }
+    }
+
+    private async Task ContinueAsGuest()
+    {
+        try
+        {
+            // Clear any old/expired token so we are guaranteed to be unauthenticated
+            await AuthService.ClearTokenAsync();
+            
+            // Notify provider so that it evaluates authentication state as anonymous
+            var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+            authStateProvider?.NotifyAuthenticationStateChanged();
+
+            // Navigate to main feed (using Shell tab switch in MAUI, or root path in Web)
+            await BuildSmart.SharedUI.Services.AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Login] Error continuing as guest: {ex.Message}");
+            NavManager.NavigateTo("/", forceLoad: true);
+        }
     }
 }

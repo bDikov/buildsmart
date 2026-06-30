@@ -147,3 +147,19 @@ export function scrollToElement(element) {
         behavior: 'smooth'
     });
 }
+
+export function scrollToFirstError(container) {
+    if (!container) return;
+    const firstErrorElement = container.querySelector('.has-error');
+    if (firstErrorElement) {
+        const rect = firstErrorElement.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetY = rect.top + scrollTop - 120; // 120px offset to keep label and context in view
+        window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: 'smooth'
+        });
+    } else {
+        scrollToElement(container);
+    }
+}

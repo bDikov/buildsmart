@@ -45,18 +45,24 @@ public class Query
 	[UseProjection]
 	[UseFiltering]
 	[UseSorting]
-	public IQueryable<ServiceCategory> GetServiceCategories([Service] IServiceCategoryRepository categoryRepository)
+	public IQueryable<ServiceCategory> GetServiceCategories(
+		[Service] IServiceCategoryRepository categoryRepository,
+		[Service] IServiceCategoryOrchestrator orchestrator)
 	{
-		return categoryRepository.GetQueryable().Where(c => c.Status == Core.Domain.Enums.CategoryStatus.Active);
+		var query = categoryRepository.GetQueryable().Where(c => c.Status == Core.Domain.Enums.CategoryStatus.Active);
+		return orchestrator.OrderCategories(query);
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
 	[UseProjection]
 	[UseFiltering]
 	[UseSorting]
-	public IQueryable<ServiceCategory> GetAllServiceCategories([Service] IServiceCategoryRepository categoryRepository)
+	public IQueryable<ServiceCategory> GetAllServiceCategories(
+		[Service] IServiceCategoryRepository categoryRepository,
+		[Service] IServiceCategoryOrchestrator orchestrator)
 	{
-		return categoryRepository.GetQueryable();
+		var query = categoryRepository.GetQueryable();
+		return orchestrator.OrderCategories(query);
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]

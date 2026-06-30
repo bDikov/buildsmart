@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     restart: always
     environment:
-      - POSTGRES_USER=testuser
-      - POSTGRES_PASSWORD=testpassword
-      - POSTGRES_DB=buildsmart_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=buildsmart_db
     ports:
       - '5432:5432'
 
@@ -18,4 +18,4 @@ services:
     depends_on:
       - db
     environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=buildsmart_test;Username=testuser;Password=testpassword
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=buildsmart_db;Username=postgres;Password=postgres

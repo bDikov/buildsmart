@@ -175,7 +175,7 @@
         {
             <div class="d-flex justify-content-center mt-4 w-100" style="grid-column: 1 / -1;">
                 <button class="bs-btn-secondary px-4 py-2" style="border-radius: 8px; font-weight: 600;" @onclick="LoadMoreProjects">
-                    Load More Projects (@(ViewModel.Projects.Count - _visibleCount) remaining)
+                    @string.Format(Loc["Projects_LoadMore"], ViewModel.Projects.Count - _visibleCount)
                 </button>
             </div>
         }

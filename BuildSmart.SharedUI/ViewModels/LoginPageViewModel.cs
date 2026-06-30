@@ -57,8 +57,29 @@ namespace BuildSmart.SharedUI.ViewModels
 
 					await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
 					{
-                        // Application navigation removed for shared UI
-                        await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+						string destination = "/";
+						var navManager = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.NavigationManager)) as Microsoft.AspNetCore.Components.NavigationManager;
+						if (navManager != null)
+						{
+							var uri = navManager.ToAbsoluteUri(navManager.Uri);
+							if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+							{
+								destination = returnUrlValues.FirstOrDefault() ?? "/";
+							}
+						}
+
+						// Prevent open redirect vulnerabilities
+						if (!destination.StartsWith("/") || destination.StartsWith("//"))
+						{
+							destination = "/";
+						}
+
+						if (destination == "/")
+						{
+							destination = "//BlazorHostPage";
+						}
+
+						await AppServiceLocator.Navigation.NavigateToAsync(destination);
 					});
 				}
 				else

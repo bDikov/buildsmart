@@ -263,9 +263,9 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private void InitializeSteps()
 	{
 		_wizardSteps.Clear();
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = "Project Details" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = _localizer?["JobWizard_SelectCategories"] ?? "Select Categories" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = _localizer?["JobWizard_ReviewSubmit"] ?? "Review & Submit" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.Info, Title = _localizer?["JobWizard_InfoStepTitle"] ?? "Project Details" });
 	}
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -422,15 +422,16 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 			// Validate authentication: Guest user shouldn't be able to proceed/create drafts at all
 			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null)
+			bool isGuest = userResult.Data?.CurrentUser?.Email?.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase) ?? false;
+			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null || isGuest)
 			{
 				string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
 				string okText = _localizer?["JobWizard_OK"] ?? "OK";
 				string errorMsg = userResult.Errors.Count > 0 
 					? userResult.Errors[0].Message 
-					: "You must be logged in to create a project.";
+					: (isGuest ? "Guest users cannot create standard projects. Please register." : "You must be logged in to create a project.");
 				await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
-				await AppServiceLocator.Navigation.NavigateToAsync("..");
+				await AppServiceLocator.Navigation.NavigateToAsync("/login?ReturnUrl=%2fjob-wizard");
 				return;
 			}
 
@@ -897,7 +898,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					_wizardSteps.Add(new WizardStep
 					{
 						Type = WizardStepType.Questions,
-						Title = $"{targetCat.Category.Name} Questions",
+						Title = _localizer?["JobWizard_CategoryQuestions", targetCat.Category.Name] ?? $"{targetCat.Category.Name} Questions",
 						Questions = catQuestions
 					});
 				}
@@ -906,7 +907,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 
 		// Normal Project Creation Flow
-		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = "Select Categories" });
+		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = _localizer?["JobWizard_SelectCategories"] ?? "Select Categories" });
 
 		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
 		var selectedCategories = _allCategories.Where(c => !c.Category.IsGlobal && c.IsSelected).ToList();
@@ -922,7 +923,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			_wizardSteps.Add(new WizardStep
 			{
 				Type = WizardStepType.Questions,
-				Title = "General Questions",
+				Title = _localizer?["JobWizard_GeneralQuestions"] ?? "General Questions",
 				Questions = globalQuestions
 			});
 		}
@@ -940,7 +941,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				_wizardSteps.Add(new WizardStep
 				{
 					Type = WizardStepType.Questions,
-					Title = $"{cat.Category.Name} Questions",
+					Title = _localizer?["JobWizard_CategoryQuestions", cat.Category.Name] ?? $"{cat.Category.Name} Questions",
 					Questions = catQuestions
 				});
 			}
@@ -949,7 +950,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		// 3. Review Step
 		if (!IsEditing)
 		{
-			_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = "Review & Submit" });
+			_wizardSteps.Add(new WizardStep { Type = WizardStepType.Review, Title = _localizer?["JobWizard_ReviewSubmit"] ?? "Review & Submit" });
 		}
 
 		// 4. Project Details Step (Post-submission marketing/location questions)
@@ -961,7 +962,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		_wizardSteps.Add(new WizardStep
 		{
 			Type = WizardStepType.Info,
-			Title = "Project Details",
+			Title = _localizer?["JobWizard_InfoStepTitle"] ?? "Project Details",
 			Questions = projectDetailsQuestions
 		});
 		
@@ -1076,7 +1077,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 		if (TitleHasError || DescriptionHasError || LocationHasError)
 		{
-			AppServiceLocator.Alerts.DisplayAlert("Required", "Please enter a project title, description, and location.", "OK");
+			string title = _localizer?["JobWizard_Validation_Required"] ?? "Required";
+			string msg = _localizer?["JobWizard_Validation_ProjectDetails"] ?? "Please enter a project title, description, and location.";
+			string ok = _localizer?["JobWizard_OK"] ?? "OK";
+			AppServiceLocator.Alerts.DisplayAlert(title, msg, ok);
 			return false;
 		}
 		return true;
@@ -1088,7 +1092,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		if (selectedCount == 0)
 		{
 			CategorySelectionHasError = true;
-			AppServiceLocator.Alerts.DisplayAlert("Required", "Please select at least one category.", "OK");
+			string title = _localizer?["JobWizard_Validation_Required"] ?? "Required";
+			string msg = _localizer?["JobWizard_Validation_SelectCategory"] ?? "Please select at least one category.";
+			string ok = _localizer?["JobWizard_OK"] ?? "OK";
+			AppServiceLocator.Alerts.DisplayAlert(title, msg, ok);
 			return false;
 		}
 
@@ -1108,11 +1115,22 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private bool ValidateQuestionsStep()
 	{
+		if (Questions != null)
+		{
+			foreach (var q in Questions)
+			{
+				q.HasError = false;
+			}
+		}
+
 		var missingQuestions = Questions.Where(q => q.IsVisible && q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
 		if (missingQuestions.Any())
 		{
 			foreach (var q in missingQuestions) q.HasError = true;
-			AppServiceLocator.Alerts.DisplayAlert("Required", "Please answer all required questions marked with (*).", "OK");
+			string title = _localizer?["JobWizard_Validation_Required"] ?? "Required";
+			string msg = _localizer?["JobWizard_Validation_RequiredQuestions"] ?? "Please answer all required questions marked with (*).";
+			string ok = _localizer?["JobWizard_OK"] ?? "OK";
+			AppServiceLocator.Alerts.DisplayAlert(title, msg, ok);
 			return false;
 		}
 		return true;

@@ -145,8 +145,15 @@ var app = builder.Build();
 // Configure the SharedUI AppServiceLocator to resolve scoped services from the active Blazor Server circuit context
 BuildSmart.SharedUI.Services.AppServiceLocator.ServiceResolver = (type) =>
 {
-    var services = BuildSmart.Web.Services.BlazorCircuitContext.CurrentServices.Value;
-    return services?.GetService(type);
+    try
+    {
+        var services = BuildSmart.Web.Services.BlazorCircuitContext.CurrentServices.Value;
+        return services?.GetService(type);
+    }
+    catch (ObjectDisposedException)
+    {
+        return null;
+    }
 };
 
 // Configure the HTTP request pipeline.

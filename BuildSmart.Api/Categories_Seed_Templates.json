@@ -728,5 +728,40 @@
         }
       ]
     }
+  },
+  "user_category": {
+    "name": "User Information",
+    "templateStructure": {
+      "isUser": true,
+      "questions": [
+        {
+          "id": "user_name",
+          "text": {
+            "bg": "Име и Фамилия",
+            "en": "Full Name"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "user_email",
+          "text": {
+            "bg": "Имейл адрес",
+            "en": "Email Address"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "user_phone",
+          "text": {
+            "bg": "Телефон за връзка",
+            "en": "Phone Number"
+          },
+          "type": "text",
+          "required": true
+        }
+      ]
+    }
   }
 }

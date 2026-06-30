@@ -4,6 +4,7 @@ query GetServiceCategories {
     name
     description
     isGlobal
+    type
     templateStructure
     status
     translations {

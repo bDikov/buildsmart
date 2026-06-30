@@ -351,6 +351,17 @@ window.reelsObserver = {
         if (player) {
             this.safePause(videoId, player);
         }
+    },
+
+    closeTheaterMode: function () {
+        const container = document.querySelector('.bs-reels-container.in-theater-mode');
+        if (container) {
+            container.classList.remove('in-theater-mode');
+            const activeItem = container.querySelector('.bs-reel-item.bs-theater-mode');
+            if (activeItem) {
+                activeItem.classList.remove('bs-theater-mode');
+            }
+        }
     }
 };
 

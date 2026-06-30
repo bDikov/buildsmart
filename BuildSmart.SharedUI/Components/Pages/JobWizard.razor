@@ -9,6 +9,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
 
+
 <style>
     /* Prevent horizontal scrollbars during swipe without triggering the 'auto' vertical scrollbar bug */
     body, html, .page, .main-content, .content {
@@ -55,7 +56,7 @@
         {
             <div class="container py-4" style="position: relative; min-height: 80vh; user-select: none; -webkit-user-select: none;">
                 
-                <!-- Progress Bar & Title -->
+                <!-- Progress Bar & Trust Badges (Unified Block) -->
                 <BuildSmart.SharedUI.Components.ProgressCard 
                     Title="@Loc["JobWizard_YourProgress"]" 
                     ProgressPercentage="@ViewModel.ProgressPercentage" 
@@ -94,9 +95,9 @@
                                     {
                                         @if (q.IsVisible)
                                         {
-                                            <div class="mb-4">
+                                            <div class="mb-4 question-field @(q.HasError ? "has-error" : "")">
                                                 <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
-                                                <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "text-primary")">
+                                                <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: @(q.HasError ? "var(--color-danger, #dc3545)" : "var(--text-primary)");">
                                                     @q.Text
                                                     @if (q.IsRequired)
                                                     {
@@ -178,9 +179,9 @@
                                     {
                                         @if (q.IsVisible)
                                         {
-                                            <div class="mb-4">
+                                            <div class="mb-4 question-field @(q.HasError ? "has-error" : "")">
                                                 <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
-                                                <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "text-primary")">
+                                                <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: @(q.HasError ? "var(--color-danger, #dc3545)" : "var(--text-primary)");">
                                                     @q.Text
                                                     @if (q.IsRequired)
                                                     {
@@ -263,7 +264,7 @@
 
                                 <div class="mb-3">
                                     <span class="fw-bold text-secondary">@Loc["JobWizard_SelectedCategoriesLabel"]</span>
-                                    <ul class="list-unstyled mb-0 mt-2 text-primary" style="padding-left: 15px;">
+                                    <ul class="list-unstyled mb-0 mt-2" style="padding-left: 15px; color: var(--color-primary);">
                                         @if (ViewModel.SelectableCategories != null)
                                         {
                                             @foreach (var cat in ViewModel.SelectableCategories.Where(c => c.IsSelected))
@@ -303,6 +304,7 @@
                         }
                     </div>
                 </div>
+
             </div>
 
             <!-- Floating Back Button -->
@@ -683,7 +685,15 @@
         {
             if (_module != null)
             {
-                await _module.InvokeVoidAsync("scrollToElement", _swipeCardContainer);
+                bool hasErrors = ViewModel.Questions?.Any(q => q.IsVisible && q.HasError) == true;
+                if (hasErrors)
+                {
+                    await _module.InvokeVoidAsync("scrollToFirstError", _swipeCardContainer);
+                }
+                else
+                {
+                    await _module.InvokeVoidAsync("scrollToElement", _swipeCardContainer);
+                }
             }
         }
         catch (Exception ex)

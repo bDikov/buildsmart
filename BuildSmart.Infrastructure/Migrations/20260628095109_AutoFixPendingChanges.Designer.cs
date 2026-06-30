@@ -156,8 +156,7 @@ namespace BuildSmart.Infrastructure.Migrations
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Bid", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .ValueGeneratedOnAdd().HasColumnType("uuid");
 
                     b.Property<DateTime?>("AcceptedAt")
                         .HasColumnType("timestamp with time zone");

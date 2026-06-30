@@ -295,6 +295,7 @@ public class JobWizardViewModelTests
         var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
         mockCategoryNode.Setup(c => c.Id).Returns(Guid.NewGuid());
         mockCategoryNode.Setup(c => c.Name).Returns("Electrical");
+        mockCategoryNode.Setup(c => c.Type).Returns(CategoryType.CategorySpecific);
 
         var categoryVm = new SelectableCategoryViewModel(mockCategoryNode.Object) { IsSelected = true };
         _viewModel.SelectableCategories = new System.Collections.ObjectModel.ObservableCollection<SelectableCategoryViewModel> { categoryVm };
@@ -304,11 +305,24 @@ public class JobWizardViewModelTests
 
         var userQueryMock = new Mock<IGetCurrentUserQuery>();
         var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
-        var clientErrorMock = new Mock<IClientError>();
-        clientErrorMock.Setup(e => e.Message).Returns("Mocked auth error");
-        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError> { clientErrorMock.Object });
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        var userMock = new Mock<IGetCurrentUser_CurrentUser>();
+        userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+        userMock.Setup(u => u.RemainingAiRequests).Returns(20);
+        var userResultMock = new Mock<IGetCurrentUserResult>();
+        userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
+        userResponseMock.Setup(r => r.Data).Returns(userResultMock.Object);
         userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
         _apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        var createProjectQueryMock = new Mock<ICreateProjectMutation>();
+        var createProjectResponseMock = new Mock<IOperationResult<ICreateProjectResult>>();
+        var clientErrorMock = new Mock<IClientError>();
+        clientErrorMock.Setup(e => e.Message).Returns("Mocked database error");
+        createProjectResponseMock.Setup(r => r.Errors).Returns(new List<IClientError> { clientErrorMock.Object });
+        createProjectQueryMock.Setup(q => q.ExecuteAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), default))
+            .ReturnsAsync(createProjectResponseMock.Object);
+        _apiClientMock.Setup(a => a.CreateProject).Returns(createProjectQueryMock.Object);
 
         // Act
         await _viewModel.GoToNextStep();
@@ -326,6 +340,7 @@ public class JobWizardViewModelTests
         var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
         mockCategoryNode.Setup(c => c.Id).Returns(Guid.NewGuid());
         mockCategoryNode.Setup(c => c.Name).Returns("Electrical");
+        mockCategoryNode.Setup(c => c.Type).Returns(CategoryType.CategorySpecific);
 
         var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
         categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { mockCategoryNode.Object });
@@ -382,7 +397,7 @@ public class JobWizardViewModelTests
     }
 
     [Fact]
-    public async Task LoadCategoriesAsync_WhenUnauthenticated_AbortsAndAlerts()
+    public async Task LoadCategoriesAsync_WhenUnauthenticated_AllowsGuestFlowAndSetsDefaultRequests()
     {
         // Arrange
         var apiClientMock = new Mock<IBuildSmartApiClient>();
@@ -394,6 +409,15 @@ public class JobWizardViewModelTests
         userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
         apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
 
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories>());
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
         var mockNavigation = new Mock<INavigationBridge>();
         var mockAlerts = new Mock<IAlertService>();
         AppServiceLocator.Navigation = mockNavigation.Object;
@@ -401,11 +425,11 @@ public class JobWizardViewModelTests
 
         // Act
         var viewModel = new JobWizardViewModel(apiClientMock.Object);
-        await Task.Delay(100);
+        await viewModel.LoadCategoriesAsync();
 
         // Assert
-        mockAlerts.Verify(x => x.DisplayAlert(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        mockNavigation.Verify(x => x.NavigateToAsync("..", null), Times.Once);
+        viewModel.RemainingAiRequests.Should().Be(20);
+        mockNavigation.Verify(x => x.NavigateToAsync("..", null), Times.Never);
     }
 
     [Fact]
@@ -417,6 +441,7 @@ public class JobWizardViewModelTests
         var mockCategoryNode = new Mock<IGetServiceCategories_ServiceCategories>();
         mockCategoryNode.Setup(c => c.Id).Returns(Guid.NewGuid());
         mockCategoryNode.Setup(c => c.Name).Returns("Electrical");
+        mockCategoryNode.Setup(c => c.Type).Returns(CategoryType.CategorySpecific);
 
         var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
         categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { mockCategoryNode.Object });
@@ -524,6 +549,7 @@ public class JobWizardViewModelTests
         var catId = Guid.NewGuid();
         mockCategoryNode.Setup(c => c.Id).Returns(catId);
         mockCategoryNode.Setup(c => c.Name).Returns("Electrical Category Name");
+        mockCategoryNode.Setup(c => c.Type).Returns(CategoryType.CategorySpecific);
 
         // Mock GetCategories to return our category
         var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
@@ -681,6 +707,93 @@ public class JobWizardViewModelTests
 
         // Assert
         _viewModel.ProjectLocation.Should().Be("Varna"); // Should use the answer key location "Varna" over job location "Sofia"!
+    }
+
+    [Fact]
+    public async Task GenerateDynamicSteps_WhenUnauthenticated_ShouldIncludeUserInformationStep()
+    {
+        // Arrange
+        var apiClientMock = new Mock<IBuildSmartApiClient>();
+
+        // Mock GetCurrentUser to fail/unauthenticated
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        userResponseMock.Setup(r => r.Data).Returns((IGetCurrentUserResult?)null);
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        // Mock categories (including a UserType category)
+        var userCategoryMock = new Mock<IGetServiceCategories_ServiceCategories>();
+        userCategoryMock.Setup(c => c.Id).Returns(Guid.NewGuid());
+        userCategoryMock.Setup(c => c.Name).Returns("User Info");
+        userCategoryMock.Setup(c => c.Type).Returns(CategoryType.UserType);
+        userCategoryMock.Setup(c => c.TemplateStructure).Returns("{\"questions\": [{\"id\":\"user_name\", \"text\":\"Name\", \"type\":\"text\", \"required\":true}]}");
+
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { userCategoryMock.Object });
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        var viewModel = new JobWizardViewModel(apiClientMock.Object);
+        await viewModel.LoadCategoriesAsync();
+
+        // Act
+        var method = typeof(JobWizardViewModel).GetMethod("GenerateDynamicSteps", BindingFlags.NonPublic | BindingFlags.Instance);
+        await (Task)method!.Invoke(viewModel, null)!;
+
+        // Assert
+        viewModel.WizardSteps.Should().Contain(step => step.Title == "User Information" && step.Type == WizardStepType.Questions);
+    }
+
+    [Fact]
+    public async Task GenerateDynamicSteps_WhenAuthenticated_ShouldNotIncludeUserInformationStep()
+    {
+        // Arrange
+        var apiClientMock = new Mock<IBuildSmartApiClient>();
+
+        // Mock GetCurrentUser to succeed
+        var userQueryMock = new Mock<IGetCurrentUserQuery>();
+        var userResponseMock = new Mock<IOperationResult<IGetCurrentUserResult>>();
+        userResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        var userMock = new Mock<IGetCurrentUser_CurrentUser>();
+        userMock.Setup(u => u.Id).Returns(Guid.NewGuid().ToString());
+        userMock.Setup(u => u.RemainingAiRequests).Returns(20);
+        var userResultMock = new Mock<IGetCurrentUserResult>();
+        userResultMock.Setup(r => r.CurrentUser).Returns(userMock.Object);
+        userResponseMock.Setup(r => r.Data).Returns(userResultMock.Object);
+        userQueryMock.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(userResponseMock.Object);
+        apiClientMock.Setup(a => a.GetCurrentUser).Returns(userQueryMock.Object);
+
+        // Mock categories (including a UserType category)
+        var userCategoryMock = new Mock<IGetServiceCategories_ServiceCategories>();
+        userCategoryMock.Setup(c => c.Id).Returns(Guid.NewGuid());
+        userCategoryMock.Setup(c => c.Name).Returns("User Info");
+        userCategoryMock.Setup(c => c.Type).Returns(CategoryType.UserType);
+        userCategoryMock.Setup(c => c.TemplateStructure).Returns("{\"questions\": [{\"id\":\"user_name\", \"text\":\"Name\", \"type\":\"text\", \"required\":true}]}");
+
+        var categoriesResultMock = new Mock<IGetServiceCategoriesResult>();
+        categoriesResultMock.Setup(r => r.ServiceCategories).Returns(new List<IGetServiceCategories_ServiceCategories> { userCategoryMock.Object });
+        var categoriesResponseMock = new Mock<IOperationResult<IGetServiceCategoriesResult>>();
+        categoriesResponseMock.Setup(r => r.Errors).Returns(new List<IClientError>());
+        categoriesResponseMock.Setup(r => r.Data).Returns(categoriesResultMock.Object);
+        var getCategoriesQuery = new Mock<IGetServiceCategoriesQuery>();
+        getCategoriesQuery.Setup(q => q.ExecuteAsync(default)).ReturnsAsync(categoriesResponseMock.Object);
+        apiClientMock.Setup(a => a.GetServiceCategories).Returns(getCategoriesQuery.Object);
+
+        var viewModel = new JobWizardViewModel(apiClientMock.Object);
+        await viewModel.LoadCategoriesAsync();
+
+        // Act
+        var method = typeof(JobWizardViewModel).GetMethod("GenerateDynamicSteps", BindingFlags.NonPublic | BindingFlags.Instance);
+        await (Task)method!.Invoke(viewModel, null)!;
+
+        // Assert
+        viewModel.WizardSteps.Should().NotContain(step => step.Title == "User Information");
     }
 
     private void SetWizardSteps(JobWizardViewModel vm, List<WizardStep> steps)

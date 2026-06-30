@@ -11,7 +11,8 @@ public class QueryType : ObjectType<Query>
 		descriptor.Description("The root query object.");
 
 		descriptor.Field(q => q.GetFeedMedia(default!))
-			.Description("Gets a queryable list of active media for the public feed.");
+			.Description("Gets a queryable list of active media for the public feed.")
+			.AllowAnonymous();
 
 		descriptor.Field(q => q.GetTradesmanProfiles(default!))
 			.Description("Gets a queryable list of tradesman profiles.")
@@ -22,10 +23,11 @@ public class QueryType : ObjectType<Query>
 			.Type<UserType>()
 			.Authorize(roles: new[] { "Homeowner", "Tradesman", "Admin" });
 
-        descriptor.Field(q => q.GetServiceCategories(default!))
-            .Description("Gets a list of all active service categories.");
+        descriptor.Field(q => q.GetServiceCategories(default!, default!))
+            .Description("Gets a list of all active service categories.")
+            .AllowAnonymous();
 
-        descriptor.Field(q => q.GetAllServiceCategories(default!))
+        descriptor.Field(q => q.GetAllServiceCategories(default!, default!))
             .Description("Gets all service categories, regardless of status. (Admin only)")
             .Authorize(roles: new[] { "Admin" });
 

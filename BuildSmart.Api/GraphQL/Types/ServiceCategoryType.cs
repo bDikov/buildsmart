@@ -23,6 +23,7 @@ public class ServiceCategoryType : ObjectType<ServiceCategory>
             
         descriptor.Field(c => c.Status).Type<NonNullType<EnumType<Core.Domain.Enums.CategoryStatus>>>();
         descriptor.Field(c => c.IsGlobal).Type<NonNullType<BooleanType>>();
+        descriptor.Field(c => c.Type).Type<NonNullType<EnumType<Core.Domain.Enums.CategoryType>>>();
         descriptor.Field(c => c.TemplateStructure).Type<NonNullType<StringType>>();
     }
 }

@@ -1,4 +1,4 @@
-﻿using BuildSmart.Core.Domain.Common;
+using BuildSmart.Core.Domain.Common;
 using BuildSmart.Core.Domain.Enums;
 
 namespace BuildSmart.Core.Domain.Entities;
@@ -13,6 +13,11 @@ public class ServiceCategory : BaseEntity
     /// If true, this category's questions are applied to ALL jobs, regardless of specific category selection.
     /// </summary>
     public bool IsGlobal { get; set; } = false;
+
+    /// <summary>
+    /// Represents the category type (UserType, Global, CategorySpecific, ProjectDetails)
+    /// </summary>
+    public CategoryType Type { get; set; } = CategoryType.CategorySpecific;
 
     /// <summary>
     /// Stores the JSON structure for the "Smart Blueprint" questionnaire.
