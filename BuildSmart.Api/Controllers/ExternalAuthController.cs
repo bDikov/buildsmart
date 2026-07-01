@@ -70,7 +70,8 @@ namespace BuildSmart.Api.Controllers
                 await HttpContext.SignOutAsync("ExternalCookie");
 
                 // Redirect back to the MAUI or Blazor Web App with the token
-                return Redirect($"{returnUrl}?token={token}");
+                var separator = returnUrl.Contains("?") ? "&" : "?";
+                return Redirect($"{returnUrl}{separator}token={token}");
             }
             catch (Exception ex)
             {

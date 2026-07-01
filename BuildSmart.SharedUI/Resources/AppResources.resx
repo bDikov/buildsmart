@@ -875,4 +875,40 @@
   <data name="MainLayout_LogoutAlert_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="TrustBadge_PricingSpeed_Title" xml:space="preserve">
+    <value>Pricing Speed</value>
+  </data>
+  <data name="TrustBadge_PricingSpeed_Desc" xml:space="preserve">
+    <value>Instant &amp; reliable pricing vs slow 2-4 week traditional estimates.</value>
+  </data>
+  <data name="TrustBadge_QuoteCost_Title" xml:space="preserve">
+    <value>Quote Cost</value>
+  </data>
+  <data name="TrustBadge_QuoteCost_Desc" xml:space="preserve">
+    <value>100% free premium PDF instantly without annoying sales pitches.</value>
+  </data>
+  <data name="TrustBadge_PaymentTerms_Title" xml:space="preserve">
+    <value>Payment Terms</value>
+  </data>
+  <data name="TrustBadge_PaymentTerms_Desc" xml:space="preserve">
+    <value>Pay only on completion. Safe and secure payment terms.</value>
+  </data>
+  <data name="TrustBadge_ProjectManagement_Title" xml:space="preserve">
+    <value>Project Management</value>
+  </data>
+  <data name="TrustBadge_ProjectManagement_Desc" xml:space="preserve">
+    <value>Fully managed trades by BuildSmart instead of messy coordination.</value>
+  </data>
+  <data name="TrustBadge_SlippageProtection_Title" xml:space="preserve">
+    <value>Slippage Protection</value>
+  </data>
+  <data name="TrustBadge_SlippageProtection_Desc" xml:space="preserve">
+    <value>100% fixed pricing. Any budget slippage covered by us.</value>
+  </data>
+  <data name="TrustBadge_QuoteClarity_Title" xml:space="preserve">
+    <value>Quote Clarity</value>
+  </data>
+  <data name="TrustBadge_QuoteClarity_Desc" xml:space="preserve">
+    <value>Stunning, comparable PDF quote instead of vague emails.</value>
+  </data>
 </root>

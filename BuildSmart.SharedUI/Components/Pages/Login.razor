@@ -272,12 +272,29 @@
     {
         // Extract token safely
         string? actualToken = Token;
+            var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        
         if (string.IsNullOrEmpty(actualToken))
         {
-            var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
             if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var tokenValues))
             {
                 actualToken = tokenValues.FirstOrDefault();
+            }
+        }
+
+        // Fallback for nested token inside ReturnUrl parameter (e.g. ReturnUrl=%2Fjob-wizard?token=...)
+        if (string.IsNullOrEmpty(actualToken) && !string.IsNullOrEmpty(uri.Query))
+        {
+            var queryStr = System.Web.HttpUtility.UrlDecode(uri.Query);
+            var tokenIndex = queryStr.IndexOf("token=", StringComparison.OrdinalIgnoreCase);
+            if (tokenIndex >= 0)
+            {
+                actualToken = queryStr.Substring(tokenIndex + 6);
+                var ampIndex = actualToken.IndexOf('&');
+                if (ampIndex >= 0)
+                {
+                    actualToken = actualToken.Substring(0, ampIndex);
+                }
             }
         }
 
@@ -293,7 +310,6 @@
                 authStateProvider?.NotifyAuthenticationStateChanged();
 
                 string destination = "/";
-                var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
                 if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
                 {
                     destination = returnUrlValues.FirstOrDefault() ?? "/";
@@ -301,6 +317,25 @@
                 else if (!string.IsNullOrEmpty(ReturnUrl))
                 {
                     destination = ReturnUrl;
+                }
+
+                // If token was nested inside the destination ReturnUrl, strip it out to avoid infinite loops or page reload issues
+                if (destination.Contains("token="))
+                {
+                    var cleanDest = destination;
+                    var tokenQueryIdx = cleanDest.IndexOf("?token=", StringComparison.OrdinalIgnoreCase);
+                    if (tokenQueryIdx >= 0)
+                    {
+                        destination = cleanDest.Substring(0, tokenQueryIdx);
+                    }
+                    else
+                    {
+                        var tokenAmpIdx = cleanDest.IndexOf("&token=", StringComparison.OrdinalIgnoreCase);
+                        if (tokenAmpIdx >= 0)
+                        {
+                            destination = cleanDest.Substring(0, tokenAmpIdx);
+                        }
+                    }
                 }
 
                 // Prevent open redirect vulnerabilities

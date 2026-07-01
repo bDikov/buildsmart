@@ -245,6 +245,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	public Dictionary<string, object> WizardAnswers { get; private set; } = new();
 
 	private Task? _loadCategoriesTask;
+	private bool _isAuthenticated;
 	private readonly SignalRService? _signalRService;
 	private readonly IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources>? _localizer;
 
@@ -420,22 +421,19 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		{
 			IsBusy = true;
 
-			// Validate authentication: Guest user shouldn't be able to proceed/create drafts at all
+			// Validate authentication: Guest user shouldn't be blocked from loading categories/questionnaires
 			var userResult = await _apiClient.GetCurrentUser.ExecuteAsync();
-			bool isGuest = userResult.Data?.CurrentUser?.Email?.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase) ?? false;
-			if (userResult.Errors.Count > 0 || userResult.Data?.CurrentUser == null || isGuest)
-			{
-				string errorTitle = _localizer?["JobWizard_SubmissionError_Title"] ?? "Error";
-				string okText = _localizer?["JobWizard_OK"] ?? "OK";
-				string errorMsg = userResult.Errors.Count > 0 
-					? userResult.Errors[0].Message 
-					: (isGuest ? "Guest users cannot create standard projects. Please register." : "You must be logged in to create a project.");
-				await AppServiceLocator.Alerts.DisplayAlert(errorTitle, errorMsg, okText);
-				await AppServiceLocator.Navigation.NavigateToAsync("/login?ReturnUrl=%2fjob-wizard");
-				return;
-			}
+			_isAuthenticated = userResult.Data?.CurrentUser != null;
+			bool isGuest = _isAuthenticated && (userResult.Data?.CurrentUser?.Email?.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase) ?? false);
 
-			RemainingAiRequests = userResult.Data.CurrentUser.RemainingAiRequests;
+			if (_isAuthenticated)
+			{
+				RemainingAiRequests = userResult.Data.CurrentUser.RemainingAiRequests;
+			}
+			else
+			{
+				RemainingAiRequests = 20; // Default for guests/unauthenticated
+			}
 
 			var result = await _apiClient.GetServiceCategories.ExecuteAsync();
 
@@ -908,6 +906,24 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 		// Normal Project Creation Flow
 		_wizardSteps.Add(new WizardStep { Type = WizardStepType.CategorySelection, Title = _localizer?["JobWizard_SelectCategories"] ?? "Select Categories" });
+
+		if (!_isAuthenticated)
+		{
+			var userInfoCategory = _allCategories.FirstOrDefault(c => c.Category.Type == CategoryType.UserType);
+			if (userInfoCategory != null)
+			{
+				var userInfoQuestions = ExtractQuestions(new List<SelectableCategoryViewModel> { userInfoCategory });
+				if (userInfoQuestions.Any())
+				{
+					_wizardSteps.Add(new WizardStep
+					{
+						Type = WizardStepType.Questions,
+						Title = "User Information",
+						Questions = userInfoQuestions
+					});
+				}
+			}
+		}
 
 		var globalCategories = _allCategories.Where(c => c.Category.IsGlobal).ToList();
 		var selectedCategories = _allCategories.Where(c => !c.Category.IsGlobal && c.IsSelected).ToList();

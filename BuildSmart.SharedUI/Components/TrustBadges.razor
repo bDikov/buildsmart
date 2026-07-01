@@ -1,63 +1,198 @@
 @implements IDisposable
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+
+<!-- Shared SVG Gradients Definitions (Rendered invisibly but kept active in DOM for reference) -->
+<svg style="width: 0; height: 0; position: absolute; overflow: hidden;" aria-hidden="true">
+    <defs>
+        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="var(--color-primary)" />
+            <stop offset="100%" stop-color="var(--color-secondary, #a855f7)" />
+        </linearGradient>
+        <linearGradient id="lockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981" />
+            <stop offset="100%" stop-color="#06b6d4" />
+        </linearGradient>
+        <linearGradient id="clockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#d97706" />
+        </linearGradient>
+        <linearGradient id="tagGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+        </linearGradient>
+        <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#6d28d9" />
+        </linearGradient>
+        <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ec4899" />
+            <stop offset="100%" stop-color="#db2777" />
+        </linearGradient>
+        <linearGradient id="shieldCheckGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0ea5e9" />
+            <stop offset="100%" stop-color="#0369a1" />
+        </linearGradient>
+        <linearGradient id="docGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#14b8a6" />
+            <stop offset="100%" stop-color="#0f766e" />
+        </linearGradient>
+    </defs>
+</svg>
 
 <div class="bs-trust-badges-container">
-    <!-- Desktop View (Side-by-side) -->
-    <div class="bs-badges-desktop">
-        <div class="bs-badge-card bs-card">
-            <div class="bs-badge-icon-wrapper">
-                <svg viewBox="0 0 24 24" class="bs-badge-icon-svg">
-                    <defs>
-                        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="var(--color-primary)" />
-                            <stop offset="100%" stop-color="var(--color-secondary, #a855f7)" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#shieldGrad)" />
-                    <path d="M9 11l2 2 4-4" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-                </svg>
-            </div>
-            <div class="bs-badge-info">
-                <h4 class="bs-badge-title">@Loc["TrustBadge_Guarantee_Title"]</h4>
-                <p class="bs-badge-desc">@Loc["TrustBadge_Guarantee_Desc"]</p>
-            </div>
-        </div>
+    <!-- Desktop View (Carousel of Pages) -->
+    <div class="bs-badges-desktop-carousel">
+        <div class="bs-desktop-track" style="transform: @GetDesktopTransform();">
+            <!-- Page 1: Original Badges -->
+            <div class="bs-desktop-page">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#shieldGrad)" />
+                            <path d="M9 11l2 2 4-4" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_Guarantee_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_Guarantee_Desc"]</p>
+                    </div>
+                </div>
 
-        <div class="bs-badge-card bs-card">
-            <div class="bs-badge-icon-wrapper">
-                <svg viewBox="0 0 24 24" class="bs-badge-icon-svg">
-                    <defs>
-                        <linearGradient id="lockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#10b981" />
-                            <stop offset="100%" stop-color="#06b6d4" />
-                        </linearGradient>
-                    </defs>
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="url(#lockGrad)" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="url(#lockGrad)" stroke-width="3" fill="none" stroke-linecap="round" />
-                    <circle cx="12" cy="16" r="1.5" fill="#ffffff" />
-                </svg>
-            </div>
-            <div class="bs-badge-info">
-                <h4 class="bs-badge-title">@Loc["TrustBadge_Secure_Title"]</h4>
-                <p class="bs-badge-desc">@Loc["TrustBadge_Secure_Desc"]</p>
-            </div>
-        </div>
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="url(#lockGrad)" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="url(#lockGrad)" stroke-width="3" fill="none" stroke-linecap="round" />
+                            <circle cx="12" cy="16" r="1.5" fill="#ffffff" />
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_Secure_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_Secure_Desc"]</p>
+                    </div>
+                </div>
 
-        <div class="bs-badge-card bs-card">
-            <div class="bs-badge-icon-wrapper logo-style-wrapper">
-                <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper logo-style-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_PriceLock_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_PriceLock_Desc"]</p>
+                    </div>
+                </div>
             </div>
-            <div class="bs-badge-info">
-                <h4 class="bs-badge-title">@Loc["TrustBadge_PriceLock_Title"]</h4>
-                <p class="bs-badge-desc">@Loc["TrustBadge_PriceLock_Desc"]</p>
+
+            <!-- Page 2: Comparative Badges Set 1 -->
+            <div class="bs-desktop-page">
+                <!-- Pricing Speed -->
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#clockGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_PricingSpeed_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_PricingSpeed_Desc"]</p>
+                    </div>
+                </div>
+
+                <!-- Quote Cost -->
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#tagGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <circle cx="7" cy="7" r="1"></circle>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_QuoteCost_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_QuoteCost_Desc"]</p>
+                    </div>
+                </div>
+
+                <!-- Payment Terms -->
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#cardGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="2" y1="10" x2="22" y2="10"></line>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_PaymentTerms_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_PaymentTerms_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 3: Comparative Badges Set 2 -->
+            <div class="bs-desktop-page">
+                <!-- Project Management -->
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#checkGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                            <line x1="9" y1="11" x2="15" y2="11"></line>
+                            <line x1="9" y1="15" x2="13" y2="15"></line>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_ProjectManagement_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_ProjectManagement_Desc"]</p>
+                    </div>
+                </div>
+
+                <!-- Slippage Protection -->
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#shieldCheckGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <path d="M9 11l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_SlippageProtection_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_SlippageProtection_Desc"]</p>
+                    </div>
+                </div>
+
+                <!-- Quote Clarity -->
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#docGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"></path>
+                            <path d="M14 2v6h6"></path>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_QuoteClarity_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_QuoteClarity_Desc"]</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Mobile Carousel -->
+    <!-- Desktop Dot Indicators (Positioned outside carousel) -->
+    <div class="bs-desktop-dots">
+        @for (int i = 0; i < 3; i++)
+        {
+            var index = i;
+            <span class="bs-dot @(_activeDesktopPage == index ? "active" : "")" @onclick="() => SetActiveDesktopPage(index)"></span>
+        }
+    </div>
+
+    <!-- Mobile Carousel (9 individual slides) -->
     <div class="bs-badges-mobile">
-        <div class="bs-carousel-track" style="transform: translateX(-@(_activeIndex * 100)%);">
+        <div class="bs-carousel-track" style="transform: @GetMobileTransform(); width: 900%;">
             <!-- Slide 1 -->
             <div class="bs-carousel-slide">
                 <div class="bs-badge-card bs-card">
@@ -105,13 +240,115 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Slide 4 -->
+            <div class="bs-carousel-slide">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#clockGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_PricingSpeed_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_PricingSpeed_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="bs-carousel-slide">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#tagGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <circle cx="7" cy="7" r="1"></circle>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_QuoteCost_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_QuoteCost_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="bs-carousel-slide">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#cardGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="2" y1="10" x2="22" y2="10"></line>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_PaymentTerms_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_PaymentTerms_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7 -->
+            <div class="bs-carousel-slide">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#checkGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                            <line x1="9" y1="11" x2="15" y2="11"></line>
+                            <line x1="9" y1="15" x2="13" y2="15"></line>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_ProjectManagement_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_ProjectManagement_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8 -->
+            <div class="bs-carousel-slide">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#shieldCheckGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <path d="M9 11l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_SlippageProtection_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_SlippageProtection_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9 -->
+            <div class="bs-carousel-slide">
+                <div class="bs-badge-card bs-card">
+                    <div class="bs-badge-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bs-badge-icon-svg" fill="none" stroke="url(#docGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"></path>
+                            <path d="M14 2v6h6"></path>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="bs-badge-info">
+                        <h4 class="bs-badge-title">@Loc["TrustBadge_QuoteClarity_Title"]</h4>
+                        <p class="bs-badge-desc">@Loc["TrustBadge_QuoteClarity_Desc"]</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Dot Indicators -->
         <div class="bs-carousel-dots">
-            <span class="bs-dot @(_activeIndex == 0 ? "active" : "")" @onclick="() => SetActiveSlide(0)"></span>
-            <span class="bs-dot @(_activeIndex == 1 ? "active" : "")" @onclick="() => SetActiveSlide(1)"></span>
-            <span class="bs-dot @(_activeIndex == 2 ? "active" : "")" @onclick="() => SetActiveSlide(2)"></span>
+            @for (int i = 0; i < 9; i++)
+            {
+                var index = i;
+                <span class="bs-dot @(_activeMobileIndex == index ? "active" : "")" @onclick="() => SetActiveMobileSlide(index)"></span>
+            }
         </div>
     </div>
 </div>
@@ -120,28 +357,63 @@
     .bs-trust-badges-container {
         width: 100%;
         height: 100%;
+        overflow: visible;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Desktop View (Carousel of Pages) */
+    .bs-badges-desktop-carousel {
+        position: relative;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        justify-content: flex-start;
+        box-sizing: border-box;
     }
 
-    /* Desktop View */
-    .bs-badges-desktop {
+    .bs-desktop-track {
+        display: flex;
+        width: 300%; /* 3 pages */
+        height: 100%;
+        transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .bs-desktop-page {
+        flex: 0 0 33.3333%;
+        width: 33.3333%;
+        height: 100%;
         display: flex;
         flex-direction: row;
         gap: 12px;
-        width: 100%;
-        height: 100%;
-        align-items: stretch;
+        padding: 4px;
+        box-sizing: border-box;
+    }
+
+    .bs-desktop-dots {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        z-index: 5;
     }
 
     .bs-badge-card {
         flex: 1;
         display: flex;
-        flex-direction: row;
+        flex-direction: column; /* Centered column layout */
         align-items: center;
+        justify-content: flex-start;
         gap: 12px;
-        padding: 12px 16px;
+        padding: 16px 12px;
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 16px;
@@ -149,6 +421,7 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         min-width: 0;
         height: 100%;
+        text-align: center;
     }
 
     .bs-badge-card:hover {
@@ -158,12 +431,12 @@
 
     .bs-badge-icon-wrapper {
         flex-shrink: 0;
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
+        border-radius: 12px;
         background-color: var(--bg-card-alt);
     }
 
@@ -174,41 +447,38 @@
     }
 
     .bs-badge-icon-svg {
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
         display: block;
     }
 
     .bs-badge-info {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 6px;
         min-width: 0;
+        width: 100%;
     }
 
     .bs-badge-title {
         font-family: var(--font-heading);
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 15px;
+        font-weight: 900;
         color: var(--text-primary);
         margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.25;
+        text-align: center;
     }
 
     .bs-badge-desc {
         font-family: var(--font-primary);
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 400;
         color: var(--text-secondary);
         margin: 0;
-        line-height: 1.3;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.4;
+        text-align: center;
+        width: 100%;
     }
 
     /* Mobile View */
@@ -216,36 +486,40 @@
         display: none;
         position: relative;
         width: 100%;
+        height: 62px;
         overflow: hidden;
+        padding-bottom: 0;
+        box-sizing: border-box;
     }
 
     .bs-carousel-track {
         display: flex;
-        width: 100%;
+        height: 100%;
         transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .bs-carousel-slide {
-        flex: 0 0 100%;
-        width: 100%;
+        flex: 0 0 11.1111%; /* 1/9 since we have 9 slides */
+        width: 11.1111%;
+        height: 100%;
         box-sizing: border-box;
         padding: 4px;
     }
 
     .bs-carousel-dots {
-        display: flex;
-        justify-content: center;
-        gap: 6px;
-        margin-top: 8px;
+        display: none !important;
     }
 
     .bs-dot {
-        width: 6px;
-        height: 6px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
         background-color: var(--border-color);
         cursor: pointer;
         transition: background-color 0.2s ease, transform 0.2s ease;
+        padding: 6px;
+        background-clip: content-box;
+        box-sizing: content-box;
     }
 
     .bs-dot.active {
@@ -255,25 +529,68 @@
 
     /* Responsive Queries */
     @@media (max-width: 992px) {
-        .bs-badges-desktop {
-            display: none;
+        .bs-badges-desktop-carousel {
+            display: none !important;
+        }
+
+        .bs-desktop-dots {
+            display: none !important;
         }
 
         .bs-badges-mobile {
-            display: block;
+            display: block !important;
+        }
+
+        /* Horizontal Card Layout on Mobile Viewports */
+        .bs-badge-card {
+            flex-direction: row !important;
+            align-items: center !important;
+            padding: 8px 12px !important;
+            gap: 10px !important;
+        }
+
+        .bs-badge-icon-wrapper {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 8px !important;
+        }
+
+        .bs-badge-icon-svg {
+            width: 22px !important;
+            height: 22px !important;
+        }
+
+        .bs-badge-info {
+            text-align: center !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 1px !important;
+        }
+
+        .bs-badge-title {
+            text-align: center !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }
+
+        .bs-badge-desc {
+            text-align: center !important;
+            font-size: 11px !important;
+            line-height: 1.3 !important;
         }
     }
 
-    /* Guard: Auto-hide badges on mobile when viewport height is too small to avoid pushing content */
+    /* Guard: Auto-hide badges on mobile when viewport height is too small */
     @@media (max-width: 992px) and (max-height: 720px) {
         .bs-trust-badges-container {
-            display: none;
+            display: none !important;
         }
     }
 </style>
 
 @code {
-    private int _activeIndex = 0;
+    private int _activeDesktopPage = 0;
+    private int _activeMobileIndex = 0;
     private System.Threading.Timer? _carouselTimer;
 
     protected override void OnInitialized()
@@ -286,15 +603,40 @@
         _carouselTimer?.Dispose();
         _carouselTimer = new System.Threading.Timer(_ => 
         {
-            _activeIndex = (_activeIndex + 1) % 3;
+            _activeDesktopPage = (_activeDesktopPage + 1) % 3;
+            _activeMobileIndex = (_activeMobileIndex + 1) % 9;
             InvokeAsync(StateHasChanged);
-        }, null, 5000, 5000);
+        }, null, 6000, 6000);
     }
 
-    private void SetActiveSlide(int index)
+    private void SetActiveDesktopPage(int index)
     {
-        _activeIndex = index;
+        _activeDesktopPage = index;
+        _activeMobileIndex = index * 3;
         StartTimer();
+    }
+
+    private void SetActiveMobileSlide(int index)
+    {
+        _activeMobileIndex = index;
+        _activeDesktopPage = index / 3;
+        StartTimer();
+    }
+
+    private string GetDesktopTransform()
+    {
+        return _activeDesktopPage switch
+        {
+            1 => "translateX(-33.3333%)",
+            2 => "translateX(-66.6666%)",
+            _ => "translateX(0%)"
+        };
+    }
+
+    private string GetMobileTransform()
+    {
+        double percentage = _activeMobileIndex * (100.0 / 9.0);
+        return $"translateX(-{percentage.ToString(System.Globalization.CultureInfo.InvariantCulture)}%)";
     }
 
     public void Dispose()

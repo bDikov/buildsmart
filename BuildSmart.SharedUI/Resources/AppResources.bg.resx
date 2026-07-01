@@ -878,4 +878,40 @@
   <data name="MainLayout_LogoutAlert_Cancel" xml:space="preserve">
     <value>Отказ</value>
   </data>
+  <data name="TrustBadge_PricingSpeed_Title" xml:space="preserve">
+    <value>Скорост на цената</value>
+  </data>
+  <data name="TrustBadge_PricingSpeed_Desc" xml:space="preserve">
+    <value>Моментално ценообразуване вместо бавни оферти за 2-4 седмици.</value>
+  </data>
+  <data name="TrustBadge_QuoteCost_Title" xml:space="preserve">
+    <value>Цена на офертата</value>
+  </data>
+  <data name="TrustBadge_QuoteCost_Desc" xml:space="preserve">
+    <value>Безплатен премиум PDF веднага, без досадни огледи и срещи.</value>
+  </data>
+  <data name="TrustBadge_PaymentTerms_Title" xml:space="preserve">
+    <value>Условия за плащане</value>
+  </data>
+  <data name="TrustBadge_PaymentTerms_Desc" xml:space="preserve">
+    <value>Плащане само при завършване. Сигурни и надеждни условия.</value>
+  </data>
+  <data name="TrustBadge_ProjectManagement_Title" xml:space="preserve">
+    <value>Управление</value>
+  </data>
+  <data name="TrustBadge_ProjectManagement_Desc" xml:space="preserve">
+    <value>Напълно управлявани майстори от BuildSmart вместо хаос.</value>
+  </data>
+  <data name="TrustBadge_SlippageProtection_Title" xml:space="preserve">
+    <value>Защита от надхвърляне</value>
+  </data>
+  <data name="TrustBadge_SlippageProtection_Desc" xml:space="preserve">
+    <value>100% фиксирана цена. Всеки преразход се поема от нас.</value>
+  </data>
+  <data name="TrustBadge_QuoteClarity_Title" xml:space="preserve">
+    <value>Яснота на офертата</value>
+  </data>
+  <data name="TrustBadge_QuoteClarity_Desc" xml:space="preserve">
+    <value>Изящна и съпоставима PDF оферта вместо неясни имейли.</value>
+  </data>
 </root>
