@@ -78,7 +78,23 @@
           "id": "global_floor",
           "text": "На кой етаж се намира обекта?",
           "type": "number",
-          "required": true
+          "required": true,
+          "dependsOn": "global_property_type",
+          "dependsOnValue": "Апартамент"
+        },
+        {
+          "id": "global_house_floors",
+          "text": "На колко от етажите ще се извършват ремонтни дейности?",
+          "type": "choice",
+          "options": [
+            "1 етаж",
+            "2 етажа",
+            "3 етажа",
+            "4+ етажа"
+          ],
+          "required": true,
+          "dependsOn": "global_property_type",
+          "dependsOnValue": "Къща / Вила"
         },
         {
           "id": "global_wall_material",
