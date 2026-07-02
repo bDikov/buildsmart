@@ -851,6 +851,12 @@
   <data name="JobWizard_Validation_RequiredQuestions" xml:space="preserve">
     <value>Моля, отговорете на всички задължителни въпроси, отбелязани със (*).</value>
   </data>
+  <data name="JobWizard_Validation_InvalidValue" xml:space="preserve">
+    <value>Невалидна стойност</value>
+  </data>
+  <data name="JobWizard_Validation_NegativeValuesNotAllowed" xml:space="preserve">
+    <value>Не се допускат отрицателни стойности. Моля, въведете положително число.</value>
+  </data>
   <data name="Projects_LoadMore" xml:space="preserve">
     <value>Зареди още проекти ({0} оставащи)</value>
   </data>

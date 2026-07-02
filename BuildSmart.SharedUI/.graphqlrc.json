@@ -6,7 +6,7 @@
     "strawberryShake": {
       "name": "BuildSmartApiClient",
       "namespace": "BuildSmart.SharedUI.GraphQL",
-      "url": "https://localhost:7212/graphql/",
+      "url": "https://localhost:44378/graphql/",
       "typeMappings": [
         {
           "name": "UUID",

@@ -48,7 +48,6 @@ namespace BuildSmart.Api.Tests
             using var db = new AppDbContext(optionsBuilder.Options);
 
             var skus = await db.ServiceSkus
-                .Include(s => s.Translations)
                 .ToListAsync();
 
             var electricalSkus = skus.Where(s => s.SkuCode.StartsWith("ELEC-")).ToList();
@@ -58,7 +57,7 @@ namespace BuildSmart.Api.Tests
             sb.AppendLine($"Total ELEC SKUs: {electricalSkus.Count}");
             foreach (var s in electricalSkus)
             {
-                var bg = s.Translations.FirstOrDefault(t => t.LanguageCode == "bg")?.Name ?? "[NONE]";
+                var bg = s.Name;
                 sb.AppendLine($"Code: {s.SkuCode} | Name: {s.Name} | Translation: {bg}");
             }
             var tempPath = Path.Combine(Path.GetTempPath(), "db_elec_skus.txt");
@@ -74,12 +73,11 @@ namespace BuildSmart.Api.Tests
                 Assert.True(sku.Name.Trim().Length > 2, $"Sku Name for {sku.SkuCode} is too short: {sku.Name}");
                 Assert.False(sku.Name.Contains("    "), $"Sku Name for {sku.SkuCode} contains placeholder question marks: {sku.Name}");
 
-                foreach (var trans in sku.Translations)
+                if (!string.IsNullOrEmpty(sku.EnglishName))
                 {
-                    Assert.NotNull(trans.Name);
-                    Assert.DoesNotContain("\uFFFD", trans.Name);
-                    Assert.DoesNotContain("??", trans.Name);
-                    Assert.False(trans.Name.Contains("    "), $"Translation Name for {sku.SkuCode} contains placeholder question marks: {trans.Name}");
+                    Assert.DoesNotContain("\uFFFD", sku.EnglishName);
+                    Assert.DoesNotContain("??", sku.EnglishName);
+                    Assert.False(sku.EnglishName.Contains("    "), $"English Name for {sku.SkuCode} contains placeholder question marks: {sku.EnglishName}");
                 }
             }
         }

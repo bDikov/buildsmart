@@ -67,6 +67,21 @@ public class AuthHeaderHandler : DelegatingHandler
             Console.WriteLine("[AuthHeaderHandler] WARNING: Token is NULL or EMPTY!");
         }
 
+        // Set Accept-Language header based on current UI culture
+        try
+        {
+            var currentCulture = System.Globalization.CultureInfo.CurrentUICulture ?? System.Globalization.CultureInfo.CurrentCulture;
+            if (currentCulture != null)
+            {
+                request.Headers.AcceptLanguage.Clear();
+                request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(currentCulture.Name));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AuthHeaderHandler] Failed to set Accept-Language header: {ex.Message}");
+        }
+
         var response = await base.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {

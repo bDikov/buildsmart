@@ -1,4 +1,4 @@
-﻿using BuildSmart.Core.Application.Interfaces;
+using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +15,14 @@ public class ServiceCategoryRepository : IServiceCategoryRepository
 
 	public async Task<ServiceCategory?> GetByIdAsync(Guid id)
 	{
-		return await _context.ServiceCategories.FindAsync(id);
+		return await _context.ServiceCategories
+			.FirstOrDefaultAsync(c => c.Id == id);
 	}
 
 	public async Task<IEnumerable<ServiceCategory>> GetAllAsync()
 	{
-		return await _context.ServiceCategories.ToListAsync();
+		return await _context.ServiceCategories
+			.ToListAsync();
 	}
 
 	public async Task AddAsync(ServiceCategory category)

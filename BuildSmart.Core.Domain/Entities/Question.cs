@@ -1,6 +1,7 @@
 using BuildSmart.Core.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuildSmart.Core.Domain.Entities;
 
@@ -14,6 +15,12 @@ public class Question : BaseEntity
     // JSON representation of options (if choice or multiselect)
     public string? OptionsJson { get; set; }
     public string? HintText { get; set; }
+
+    public string? EnglishText { get; set; }
+
+    public string? EnglishHint { get; set; }
+
+    public string? EnglishOptionsJson { get; set; }
 
     public Guid? ServiceCategoryId { get; set; }
     public ServiceCategory? ServiceCategory { get; set; }

@@ -50,6 +50,7 @@
     <PackageReference Include="Json.More.Net" Version="2.1.1" />
     <ProjectReference Include="..\BuildSmart.Core.Application\BuildSmart.Core.Application.csproj" />
     <ProjectReference Include="..\BuildSmart.Infrastructure\BuildSmart.Infrastructure.csproj" />
+    <ProjectReference Include="..\BuildSmart.SharedUI\BuildSmart.SharedUI.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://www.schemastore.org/xs-app.json" /></VisualStudio></ProjectExtensions>

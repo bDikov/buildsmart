@@ -1,6 +1,10 @@
 {
   "global_category": {
     "name": "Global Questions",
+    "translations": {
+      "bg": "Глобални въпроси",
+      "en": "Global Questions"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -74,7 +78,23 @@
           "id": "global_floor",
           "text": "На кой етаж се намира обекта?",
           "type": "number",
-          "required": true
+          "required": true,
+          "dependsOn": "global_property_type",
+          "dependsOnValue": "Апартамент"
+        },
+        {
+          "id": "global_house_floors",
+          "text": "На колко от етажите ще се извършват ремонтни дейности?",
+          "type": "choice",
+          "options": [
+            "1 етаж",
+            "2 етажа",
+            "3 етажа",
+            "4+ етажа"
+          ],
+          "required": true,
+          "dependsOn": "global_property_type",
+          "dependsOnValue": "Къща / Вила"
         },
         {
           "id": "global_wall_material",
@@ -92,6 +112,10 @@
   },
   "electrical_category": {
     "name": "Електрическа Инсталация",
+    "translations": {
+      "bg": "Електроуслуги",
+      "en": "Electrical Installation"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -200,6 +224,10 @@
   },
   "plumbing_category": {
     "name": "ВиК Услуги",
+    "translations": {
+      "bg": "ВиК Услуги",
+      "en": "Plumbing Services"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -288,6 +316,10 @@
   },
   "painting_category": {
     "name": "Бояджийски и шпакловъчни услуги",
+    "translations": {
+      "bg": "Боядисване",
+      "en": "Painting and Plastering"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -379,6 +411,10 @@
   },
   "demolition_category": {
     "name": "Къртене и извозване",
+    "translations": {
+      "bg": "Къртене",
+      "en": "Demolition and Disposal"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -432,6 +468,10 @@
   },
   "drywall_category": {
     "name": "Сухо строителство",
+    "translations": {
+      "bg": "Сухо Строителство",
+      "en": "Drywall Construction"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -508,6 +548,10 @@
   },
   "tiling_category": {
     "name": "Подови и стенни настилки",
+    "translations": {
+      "bg": "Настилки",
+      "en": "Flooring and Wall Tiling"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -598,6 +642,10 @@
   },
   "microcement_category": {
     "name": "Микроцимент",
+    "translations": {
+      "bg": "Микроцимент",
+      "en": "Microcement"
+    },
     "templateStructure": {
       "questions": [
         {
@@ -626,6 +674,10 @@
   },
   "project_details_category": {
     "name": "Project Details",
+    "translations": {
+      "bg": "Детайли по проекта",
+      "en": "Project Details"
+    },
     "templateStructure": {
       "isProjectDetails": true,
       "questions": [
@@ -731,6 +783,10 @@
   },
   "user_category": {
     "name": "User Information",
+    "translations": {
+      "bg": "Потребителска информация",
+      "en": "User Information"
+    },
     "templateStructure": {
       "isUser": true,
       "questions": [

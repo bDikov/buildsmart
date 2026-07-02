@@ -98,14 +98,14 @@
                                             <div class="mb-4 question-field @(q.HasError ? "has-error" : "")">
                                                 <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
                                                 <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: @(q.HasError ? "var(--color-danger, #dc3545)" : "var(--text-primary)");">
-                                                    @q.Text
+                                                    @Loc[q.Text]
                                                     @if (q.IsRequired)
                                                     {
                                                         <span class="text-danger ms-1">*</span>
                                                     }
                                                     @if (!string.IsNullOrWhiteSpace(q.HintText))
                                                     {
-                                                        <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@q.HintText">(?)</span>
+                                                        <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@Loc[q.HintText]">(?)</span>
                                                     }
                                                 </label>
 
@@ -115,29 +115,32 @@
                                                 }
                                                 else if (q.IsNumber)
                                                 {
-                                                    <input type="number" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="0" @bind="q.Answer" />
+                                                    <input type="number" min="0" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="0" @bind="q.Answer" />
                                                 }
                                                 else if (q.IsChoice && q.Options != null)
                                                 {
                                                     <BuildSmart.SharedUI.Components.BsDropdown 
-                                                        TValue="string" 
-                                                        Options="q.Options" 
-                                                        @bind-Value="q.Answer" 
-                                                        Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                                         TValue="string" 
+                                                         Options="q.RawOptions" 
+                                                         DisplayOptions="q.Options" 
+                                                         TranslateOptions="false" @bind-Value="q.Answer" 
+                                                         Placeholder="@Loc["JobWizard_SelectOption"]" />
                                                 }
                                                 else if (q.IsMultiSelect && q.Options != null)
                                                 {
                                                     <div class="d-flex flex-column gap-2">
-                                                        @foreach (var opt in q.Options)
-                                                        {
-                                                            <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                                <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{opt.GetHashCode()}")" 
-                                                                       checked="@(q.Answer.Contains(opt))"
-                                                                       @onchange="@(e => q.ToggleMultiSelectOption(opt, (bool)(e.Value ?? false)))" 
-                                                                       style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                                <label class="form-check-label text-secondary" for="@($"check_{q.Id}_{opt.GetHashCode()}")" style="cursor: pointer; padding-top: 2px;">@opt</label>
-                                                            </div>
-                                                        }
+                                                        @for (int idx = 0; idx < q.Options.Count; idx++)
+                                                         {
+                                                             var index = idx;
+                                                             var opt = q.Options[index];
+                                                             <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
+                                                                 <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{index}")" 
+                                                                        checked="@(q.IsOptionSelected(index))"
+                                                                        @onchange="@(e => q.ToggleMultiSelectOption(index, (bool)(e.Value ?? false)))" 
+                                                                        style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
+                                                                 <label class="form-check-label text-secondary" for="@($"check_{q.Id}_{index}")" style="cursor: pointer; padding-top: 2px;">@opt</label>
+                                                             </div>
+                                                         }
                                                     </div>
                                                 }
                                                 else if (q.IsBoolean)
@@ -182,14 +185,14 @@
                                             <div class="mb-4 question-field @(q.HasError ? "has-error" : "")">
                                                 <div class="fw-bold text-uppercase" style="font-size: 0.75rem; color: var(--color-primary);">@q.CategoryName</div>
                                                 <label class="form-label fw-bold mb-2 @(q.HasError ? "text-danger" : "")" style="color: @(q.HasError ? "var(--color-danger, #dc3545)" : "var(--text-primary)");">
-                                                    @q.Text
+                                                    @Loc[q.Text]
                                                     @if (q.IsRequired)
                                                     {
                                                         <span class="text-danger ms-1">*</span>
                                                     }
                                                     @if (!string.IsNullOrWhiteSpace(q.HintText))
                                                     {
-                                                        <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@q.HintText">(?)</span>
+                                                        <span class="ms-2" style="cursor: pointer; color: var(--color-primary);" title="@Loc[q.HintText]">(?)</span>
                                                     }
                                                 </label>
 
@@ -199,29 +202,32 @@
                                                 }
                                                 else if (q.IsNumber)
                                                 {
-                                                    <input type="number" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="0" @bind="q.Answer" />
+                                                    <input type="number" min="0" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="0" @bind="q.Answer" />
                                                 }
                                                 else if (q.IsChoice && q.Options != null)
                                                 {
                                                     <BuildSmart.SharedUI.Components.BsDropdown 
-                                                        TValue="string" 
-                                                        Options="q.Options" 
-                                                        @bind-Value="q.Answer" 
-                                                        Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                                         TValue="string" 
+                                                         Options="q.RawOptions" 
+                                                         DisplayOptions="q.Options" 
+                                                         TranslateOptions="false" @bind-Value="q.Answer" 
+                                                         Placeholder="@Loc["JobWizard_SelectOption"]" />
                                                 }
                                                 else if (q.IsMultiSelect && q.Options != null)
                                                 {
                                                     <div class="d-flex flex-column gap-2">
-                                                        @foreach (var opt in q.Options)
-                                                        {
-                                                            <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                                <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{opt.GetHashCode()}")" 
-                                                                       checked="@(q.Answer.Contains(opt))"
-                                                                       @onchange="@(e => q.ToggleMultiSelectOption(opt, (bool)(e.Value ?? false)))" 
-                                                                       style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                                <label class="form-check-label text-secondary" for="@($"check_{q.Id}_{opt.GetHashCode()}")" style="cursor: pointer; padding-top: 2px;">@opt</label>
-                                                            </div>
-                                                        }
+                                                        @for (int idx = 0; idx < q.Options.Count; idx++)
+                                                         {
+                                                             var index = idx;
+                                                             var opt = q.Options[index];
+                                                             <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
+                                                                 <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{index}")" 
+                                                                        checked="@(q.IsOptionSelected(index))"
+                                                                        @onchange="@(e => q.ToggleMultiSelectOption(index, (bool)(e.Value ?? false)))" 
+                                                                        style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
+                                                                 <label class="form-check-label text-secondary" for="@($"check_{q.Id}_{index}")" style="cursor: pointer; padding-top: 2px;">@opt</label>
+                                                             </div>
+                                                         }
                                                     </div>
                                                 }
                                                 else if (q.IsBoolean)
@@ -269,7 +275,7 @@
                                         {
                                             @foreach (var cat in ViewModel.SelectableCategories.Where(c => c.IsSelected))
                                             {
-                                                <li style="margin-bottom: 5px;">&bull; @cat.Category?.Name</li>
+                                                <li style="margin-bottom: 5px;">&bull; @(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(cat.Category?.EnglishName) ? cat.Category.EnglishName : cat.Category?.Name)</li>
                                             }
                                         }
                                     </ul>
@@ -370,6 +376,9 @@
             
         return $"transition: {_swipeTransition}; transform: translateX({_currentSwipeX}px) rotate({_currentSwipeRotation}deg); touch-action: pan-y; transform-origin: 50% 100%;";
     }
+
+    [CascadingParameter(Name = "LanguageCode")]
+    public string LanguageCode { get; set; } = "en";
 
     protected override void OnInitialized()
     {
@@ -563,6 +572,8 @@
     {
         if (ViewModel != null)
         {
+            ViewModel.ActiveLanguageCode = LanguageCode;
+
             var queryParams = new Dictionary<string, object>();
             if (ProjectId.HasValue) queryParams["ProjectId"] = ProjectId.Value;
             if (JobId.HasValue) queryParams["JobPostId"] = JobId.Value;

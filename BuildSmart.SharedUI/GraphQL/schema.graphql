@@ -163,7 +163,8 @@ type ServiceCategory {
   isGlobal: Boolean!
   type: CategoryType!
   templateStructure: String!
-  translations: [ServiceCategoryTranslation!]!
+  englishName: String
+  englishDescription: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -665,7 +666,9 @@ type ServiceSku {
   unitType: String!
   serviceCategory: ServiceCategory!
   calculationFormula: String!
-  translations: [ServiceSkuTranslation!]!
+  englishName: String
+  englishDescription: String
+  englishUnitType: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -993,6 +996,7 @@ type Mutation {
   updateCategoryStatus(categoryId: UUID! newStatus: CategoryStatus!): ServiceCategory!
   saveCategory(id: UUID name: String! description: String isGlobal: Boolean! templateStructure: String! status: CategoryStatus): ServiceCategory!
   startAnonymousSupportChat: AnonymousChatPayload!
+  updateLocalizationString(input: UpdateLocalizationInput!): LocalizationResource!
 }
 
 "The root query object."
@@ -1034,6 +1038,8 @@ type Query {
   bidDetailsById(bidId: UUID!): Bid
   allProjects(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
   myActiveBookings(where: BookingFilterInput order: [BookingSortInput!]): [Booking!]!
+  localizationStrings(culture: String!): [LocalizationResource!]!
+  allLocalizationResources: [LocalizationResource!]!
 }
 
 input ListFilterInputTypeOfJobTaskFilterInput {
@@ -1759,4 +1765,16 @@ directive @listSize("The `assumedSize` argument can be used to statically define
 type AnonymousChatPayload {
   token: String!
   projectId: UUID!
+}
+
+type LocalizationResource {
+  key: String!
+  culture: String!
+  value: String!
+}
+
+input UpdateLocalizationInput {
+  key: String!
+  culture: String!
+  value: String!
 }

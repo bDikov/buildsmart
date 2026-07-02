@@ -14,6 +14,8 @@ using System.Text;
 using Hangfire;
 using BuildSmart.Infrastructure.Persistence;
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
+using BuildSmart.Api.Hubs;
 
 namespace BuildSmart.Api.GraphQL;
 
@@ -891,6 +893,7 @@ public class Mutation
 		bool isGlobal,
 		string templateStructure,
 		CategoryStatus? status,
+		string? englishName,
 		[Service] IUnitOfWork unitOfWork,
 		[Service] AppDbContext context)
 	{
@@ -903,6 +906,8 @@ public class Mutation
 			category.Description = description;
 			category.IsGlobal = isGlobal;
 			category.TemplateStructure = templateStructure;
+			category.EnglishName = englishName?.Trim();
+			category.EnglishDescription = description;
 			if (status.HasValue)
 			{
 				category.Status = status.Value;
@@ -919,33 +924,11 @@ public class Mutation
 				Description = description,
 				IsGlobal = isGlobal,
 				TemplateStructure = templateStructure,
-				Status = status ?? CategoryStatus.Draft
+				Status = status ?? CategoryStatus.Draft,
+				EnglishName = englishName?.Trim(),
+				EnglishDescription = description
 			};
 			await unitOfWork.ServiceCategories.AddAsync(category);
-		}
-
-		// Add/Update Bulgarian Translation
-		var existingTranslation = await context.ServiceCategoryTranslations
-			.FirstOrDefaultAsync(t => t.CategoryId == category.Id && t.LanguageCode == "bg");
-		if (existingTranslation != null)
-		{
-			existingTranslation.Name = name;
-			existingTranslation.Description = description;
-			existingTranslation.UpdatedAt = DateTime.UtcNow;
-			context.ServiceCategoryTranslations.Update(existingTranslation);
-		}
-		else
-		{
-			await context.ServiceCategoryTranslations.AddAsync(new ServiceCategoryTranslation
-			{
-				Id = Guid.NewGuid(),
-				CategoryId = category.Id,
-				LanguageCode = "bg",
-				Name = name,
-				Description = description,
-				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
-			});
 		}
 
 		await unitOfWork.SaveChangesAsync();
@@ -960,12 +943,6 @@ public class Mutation
 	{
 		var category = await unitOfWork.ServiceCategories.GetByIdAsync(id);
 		if (category == null) return false;
-
-		// Remove translations
-		var translations = await context.ServiceCategoryTranslations
-			.Where(t => t.CategoryId == id)
-			.ToListAsync();
-		context.ServiceCategoryTranslations.RemoveRange(translations);
 
 		await unitOfWork.ServiceCategories.DeleteAsync(id);
 		await unitOfWork.SaveChangesAsync();
@@ -982,7 +959,9 @@ public class Mutation
 		string unitType,
 		[Service] IUnitOfWork unitOfWork,
 		[Service] AppDbContext context,
-		string? calculationFormula = null)
+		string? calculationFormula = null,
+		string? englishName = null,
+		string? englishDescription = null)
 	{
 		var sku = new ServiceSku
 		{
@@ -994,25 +973,14 @@ public class Mutation
 			BasePrice = basePrice,
 			UnitType = unitType,
 			CalculationFormula = calculationFormula ?? "",
+			EnglishName = englishName?.Trim(),
+			EnglishDescription = englishDescription ?? "",
+			EnglishUnitType = GetEnglishUnitType(unitType),
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};
 
 		await unitOfWork.ServiceSkus.AddAsync(sku);
-
-		// Add Bulgarian Translation
-		await context.ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
-		{
-			Id = Guid.NewGuid(),
-			SkuId = sku.Id,
-			LanguageCode = "bg",
-			Name = name,
-			Description = description ?? "",
-			UnitType = unitType ?? "",
-			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
-		});
-
 		await unitOfWork.SaveChangesAsync();
 		return sku;
 	}
@@ -1027,7 +995,9 @@ public class Mutation
 		string unitType,
 		[Service] IUnitOfWork unitOfWork,
 		[Service] AppDbContext context,
-		string? calculationFormula = null)
+		string? calculationFormula = null,
+		string? englishName = null,
+		string? englishDescription = null)
 	{
 		var sku = await unitOfWork.ServiceSkus.GetByIdAsync(id)
 			?? throw new GraphQLException("SKU not found.");
@@ -1038,36 +1008,12 @@ public class Mutation
 		sku.BasePrice = basePrice;
 		sku.UnitType = unitType;
 		sku.CalculationFormula = calculationFormula ?? "";
+		sku.EnglishName = englishName?.Trim();
+		sku.EnglishDescription = englishDescription ?? "";
+		sku.EnglishUnitType = GetEnglishUnitType(unitType);
 		sku.UpdatedAt = DateTime.UtcNow;
 
 		unitOfWork.ServiceSkus.Update(sku);
-
-		// Add/Update Bulgarian Translation
-		var existingTranslation = await context.ServiceSkuTranslations
-			.FirstOrDefaultAsync(t => t.SkuId == sku.Id && t.LanguageCode == "bg");
-		if (existingTranslation != null)
-		{
-			existingTranslation.Name = name;
-			existingTranslation.Description = description ?? "";
-			existingTranslation.UnitType = unitType ?? "";
-			existingTranslation.UpdatedAt = DateTime.UtcNow;
-			context.ServiceSkuTranslations.Update(existingTranslation);
-		}
-		else
-		{
-			await context.ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
-			{
-				Id = Guid.NewGuid(),
-				SkuId = sku.Id,
-				LanguageCode = "bg",
-				Name = name,
-				Description = description ?? "",
-				UnitType = unitType ?? "",
-				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
-			});
-		}
-
 		await unitOfWork.SaveChangesAsync();
 		return sku;
 	}
@@ -1341,7 +1287,10 @@ public class Mutation
 		int displayOrder,
 		string? visibilityCondition,
 		[Service] IQuestionManagementService questionService,
-		CancellationToken cancellationToken)
+		[Service] AppDbContext context,
+		CancellationToken cancellationToken,
+		string? englishText = null,
+		string? englishHint = null)
 	{
 		var question = new Question
 		{
@@ -1358,7 +1307,60 @@ public class Mutation
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};
-		return await questionService.CreateQuestionAsync(question, cancellationToken);
+		var result = await questionService.CreateQuestionAsync(question, cancellationToken);
+
+		// Add/Update english text translation
+		if (!string.IsNullOrWhiteSpace(englishText))
+		{
+			var resource = await context.LocalizationResources
+				.FirstOrDefaultAsync(r => r.Key == text && r.Culture == "en", cancellationToken);
+			if (resource != null)
+			{
+				resource.Value = englishText.Trim();
+				resource.UpdatedAt = DateTime.UtcNow;
+				context.LocalizationResources.Update(resource);
+			}
+			else
+			{
+				await context.LocalizationResources.AddAsync(new LocalizationResource
+				{
+					Id = Guid.NewGuid(),
+					Key = text,
+					Culture = "en",
+					Value = englishText.Trim(),
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				}, cancellationToken);
+			}
+		}
+
+		// Add/Update english hint translation
+		if (!string.IsNullOrWhiteSpace(hintText) && !string.IsNullOrWhiteSpace(englishHint))
+		{
+			var resource = await context.LocalizationResources
+				.FirstOrDefaultAsync(r => r.Key == hintText && r.Culture == "en", cancellationToken);
+			if (resource != null)
+			{
+				resource.Value = englishHint.Trim();
+				resource.UpdatedAt = DateTime.UtcNow;
+				context.LocalizationResources.Update(resource);
+			}
+			else
+			{
+				await context.LocalizationResources.AddAsync(new LocalizationResource
+				{
+					Id = Guid.NewGuid(),
+					Key = hintText,
+					Culture = "en",
+					Value = englishHint.Trim(),
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				}, cancellationToken);
+			}
+		}
+
+		await context.SaveChangesAsync(cancellationToken);
+		return result;
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
@@ -1375,7 +1377,10 @@ public class Mutation
 		int displayOrder,
 		string? visibilityCondition,
 		[Service] IQuestionManagementService questionService,
-		CancellationToken cancellationToken)
+		[Service] AppDbContext context,
+		CancellationToken cancellationToken,
+		string? englishText = null,
+		string? englishHint = null)
 	{
 		var question = await questionService.GetQuestionByIdAsync(id, cancellationToken);
 		if (question == null)
@@ -1395,7 +1400,60 @@ public class Mutation
 		question.VisibilityCondition = visibilityCondition;
 		question.UpdatedAt = DateTime.UtcNow;
 
-		return await questionService.UpdateQuestionAsync(question, cancellationToken);
+		var result = await questionService.UpdateQuestionAsync(question, cancellationToken);
+
+		// Add/Update english text translation
+		if (!string.IsNullOrWhiteSpace(englishText))
+		{
+			var resource = await context.LocalizationResources
+				.FirstOrDefaultAsync(r => r.Key == text && r.Culture == "en", cancellationToken);
+			if (resource != null)
+			{
+				resource.Value = englishText.Trim();
+				resource.UpdatedAt = DateTime.UtcNow;
+				context.LocalizationResources.Update(resource);
+			}
+			else
+			{
+				await context.LocalizationResources.AddAsync(new LocalizationResource
+				{
+					Id = Guid.NewGuid(),
+					Key = text,
+					Culture = "en",
+					Value = englishText.Trim(),
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				}, cancellationToken);
+			}
+		}
+
+		// Add/Update english hint translation
+		if (!string.IsNullOrWhiteSpace(hintText) && !string.IsNullOrWhiteSpace(englishHint))
+		{
+			var resource = await context.LocalizationResources
+				.FirstOrDefaultAsync(r => r.Key == hintText && r.Culture == "en", cancellationToken);
+			if (resource != null)
+			{
+				resource.Value = englishHint.Trim();
+				resource.UpdatedAt = DateTime.UtcNow;
+				context.LocalizationResources.Update(resource);
+			}
+			else
+			{
+				await context.LocalizationResources.AddAsync(new LocalizationResource
+				{
+					Id = Guid.NewGuid(),
+					Key = hintText,
+					Culture = "en",
+					Value = englishHint.Trim(),
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				}, cancellationToken);
+			}
+		}
+
+		await context.SaveChangesAsync(cancellationToken);
+		return result;
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
@@ -1582,6 +1640,21 @@ public class Mutation
 			var skuMap = new Dictionary<Guid, Guid>();
 			var questionMap = new Dictionary<Guid, Guid>();
 
+			var optionMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+			if (root.TryGetProperty("LocalizationResources", out var lrArr))
+			{
+				foreach (var lrJson in lrArr.EnumerateArray())
+				{
+					var key = lrJson.GetProperty("Key").GetString() ?? "";
+					var culture = lrJson.GetProperty("Culture").GetString() ?? "";
+					var val = lrJson.GetProperty("Value").GetString() ?? "";
+					if (culture == "en" && !string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(val))
+					{
+						optionMappings[key] = val;
+					}
+				}
+			}
+
 			// 1. Sync / Import Service Categories
 			if (root.TryGetProperty("Categories", out var categoriesArr))
 			{
@@ -1596,6 +1669,72 @@ public class Mutation
 					Enum.TryParse<CategoryStatus>(cStatusStr, true, out var cStatus);
 					var localId = cJson.GetProperty("Id").GetGuid();
 
+					string? enName = null;
+					if (cJson.TryGetProperty("Translations", out var ctArr))
+					{
+						foreach (var ctJson in ctArr.EnumerateArray())
+						{
+							var lang = ctJson.TryGetProperty("LanguageCode", out var lProp) ? lProp.GetString() : null;
+							if (lang == "en")
+							{
+								enName = ctJson.TryGetProperty("Name", out var nProp) ? nProp.GetString() : null;
+							}
+						}
+					}
+
+					if (!string.IsNullOrWhiteSpace(cTemplate) && cTemplate != "{}")
+					{
+						try
+						{
+							var tsNode = System.Text.Json.Nodes.JsonNode.Parse(cTemplate);
+							if (tsNode != null && tsNode["questions"] is System.Text.Json.Nodes.JsonArray qArray)
+							{
+								foreach (var qNode in qArray)
+								{
+									if (qNode is System.Text.Json.Nodes.JsonObject qObj)
+									{
+										// 1. Text translation enrichment
+										var textNode = qObj["text"];
+										if (textNode is System.Text.Json.Nodes.JsonValue valNode && valNode.TryGetValue<string>(out var textStr))
+										{
+											var enText = optionMappings.TryGetValue(textStr, out var et) ? et : textStr;
+											qObj["text"] = new System.Text.Json.Nodes.JsonObject
+											{
+												["bg"] = textStr,
+												["en"] = enText
+											};
+										}
+
+										// 2. Options translation enrichment
+										var optionsNode = qObj["options"];
+										if (optionsNode is System.Text.Json.Nodes.JsonArray optArr)
+										{
+											var bgList = new System.Text.Json.Nodes.JsonArray();
+											var enList = new System.Text.Json.Nodes.JsonArray();
+											foreach (var optVal in optArr)
+											{
+												var optStr = optVal?.GetValue<string>() ?? "";
+												bgList.Add(optStr);
+												var enOpt = optionMappings.TryGetValue(optStr, out var eo) ? eo : optStr;
+												enList.Add(enOpt);
+											}
+											qObj["options"] = new System.Text.Json.Nodes.JsonObject
+											{
+												["bg"] = bgList,
+												["en"] = enList
+											};
+										}
+									}
+								}
+								cTemplate = tsNode.ToJsonString();
+							}
+						}
+						catch (Exception ex)
+						{
+							LogWarning($"Error enriching TemplateStructure: {ex.Message}");
+						}
+					}
+
 					var existingCategory = liveCategories.FirstOrDefault(x => x.Id == localId || x.Name.Equals(cName, StringComparison.OrdinalIgnoreCase));
 					if (existingCategory != null)
 					{
@@ -1604,6 +1743,8 @@ public class Mutation
 						existingCategory.IsGlobal = cIsGlobal;
 						existingCategory.TemplateStructure = cTemplate ?? "{}";
 						existingCategory.Status = cStatus;
+						existingCategory.EnglishName = enName?.Trim();
+						existingCategory.EnglishDescription = cDesc;
 						db.ServiceCategories.Update(existingCategory);
 						await db.SaveChangesAsync();
 						categoryMap[localId] = existingCategory.Id;
@@ -1618,7 +1759,9 @@ public class Mutation
 							Description = cDesc,
 							IsGlobal = cIsGlobal,
 							TemplateStructure = cTemplate ?? "{}",
-							Status = cStatus
+							Status = cStatus,
+							EnglishName = enName?.Trim(),
+							EnglishDescription = cDesc
 						};
 						db.ServiceCategories.Add(created);
 						await db.SaveChangesAsync();
@@ -1626,6 +1769,31 @@ public class Mutation
 						LogSuccess($"Created new category: {cName}");
 					}
 				}
+			}
+
+			// Deduplicate active global categories. If there are multiple active categories marked as IsGlobal, 
+			// check if they share the same questions in their template. If so, deactivate the duplicate one.
+			var activeGlobalCategories = await db.ServiceCategories
+				.Where(c => c.IsGlobal && c.Status == CategoryStatus.Active)
+				.ToListAsync();
+
+			if (activeGlobalCategories.Count > 1)
+			{
+				LogWarning($"Found {activeGlobalCategories.Count} active global categories. Checking for duplicates...");
+				var keptCategory = activeGlobalCategories.FirstOrDefault(c => c.Name.Equals("Global Questions", StringComparison.OrdinalIgnoreCase)) 
+					?? activeGlobalCategories.First();
+
+				foreach (var cat in activeGlobalCategories)
+				{
+					if (cat.Id != keptCategory.Id)
+					{
+						LogWarning($"Deactivating duplicate global category: '{cat.Name}' (ID: {cat.Id})");
+						cat.IsGlobal = false;
+						cat.Status = CategoryStatus.Draft;
+						db.ServiceCategories.Update(cat);
+					}
+				}
+				await db.SaveChangesAsync();
 			}
 
 			// 2. Sync / Import Formulas
@@ -1709,6 +1877,14 @@ public class Mutation
 						continue;
 					}
 
+					var enName = sJson.TryGetProperty("EnglishName", out var enNameProp) && enNameProp.ValueKind != JsonValueKind.Null ? enNameProp.GetString() : null;
+					var enDesc = sJson.TryGetProperty("EnglishDescription", out var enDescProp) && enDescProp.ValueKind != JsonValueKind.Null ? enDescProp.GetString() : null;
+					var enUnit = GetEnglishUnitType(sUnit);
+					if (enUnit == sUnit && !string.IsNullOrWhiteSpace(sUnit) && optionMappings.TryGetValue(sUnit, out var mappedUnit))
+					{
+						enUnit = mappedUnit;
+					}
+
 					var existingSku = liveSkus.FirstOrDefault(x => x.SkuCode.Equals(sCode, StringComparison.OrdinalIgnoreCase));
 					if (existingSku != null)
 					{
@@ -1718,6 +1894,9 @@ public class Mutation
 						existingSku.UnitType = sUnit;
 						existingSku.CalculationFormula = sFormula;
 						existingSku.ServiceCategoryId = liveCatId;
+						existingSku.EnglishName = enName?.Trim();
+						existingSku.EnglishDescription = enDesc;
+						existingSku.EnglishUnitType = enUnit;
 						db.ServiceSkus.Update(existingSku);
 						await db.SaveChangesAsync();
 						skuMap[localId] = existingSku.Id;
@@ -1734,7 +1913,10 @@ public class Mutation
 							BasePrice = sPrice,
 							UnitType = sUnit,
 							CalculationFormula = sFormula,
-							ServiceCategoryId = liveCatId
+							ServiceCategoryId = liveCatId,
+							EnglishName = enName?.Trim(),
+							EnglishDescription = enDesc,
+							EnglishUnitType = enUnit
 						};
 						db.ServiceSkus.Add(created);
 						await db.SaveChangesAsync();
@@ -1773,6 +1955,24 @@ public class Mutation
 						}
 					}
 
+					var enText = qJson.TryGetProperty("EnglishText", out var etProp) && etProp.ValueKind != JsonValueKind.Null ? etProp.GetString() : null;
+					var enHint = qJson.TryGetProperty("EnglishHint", out var ehProp) && ehProp.ValueKind != JsonValueKind.Null ? ehProp.GetString() : null;
+
+					string? enOptionsJson = null;
+					if (!string.IsNullOrEmpty(qOptions))
+					{
+						try
+						{
+							var bgOptions = System.Text.Json.JsonSerializer.Deserialize<List<string>>(qOptions);
+							if (bgOptions != null)
+							{
+								var enOptions = bgOptions.Select(opt => optionMappings.TryGetValue(opt, out var enOpt) ? enOpt : opt).ToList();
+								enOptionsJson = System.Text.Json.JsonSerializer.Serialize(enOptions);
+							}
+						}
+						catch { }
+					}
+
 					var existingQuestion = liveQuestions.FirstOrDefault(x => x.Id == localId || x.QuestionCode.Equals(qCode, StringComparison.OrdinalIgnoreCase));
 					Question activeQ;
 					if (existingQuestion != null)
@@ -1787,6 +1987,9 @@ public class Mutation
 						existingQuestion.ParentQuestionId = null; // null for Pass 1
 						existingQuestion.DisplayOrder = qOrder;
 						existingQuestion.VisibilityCondition = qVis;
+						existingQuestion.EnglishText = enText?.Trim();
+						existingQuestion.EnglishHint = enHint?.Trim();
+						existingQuestion.EnglishOptionsJson = enOptionsJson;
 						db.Questions.Update(existingQuestion);
 						await db.SaveChangesAsync();
 						questionMap[localId] = existingQuestion.Id;
@@ -1807,7 +2010,10 @@ public class Mutation
 							ServiceCategoryId = liveCatId,
 							ParentQuestionId = null, // null for Pass 1
 							DisplayOrder = qOrder,
-							VisibilityCondition = qVis
+							VisibilityCondition = qVis,
+							EnglishText = enText?.Trim(),
+							EnglishHint = enHint?.Trim(),
+							EnglishOptionsJson = enOptionsJson
 						};
 						db.Questions.Add(created);
 						await db.SaveChangesAsync();
@@ -1904,6 +2110,96 @@ public class Mutation
 				}
 			}
 
+			// 7. Sync Localization Resources (like option translations)
+			if (root.TryGetProperty("LocalizationResources", out var locResArr))
+			{
+				LogInfo($"Processing {locResArr.GetArrayLength()} extra localization resources from import block...");
+				foreach (var locJson in locResArr.EnumerateArray())
+				{
+					var key = locJson.GetProperty("Key").GetString() ?? "";
+					var culture = locJson.GetProperty("Culture").GetString() ?? "";
+					var val = locJson.GetProperty("Value").GetString() ?? "";
+
+					if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(culture))
+					{
+						var existingLoc = await db.LocalizationResources
+							.FirstOrDefaultAsync(x => x.Key == key && x.Culture == culture);
+						if (existingLoc != null)
+						{
+							existingLoc.Value = val.Trim();
+							existingLoc.UpdatedAt = DateTime.UtcNow;
+							db.LocalizationResources.Update(existingLoc);
+						}
+						else
+						{
+							await db.LocalizationResources.AddAsync(new LocalizationResource
+							{
+								Id = Guid.NewGuid(),
+								Key = key,
+								Culture = culture,
+								Value = val.Trim(),
+								CreatedAt = DateTime.UtcNow,
+								UpdatedAt = DateTime.UtcNow
+							});
+						}
+
+						if (culture == "en")
+						{
+							var existingBg = await db.LocalizationResources
+								.FirstOrDefaultAsync(x => x.Key == key && x.Culture == "bg");
+							if (existingBg != null)
+							{
+								existingBg.Value = key.Trim();
+								existingBg.UpdatedAt = DateTime.UtcNow;
+								db.LocalizationResources.Update(existingBg);
+							}
+							else
+							{
+								await db.LocalizationResources.AddAsync(new LocalizationResource
+								{
+									Id = Guid.NewGuid(),
+									Key = key,
+									Culture = "bg",
+									Value = key.Trim(),
+									CreatedAt = DateTime.UtcNow,
+									UpdatedAt = DateTime.UtcNow
+								});
+							}
+						}
+					}
+				}
+				await db.SaveChangesAsync();
+			}
+
+			// Unlink any old questions that failed to delete and are not in the new config
+			var importedQuestionIds = questionMap.Values.ToList();
+			var orphanedQuestions = failedToDeleteQuestions.Where(q => !importedQuestionIds.Contains(q.Id)).ToList();
+			if (orphanedQuestions.Any())
+			{
+				LogInfo($"Unlinking {orphanedQuestions.Count} orphaned old questions from their categories...");
+				foreach (var oq in orphanedQuestions)
+				{
+					oq.ServiceCategoryId = null;
+					oq.ParentQuestionId = null;
+					db.Questions.Update(oq);
+				}
+				await db.SaveChangesAsync();
+			}
+
+			// Unlink any old SKUs that failed to delete and are not in the new config
+			var importedSkuIds = skuMap.Values.ToList();
+			var orphanedSkus = failedToDeleteSkus.Where(s => !importedSkuIds.Contains(s.Id)).ToList();
+			if (orphanedSkus.Any())
+			{
+				LogInfo($"Unlinking {orphanedSkus.Count} orphaned old SKUs from their categories...");
+				foreach (var os in orphanedSkus)
+				{
+					os.ServiceCategoryId = Guid.Empty;
+					db.ServiceSkus.Update(os);
+				}
+				await db.SaveChangesAsync();
+			}
+
 			LogSuccess("All steps completed successfully. Committing transaction...");
 			await transaction.CommitAsync();
 			result.Success = true;
@@ -1920,6 +2216,66 @@ public class Mutation
 
 		return result;
 	}
+
+	[Authorize(Roles = new[] { "Admin" })]
+	public async Task<LocalizationResource> UpdateLocalizationString(
+		UpdateLocalizationInput input,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] AppDbContext context,
+		[Service] IHubContext<NotificationHub> hubContext)
+	{
+		var resource = await context.LocalizationResources
+			.FirstOrDefaultAsync(r => r.Key == input.Key && r.Culture == input.Culture);
+
+		var username = claimsPrincipal.Identity?.Name ?? "Admin";
+
+		if (resource == null)
+		{
+			resource = new LocalizationResource
+			{
+				Id = Guid.NewGuid(),
+				Key = input.Key,
+				Culture = input.Culture,
+				Value = input.Value,
+				UpdatedBy = username,
+				CreatedAt = DateTime.UtcNow,
+				UpdatedAt = DateTime.UtcNow
+			};
+			await context.LocalizationResources.AddAsync(resource);
+		}
+		else
+		{
+			resource.Value = input.Value;
+			resource.UpdatedBy = username;
+			resource.UpdatedAt = DateTime.UtcNow;
+			context.LocalizationResources.Update(resource);
+		}
+
+		await context.SaveChangesAsync();
+
+		// Broadcast update to all SignalR clients
+		await hubContext.Clients.All.SendAsync("ReceiveLocalizationUpdate", input.Key, input.Culture, input.Value);
+
+		return resource;
+	}
+
+	private static string GetEnglishUnitType(string unitType)
+	{
+		if (string.IsNullOrWhiteSpace(unitType)) return string.Empty;
+		var trimmed = unitType.Trim().ToLower();
+		if (trimmed == "бр." || trimmed == "бр") return "pc";
+		if (trimmed == "кв.м." || trimmed == "кв. м." || trimmed == "кв.м") return "sq.m.";
+		if (trimmed == "л.м." || trimmed == "лин.м" || trimmed == "лин. м." || trimmed == "л. м.") return "lm";
+		if (trimmed == "модул") return "module";
+		return unitType;
+	}
+}
+
+public class UpdateLocalizationInput
+{
+	public string Key { get; set; } = null!;
+	public string Culture { get; set; } = null!;
+	public string Value { get; set; } = null!;
 }
 
 public class AnonymousChatPayload

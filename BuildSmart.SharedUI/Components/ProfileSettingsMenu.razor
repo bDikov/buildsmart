@@ -212,9 +212,50 @@
         var cookieValue = $"c={lang}|uic={lang}";
         await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
 
+        // Store language persistently in localStorage
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "preferred_language", lang);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Settings] Failed to save preferred language to localStorage: {ex.Message}");
+        }
+
+        // Store language persistently in MAUI Preferences via reflection if running in MAUI
+        try
+        {
+            var preferencesType = Type.GetType("Microsoft.Maui.Storage.Preferences, Microsoft.Maui");
+            if (preferencesType != null)
+            {
+                var defaultProperty = preferencesType.GetProperty("Default");
+                if (defaultProperty != null)
+                {
+                    var defaultPreferences = defaultProperty.GetValue(null);
+                    if (defaultPreferences != null)
+                    {
+                        var setMethod = defaultPreferences.GetType().GetMethod("Set", new[] { typeof(string), typeof(string) });
+                        if (setMethod != null)
+                        {
+                            setMethod.Invoke(defaultPreferences, new object[] { "preferred_language", lang });
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Settings] Failed to save preferred language to MAUI Preferences: {ex.Message}");
+        }
+
         var culture = new System.Globalization.CultureInfo(lang);
+        System.Globalization.CultureInfo.CurrentCulture = culture;
+        System.Globalization.CultureInfo.CurrentUICulture = culture;
         System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
         System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+
         NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
     }
 

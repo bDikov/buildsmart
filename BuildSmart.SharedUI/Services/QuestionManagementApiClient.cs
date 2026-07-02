@@ -23,6 +23,9 @@ public class QuestionDto
     public string? VisibilityCondition { get; set; }
     public List<Guid> SkuIds { get; set; } = new();
     public List<Guid> FormulaIds { get; set; } = new();
+    
+    public string? EnglishText { get; set; }
+    public string? EnglishHint { get; set; }
 }
 
 public class FormulaDto
@@ -33,6 +36,12 @@ public class FormulaDto
     public string Expression { get; set; } = string.Empty;
 }
 
+public class ServiceCategoryTranslationDto
+{
+    public string LanguageCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+}
+
 public class ServiceCategoryDto
 {
     public Guid Id { get; set; }
@@ -41,6 +50,14 @@ public class ServiceCategoryDto
     public bool IsGlobal { get; set; }
     public string TemplateStructure { get; set; } = "{}";
     public string? Status { get; set; }
+    public List<ServiceCategoryTranslationDto> Translations { get; set; } = new();
+}
+
+public class ServiceSkuTranslationDto
+{
+    public string LanguageCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 }
 
 public class ServiceSkuDto
@@ -53,6 +70,10 @@ public class ServiceSkuDto
     public string UnitType { get; set; } = string.Empty;
     public Guid ServiceCategoryId { get; set; }
     public string CalculationFormula { get; set; } = string.Empty;
+    
+    public string? EnglishName { get; set; }
+    public string? EnglishDescription { get; set; }
+    public List<ServiceSkuTranslationDto> Translations { get; set; } = new();
 }
 
 
@@ -109,8 +130,8 @@ public interface IQuestionManagementApiClient
     Task<List<QuestionDto>> GetQuestionsAsync();
     Task<List<FormulaDto>> GetFormulasAsync();
     Task<QuestionGraphDto> GetQuestionGraphAsync();
-    Task<QuestionDto> CreateQuestionAsync(QuestionDto input);
-    Task<QuestionDto> UpdateQuestionAsync(QuestionDto input);
+    Task<QuestionDto> CreateQuestionAsync(QuestionDto input, string? englishText = null, string? englishHint = null);
+    Task<QuestionDto> UpdateQuestionAsync(QuestionDto input, string? englishText = null, string? englishHint = null);
     Task<QuestionDto> UpdateQuestionLinksAsync(Guid questionId, List<Guid> skuIds, List<Guid> formulaIds);
     Task<bool> DeleteQuestionAsync(Guid questionId);
     Task<FormulaDto> CreateFormulaAsync(FormulaDto input);
@@ -118,13 +139,15 @@ public interface IQuestionManagementApiClient
     Task<bool> DeleteFormulaAsync(Guid formulaId);
     Task<OfferSimulationResultDto> RunOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson);
     Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
-    Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input);
+    Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input, string? englishName);
     Task<bool> DeleteServiceCategoryAsync(Guid id);
-    Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input);
-    Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input);
+    Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input, string? englishName = null, string? englishDescription = null);
+    Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input, string? englishName = null, string? englishDescription = null);
     Task<bool> DeleteServiceSkuAsync(Guid id);
     Task<List<ServiceSkuDto>> GetServiceSkusByCategoryAsync(Guid categoryId);
     Task<ImportResultDto> ImportSpiderNetConfigAsync(string json);
+    Task<Dictionary<string, string>> GetEnglishTranslationsAsync();
+    Task<bool> UpdateTranslationAsync(string key, string culture, string value);
 }
 
 public class QuestionManagementApiClient : IQuestionManagementApiClient
@@ -174,6 +197,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     visibilityCondition
                     skuIds
                     formulaIds
+                    englishText
+                    englishHint
                 }
             }";
 
@@ -224,10 +249,10 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         return JsonSerializer.Deserialize<QuestionGraphDto>(graphJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
     }
 
-    public async Task<QuestionDto> CreateQuestionAsync(QuestionDto input)
+    public async Task<QuestionDto> CreateQuestionAsync(QuestionDto input, string? englishText = null, string? englishHint = null)
     {
         var query = @"
-            mutation($questionCode: String!, $text: String!, $type: String!, $isRequired: Boolean!, $optionsJson: String, $hintText: String, $serviceCategoryId: UUID, $parentQuestionId: UUID, $displayOrder: Int!, $visibilityCondition: String) {
+            mutation($questionCode: String!, $text: String!, $type: String!, $isRequired: Boolean!, $optionsJson: String, $hintText: String, $serviceCategoryId: UUID, $parentQuestionId: UUID, $displayOrder: Int!, $visibilityCondition: String, $englishText: String, $englishHint: String) {
                 createQuestion(
                     questionCode: $questionCode
                     text: $text
@@ -239,6 +264,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     parentQuestionId: $parentQuestionId
                     displayOrder: $displayOrder
                     visibilityCondition: $visibilityCondition
+                    englishText: $englishText
+                    englishHint: $englishHint
                 ) {
                     id
                     questionCode
@@ -253,6 +280,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     visibilityCondition
                     skuIds
                     formulaIds
+                    englishText
+                    englishHint
                 }
             }";
 
@@ -267,7 +296,9 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
             serviceCategoryId = input.ServiceCategoryId,
             parentQuestionId = input.ParentQuestionId,
             displayOrder = input.DisplayOrder,
-            visibilityCondition = input.VisibilityCondition
+            visibilityCondition = input.VisibilityCondition,
+            englishText = englishText,
+            englishHint = englishHint
         };
 
         var data = await SendQueryAsync(query, variables);
@@ -275,10 +306,10 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         return JsonSerializer.Deserialize<QuestionDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
 
-    public async Task<QuestionDto> UpdateQuestionAsync(QuestionDto input)
+    public async Task<QuestionDto> UpdateQuestionAsync(QuestionDto input, string? englishText = null, string? englishHint = null)
     {
         var query = @"
-            mutation($id: UUID!, $questionCode: String!, $text: String!, $type: String!, $isRequired: Boolean!, $optionsJson: String, $hintText: String, $serviceCategoryId: UUID, $parentQuestionId: UUID, $displayOrder: Int!, $visibilityCondition: String) {
+            mutation($id: UUID!, $questionCode: String!, $text: String!, $type: String!, $isRequired: Boolean!, $optionsJson: String, $hintText: String, $serviceCategoryId: UUID, $parentQuestionId: UUID, $displayOrder: Int!, $visibilityCondition: String, $englishText: String, $englishHint: String) {
                 updateQuestion(
                     id: $id
                     questionCode: $questionCode
@@ -291,6 +322,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     parentQuestionId: $parentQuestionId
                     displayOrder: $displayOrder
                     visibilityCondition: $visibilityCondition
+                    englishText: $englishText
+                    englishHint: $englishHint
                 ) {
                     id
                     questionCode
@@ -305,6 +338,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     visibilityCondition
                     skuIds
                     formulaIds
+                    englishText
+                    englishHint
                 }
             }";
 
@@ -320,7 +355,9 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
             serviceCategoryId = input.ServiceCategoryId,
             parentQuestionId = input.ParentQuestionId,
             displayOrder = input.DisplayOrder,
-            visibilityCondition = input.VisibilityCondition
+            visibilityCondition = input.VisibilityCondition,
+            englishText = englishText,
+            englishHint = englishHint
         };
 
         var data = await SendQueryAsync(query, variables);
@@ -516,6 +553,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     isGlobal
                     templateStructure
                     status
+                    englishName
                 }
             }";
 
@@ -524,10 +562,10 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         return JsonSerializer.Deserialize<List<ServiceCategoryDto>>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
     }
 
-    public async Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input)
+    public async Task<ServiceCategoryDto> SaveCategoryAsync(ServiceCategoryDto input, string? englishName)
     {
         var query = @"
-            mutation($id: UUID, $name: String!, $description: String, $isGlobal: Boolean!, $templateStructure: String!, $status: CategoryStatus) {
+            mutation($id: UUID, $name: String!, $description: String, $isGlobal: Boolean!, $templateStructure: String!, $status: CategoryStatus, $englishName: String) {
                 saveCategory(
                     id: $id
                     name: $name
@@ -535,6 +573,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     isGlobal: $isGlobal
                     templateStructure: $templateStructure
                     status: $status
+                    englishName: $englishName
                 ) {
                     id
                     name
@@ -542,6 +581,7 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     isGlobal
                     templateStructure
                     status
+                    englishName
                 }
             }";
 
@@ -552,7 +592,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
             description = input.Description,
             isGlobal = input.IsGlobal,
             templateStructure = input.TemplateStructure ?? "{}",
-            status = input.Status?.ToUpper() ?? "DRAFT"
+            status = input.Status?.ToUpper() ?? "DRAFT",
+            englishName = englishName
         };
 
         var data = await SendQueryAsync(query, variables);
@@ -560,10 +601,10 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         return JsonSerializer.Deserialize<ServiceCategoryDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
 
-    public async Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input)
+    public async Task<ServiceSkuDto> CreateServiceSkuAsync(ServiceSkuDto input, string? englishName = null, string? englishDescription = null)
     {
         var query = @"
-            mutation($categoryId: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!, $calculationFormula: String!) {
+            mutation($categoryId: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!, $calculationFormula: String!, $englishName: String, $englishDescription: String) {
                 createServiceSku(
                     categoryId: $categoryId
                     skuCode: $skuCode
@@ -572,6 +613,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     basePrice: $basePrice
                     unitType: $unitType
                     calculationFormula: $calculationFormula
+                    englishName: $englishName
+                    englishDescription: $englishDescription
                 ) {
                     id
                     skuCode
@@ -581,6 +624,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     unitType
                     serviceCategoryId
                     calculationFormula
+                    englishName
+                    englishDescription
                 }
             }";
 
@@ -592,18 +637,21 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
             description = input.Description ?? "",
             basePrice = input.BasePrice,
             unitType = input.UnitType ?? "",
-            calculationFormula = input.CalculationFormula ?? ""
+            calculationFormula = input.CalculationFormula ?? "",
+            englishName = englishName,
+            englishDescription = englishDescription
         };
 
         var data = await SendQueryAsync(query, variables);
         var resultJson = data.GetProperty("createServiceSku").GetRawText();
-        return JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        var dto = JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        return dto;
     }
 
-    public async Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input)
+    public async Task<ServiceSkuDto> UpdateServiceSkuAsync(ServiceSkuDto input, string? englishName = null, string? englishDescription = null)
     {
         var query = @"
-            mutation($id: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!, $calculationFormula: String!) {
+            mutation($id: UUID!, $skuCode: String!, $name: String!, $description: String!, $basePrice: Decimal!, $unitType: String!, $calculationFormula: String!, $englishName: String, $englishDescription: String) {
                 updateServiceSku(
                     id: $id
                     skuCode: $skuCode
@@ -612,6 +660,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     basePrice: $basePrice
                     unitType: $unitType
                     calculationFormula: $calculationFormula
+                    englishName: $englishName
+                    englishDescription: $englishDescription
                 ) {
                     id
                     skuCode
@@ -621,6 +671,8 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     unitType
                     serviceCategoryId
                     calculationFormula
+                    englishName
+                    englishDescription
                 }
             }";
 
@@ -632,12 +684,15 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
             description = input.Description ?? "",
             basePrice = input.BasePrice,
             unitType = input.UnitType ?? "",
-            calculationFormula = input.CalculationFormula ?? ""
+            calculationFormula = input.CalculationFormula ?? "",
+            englishName = englishName,
+            englishDescription = englishDescription
         };
 
         var data = await SendQueryAsync(query, variables);
         var resultJson = data.GetProperty("updateServiceSku").GetRawText();
-        return JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        var dto = JsonSerializer.Deserialize<ServiceSkuDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        return dto;
     }
 
     public async Task<bool> DeleteServiceSkuAsync(Guid id)
@@ -665,13 +720,16 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
                     unitType
                     serviceCategoryId
                     calculationFormula
+                    englishName
+                    englishDescription
                 }
             }";
 
         var variables = new { categoryId = categoryId };
         var data = await SendQueryAsync(query, variables);
         var skusJson = data.GetProperty("serviceSkusByCategory").GetRawText();
-        return JsonSerializer.Deserialize<List<ServiceSkuDto>>(skusJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+        var list = JsonSerializer.Deserialize<List<ServiceSkuDto>>(skusJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+        return list;
     }
 
     public async Task<bool> DeleteServiceCategoryAsync(Guid id)
@@ -702,4 +760,54 @@ public class QuestionManagementApiClient : IQuestionManagementApiClient
         var resultJson = data.GetProperty("importSpiderNetConfig").GetRawText();
         return JsonSerializer.Deserialize<ImportResultDto>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
+
+    public async Task<Dictionary<string, string>> GetEnglishTranslationsAsync()
+    {
+        var query = @"
+            query {
+                allLocalizationResources {
+                    key
+                    culture
+                    value
+                }
+            }";
+
+        var data = await SendQueryAsync(query);
+        var resourcesJson = data.GetProperty("allLocalizationResources").GetRawText();
+        var list = JsonSerializer.Deserialize<List<LocalizationResourceDto>>(resourcesJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+        return list
+            .Where(r => string.Equals(r.Culture, "en", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(r => r.Key)
+            .ToDictionary(g => g.Key, g => g.First().Value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task<bool> UpdateTranslationAsync(string key, string culture, string value)
+    {
+        var query = @"
+            mutation($input: UpdateLocalizationInput!) {
+                updateLocalizationString(input: $input) {
+                    id
+                }
+            }";
+
+        var variables = new
+        {
+            input = new
+            {
+                key = key,
+                culture = culture,
+                value = value
+            }
+        };
+
+        var data = await SendQueryAsync(query, variables);
+        return data.GetProperty("updateLocalizationString").TryGetProperty("id", out _);
+    }
+}
+
+public class LocalizationResourceDto
+{
+    public string Key { get; set; } = string.Empty;
+    public string Culture { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
 }

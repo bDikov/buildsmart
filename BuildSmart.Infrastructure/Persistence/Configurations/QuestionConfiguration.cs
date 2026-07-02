@@ -34,7 +34,16 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
         builder.Property(q => q.OptionsJson)
             .HasColumnType("jsonb");
 
+        builder.Property(q => q.EnglishOptionsJson)
+            .HasColumnType("jsonb");
+
         builder.Property(q => q.HintText)
+            .HasMaxLength(1000);
+
+        builder.Property(q => q.EnglishHint)
+            .HasMaxLength(1000);
+
+        builder.Property(q => q.EnglishText)
             .HasMaxLength(1000);
 
         builder.Property(q => q.VisibilityCondition)

@@ -34,7 +34,7 @@ public partial class Program
 	public static async Task Main(string[] args)
 	{
 		// --- Global Error Handling for Background Tasks ---
-		TaskScheduler.UnobservedTaskException += (sender, e) => 
+		TaskScheduler.UnobservedTaskException += (sender, e) =>
 		{
 			// We handle this so it doesn't crash the process or get reported as a Fatal error.
 			// Internal Puppeteer tasks often trigger this due to redirects or network timeouts.
@@ -52,24 +52,24 @@ public partial class Program
 
 		if (!string.IsNullOrWhiteSpace(sentryDsn))
 		{
-			builder.WebHost.UseSentry(o => 
+			builder.WebHost.UseSentry(o =>
 			{
 				o.Dsn = sentryDsn;
 				o.Debug = true; // Helpful for initial setup verification
 				o.TracesSampleRate = 1.0;
 				o.EnableLogs = true; // Enable Sentry logging
-				o.SetBeforeSend((@event, hint) => 
+				o.SetBeforeSend((@event, hint) =>
 				{
 					if (@event.Exception != null)
 					{
 						var exType = @event.Exception.GetType().FullName;
 						var exMessage = @event.Exception.Message;
-						
+
 						if (exType != null && exType.Contains("Puppeteer") && exMessage != null && exMessage.Contains("Response body is unavailable"))
 						{
 							return null; // Don't report to Sentry
 						}
-						
+
 						if (@event.Exception is AggregateException aggEx)
 						{
 							foreach (var inner in aggEx.InnerExceptions)
@@ -95,7 +95,7 @@ public partial class Program
 
 		if (!string.IsNullOrWhiteSpace(sentryDsn))
 		{
-			loggerConfig.WriteTo.Sentry(o => 
+			loggerConfig.WriteTo.Sentry(o =>
 			{
 				o.Dsn = sentryDsn;
 			});
@@ -118,21 +118,23 @@ public partial class Program
 
 		// --- 1. Add services to the container (Dependency Injection) ---
 		builder.Services.AddLocalization();
+		builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService, BuildSmart.SharedUI.Services.Localization.LocalizationCacheService>();
+		builder.Services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, BuildSmart.SharedUI.Services.Localization.DbStringLocalizerFactory>();
 
 		// Add DbContext and PostgreSQL Connection
 		builder.Services.AddDbContext<AppDbContext>(options =>
 		{
-		    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-		                b => 
-		                {
-		                    b.MigrationsAssembly("BuildSmart.Infrastructure");
-		                    b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-		                });
-		    
-		    // Explicitly suppress warnings that are being treated as errors in this environment
-		    options.ConfigureWarnings(w => w.Ignore(
-		        Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning,
-		        Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.NavigationBaseIncludeIgnored));
+			options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+						b =>
+						{
+							b.MigrationsAssembly("BuildSmart.Infrastructure");
+							b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+						});
+
+			// Explicitly suppress warnings that are being treated as errors in this environment
+			options.ConfigureWarnings(w => w.Ignore(
+				Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning,
+				Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.NavigationBaseIncludeIgnored));
 		});
 		// Add Repositories and UnitOfWork
 		builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -178,7 +180,7 @@ public partial class Program
 		builder.Services.AddScoped<IAiService, GeminiAiService>();
 
 		// --- Hangfire Configuration ---
-		builder.Services.AddHangfire(configuration => 
+		builder.Services.AddHangfire(configuration =>
 		{
 			configuration
 				.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -202,7 +204,7 @@ public partial class Program
 			options.ServerName = String.Format("{0}:DefaultServer", Environment.MachineName);
 			options.Queues = new[] { "default" };
 		});
-		
+
 		builder.Services.AddHangfireServer(options =>
 		{
 			options.ServerName = String.Format("{0}:AiServer", Environment.MachineName);
@@ -262,7 +264,7 @@ public partial class Program
 		{
 			options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All;
 			options.ForwardLimit = null; // Important: Allow any number of proxies
-			// Clear known networks/proxies to trust all proxies (typical in Docker setups where the proxy IP varies)
+										 // Clear known networks/proxies to trust all proxies (typical in Docker setups where the proxy IP varies)
 			options.KnownNetworks.Clear();
 			options.KnownProxies.Clear();
 		});
@@ -270,6 +272,8 @@ public partial class Program
 		builder.Services.AddControllers();
 		builder.Services.AddSignalR();
 		builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // Added CustomUserIdProvider
+
+		builder.Services.AddEndpointsApiExplorer();
 
 		// Add Swagger Services
 		builder.Services.AddSwaggerGen(c =>
@@ -305,7 +309,7 @@ public partial class Program
 		// Add GraphQL Services (Hot Chocolate)
 		builder.Services
 			.AddGraphQLServer()
-			.ModifyCostOptions(o => 
+			.ModifyCostOptions(o =>
 			{
 				o.EnforceCostLimits = false;
 				o.MaxFieldCost = 10000;
@@ -315,10 +319,10 @@ public partial class Program
 	.AddQueryType<QueryType>()
 	.AddMutationType<MutationType>()
 	.AddType<BuildSmart.Api.GraphQL.Types.TradesmanProfileType>()
-			.AddType<TradesmanSkillType>() 
+			.AddType<TradesmanSkillType>()
 			.AddType<UserType>()
-            .AddType<ServiceCategoryType>()
-            .AddType<ServiceSkuType>()
+			.AddType<ServiceCategoryType>()
+			.AddType<ServiceSkuType>()
 			.AddType<JobPostType>()
 			.AddType<BookingType>()
 			.AddType<MilestonePaymentType>()
@@ -329,7 +333,7 @@ public partial class Program
 			.AddType<TradesmanMediaType>()
 			.AddType<ProjectMilestoneMediaType>()
 			.AddType<JobPostQuestionType>()
-            .AddType<JobPostFeedbackType>()
+			.AddType<JobPostFeedbackType>()
 			.AddType<JobTaskType>()
 			.AddType<TaskAcceptanceCriteriaType>()
 			.AddType<TaskSkuItemType>()
@@ -340,7 +344,7 @@ public partial class Program
 			.AddFiltering()
 			.AddSorting()
 			.AddAuthorization();
-			
+
 		var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 		if (!string.IsNullOrEmpty(connectionString))
 		{
@@ -375,7 +379,7 @@ public partial class Program
 				}
 
 				if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.PostgreSQL" ||
-				    context.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+					context.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
 				{
 					using (var transaction = await context.Database.BeginTransactionAsync())
 					{
@@ -439,6 +443,25 @@ public partial class Program
 						Console.WriteLine("Database already initialized. Initial seeders skipped (except categories type sync).");
 					}
 				}
+
+				// Seed localization resources if empty using compiled assembly resources
+				var resourceManager = new System.Resources.ResourceManager(
+					"BuildSmart.SharedUI.Resources.AppResources",
+					typeof(BuildSmart.SharedUI.Resources.AppResources).Assembly
+				);
+				await context.SeedLocalizationResourcesAsync(resourceManager);
+
+				// Warm up localization cache
+				var cacheService = services.GetRequiredService<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService>();
+				var resources = await context.LocalizationResources.AsNoTracking().ToListAsync();
+				var cacheData = resources
+					.GroupBy(r => r.Culture)
+					.ToDictionary(
+						g => g.Key,
+						g => g.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase),
+						StringComparer.OrdinalIgnoreCase
+					);
+				cacheService.Initialize(cacheData);
 			}
 			catch (Exception ex)
 			{
@@ -454,13 +477,13 @@ public partial class Program
 		{
 			app.UseDeveloperExceptionPage();
 		}
-		
+
 		// Enable Swagger in all environments for access via Caddy proxy
 		app.UseSwagger();
 		app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildSmart.Api v1"));
 
-        // Enable serving static files from wwwroot (like the generated PDFs)
-        app.UseStaticFiles();
+		// Enable serving static files from wwwroot (like the generated PDFs)
+		app.UseStaticFiles();
 
 		app.UseCors(MyAllowSpecificOrigins);
 

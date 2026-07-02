@@ -64,9 +64,17 @@
                                              <div class="d-flex justify-content-between align-items-center p-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                                                  <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
                                                      <div style="min-width: 0; flex: 1;">
-                                                         <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word;">@sku.ServiceSku.Name</div>
+                                                         <div class="fw-bold" style="color: var(--text-primary); font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word;">
+                                                             @(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(sku.ServiceSku.EnglishName) ? sku.ServiceSku.EnglishName : sku.ServiceSku.Name)
+                                                         </div>
                                                          <div style="color: var(--text-muted); font-size: 0.8rem; word-break: break-word; overflow-wrap: break-word;">
-                                                             @((sku.ServiceSku.BasePrice > 0 ? (sku.EstimatedPrice / sku.ServiceSku.BasePrice) : sku.Quantity).ToString("0.##")) @(sku.ServiceSku.UnitType.ToString().ToLower()) × €@sku.ServiceSku.BasePrice.ToString("F2") / @(sku.ServiceSku.UnitType.ToString().ToLower())
+                                                             @{
+                                                                 var isEn = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.StartsWith("en", StringComparison.OrdinalIgnoreCase);
+                                                                 var unitRaw = isEn && !string.IsNullOrEmpty(sku.ServiceSku.EnglishUnitType) ? sku.ServiceSku.EnglishUnitType : sku.ServiceSku.UnitType;
+                                                                 var unit = GetLocalizedUnitType(unitRaw, isEn);
+                                                                 var qty = (sku.ServiceSku.BasePrice > 0 ? (sku.EstimatedPrice / sku.ServiceSku.BasePrice) : sku.Quantity).ToString("0.##");
+                                                             }
+                                                             @qty @unit × €@sku.ServiceSku.BasePrice.ToString("F2") / @unit
                                                          </div>
                                                      </div>
                                                  </div>
@@ -143,5 +151,36 @@
             ViewModel.Dispose();
         }
     }
-}
 
+    private string GetLocalizedUnitType(string? unit, bool isEn)
+    {
+        if (string.IsNullOrEmpty(unit)) return "";
+        var cleanUnit = unit.Trim().ToLower();
+        if (isEn)
+        {
+            return cleanUnit switch
+            {
+                "sqm" => "sq.m.",
+                "pcs" => "pcs",
+                "lm" => "lm",
+                "m" => "m",
+                "trip" => "trip",
+                "m3" => "m³",
+                _ => cleanUnit
+            };
+        }
+        else
+        {
+            return cleanUnit switch
+            {
+                "sqm" => "кв.м.",
+                "pcs" => "бр.",
+                "lm" => "л.м.",
+                "m" => "м.",
+                "trip" => "курс",
+                "m3" => "куб.м.",
+                _ => cleanUnit
+            };
+        }
+    }
+}

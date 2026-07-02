@@ -25,5 +25,6 @@ public class ServiceCategory : BaseEntity
     /// </summary>
     public string TemplateStructure { get; set; } = "{}";
 
-    public ICollection<ServiceCategoryTranslation> Translations { get; set; } = new List<ServiceCategoryTranslation>();
+    public string? EnglishName { get; set; }
+    public string? EnglishDescription { get; set; }
 }

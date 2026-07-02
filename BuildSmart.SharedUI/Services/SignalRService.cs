@@ -29,6 +29,8 @@ public class SignalRService : IAsyncDisposable
 
 	public event Action<int, string, int>? ProcessingUpdateReceived;
 
+	public event Action<string, string, string>? LocalizationUpdated;
+
 	public void NotifyNotificationsStateChanged()
 	{
 		NotificationsStateChanged?.Invoke();
@@ -37,17 +39,23 @@ public class SignalRService : IAsyncDisposable
 	private readonly INavigationBridge _navigation;
 	private readonly IAlertService _alerts;
 	private readonly IAppMainThread _mainThread;
+	private readonly BuildSmart.Core.Application.Interfaces.ILocalizationCacheService? _cacheService;
+	private readonly ILocalizationStateService? _stateService;
 
 	public SignalRService(
 		IAuthService authService,
 		INavigationBridge navigation,
 		IAlertService alerts,
-		IAppMainThread mainThread)
+		IAppMainThread mainThread,
+		BuildSmart.Core.Application.Interfaces.ILocalizationCacheService? cacheService = null,
+		ILocalizationStateService? stateService = null)
 	{
 		_authService = authService;
 		_navigation = navigation;
 		_alerts = alerts;
 		_mainThread = mainThread;
+		_cacheService = cacheService;
+		_stateService = stateService;
 	}
 
 	public async Task ConnectAsync()
@@ -176,6 +184,16 @@ public class SignalRService : IAsyncDisposable
 			_hubConnection.On<string, bool>("UserPresenceChanged", (userId, isOnline) =>
 			{
 				_mainThread.BeginInvokeOnMainThread(() => UserPresenceChanged?.Invoke(userId, isOnline));
+			});
+
+			_hubConnection.On<string, string, string>("ReceiveLocalizationUpdate", (key, culture, newValue) =>
+			{
+				_mainThread.BeginInvokeOnMainThread(() =>
+				{
+					_cacheService?.Set(key, culture, newValue);
+					LocalizationUpdated?.Invoke(key, culture, newValue);
+					_stateService?.NotifyLocalizationChanged();
+				});
 			});
 
 			try

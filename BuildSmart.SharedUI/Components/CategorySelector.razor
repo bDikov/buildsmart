@@ -11,7 +11,7 @@
                 <label class="category-item">
                     <input class="category-checkbox" type="checkbox" @bind="cat.IsSelected">
                     <span class="category-label">
-                        @cat.Category?.Name
+                        @(LanguageCode.StartsWith("bg", StringComparison.OrdinalIgnoreCase) ? (string.IsNullOrEmpty(cat.Category?.Name) ? cat.Category?.EnglishName : cat.Category?.Name) : (!string.IsNullOrEmpty(cat.Category?.EnglishName) ? cat.Category.EnglishName : cat.Category?.Name))
                     </span>
                 </label>
             }
@@ -90,6 +90,9 @@
 </style>
 
 @code {
+    [CascadingParameter(Name = "LanguageCode")]
+    public string LanguageCode { get; set; } = "en";
+
     [Parameter, EditorRequired]
     public IEnumerable<SelectableCategoryViewModel> Categories { get; set; } = default!;
 

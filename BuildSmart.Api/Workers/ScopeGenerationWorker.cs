@@ -367,6 +367,7 @@ public class ScopeGenerationWorker
 				await saveUnitOfWork.AiCalculations.AddAsync(aiCalc);
 
 				decimal grandTotal = 0;
+				var processedSkus = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 				foreach (var aiTask in aiResponse.Tasks)
 				{
@@ -426,6 +427,19 @@ public class ScopeGenerationWorker
 							if (computedQuantity > 0 || !string.IsNullOrWhiteSpace(matchedSku.CalculationFormula))
 							{
 								finalQuantity = computedQuantity;
+							}
+
+							// Prevent double-counting/duplication of global calculated quantities for shared SKUs across tasks
+							if (finalQuantity > 0 && !string.IsNullOrWhiteSpace(matchedSku.CalculationFormula))
+							{
+								if (processedSkus.Contains(matchedSku.SkuCode))
+								{
+									finalQuantity = 0;
+								}
+								else
+								{
+									processedSkus.Add(matchedSku.SkuCode);
+								}
 							}
 
 							if (finalQuantity <= 0)
@@ -608,11 +622,11 @@ public class ScopeGenerationWorker
 			{
 				try
 				{
-					CultureInfo.CurrentUICulture = new CultureInfo(project.LanguageCode ?? "en");
+					CultureInfo.CurrentUICulture = new CultureInfo(project.LanguageCode ?? "bg");
 				}
 				catch (CultureNotFoundException)
 				{
-					CultureInfo.CurrentUICulture = new CultureInfo("en");
+					CultureInfo.CurrentUICulture = new CultureInfo("bg");
 				}
 
 				var allCalculations = await unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId);
@@ -626,6 +640,14 @@ public class ScopeGenerationWorker
 				{
 					var category = await unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
 					var categoryName = category?.Name ?? "General";
+					if (category != null)
+					{
+						var targetLang = project.LanguageCode ?? "bg";
+						if (targetLang.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(category.EnglishName))
+						{
+							categoryName = category.EnglishName;
+						}
+					}
 
 					grandTotal += calc.TotalEstimatedPrice;
 

@@ -151,11 +151,8 @@ public class OffersControllerTests
         var category = new ServiceCategory
         {
             Id = categoryId,
-            Name = "Bathroom",
-            Translations = new List<ServiceCategoryTranslation>
-            {
-                new ServiceCategoryTranslation { LanguageCode = "bg", Name = "Баня" }
-            }
+            Name = "Баня",
+            EnglishName = "Bathroom"
         };
 
         var calculation = new AiCalculation
@@ -252,8 +249,8 @@ public class OffersControllerTests
         var category1 = new ServiceCategory
         {
             Id = categoryId1,
-            Name = "Bathroom",
-            Translations = new List<ServiceCategoryTranslation> { new ServiceCategoryTranslation { LanguageCode = "bg", Name = "Баня" } }
+            Name = "Баня",
+            EnglishName = "Bathroom"
         };
 
         // Only one of them is priced (has AiCalculation)

@@ -1,0 +1,23 @@
+query GetLocalizationStrings($culture: String!) {
+  localizationStrings(culture: $culture) {
+    key
+    culture
+    value
+  }
+}
+
+query GetAllLocalizationResources {
+  allLocalizationResources {
+    key
+    culture
+    value
+  }
+}
+
+mutation UpdateLocalizationString($input: UpdateLocalizationInput!) {
+  updateLocalizationString(input: $input) {
+    key
+    culture
+    value
+  }
+}

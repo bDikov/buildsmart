@@ -66,12 +66,12 @@ public class OffersController : ControllerBase
                 grandTotal += calc.TotalEstimatedPrice;
                 var category = await _unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
                 var categoryName = category?.Name ?? "General";
-                if (project.LanguageCode == "bg" && category != null)
+                if (category != null)
                 {
-                    var translation = category.Translations.FirstOrDefault(t => t.LanguageCode == "bg");
-                    if (translation != null)
+                    var targetLang = project.LanguageCode ?? "bg";
+                    if (targetLang.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(category.EnglishName))
                     {
-                        categoryName = translation.Name;
+                        categoryName = category.EnglishName;
                     }
                 }
 

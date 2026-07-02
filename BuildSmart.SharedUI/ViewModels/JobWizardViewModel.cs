@@ -12,6 +12,11 @@ namespace BuildSmart.SharedUI.ViewModels;
 
 public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 {
+	[ObservableProperty]
+	private string _activeLanguageCode = "bg";
+
+	private string CurrentLanguage => ActiveLanguageCode.StartsWith("bg", StringComparison.OrdinalIgnoreCase) ? "bg" : "en";
+
 	private readonly IBuildSmartApiClient _apiClient;
 	private readonly System.Threading.SemaphoreSlim _saveLock = new(1, 1);
 	private System.Threading.CancellationTokenSource? _saveDebounceCts;
@@ -1018,7 +1023,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
 	{
 		var list = new List<WizardQuestionViewModel>();
-		string currentLang = System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg") ? "bg" : "en";
+		string currentLang = CurrentLanguage;
 
 		foreach (var cat in categories)
 		{
@@ -1047,6 +1052,12 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 								var qId = qObj["id"]?.GetValue<string>() ?? "";
 								
 								var qOptions = GetLocalizedOptions(qObj["options"], currentLang);
+								var qRawOptions = GetLocalizedOptions(qObj["options"], "bg");
+
+								if (_localizer != null && qOptions != null)
+								{
+									qOptions = qOptions.Select(opt => _localizer[opt]?.Value ?? opt).ToList();
+								}
 
 								if (!string.IsNullOrEmpty(qId)) _questionTextCache[qId] = qText;
 
@@ -1055,9 +1066,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 									Id = qId,
 									Text = qText,
 									Type = qType,
-									CategoryName = cat.Category.Name,
+									CategoryName = currentLang == "en" && !string.IsNullOrEmpty(cat.Category.EnglishName) ? cat.Category.EnglishName : cat.Category.Name,
 									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
 									Options = qOptions,
+									RawOptions = qRawOptions,
 									Answer = qType == "boolean" ? "False" : "",
 									DependsOn = qObj["dependsOn"]?.GetValue<string>() ?? "",
 									DependsOnValue = GetLocalizedValue(qObj["dependsOnValue"], currentLang)
@@ -1082,7 +1094,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 
 		System.Diagnostics.Debug.WriteLine($"[JobWizard] Total extracted questions: {list.Count}");
-		return list;
+		return list.DistinctBy(q => q.Id).ToList();
 	}
 
 	private bool ValidateInfoStep()
@@ -1139,7 +1151,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 		}
 
-		var missingQuestions = Questions.Where(q => q.IsVisible && q.IsRequired && string.IsNullOrWhiteSpace(q.Answer)).ToList();
+		var missingQuestions = Questions.Where(q => q.IsVisible && q.IsRequired && !q.IsBoolean && string.IsNullOrWhiteSpace(q.Answer)).ToList();
 		if (missingQuestions.Any())
 		{
 			foreach (var q in missingQuestions) q.HasError = true;
@@ -1149,6 +1161,18 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			AppServiceLocator.Alerts.DisplayAlert(title, msg, ok);
 			return false;
 		}
+
+		var negativeQuestions = Questions.Where(q => q.IsVisible && q.IsNumber && !string.IsNullOrWhiteSpace(q.Answer) && double.TryParse(q.Answer, out var val) && val < 0).ToList();
+		if (negativeQuestions.Any())
+		{
+			foreach (var q in negativeQuestions) q.HasError = true;
+			string title = _localizer?["JobWizard_Validation_InvalidValue"] ?? "Invalid Value";
+			string msg = _localizer?["JobWizard_Validation_NegativeValuesNotAllowed"] ?? "Negative values are not allowed. Please enter a positive number.";
+			string ok = _localizer?["JobWizard_OK"] ?? "OK";
+			AppServiceLocator.Alerts.DisplayAlert(title, msg, ok);
+			return false;
+		}
+
 		return true;
 	}
 
@@ -1215,7 +1239,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		bool projectOnly = false, 
 		bool suppressAlert = false)
 	{
-		var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+		var currentLang = CurrentLanguage;
 		var prefix = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Проект" : "Project";
 		var fallbackTitle = $"{prefix} - {(currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Ремонт" : "Renovation")}";
 
@@ -1411,7 +1435,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			var selectedCategories = SelectableCategories.Where(c => c.IsSelected).ToList();
 			if (string.IsNullOrWhiteSpace(ProjectTitle) || ProjectTitle == "Renovation Project" || ProjectTitle.StartsWith("Project -") || ProjectTitle.StartsWith("Проект -") || ProjectTitle.StartsWith("Build -"))
 			{
-				var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+				var currentLang = CurrentLanguage;
 				var prefix = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Проект" : "Project";
 				var fallbackTitle = $"{prefix} - {(currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase) ? "Ремонт" : "Renovation")}";
 
@@ -1556,9 +1580,12 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 
 	private string GetLocalizedCategoryName(IGetServiceCategories_ServiceCategories category)
 	{
-		var currentLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-		var translation = category.Translations?.FirstOrDefault(t => t.LanguageCode.Equals(currentLang, StringComparison.OrdinalIgnoreCase));
-		return translation?.Name ?? category.Name;
+		var currentLang = CurrentLanguage;
+		if (currentLang.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(category.EnglishName))
+		{
+			return category.EnglishName;
+		}
+		return category.Name;
 	}
 
 	public class WizardStep

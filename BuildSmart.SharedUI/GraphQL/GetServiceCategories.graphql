@@ -7,9 +7,7 @@ query GetServiceCategories {
     type
     templateStructure
     status
-    translations {
-      languageCode
-      name
-    }
+    englishName
+    englishDescription
   }
 }

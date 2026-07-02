@@ -345,8 +345,12 @@
                         <input type="text" class="bs-input" @bind="selectedQuestion.QuestionCode" />
                     </div>
                     <div class="form-group">
-                        <label>Display Text</label>
+                        <label>Display Text (Bulgarian)</label>
                         <textarea class="bs-input" @bind="selectedQuestion.Text" rows="2"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Display Text (English)</label>
+                        <textarea class="bs-input" @bind="selectedQuestion.EnglishText" rows="2" placeholder="e.g. What is the property type?"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Input Type</label>
@@ -363,8 +367,12 @@
                         <input type="checkbox" @bind="selectedQuestion.IsRequired" />
                     </div>
                     <div class="form-group">
-                        <label>Hint/Tooltip Text</label>
+                        <label>Hint/Tooltip Text (Bulgarian)</label>
                         <input type="text" class="bs-input" @bind="selectedQuestion.HintText" />
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Hint/Tooltip Text (English)</label>
+                        <input type="text" class="bs-input" @bind="selectedQuestion.EnglishHint" placeholder="English translation of the hint" />
                     </div>
                     <div class="form-group">
                         <label>Display Order (Sorting)</label>
@@ -578,12 +586,20 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Name / Label</label>
+                        <label>Name (Bulgarian)</label>
                         <input type="text" class="bs-input" @bind="selectedSku.Name" />
                     </div>
-                    <div class="form-group">
-                        <label>Description</label>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Name (English)</label>
+                        <input type="text" class="bs-input" @bind="selectedSku.EnglishName" placeholder="e.g. Plumbing Installation" />
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Description (Bulgarian)</label>
                         <textarea class="bs-input" @bind="selectedSku.Description" rows="2"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Description (English)</label>
+                        <textarea class="bs-input" @bind="selectedSku.EnglishDescription" rows="2" placeholder="e.g. Detailed description in English"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Base Price (lv.)</label>
@@ -611,10 +627,14 @@
                 </div>
                 <div class="drawer-body">
                     <div class="form-group">
-                        <label>Category Name</label>
+                        <label>Category Name (Bulgarian)</label>
                         <input type="text" class="bs-input" @bind="selectedCategory.Name" />
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Category Name (English)</label>
+                        <input type="text" class="bs-input" @bind="englishName" placeholder="e.g. Painting and Plastering" />
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
                         <label>Description</label>
                         <textarea class="bs-input" @bind="selectedCategory.Description" rows="2"></textarea>
                     </div>
@@ -685,8 +705,25 @@
                             @if (editingTemplateQuestion.Type == "choice" || editingTemplateQuestion.Type == "multiselect")
                             {
                                 <div class="form-group">
-                                    <label>Options (One per line)</label>
-                                    <textarea class="bs-input" @bind="editingTemplateQuestionOptionsBuffer" rows="4" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <label style="margin-bottom: 0;">Options (One per line)</label>
+                                        <div class="lang-toggle-container" style="display: inline-flex; background: rgba(0,0,0,0.25); border-radius: 6px; padding: 2px; border: 1px solid var(--border-color);">
+                                            <button type="button" class="lang-toggle-btn @(editingOptionsLanguage == "bg" ? "active" : "")" 
+                                                    style="padding: 2px 8px; font-size: 0.75rem; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: @(editingOptionsLanguage == "bg" ? "var(--accent-color)" : "transparent"); color: @(editingOptionsLanguage == "bg" ? "#fff" : "var(--text-muted)");"
+                                                    @onclick='() => editingOptionsLanguage = "bg"'>BG</button>
+                                            <button type="button" class="lang-toggle-btn @(editingOptionsLanguage == "en" ? "active" : "")" 
+                                                    style="padding: 2px 8px; font-size: 0.75rem; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: @(editingOptionsLanguage == "en" ? "var(--accent-color)" : "transparent"); color: @(editingOptionsLanguage == "en" ? "#fff" : "var(--text-muted)");"
+                                                    @onclick='() => editingOptionsLanguage = "en"'>EN</button>
+                                        </div>
+                                    </div>
+                                    @if (editingOptionsLanguage == "bg")
+                                    {
+                                        <textarea class="bs-input" @bind="bgOptionsString" rows="4" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                    }
+                                    else
+                                    {
+                                        <textarea class="bs-input" @bind="enOptionsString" rows="4" placeholder="English translation (Line 1 translates Line 1 BG)"></textarea>
+                                    }
                                 </div>
                             }
 
@@ -727,9 +764,10 @@
                                 {
                                     @foreach (var q in categoryQuestions)
                                     {
+                                        var matchedQ = questions.FirstOrDefault(x => x.QuestionCode == q.Id);
                                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px;">
-                                            <div style="flex: 1; min-width: 0;">
-                                                <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            <div style="flex: 1; min-width: 0; cursor: pointer;" @onclick="() => { if (matchedQ != null) SelectQuestion(matchedQ); }" title="Click to edit full question connections and translations">
+                                                <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: underline;">
                                                     [@q.Id] (@q.Type)
                                                 </div>
                                                 <div style="font-size: 0.8rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
@@ -980,14 +1018,14 @@
     .graph-container {
         height: 600px;
         width: 100%;
-        background-color: #121316;
+        background-color: var(--bg-card-alt);
     }
 
     .graph-legend {
         position: absolute;
         bottom: 20px;
         left: 20px;
-        background: rgba(18, 19, 22, 0.85);
+        background: var(--bg-card);
         backdrop-filter: blur(8px);
         padding: 12px 18px;
         border-radius: 8px;
@@ -998,7 +1036,7 @@
 
     .legend-item {
         font-size: 13px;
-        color: #ffffff;
+        color: var(--text-primary);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -1068,7 +1106,7 @@
     }
 
     .bg-dark {
-        background-color: #1e1e24;
+        background-color: var(--bg-card-alt);
         color: var(--text-muted);
     }
 
@@ -1088,8 +1126,8 @@
     .formula-code {
         display: block;
         padding: 10px;
-        background-color: #16171a;
-        color: #a9b2c3;
+        background-color: var(--bg-card-alt);
+        color: var(--text-secondary);
         border-radius: 6px;
         font-family: monospace;
         font-size: 13px;
@@ -1169,10 +1207,10 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--border-color);
         transition: .3s;
         border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid var(--border-color);
     }
 
     .slider:before {
@@ -1204,10 +1242,10 @@
     }
 
     .bs-input, .bs-select {
-        background-color: #16171a;
+        background-color: var(--bg-card-alt);
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        color: #ffffff;
+        color: var(--text-primary);
         padding: 10px 14px;
         font-size: 14px;
         outline: none;
@@ -1216,7 +1254,7 @@
     .code-textarea {
         font-family: monospace;
         font-size: 13px;
-        background-color: #0b0c0e;
+        background-color: var(--bg-page);
         color: #72f1b8;
     }
 
@@ -1237,7 +1275,7 @@
         border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 10px;
-        background-color: #16171a;
+        background-color: var(--bg-card-alt);
     }
 
     .checkbox-list {
@@ -1293,7 +1331,7 @@
     }
 
     .total-price-badge span {
-        color: #ffffff;
+        color: var(--text-primary);
     }
 
     .alert {
@@ -1318,11 +1356,11 @@
         min-width: 320px;
         max-width: 400px;
         padding: 16px;
-        background: rgba(22, 23, 26, 0.95);
+        background: var(--bg-card);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-radius: 12px;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
         animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         border-left: 4px solid var(--color-primary);
         border: 1px solid var(--border-color);
@@ -1354,20 +1392,20 @@
     .toast-title {
         font-weight: 700;
         font-size: 14px;
-        color: #ffffff;
+        color: var(--text-primary);
         margin-bottom: 2px;
     }
 
     .toast-body {
         font-size: 13px;
-        color: #a9b2c3;
+        color: var(--text-secondary);
         line-height: 1.4;
     }
 
     .toast-close {
         background: transparent;
         border: none;
-        color: #a9b2c3;
+        color: var(--text-secondary);
         font-size: 18px;
         cursor: pointer;
         padding: 0 4px;
@@ -1375,7 +1413,7 @@
     }
 
     .toast-close:hover {
-        color: #ffffff;
+        color: var(--text-primary);
     }
 
     @@keyframes slideInUp {
@@ -1414,6 +1452,7 @@
     private FormulaDto? selectedFormula;
     private ServiceSkuDto? selectedSku;
     private ServiceCategoryDto? selectedCategory;
+    private string englishName = "";
     private GraphEdgeDto? selectedEdge;
     private QuestionDto? selectedEdgeFromQuestion;
     private string edgeConditionBuffer = "";
@@ -1436,6 +1475,10 @@
     private string editingTemplateQuestionOptionsBuffer = "";
     private bool showRawJsonTemplate = false;
     private bool isProjectDetails = false;
+    private Dictionary<string, string> englishTranslations = new(StringComparer.OrdinalIgnoreCase);
+    private string editingOptionsLanguage = "bg";
+    private string bgOptionsString = "";
+    private string enOptionsString = "";
 
     private ElementReference graphContainer;
     private IJSObjectReference? module;
@@ -1498,6 +1541,7 @@
             formulas = await ApiClient.GetFormulasAsync();
             graphData = await ApiClient.GetQuestionGraphAsync();
             serviceCategories = await ApiClient.GetServiceCategoriesAsync();
+            englishTranslations = await ApiClient.GetEnglishTranslationsAsync();
 
             // Fetch fully populated SKUs from the database via GraphQL for each category
             availableSkus.Clear();
@@ -1941,6 +1985,7 @@
     private void SelectCategory(ServiceCategoryDto c)
     {
         selectedCategory = c;
+        englishName = c.Translations?.FirstOrDefault(t => string.Equals(t.LanguageCode, "en", StringComparison.OrdinalIgnoreCase))?.Name ?? "";
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
@@ -1975,6 +2020,7 @@
             TemplateStructure = "{\n  \"questions\": []\n}",
             Status = "DRAFT"
         };
+        englishName = "";
         selectedQuestion = null;
         selectedFormula = null;
         selectedSku = null;
@@ -1990,7 +2036,7 @@
 
         try
         {
-            var saved = await ApiClient.SaveCategoryAsync(selectedCategory);
+            var saved = await ApiClient.SaveCategoryAsync(selectedCategory, englishName);
             statusMessage = $"Category '{saved.Name}' successfully saved.";
             errorMessage = "";
             await LoadDataAsync();
@@ -2079,11 +2125,11 @@
             var isNew = !availableSkus.Any(s => s.Id == selectedSku.Id);
             if (isNew)
             {
-                await ApiClient.CreateServiceSkuAsync(selectedSku);
+                await ApiClient.CreateServiceSkuAsync(selectedSku, selectedSku.EnglishName, selectedSku.EnglishDescription);
             }
             else
             {
-                await ApiClient.UpdateServiceSkuAsync(selectedSku);
+                await ApiClient.UpdateServiceSkuAsync(selectedSku, selectedSku.EnglishName, selectedSku.EnglishDescription);
             }
 
             statusMessage = $"SKU '{selectedSku.SkuCode}' successfully saved.";
@@ -2199,11 +2245,11 @@
             var isNew = !questions.Any(q => q.Id == selectedQuestion.Id);
             if (isNew)
             {
-                await ApiClient.CreateQuestionAsync(selectedQuestion);
+                await ApiClient.CreateQuestionAsync(selectedQuestion, selectedQuestion.EnglishText, selectedQuestion.EnglishHint);
             }
             else
             {
-                await ApiClient.UpdateQuestionAsync(selectedQuestion);
+                await ApiClient.UpdateQuestionAsync(selectedQuestion, selectedQuestion.EnglishText, selectedQuestion.EnglishHint);
                 // Sync many-to-many linkages
                 await ApiClient.UpdateQuestionLinksAsync(selectedQuestion.Id, selectedQuestion.SkuIds, selectedQuestion.FormulaIds);
             }
@@ -2611,7 +2657,9 @@
             Required = false
         };
         isEditingNewTemplateQuestion = true;
-        editingTemplateQuestionOptionsBuffer = "";
+        editingOptionsLanguage = "bg";
+        bgOptionsString = "";
+        enOptionsString = "";
     }
 
     private void StartEditTemplateQuestion(TemplateQuestionModel q)
@@ -2628,19 +2676,54 @@
             DependsOnValue = q.DependsOnValue
         };
         isEditingNewTemplateQuestion = false;
-        editingTemplateQuestionOptionsBuffer = string.Join("\n", q.Options);
+        editingOptionsLanguage = "bg";
+        bgOptionsString = string.Join("\n", q.Options);
+
+        var enList = new List<string>();
+        foreach (var opt in q.Options)
+        {
+            if (englishTranslations.TryGetValue(opt, out var val))
+            {
+                enList.Add(val);
+            }
+            else
+            {
+                enList.Add("");
+            }
+        }
+        enOptionsString = string.Join("\n", enList);
     }
 
-    private void ApplyTemplateQuestionChanges()
+    private async Task ApplyTemplateQuestionChanges()
     {
         if (editingTemplateQuestion == null || selectedCategory == null) return;
 
         // Clean options from buffer
-        editingTemplateQuestion.Options = editingTemplateQuestionOptionsBuffer
+        var bgOptions = bgOptionsString
             .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(o => o.Trim())
             .Where(o => !string.IsNullOrEmpty(o))
             .ToList();
+
+        editingTemplateQuestion.Options = bgOptions;
+
+        // Save English translations
+        var enOptions = enOptionsString
+            .Split(new[] { '\r', '\n' })
+            .Select(o => o.Trim())
+            .ToList();
+
+        for (int i = 0; i < bgOptions.Count; i++)
+        {
+            var key = bgOptions[i];
+            var val = i < enOptions.Count ? enOptions[i] : "";
+
+            if (!string.IsNullOrWhiteSpace(val))
+            {
+                await ApiClient.UpdateTranslationAsync(key, "en", val);
+                englishTranslations[key] = val;
+            }
+        }
 
         if (isEditingNewTemplateQuestion)
         {

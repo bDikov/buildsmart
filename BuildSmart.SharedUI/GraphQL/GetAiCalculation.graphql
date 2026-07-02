@@ -18,6 +18,9 @@ query GetAiCalculationByJob($jobId: UUID!) {
           skuCode
           unitType
           basePrice
+          englishName
+          englishDescription
+          englishUnitType
         }
       }
       acceptanceCriteria {

@@ -222,7 +222,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine($"5. Output ONLY the report IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
 
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString());
-			return responseText;
+			return CleanLanguagePrefix(responseText);
 		}
 		catch (Exception ex)
 		{
@@ -246,7 +246,7 @@ public class GeminiAiService : IAiService
 			prompt.AppendLine($"Output ONLY the executive summary IN THE LANGUAGE DESIGNATED BY CODE '{languageCode.ToUpper()}'.");
 
 			var responseText = await ExecuteAiPromptAsync(prompt.ToString(), false, cancellationToken);
-			return responseText.Trim();
+			return CleanLanguagePrefix(responseText);
 		}
 		catch (Exception ex)
 		{
@@ -431,5 +431,17 @@ public class GeminiAiService : IAiService
 		}
 
 		return sb.ToString();
+	}
+
+	private string CleanLanguagePrefix(string text)
+	{
+		if (string.IsNullOrWhiteSpace(text)) return text;
+		var trimmed = text.Trim();
+		var match = System.Text.RegularExpressions.Regex.Match(trimmed, @"^(EN|BG)\s*(:|-|\r?\n)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+		if (match.Success)
+		{
+			trimmed = trimmed.Substring(match.Length).Trim();
+		}
+		return trimmed;
 	}
 }

@@ -848,6 +848,12 @@
   <data name="JobWizard_Validation_RequiredQuestions" xml:space="preserve">
     <value>Please answer all required questions marked with (*).</value>
   </data>
+  <data name="JobWizard_Validation_InvalidValue" xml:space="preserve">
+    <value>Invalid Value</value>
+  </data>
+  <data name="JobWizard_Validation_NegativeValuesNotAllowed" xml:space="preserve">
+    <value>Negative values are not allowed. Please enter a positive number.</value>
+  </data>
   <data name="Projects_LoadMore" xml:space="preserve">
     <value>Load More Projects ({0} remaining)</value>
   </data>

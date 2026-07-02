@@ -104,6 +104,9 @@ fragment SkuItemDetails on TaskSkuItem {
     skuCode
     name
     unitType
+    englishName
+    englishDescription
+    englishUnitType
   }
 }
 
@@ -142,6 +145,8 @@ fragment JobPostDetails on JobPost {
   serviceCategory {
     id
     name
+    englishName
+    englishDescription
   }
   createdAt
   updatedAt

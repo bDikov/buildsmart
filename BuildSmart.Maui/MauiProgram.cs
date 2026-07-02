@@ -14,6 +14,21 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		// Initialize thread culture from MAUI Preferences on startup
+		try
+		{
+			var lang = Microsoft.Maui.Storage.Preferences.Default.Get<string>("preferred_language", "bg");
+			var culture = new System.Globalization.CultureInfo(lang);
+			System.Globalization.CultureInfo.CurrentCulture = culture;
+			System.Globalization.CultureInfo.CurrentUICulture = culture;
+			System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+			System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"[MauiProgram] Failed to initialize culture on startup: {ex.Message}");
+		}
+
 		// Configure SharedUI API Config based on MAUI platform
 #if DEBUG
 		if (Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android)
@@ -57,6 +72,9 @@ public static class MauiProgram
 #endif
 
         builder.Services.AddLocalization();
+		builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService, BuildSmart.SharedUI.Services.Localization.LocalizationCacheService>();
+		builder.Services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, BuildSmart.SharedUI.Services.Localization.DbStringLocalizerFactory>();
+		builder.Services.AddSingleton<BuildSmart.SharedUI.Services.ILocalizationStateService, BuildSmart.SharedUI.Services.LocalizationStateService>();
 
 		// Configure StrawberryShake GraphQL Client
 
@@ -195,6 +213,99 @@ public static class MauiProgram
 		AppServiceLocator.Navigation = app.Services.GetRequiredService<INavigationBridge>();
 		AppServiceLocator.Alerts = app.Services.GetRequiredService<IAlertService>();
 		AppServiceLocator.MainThread = app.Services.GetRequiredService<IAppMainThread>();
+
+		// Initialize and Sync MAUI Localization Cache
+		try
+		{
+			var cacheService = app.Services.GetRequiredService<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService>();
+			var stateService = app.Services.GetRequiredService<BuildSmart.SharedUI.Services.ILocalizationStateService>();
+			var apiClient = app.Services.GetRequiredService<BuildSmart.SharedUI.GraphQL.IBuildSmartApiClient>();
+
+			// 1. Load from Preferences instantly on startup to avoid flickering
+			var cachedEnJson = Microsoft.Maui.Storage.Preferences.Default.Get<string?>("localization_cache_en", null);
+			var cachedBgJson = Microsoft.Maui.Storage.Preferences.Default.Get<string?>("localization_cache_bg", null);
+			
+			if (!string.IsNullOrEmpty(cachedEnJson) && !string.IsNullOrEmpty(cachedBgJson))
+			{
+				try
+				{
+					var enDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(cachedEnJson);
+					var bgDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(cachedBgJson);
+					if (enDict != null && bgDict != null)
+					{
+						var initialData = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+						{
+							{ "en", enDict },
+							{ "bg", bgDict }
+						};
+						cacheService.Initialize(initialData);
+						Console.WriteLine("MAUI Localization cache initialized from Preferences.");
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error deserializing cached translations: {ex.Message}");
+				}
+			}
+
+			// 2. Background Sync from GraphQL API
+			_ = Task.Run(async () =>
+			{
+				// Wait a moment for app initialization
+				await Task.Delay(2000);
+
+				if (Microsoft.Maui.Networking.Connectivity.Current.NetworkAccess != Microsoft.Maui.Networking.NetworkAccess.Internet)
+				{
+					Console.WriteLine("No internet connection. Skipping localization sync.");
+					return;
+				}
+
+				int retries = 0;
+				while (retries < 5)
+				{
+					try
+					{
+						var result = await apiClient.GetLocalizationStrings.ExecuteAsync("en");
+						var bgResult = await apiClient.GetLocalizationStrings.ExecuteAsync("bg");
+
+						if (result.Data?.LocalizationStrings != null && bgResult.Data?.LocalizationStrings != null)
+						{
+							var enDict = result.Data.LocalizationStrings.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase);
+							var bgDict = bgResult.Data.LocalizationStrings.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase);
+
+							var freshData = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+							{
+								{ "en", enDict },
+								{ "bg", bgDict }
+							};
+
+							cacheService.Initialize(freshData);
+
+							// Save to local Preferences
+							var enJson = System.Text.Json.JsonSerializer.Serialize(enDict);
+							var bgJson = System.Text.Json.JsonSerializer.Serialize(bgDict);
+							Microsoft.Maui.Storage.Preferences.Default.Set("localization_cache_en", enJson);
+							Microsoft.Maui.Storage.Preferences.Default.Set("localization_cache_bg", bgJson);
+
+							// Notify UI to re-render Blazor components
+							stateService.NotifyLocalizationChanged();
+							Console.WriteLine("MAUI Localization cache synced successfully from API.");
+							break;
+						}
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Retrying MAUI localization sync: {ex.Message}");
+						await Task.Delay(5000);
+						retries++;
+					}
+				}
+			});
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error during MAUI localization cache setup: {ex.Message}");
+		}
 
 		return app;
 	}

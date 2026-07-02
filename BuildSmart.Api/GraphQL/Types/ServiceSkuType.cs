@@ -1,7 +1,5 @@
 using BuildSmart.Core.Domain.Entities;
-using BuildSmart.Infrastructure.Persistence;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
 
 namespace BuildSmart.Api.GraphQL.Types;
 
@@ -17,17 +15,21 @@ public class ServiceSkuType : ObjectType<ServiceSku>
         
         descriptor.Field(s => s.Name)
             .Type<NonNullType<StringType>>()
-            .ResolveWith<ServiceSkuResolvers>(r => r.GetName(default!, default!, default!));
+            .ResolveWith<ServiceSkuResolvers>(r => r.GetName(default!, default!));
             
         descriptor.Field(s => s.Description)
             .Type<StringType>()
-            .ResolveWith<ServiceSkuResolvers>(r => r.GetDescription(default!, default!, default!));
+            .ResolveWith<ServiceSkuResolvers>(r => r.GetDescription(default!, default!));
             
         descriptor.Field(s => s.BasePrice).Type<NonNullType<DecimalType>>();
         
         descriptor.Field(s => s.UnitType)
             .Type<NonNullType<StringType>>()
-            .ResolveWith<ServiceSkuResolvers>(r => r.GetUnitType(default!, default!, default!));
+            .ResolveWith<ServiceSkuResolvers>(r => r.GetUnitType(default!, default!));
+
+        descriptor.Field(s => s.EnglishName).Type<StringType>();
+        descriptor.Field(s => s.EnglishDescription).Type<StringType>();
+        descriptor.Field(s => s.EnglishUnitType).Type<StringType>();
 
         descriptor.Field(s => s.CalculationFormula).Type<StringType>();
     }
@@ -35,47 +37,32 @@ public class ServiceSkuType : ObjectType<ServiceSku>
 
 public class ServiceSkuResolvers
 {
-    public async Task<string> GetName([Parent] ServiceSku sku, [Service] AppDbContext dbContext, [Service] IHttpContextAccessor httpContextAccessor)
+    public string GetName([Parent] ServiceSku sku, [Service] IHttpContextAccessor httpContextAccessor)
     {
         var langCode = httpContextAccessor.HttpContext?.Items["LanguageCode"]?.ToString() ?? "en";
-        if (langCode != "en")
+        if (langCode.StartsWith("en", StringComparison.OrdinalIgnoreCase))
         {
-            var translation = await dbContext.ServiceSkuTranslations
-                .FirstOrDefaultAsync(t => t.SkuId == sku.Id && t.LanguageCode == langCode);
-            if (translation != null && !string.IsNullOrEmpty(translation.Name))
-            {
-                return translation.Name;
-            }
+            return !string.IsNullOrEmpty(sku.EnglishName) ? sku.EnglishName : sku.Name;
         }
         return sku.Name;
     }
 
-    public async Task<string> GetDescription([Parent] ServiceSku sku, [Service] AppDbContext dbContext, [Service] IHttpContextAccessor httpContextAccessor)
+    public string GetDescription([Parent] ServiceSku sku, [Service] IHttpContextAccessor httpContextAccessor)
     {
         var langCode = httpContextAccessor.HttpContext?.Items["LanguageCode"]?.ToString() ?? "en";
-        if (langCode != "en")
+        if (langCode.StartsWith("en", StringComparison.OrdinalIgnoreCase))
         {
-            var translation = await dbContext.ServiceSkuTranslations
-                .FirstOrDefaultAsync(t => t.SkuId == sku.Id && t.LanguageCode == langCode);
-            if (translation != null && !string.IsNullOrEmpty(translation.Description))
-            {
-                return translation.Description;
-            }
+            return !string.IsNullOrEmpty(sku.EnglishDescription) ? sku.EnglishDescription : sku.Description;
         }
         return sku.Description;
     }
     
-    public async Task<string> GetUnitType([Parent] ServiceSku sku, [Service] AppDbContext dbContext, [Service] IHttpContextAccessor httpContextAccessor)
+    public string GetUnitType([Parent] ServiceSku sku, [Service] IHttpContextAccessor httpContextAccessor)
     {
         var langCode = httpContextAccessor.HttpContext?.Items["LanguageCode"]?.ToString() ?? "en";
-        if (langCode != "en")
+        if (langCode.StartsWith("en", StringComparison.OrdinalIgnoreCase))
         {
-            var translation = await dbContext.ServiceSkuTranslations
-                .FirstOrDefaultAsync(t => t.SkuId == sku.Id && t.LanguageCode == langCode);
-            if (translation != null && !string.IsNullOrEmpty(translation.UnitType))
-            {
-                return translation.UnitType;
-            }
+            return !string.IsNullOrEmpty(sku.EnglishUnitType) ? sku.EnglishUnitType : sku.UnitType;
         }
         return sku.UnitType;
     }

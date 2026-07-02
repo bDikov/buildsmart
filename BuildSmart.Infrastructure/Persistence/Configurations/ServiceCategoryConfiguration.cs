@@ -31,6 +31,12 @@ public class ServiceCategoryConfiguration : IEntityTypeConfiguration<ServiceCate
             .HasConversion<string>()
             .IsRequired();
 
+        builder.Property(sc => sc.EnglishName)
+            .HasMaxLength(150);
+
+        builder.Property(sc => sc.EnglishDescription)
+            .HasMaxLength(500);
+
         // Relationship is now handled via TradesmanSkill join entity
 	}
 }

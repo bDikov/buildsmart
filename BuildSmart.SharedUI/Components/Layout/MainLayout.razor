@@ -148,6 +148,10 @@
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                     Video Upload
                 </a>
+                <a class="nav-item-dark" href="/admin/localization" @onclick="CloseSidebar">
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    Localization
+                </a>
             </AuthorizeView>
 
         </div>
@@ -208,7 +212,9 @@
             }
         </div>
         <article class="content px-4 py-3">
-            @Body
+            <CascadingValue Value="@_currentLang" Name="LanguageCode">
+                @Body
+            </CascadingValue>
         </article>
     </main>
 
@@ -680,7 +686,7 @@
 
 @code {
     private bool _isSidebarOpen = false;
-    private string _currentLang = "en";
+    private string _currentLang = "bg";
     private bool _isLoading = true;
     private string? _userName;
     private string? _userEmail;
@@ -829,6 +835,28 @@
                 }
             }
 
+            // Load preferred language from localStorage first to apply it instantly
+            try
+            {
+                var savedLang = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "preferred_language");
+                if (!string.IsNullOrEmpty(savedLang))
+                {
+                    var culture = new System.Globalization.CultureInfo(savedLang);
+                    System.Globalization.CultureInfo.CurrentCulture = culture;
+                    System.Globalization.CultureInfo.CurrentUICulture = culture;
+                    System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+                    System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+                    System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+                    _currentLang = savedLang;
+                    StateHasChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainLayout] Failed to load language from localStorage: {ex.Message}");
+            }
+
             try
             {
                 var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
@@ -848,11 +876,48 @@
                     var preferredLang = userResult.Data.CurrentUser.PreferredLanguage;
                     var currentCulture = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
                     
-                    if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture && !_hasAttemptedLanguageSync)
+                    if (!string.IsNullOrEmpty(preferredLang) && preferredLang != currentCulture)
                     {
-                        _hasAttemptedLanguageSync = true;
+                        var culture = new System.Globalization.CultureInfo(preferredLang);
+                        System.Globalization.CultureInfo.CurrentCulture = culture;
+                        System.Globalization.CultureInfo.CurrentUICulture = culture;
+                        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+                        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+                        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+                        System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+                        _currentLang = preferredLang;
+                        
                         var cookieValue = $"c={preferredLang}|uic={preferredLang}";
                         await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
+                        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "preferred_language", preferredLang);
+
+                        // Save to MAUI Preferences via reflection if running in MAUI
+                        try
+                        {
+                            var preferencesType = Type.GetType("Microsoft.Maui.Storage.Preferences, Microsoft.Maui");
+                            if (preferencesType != null)
+                            {
+                                var defaultProperty = preferencesType.GetProperty("Default");
+                                if (defaultProperty != null)
+                                {
+                                    var defaultPreferences = defaultProperty.GetValue(null);
+                                    if (defaultPreferences != null)
+                                    {
+                                        var setMethod = defaultPreferences.GetType().GetMethod("Set", new[] { typeof(string), typeof(string) });
+                                        if (setMethod != null)
+                                        {
+                                            setMethod.Invoke(defaultPreferences, new object[] { "preferred_language", preferredLang });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[MainLayout] Failed to save database preference to MAUI Preferences: {ex.Message}");
+                        }
+
+                        // Force reload to apply language startup-wide
                         NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
                     }
                 }

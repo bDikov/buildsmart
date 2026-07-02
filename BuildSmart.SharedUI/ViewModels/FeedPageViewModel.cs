@@ -278,9 +278,8 @@ namespace BuildSmart.SharedUI.ViewModels
 						// Filter only Active categories of CategorySpecific type
 						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.Type == CategoryType.CategorySpecific))
 						{
-							// Find translation for current culture, fallback to default English name
-							var translation = cat.Translations?.FirstOrDefault(t => string.Equals(t.LanguageCode, currentCulture, StringComparison.OrdinalIgnoreCase));
-							var displayName = translation?.Name ?? cat.Name;
+							// Find translation for current culture, fallback to default Bulgarian name
+							var displayName = currentCulture.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(cat.EnglishName) ? cat.EnglishName : cat.Name;
 
 							Categories.Add(new CategoryItem 
 							{ 

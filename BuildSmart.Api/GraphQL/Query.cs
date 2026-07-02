@@ -422,9 +422,27 @@ public class Query
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
-	public async Task<IEnumerable<Question>> GetQuestions([Service] IQuestionManagementService questionService, CancellationToken cancellationToken)
+	public async Task<IEnumerable<Question>> GetQuestions(
+		[Service] IQuestionManagementService questionService, 
+		[Service] AppDbContext context,
+		CancellationToken cancellationToken)
 	{
-		return await questionService.GetAllQuestionsAsync(cancellationToken);
+		var questions = (await questionService.GetAllQuestionsAsync(cancellationToken)).ToList();
+		var translations = await context.LocalizationResources
+			.AsNoTracking()
+			.Where(r => r.Culture == "en")
+			.ToListAsync(cancellationToken);
+
+		foreach (var q in questions)
+		{
+			q.EnglishText = translations.FirstOrDefault(t => t.Key == q.Text)?.Value;
+			if (!string.IsNullOrEmpty(q.HintText))
+			{
+				q.EnglishHint = translations.FirstOrDefault(t => t.Key == q.HintText)?.Value;
+			}
+		}
+
+		return questions;
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
@@ -442,6 +460,26 @@ public class Query
 			Nodes = nodes,
 			Edges = edges
 		};
+	}
+
+	public async Task<IEnumerable<LocalizationResource>> GetLocalizationStrings(
+		string culture,
+		[Service] AppDbContext context)
+	{
+		return await context.LocalizationResources
+			.AsNoTracking()
+			.Where(r => r.Culture == culture)
+			.ToListAsync();
+	}
+
+	public async Task<IEnumerable<LocalizationResource>> GetAllLocalizationResources(
+		[Service] AppDbContext context)
+	{
+		return await context.LocalizationResources
+			.AsNoTracking()
+			.OrderBy(r => r.Key)
+			.ThenBy(r => r.Culture)
+			.ToListAsync();
 	}
 }
 

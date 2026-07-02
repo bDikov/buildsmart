@@ -17,6 +17,8 @@ public class ServiceSku : BaseEntity
     // The mathematical formula used by the C# Pricing Engine (e.g., "global_total_sqm * 3.5")
     public string CalculationFormula { get; set; } = string.Empty; 
     
-    public ICollection<ServiceSkuTranslation> Translations { get; set; } = new List<ServiceSkuTranslation>();
+    public string? EnglishName { get; set; }
+    public string? EnglishDescription { get; set; }
+    public string? EnglishUnitType { get; set; }
     public ICollection<Question> Questions { get; set; } = new List<Question>();
 }

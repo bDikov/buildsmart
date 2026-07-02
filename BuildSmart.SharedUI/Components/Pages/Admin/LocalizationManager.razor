@@ -1,0 +1,396 @@
+@page "/admin/localization"
+@using BuildSmart.SharedUI.Services
+@using BuildSmart.SharedUI.GraphQL
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject IBuildSmartApiClient ApiClient
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+
+<div class="admin-container" style="padding: 24px; max-width: 1400px; margin: 0 auto; color: var(--text-color, #ffffff); font-family: 'Outfit', sans-serif;">
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 16px;">
+        <div class="title-group">
+            <h1 class="page-title" style="font-size: 2.2rem; font-weight: 700; margin: 0; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Localization Manager</h1>
+            <p class="page-subtitle" style="color: #9ca3af; margin: 4px 0 0 0; font-size: 1rem;">Translate and manage all system texts dynamically. Changes apply in real-time without redeployment.</p>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 12px;">
+            <button class="bs-btn-secondary" @onclick="LoadDataAsync" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                🔄 Refresh
+            </button>
+            <button class="bs-btn-primary" @onclick="ToggleAddForm" style="display: inline-flex; align-items: center; gap: 8px; background: #3b82f6; border: none; color: #fff; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                ➕ Add New Key
+            </button>
+        </div>
+    </div>
+
+    <!-- Error/Success Alerts -->
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert alert-success" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            @statusMessage
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            @errorMessage
+        </div>
+    }
+
+    <!-- Add New Key Form -->
+    @if (showAddForm)
+    {
+        <div class="add-form-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin-top: 0; font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px;">Create New Localization Entry</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div style="grid-column: span 2;">
+                    <label style="display: block; font-size: 0.875rem; color: #9ca3af; margin-bottom: 6px; font-weight: 500;">Resource Key Name</label>
+                    <input type="text" placeholder="e.g. JobWizard_SubmitButton" @bind="newRow.Key" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; outline: none;" />
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.875rem; color: #9ca3af; margin-bottom: 6px; font-weight: 500;">English Text (en)</label>
+                    <textarea placeholder="Enter English value" @bind="newRow.English" rows="2" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; outline: none; resize: vertical;"></textarea>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.875rem; color: #9ca3af; margin-bottom: 6px; font-weight: 500;">Bulgarian Text (bg)</label>
+                    <textarea placeholder="Въведете българския превод" @bind="newRow.Bulgarian" rows="2" style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; outline: none; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button @onclick="ToggleAddForm" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+                    Cancel
+                </button>
+                <button @onclick="CreateKeyAsync" style="background: #3b82f6; border: none; color: #fff; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                    Create Entry
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- Search & Filter Header -->
+    <div class="search-filter-bar" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 16px; margin-bottom: 20px; display: flex; gap: 16px; align-items: center;">
+        <div style="position: relative; flex-grow: 1;">
+            <input type="text" placeholder="Search by Key, English text, or Bulgarian text..." @bind="searchQuery" @bind:event="oninput" style="width: 100%; padding: 10px 16px; padding-left: 40px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; outline: none; font-size: 0.95rem;" />
+            <span style="position: absolute; left: 14px; top: 12px; color: #9ca3af; pointer-events: none;">🔍</span>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 80px 0; justify-content: center; gap: 16px;">
+            <div style="width: 48px; height: 48px; border: 4px solid rgba(255, 255, 255, 0.1); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <span style="color: #9ca3af; font-size: 1.1rem;">Loading localization resources...</span>
+        </div>
+    }
+    else
+    {
+        <!-- Table Layout -->
+        <div class="table-responsive" style="overflow-x: auto; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead>
+                    <tr style="background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                        <th style="padding: 16px 20px; font-weight: 600; color: #9ca3af; width: 25%;">Key</th>
+                        <th style="padding: 16px 20px; font-weight: 600; color: #9ca3af; width: 35%;">English (en)</th>
+                        <th style="padding: 16px 20px; font-weight: 600; color: #9ca3af; width: 30%;">Bulgarian (bg)</th>
+                        <th style="padding: 16px 20px; font-weight: 600; color: #9ca3af; width: 10%; text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in FilteredRows)
+                    {
+                        var isEditing = editingRowKey == row.Key;
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; background: @(isEditing ? "rgba(59, 130, 246, 0.05)" : "transparent");" class="table-row-hover">
+                            <td style="padding: 16px 20px; font-weight: 500; font-family: monospace; color: #3b82f6; vertical-align: top; word-break: break-all;">
+                                @row.Key
+                            </td>
+                            <td style="padding: 16px 20px; vertical-align: top;">
+                                @if (isEditing)
+                                {
+                                    <textarea @bind="editingRowModel.English" rows="2" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid #3b82f6; border-radius: 6px; color: #fff; outline: none; font-size: 0.9rem; resize: vertical;"></textarea>
+                                }
+                                else
+                                {
+                                    <span style="white-space: pre-wrap; line-height: 1.5;">@row.English</span>
+                                }
+                            </td>
+                            <td style="padding: 16px 20px; vertical-align: top;">
+                                @if (isEditing)
+                                {
+                                    <textarea @bind="editingRowModel.Bulgarian" rows="2" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid #3b82f6; border-radius: 6px; color: #fff; outline: none; font-size: 0.9rem; resize: vertical;"></textarea>
+                                }
+                                else
+                                {
+                                    <span style="white-space: pre-wrap; line-height: 1.5; color: #d1d5db;">@row.Bulgarian</span>
+                                }
+                            </td>
+                            <td style="padding: 16px 20px; text-align: right; vertical-align: top;">
+                                @if (isEditing)
+                                {
+                                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                        <button @onclick="() => SaveRowAsync(row)" style="background: #10b981; border: none; color: #fff; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Save">
+                                            ✓
+                                        </button>
+                                        <button @onclick="CancelEditing" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Cancel">
+                                            ✕
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button @onclick="() => StartEditing(row)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s;" class="edit-btn">
+                                        Edit
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (FilteredRows.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 40px; color: #9ca3af; font-size: 1rem;">
+                                No localization keys match your search criteria.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .table-row-hover:hover {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+    }
+    .edit-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+</style>
+
+@code {
+    private List<LocalizationRow> allRows = new();
+    private bool isLoading = true;
+    private string searchQuery = string.Empty;
+    
+    private string statusMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private bool showAddForm = false;
+    private LocalizationRow newRow = new();
+
+    private string? editingRowKey = null;
+    private LocalizationRow editingRowModel = new();
+
+    private List<LocalizationRow> FilteredRows => string.IsNullOrWhiteSpace(searchQuery)
+        ? allRows
+        : allRows.Where(r => 
+            r.Key.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+            r.English.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+            r.Bulgarian.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+        ).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        statusMessage = string.Empty;
+        errorMessage = string.Empty;
+        editingRowKey = null;
+
+        try
+        {
+            var result = await ApiClient.GetAllLocalizationResources.ExecuteAsync();
+            if (result.Errors.Count > 0)
+            {
+                errorMessage = $"Error: {result.Errors[0].Message}";
+                return;
+            }
+
+            if (result.Data?.AllLocalizationResources != null)
+            {
+                var grouped = result.Data.AllLocalizationResources.GroupBy(r => r.Key);
+                var list = new List<LocalizationRow>();
+                
+                foreach (var group in grouped)
+                {
+                    var row = new LocalizationRow { Key = group.Key };
+                    foreach (var item in group)
+                    {
+                        if (item.Culture.Equals("en", StringComparison.OrdinalIgnoreCase))
+                        {
+                            row.English = item.Value;
+                        }
+                        else if (item.Culture.Equals("bg", StringComparison.OrdinalIgnoreCase))
+                        {
+                            row.Bulgarian = item.Value;
+                        }
+                    }
+                    list.Add(row);
+                }
+
+                allRows = list.OrderBy(r => r.Key).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Exception loading data: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ToggleAddForm()
+    {
+        showAddForm = !showAddForm;
+        newRow = new LocalizationRow();
+        statusMessage = string.Empty;
+        errorMessage = string.Empty;
+    }
+
+    private async Task CreateKeyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newRow.Key))
+        {
+            errorMessage = "Resource key name is required.";
+            return;
+        }
+
+        if (allRows.Any(r => r.Key.Equals(newRow.Key, StringComparison.OrdinalIgnoreCase)))
+        {
+            errorMessage = $"A resource key with the name '{newRow.Key}' already exists.";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = string.Empty;
+        statusMessage = string.Empty;
+
+        try
+        {
+            // Update English Value
+            var enInput = new UpdateLocalizationInput
+            {
+                Key = newRow.Key.Trim(),
+                Culture = "en",
+                Value = (newRow.English ?? string.Empty).Trim()
+            };
+            var enResult = await ApiClient.UpdateLocalizationString.ExecuteAsync(enInput);
+
+            // Update Bulgarian Value
+            var bgInput = new UpdateLocalizationInput
+            {
+                Key = newRow.Key.Trim(),
+                Culture = "bg",
+                Value = (newRow.Bulgarian ?? string.Empty).Trim()
+            };
+            var bgResult = await ApiClient.UpdateLocalizationString.ExecuteAsync(bgInput);
+
+            if (enResult.Errors.Count > 0 || bgResult.Errors.Count > 0)
+            {
+                errorMessage = "Error creating localization entries.";
+                if (enResult.Errors.Count > 0) errorMessage += $" [EN]: {enResult.Errors[0].Message}";
+                if (bgResult.Errors.Count > 0) errorMessage += $" [BG]: {bgResult.Errors[0].Message}";
+                return;
+            }
+
+            statusMessage = $"Entry '{newRow.Key}' created successfully!";
+            showAddForm = false;
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create entry: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void StartEditing(LocalizationRow row)
+    {
+        editingRowKey = row.Key;
+        editingRowModel = new LocalizationRow
+        {
+            Key = row.Key,
+            English = row.English,
+            Bulgarian = row.Bulgarian
+        };
+        statusMessage = string.Empty;
+        errorMessage = string.Empty;
+    }
+
+    private void CancelEditing()
+    {
+        editingRowKey = null;
+        editingRowModel = new LocalizationRow();
+    }
+
+    private async Task SaveRowAsync(LocalizationRow originalRow)
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        statusMessage = string.Empty;
+
+        try
+        {
+            // 1. Update English Value
+            var enInput = new UpdateLocalizationInput
+            {
+                Key = originalRow.Key,
+                Culture = "en",
+                Value = (editingRowModel.English ?? string.Empty).Trim()
+            };
+            var enResult = await ApiClient.UpdateLocalizationString.ExecuteAsync(enInput);
+
+            // 2. Update Bulgarian Value
+            var bgInput = new UpdateLocalizationInput
+            {
+                Key = originalRow.Key,
+                Culture = "bg",
+                Value = (editingRowModel.Bulgarian ?? string.Empty).Trim()
+            };
+            var bgResult = await ApiClient.UpdateLocalizationString.ExecuteAsync(bgInput);
+
+            if (enResult.Errors.Count > 0 || bgResult.Errors.Count > 0)
+            {
+                errorMessage = "Error updating localization entries.";
+                if (enResult.Errors.Count > 0) errorMessage += $" [EN]: {enResult.Errors[0].Message}";
+                if (bgResult.Errors.Count > 0) errorMessage += $" [BG]: {bgResult.Errors[0].Message}";
+                return;
+            }
+
+            originalRow.English = editingRowModel.English;
+            originalRow.Bulgarian = editingRowModel.Bulgarian;
+            statusMessage = $"Localization for key '{originalRow.Key}' updated successfully!";
+            editingRowKey = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class LocalizationRow
+    {
+        public string Key { get; set; } = string.Empty;
+        public string English { get; set; } = string.Empty;
+        public string Bulgarian { get; set; } = string.Empty;
+    }
+}

@@ -9,16 +9,14 @@ using Sentry;
 
 namespace BuildSmart.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public partial class AppDbContext : DbContext
 {
 	// Define DbSets only for your Aggregate Roots
 	public DbSet<User> Users { get; set; } = null!;
     public DbSet<HomeownerProfile> HomeownerProfiles { get; set; } = null!;
 	public DbSet<TradesmanSkill> TradesmanSkills { get; set; } = null!;
 	public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
-	public DbSet<ServiceCategoryTranslation> ServiceCategoryTranslations { get; set; } = null!;
 	public DbSet<ServiceSku> ServiceSkus { get; set; } = null!;
-	public DbSet<ServiceSkuTranslation> ServiceSkuTranslations { get; set; } = null!;
 	public DbSet<TradesmanProfile> TradesmanProfiles { get; set; } = null!;
 	public DbSet<Project> Projects { get; set; } = null!;
 	public DbSet<JobPost> JobPosts { get; set; } = null!;
@@ -48,6 +46,7 @@ public class AppDbContext : DbContext
 	public DbSet<TradesmanMedia> TradesmanMedia { get; set; } = null!;
 	public DbSet<ProjectMilestoneMedia> ProjectMilestoneMedia { get; set; } = null!;
 	public DbSet<ProjectMessage> ProjectMessages { get; set; } = null!;
+	public DbSet<LocalizationResource> LocalizationResources { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
@@ -392,7 +391,7 @@ public class AppDbContext : DbContext
                 };
                 var isGlobal = categoryType == CategoryType.Global;
 
-                var category = await ServiceCategories.Include(c => c.Translations).FirstOrDefaultAsync(c => c.Name == categoryName);
+                var category = await ServiceCategories.FirstOrDefaultAsync(c => c.Name == categoryName);
                 if (category == null)
                 {
                     category = new ServiceCategory
@@ -413,27 +412,13 @@ public class AppDbContext : DbContext
                     category.Type = categoryType;
                 }
 
-                // Add or update BG translation for the UI
-                if (!category.Translations.Any(t => t.LanguageCode == "bg"))
+                // Add or update translations from the JSON
+                if (kvp.Value.Translations != null)
                 {
-                    string bgName = categoryName switch {
-                        "Електрическа Инсталация" => "Електроуслуги",
-                        "ВиК Услуги" => "ВиК Услуги",
-                        "Бояджийски и шпакловъчни услуги" => "Боядисване",
-                        "Къртене и извозване" => "Къртене",
-                        "Сухо строителство" => "Сухо Строителство",
-                        "Подови и стенни настилки" => "Настилки",
-                        "Микроцимент" => "Микроцимент",
-                        _ => categoryName
-                    };
-                    
-                    await ServiceCategoryTranslations.AddAsync(new ServiceCategoryTranslation 
-                    { 
-                        Id = Guid.NewGuid(),
-                        CategoryId = category.Id,
-                        LanguageCode = "bg", 
-                        Name = bgName 
-                    });
+                    if (kvp.Value.Translations.TryGetValue("en", out var enName))
+                    {
+                        category.EnglishName = enName;
+                    }
                 }
                 
                 category.TemplateStructure = System.Text.Json.JsonSerializer.Serialize(kvp.Value.TemplateStructure);
@@ -479,7 +464,7 @@ public class AppDbContext : DbContext
                         foreach (var marketTask in marketCat.Tasks)
                         {
                             var skuCode = $"{prefix}-{count:D3}";
-                            var existingSkus = await ServiceSkus.Include(s => s.Translations).Where(s => s.SkuCode == skuCode).ToListAsync();
+                            var existingSkus = await ServiceSkus.Where(s => s.SkuCode == skuCode).ToListAsync();
                             
                             if (!existingSkus.Any())
                             {
@@ -497,18 +482,6 @@ public class AppDbContext : DbContext
                                     UpdatedAt = DateTime.UtcNow
                                 };
 
-                                newSku.Translations.Add(new ServiceSkuTranslation
-                                {
-                                    Id = Guid.NewGuid(),
-                                    SkuId = skuId,
-                                    LanguageCode = "bg",
-                                    Name = marketTask.Name,
-                                    Description = $"{marketTask.Name} ({marketTask.Unit})",
-                                    UnitType = marketTask.Unit,
-                                    CreatedAt = DateTime.UtcNow,
-                                    UpdatedAt = DateTime.UtcNow
-                                });
-
                                 await ServiceSkus.AddAsync(newSku);
                             }
                             else
@@ -520,29 +493,6 @@ public class AppDbContext : DbContext
                                     existingSku.BasePrice = Math.Round(marketTask.MaxPrice / 1.95583m, 2);
                                     existingSku.UnitType = MapMarketUnitToUnitType(marketTask.Unit);
                                     existingSku.UpdatedAt = DateTime.UtcNow;
-
-                                    var translation = existingSku.Translations.FirstOrDefault(t => t.LanguageCode == "bg");
-                                    if (translation != null)
-                                    {
-                                        translation.Name = marketTask.Name;
-                                        translation.Description = $"{marketTask.Name} ({marketTask.Unit})";
-                                        translation.UnitType = marketTask.Unit;
-                                        translation.UpdatedAt = DateTime.UtcNow;
-                                    }
-                                    else
-                                    {
-                                        await ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
-                                        {
-                                            Id = Guid.NewGuid(),
-                                            SkuId = existingSku.Id,
-                                            LanguageCode = "bg",
-                                            Name = marketTask.Name,
-                                            Description = $"{marketTask.Name} ({marketTask.Unit})",
-                                            UnitType = marketTask.Unit,
-                                            CreatedAt = DateTime.UtcNow,
-                                            UpdatedAt = DateTime.UtcNow
-                                        });
-                                    }
                                 }
                             }
                             count++;
@@ -585,7 +535,7 @@ public class AppDbContext : DbContext
                         foreach (var skuDto in data.Skus)
                         {
                             var eurPrice = Math.Round(skuDto.BasePrice / 1.95583m, 2);
-                            var existing = await ServiceSkus.Include(s => s.Translations).FirstOrDefaultAsync(s => s.SkuCode == skuDto.SkuCode);
+                            var existing = await ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == skuDto.SkuCode);
                             
                             if (existing == null)
                             {
@@ -604,18 +554,6 @@ public class AppDbContext : DbContext
                                     UpdatedAt = DateTime.UtcNow
                                 };
 
-                                newSku.Translations.Add(new ServiceSkuTranslation
-                                {
-                                    Id = Guid.NewGuid(),
-                                    SkuId = skuId,
-                                    LanguageCode = "bg",
-                                    Name = skuDto.Name,
-                                    Description = skuDto.Description,
-                                    UnitType = skuDto.UnitType,
-                                    CreatedAt = DateTime.UtcNow,
-                                    UpdatedAt = DateTime.UtcNow
-                                });
-
                                 await ServiceSkus.AddAsync(newSku);
                             }
                             else
@@ -628,29 +566,6 @@ public class AppDbContext : DbContext
                                 existing.UnitType = skuDto.UnitType;
                                 existing.CalculationFormula = skuDto.CalculationFormula;
                                 existing.UpdatedAt = DateTime.UtcNow;
-
-                                var translation = existing.Translations.FirstOrDefault(t => t.LanguageCode == "bg");
-                                if (translation != null)
-                                {
-                                    translation.Name = skuDto.Name;
-                                    translation.Description = skuDto.Description;
-                                    translation.UnitType = skuDto.UnitType;
-                                    translation.UpdatedAt = DateTime.UtcNow;
-                                }
-                                else
-                                {
-                                    await ServiceSkuTranslations.AddAsync(new ServiceSkuTranslation
-                                    {
-                                        Id = Guid.NewGuid(),
-                                        SkuId = existing.Id,
-                                        LanguageCode = "bg",
-                                        Name = skuDto.Name,
-                                        Description = skuDto.Description,
-                                        UnitType = skuDto.UnitType,
-                                        CreatedAt = DateTime.UtcNow,
-                                        UpdatedAt = DateTime.UtcNow
-                                    });
-                                }
                             }
                         }
                     }
@@ -980,6 +895,7 @@ public class AppDbContext : DbContext
     private class CategorySeedDto
     {
         public string Name { get; set; } = string.Empty;
+        public Dictionary<string, string>? Translations { get; set; }
         public object? TemplateStructure { get; set; }
     }
 

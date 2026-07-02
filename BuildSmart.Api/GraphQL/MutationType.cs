@@ -27,11 +27,11 @@ public class MutationType : ObjectType<Mutation>
             .Description("Creates a new service category with a smart blueprint template.")
             .Authorize(roles: new[] { "Admin" }); // Only Admin
 
-        descriptor.Field(m => m.CreateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.CreateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Creates a new billable SKU for a service category.")
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(m => m.UpdateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.UpdateServiceSku(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Updates an existing billable SKU.")
             .Authorize(roles: new[] { "Admin" });
 
@@ -181,11 +181,11 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.StartAnonymousSupportChat(default!, default!))
             .Description("Initiates an anonymous support session and returns a JWT token.");
 
-        descriptor.Field(m => m.CreateQuestion(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.CreateQuestion(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Creates a new question template.")
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(m => m.UpdateQuestion(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
+        descriptor.Field(m => m.UpdateQuestion(default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!, default!))
             .Description("Updates an existing question template.")
             .Authorize(roles: new[] { "Admin" });
 
@@ -219,6 +219,10 @@ public class MutationType : ObjectType<Mutation>
 
         descriptor.Field(m => m.ImportSpiderNetConfig(default!, default!))
             .Description("Transactional import and synchronization of the entire Spider-Net schema (Categories, SKUs, Questions, Formulas).")
+            .Authorize(roles: new[] { "Admin" });
+
+        descriptor.Field(m => m.UpdateLocalizationString(default!, default!, default!, default!))
+            .Description("Updates or creates a dynamic localization resource. (Admin only)")
             .Authorize(roles: new[] { "Admin" });
     }
 }

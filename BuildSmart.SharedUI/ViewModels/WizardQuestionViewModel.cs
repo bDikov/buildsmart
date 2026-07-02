@@ -26,6 +26,7 @@ public partial class WizardQuestionViewModel : ObservableObject
     public bool IsRequired { get; set; }
     
     public List<string> Options { get; set; } = new();
+    public List<string> RawOptions { get; set; } = new();
 
     public bool IsText => Type != "choice" && Type != "boolean" && Type != "number" && Type != "multiselect";
     public bool IsChoice => Type == "choice";
@@ -54,6 +55,7 @@ public partial class WizardQuestionViewModel : ObservableObject
     partial void OnAnswerChanged(string value)
     {
         OnPropertyChanged(nameof(BoolAnswer));
+        OnPropertyChanged(nameof(AnswerDisplay));
     }
 
     public bool BoolAnswer
@@ -65,20 +67,70 @@ public partial class WizardQuestionViewModel : ObservableObject
         }
     }
 
-    public void ToggleMultiSelectOption(string option, bool isSelected)
+    public string AnswerDisplay
     {
-        var currentAnswers = string.IsNullOrWhiteSpace(Answer) ? new List<string>() : Answer.Split(',').Select(a => a.Trim()).ToList();
-        
-        if (isSelected && !currentAnswers.Contains(option))
+        get
         {
-            currentAnswers.Add(option);
+            if (string.IsNullOrWhiteSpace(Answer)) return string.Empty;
+            if (IsChoice)
+            {
+                var idx = RawOptions.IndexOf(Answer);
+                if (idx >= 0 && idx < Options.Count)
+                {
+                    return Options[idx];
+                }
+                return Answer;
+            }
+            if (IsMultiSelect)
+            {
+                var selectedRaw = Answer.Split(',').Select(a => a.Trim()).ToList();
+                var selectedDisplay = new List<string>();
+                foreach (var raw in selectedRaw)
+                {
+                    var idx = RawOptions.IndexOf(raw);
+                    if (idx >= 0 && idx < Options.Count)
+                    {
+                        selectedDisplay.Add(Options[idx]);
+                    }
+                    else
+                    {
+                        selectedDisplay.Add(raw);
+                    }
+                }
+                return string.Join(", ", selectedDisplay);
+            }
+            return Answer;
         }
-        else if (!isSelected && currentAnswers.Contains(option))
+    }
+
+    public void ToggleMultiSelectOption(int index, bool isSelected)
+    {
+        if (index < 0 || index >= RawOptions.Count) return;
+        var rawOption = RawOptions[index];
+
+        var currentAnswers = string.IsNullOrWhiteSpace(Answer) 
+            ? new List<string>() 
+            : Answer.Split(',').Select(a => a.Trim()).ToList();
+        
+        if (isSelected && !currentAnswers.Contains(rawOption))
         {
-            currentAnswers.Remove(option);
+            currentAnswers.Add(rawOption);
+        }
+        else if (!isSelected && currentAnswers.Contains(rawOption))
+        {
+            currentAnswers.Remove(rawOption);
         }
         
         Answer = string.Join(", ", currentAnswers);
+    }
+
+    public bool IsOptionSelected(int index)
+    {
+        if (index < 0 || index >= RawOptions.Count) return false;
+        var rawOption = RawOptions[index];
+        if (string.IsNullOrWhiteSpace(Answer)) return false;
+        var currentAnswers = Answer.Split(',').Select(a => a.Trim()).ToList();
+        return currentAnswers.Contains(rawOption);
     }
 }
 

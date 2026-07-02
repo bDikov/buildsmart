@@ -14,7 +14,7 @@ public class LanguageMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var languageHeader = context.Request.Headers["Accept-Language"].ToString();
-        var languageCode = "en"; // Default
+        var languageCode = "bg"; // Default
 
         if (!string.IsNullOrEmpty(languageHeader))
         {

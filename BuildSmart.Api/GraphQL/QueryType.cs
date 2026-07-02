@@ -73,7 +73,7 @@ public class QueryType : ObjectType<Query>
                     .Description("Gets all active project support chats for the admin support dashboard.")
                     .Authorize(roles: new[] { "Admin" });
 
-				descriptor.Field(q => q.GetQuestions(default!, default!))
+				descriptor.Field(q => q.GetQuestions(default!, default!, default!))
 					.Description("Gets all questionnaire questions.")
 					.Authorize(roles: new[] { "Admin" });
 
@@ -83,6 +83,14 @@ public class QueryType : ObjectType<Query>
 
 				descriptor.Field(q => q.GetQuestionGraph(default!, default!))
 					.Description("Gets the full node-edge question flow and linkage graph.")
+					.Authorize(roles: new[] { "Admin" });
+
+				descriptor.Field(q => q.GetLocalizationStrings(default!, default!))
+					.Description("Gets all localization resources for a given culture. (Anonymous)")
+					.AllowAnonymous();
+
+				descriptor.Field(q => q.GetAllLocalizationResources(default!))
+					.Description("Gets all localization resources across all cultures. (Admin only)")
 					.Authorize(roles: new[] { "Admin" });
         	}
         }

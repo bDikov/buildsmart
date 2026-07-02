@@ -1,5 +1,7 @@
 @typeparam TValue
 
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+
 <div class="bs-dropdown" @onfocusout="HandleFocusOut" tabindex="0">
     <div class="bs-dropdown-header @(_isOpen ? "open" : "")" @onclick="ToggleDropdown">
         <span class="bs-dropdown-selected">
@@ -9,7 +11,13 @@
             }
             else
             {
-                @Value.ToString()
+                var optionsList = Options?.ToList() ?? new List<TValue>();
+                var displayList = DisplayOptions?.ToList();
+                var idx = optionsList.IndexOf(Value);
+                var displayValue = (idx >= 0 && displayList != null && idx < displayList.Count) 
+                    ? displayList[idx] 
+                    : (TranslateOptions ? Loc[Value.ToString()].Value : Value.ToString());
+                @displayValue
             }
         </span>
         <div class="bs-dropdown-icon">
@@ -29,12 +37,18 @@
     @if (_isOpen)
     {
         <div class="bs-dropdown-menu">
-            @foreach (var option in Options)
+            @{
+                var optionsList = Options?.ToList() ?? new List<TValue>();
+                var displayList = DisplayOptions?.ToList();
+            }
+            @for (int i = 0; i < optionsList.Count; i++)
             {
+                var option = optionsList[i];
+                var displayValue = (displayList != null && i < displayList.Count) ? displayList[i] : (TranslateOptions ? Loc[option?.ToString() ?? ""].Value : option?.ToString());
                 <div class="bs-dropdown-item @(EqualityComparer<TValue>.Default.Equals(option, Value) ? "selected" : "")" 
                      @onclick="() => SelectOption(option)"
                      @onclick:stopPropagation="true">
-                    <span>@option?.ToString()</span>
+                    <span>@displayValue</span>
                     @if (EqualityComparer<TValue>.Default.Equals(option, Value))
                     {
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="check-icon">
@@ -135,7 +149,13 @@
 
 @code {
     [Parameter]
+    public bool TranslateOptions { get; set; } = false;
+
+    [Parameter]
     public IEnumerable<TValue> Options { get; set; } = Array.Empty<TValue>();
+
+    [Parameter]
+    public IEnumerable<string>? DisplayOptions { get; set; }
 
     [Parameter]
     public TValue Value { get; set; } = default!;

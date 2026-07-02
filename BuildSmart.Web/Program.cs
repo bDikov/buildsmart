@@ -48,6 +48,9 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddLocalization();
+builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService, BuildSmart.SharedUI.Services.Localization.LocalizationCacheService>();
+builder.Services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, BuildSmart.SharedUI.Services.Localization.DbStringLocalizerFactory>();
+builder.Services.AddScoped<BuildSmart.SharedUI.Services.ILocalizationStateService, BuildSmart.SharedUI.Services.LocalizationStateService>();
 
 // Configure SharedUI API Config based on Web
 var apiUrl = builder.Configuration["ApiConfig:BaseUrlOverride"] ?? builder.Configuration["ApiConfig:BaseUrl"];
@@ -211,5 +214,50 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(BuildSmart.SharedUI.Components.Layout.MainLayout).Assembly);
+
+// Fetch and warm up localization cache from API
+try
+{
+	var cacheService = app.Services.GetRequiredService<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService>();
+	var apiClient = app.Services.GetRequiredService<BuildSmart.SharedUI.GraphQL.IBuildSmartApiClient>();
+	
+	_ = Task.Run(async () =>
+	{
+		int retries = 0;
+		while (retries < 15)
+		{
+			try
+			{
+				var result = await apiClient.GetLocalizationStrings.ExecuteAsync("en");
+				var bgResult = await apiClient.GetLocalizationStrings.ExecuteAsync("bg");
+				
+				if (result.Data?.LocalizationStrings != null && bgResult.Data?.LocalizationStrings != null)
+				{
+					var cacheData = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+					
+					var enDict = result.Data.LocalizationStrings.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase);
+					var bgDict = bgResult.Data.LocalizationStrings.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase);
+					
+					cacheData["en"] = enDict;
+					cacheData["bg"] = bgDict;
+					
+					cacheService.Initialize(cacheData);
+					Console.WriteLine("Localization cache warmed up successfully from API.");
+					break;
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Retrying localization warm up from API: {ex.Message}");
+				await Task.Delay(3000);
+				retries++;
+			}
+		}
+	});
+}
+catch (Exception ex)
+{
+	Console.WriteLine($"Error initializing localization warm up task: {ex.Message}");
+}
 
 app.Run();

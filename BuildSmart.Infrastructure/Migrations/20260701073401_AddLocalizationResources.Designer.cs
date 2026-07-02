@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using BuildSmart.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BuildSmart.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260701073401_AddLocalizationResources")]
+    partial class AddLocalizationResources
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -978,17 +981,6 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    b.Property<string>("EnglishHint")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("EnglishOptionsJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("EnglishText")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
                     b.Property<string>("FormulaIds")
                         .IsRequired()
                         .HasColumnType("jsonb");
@@ -1100,14 +1092,6 @@ namespace BuildSmart.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<string>("EnglishDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("EnglishName")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
-
                     b.Property<bool>("IsGlobal")
                         .HasColumnType("boolean");
 
@@ -1138,6 +1122,39 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.ToTable("ServiceCategories", (string)null);
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceCategoryTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("ServiceCategoryTranslations");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1145,51 +1162,33 @@ namespace BuildSmart.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("BasePrice")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("CalculationFormula")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("EnglishDescription")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("EnglishName")
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.Property<string>("EnglishUnitType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("ServiceCategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("SkuCode")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UnitType")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1198,10 +1197,45 @@ namespace BuildSmart.Infrastructure.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.HasIndex("SkuCode")
-                        .IsUnique();
+                    b.ToTable("ServiceSkus");
+                });
 
-                    b.ToTable("ServiceSkus", (string)null);
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSkuTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UnitType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SkuId");
+
+                    b.ToTable("ServiceSkuTranslations");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskAcceptanceCriteria", b =>
@@ -2185,6 +2219,17 @@ namespace BuildSmart.Infrastructure.Migrations
                     b.Navigation("TradesmanProfile");
                 });
 
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceCategoryTranslation", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceCategory", "Category")
+                        .WithMany("Translations")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
                 {
                     b.HasOne("BuildSmart.Core.Domain.Entities.ServiceCategory", "ServiceCategory")
@@ -2194,6 +2239,17 @@ namespace BuildSmart.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("ServiceCategory");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSkuTranslation", b =>
+                {
+                    b.HasOne("BuildSmart.Core.Domain.Entities.ServiceSku", "Sku")
+                        .WithMany("Translations")
+                        .HasForeignKey("SkuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sku");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TaskAcceptanceCriteria", b =>
@@ -2369,6 +2425,16 @@ namespace BuildSmart.Infrastructure.Migrations
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.Question", b =>
                 {
                     b.Navigation("NextQuestions");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceCategory", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("BuildSmart.Core.Domain.Entities.ServiceSku", b =>
+                {
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("BuildSmart.Core.Domain.Entities.TradesmanProfile", b =>
