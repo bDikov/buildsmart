@@ -542,15 +542,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 			}
 			else if (currentStepType == WizardStepType.Questions)
 			{
-				var stepTitle = _wizardSteps[currentStepIndex].Title;
-				if (stepTitle == "General Questions")
+				var stepCategoryId = _wizardSteps[currentStepIndex].CategoryId;
+				if (stepCategoryId != null)
 				{
-					saveSuccess = await InternalSaveDraftAsync(null, true);
-				}
-				else
-				{
-					var categoryName = stepTitle.Replace(" Questions", "");
-					var cat = SelectableCategories.FirstOrDefault(c => c.Category.Name == categoryName);
+					var cat = SelectableCategories.FirstOrDefault(c => c.Category.Id == stepCategoryId.Value);
 					if (cat != null)
 					{
 						saveSuccess = await InternalSaveDraftAsync(cat);
@@ -565,7 +560,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 									var submitResult = await _apiClient.SubmitJobForScopeGeneration.ExecuteAsync(jobId);
 									if (submitResult.Errors.Count > 0)
 									{
-										await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {categoryName}: {submitResult.Errors[0].Message}", "OK");
+										await AppServiceLocator.Alerts.DisplayAlert("Warning", $"Could not start AI for {cat.Category.Name}: {submitResult.Errors[0].Message}", "OK");
 									}
 									else
 									{
@@ -579,6 +574,10 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					{
 						saveSuccess = await InternalSaveDraftAsync();
 					}
+				}
+				else
+				{
+					saveSuccess = await InternalSaveDraftAsync(null, true);
 				}
 			}
 
@@ -902,6 +901,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 					{
 						Type = WizardStepType.Questions,
 						Title = _localizer?["JobWizard_CategoryQuestions", targetCat.Category.Name] ?? $"{targetCat.Category.Name} Questions",
+						CategoryId = targetCat.Category.Id,
 						Questions = catQuestions
 					});
 				}
@@ -963,6 +963,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 				{
 					Type = WizardStepType.Questions,
 					Title = _localizer?["JobWizard_CategoryQuestions", cat.Category.Name] ?? $"{cat.Category.Name} Questions",
+					CategoryId = cat.Category.Id,
 					Questions = catQuestions
 				});
 			}
@@ -1592,6 +1593,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 	{
 		public WizardStepType Type { get; set; }
 		public string Title { get; set; } = string.Empty;
+		public Guid? CategoryId { get; set; }
 		public List<WizardQuestionViewModel> Questions { get; set; } = new();
 	}
 
