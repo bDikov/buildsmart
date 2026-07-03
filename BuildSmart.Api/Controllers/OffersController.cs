@@ -116,9 +116,43 @@ public class OffersController : ControllerBase
                 }
             }
 
+            // Page Squashing and Space Unit (SU) Calculation
+            int suBrief = 15 + (finalScopeDescription?.Length ?? 0) / 150;
+            int suPricing = 10;
+            foreach (var calc in projectCalcs)
+            {
+                suPricing += 5; // 5 SU per category header + subtotal
+                suPricing += calc.Tasks.Count * 3; // 3 SU per task
+                foreach (var task in calc.Tasks)
+                {
+                    if (task.AcceptanceCriteria != null)
+                    {
+                        suPricing += task.AcceptanceCriteria.Count; // 1 SU per acceptance criteria bullet point
+                    }
+                }
+            }
+            int suTerms = 25; // T&C takes about 25 SU
+
+            // Page break decisions
+            bool showPageBreakAfterBrief = true;
+            bool showPageBreakAfterPricing = true;
+            bool isBriefSinglePage = suBrief <= 15; // Max ~1,500 chars to guarantee single-page safety
+            bool isPricingSinglePage = suPricing <= 25; // Guarantee safety margin for pricing tables
+
+            if (suBrief + suPricing <= 25)
+            {
+                // Consolidate Brief and Pricing onto the same page
+                showPageBreakAfterBrief = false;
+            }
+
+            string briefClass = (showPageBreakAfterBrief && isBriefSinglePage) ? "pdf-page-fixed" : "pdf-page-flow";
+            string pricingClass = (showPageBreakAfterPricing && isPricingSinglePage && showPageBreakAfterBrief) ? "pdf-page-fixed" : "pdf-page-flow";
+            string termsClass = "pdf-page-fixed";
+
             var offerData = new
             {
                 Header_Hello = _localizer["Header_Hello"].Value,
+                Header_PreparedBy = _localizer["Header_PreparedBy"].Value,
                 Header_ProjectProposal = _localizer["Header_ProjectProposal"].Value,
                 Header_Overview = _localizer["Header_Overview"].Value,
                 Header_PreparedFor = _localizer["Header_PreparedFor"].Value,
@@ -144,13 +178,20 @@ public class OffersController : ControllerBase
                 JobTitle = project.Title,
                 JobId = project.Id.ToString().Substring(0, 8),
                 TradesmanName = _localizer["Label_SystemEstimate"].Value,
-                Date = DateTime.UtcNow.ToString("MMM dd, yyyy"),
+                Date = System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase)
+                    ? DateTime.UtcNow.ToString("dd.MM.yyyy")
+                    : DateTime.UtcNow.ToString("MMM dd, yyyy", System.Globalization.CultureInfo.InvariantCulture),
                 ClientName = clientName,
                 ClientAddress = clientAddress,
                 ScopeDescription = finalScopeDescription,
                 Categories = categoriesData,
                 SubtotalAmount = grandTotal.ToString("N2"),
-                TotalAmount = grandTotal.ToString("N2")
+                TotalAmount = grandTotal.ToString("N2"),
+                ShowPageBreakAfterBrief = showPageBreakAfterBrief,
+                ShowPageBreakAfterPricing = showPageBreakAfterPricing,
+                BriefClass = briefClass,
+                PricingClass = pricingClass,
+                TermsClass = termsClass
             };
 
             byte[] pdfBytes = await _pdfGeneratorService.GenerateOfferPdfAsync(offerData);

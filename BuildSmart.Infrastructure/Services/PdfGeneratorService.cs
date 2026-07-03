@@ -82,11 +82,62 @@ namespace BuildSmart.Infrastructure.Services
 
 				try
 				{
-				        await page.SetContentAsync(populatedHtml, new NavigationOptions 
-				        { 
-				                WaitUntil = new[] { WaitUntilNavigation.Load, WaitUntilNavigation.DOMContentLoaded },
-				                Timeout = 30000
-				        });
+					await page.SetContentAsync(populatedHtml, new NavigationOptions 
+					{ 
+						WaitUntil = new[] { WaitUntilNavigation.Load, WaitUntilNavigation.DOMContentLoaded },
+						Timeout = 30000
+					});
+
+					// Dynamic Javascript to calculate and inject layout spacers for flowing sections to push footers to page bottom
+					await page.EvaluateExpressionAsync(@"
+						(() => {
+							const fixedPage = document.querySelector('.pdf-page-fixed');
+							if (!fixedPage) return;
+							const pageHeight = fixedPage.offsetHeight;
+							if (pageHeight <= 0) return;
+
+							const flowingPages = document.querySelectorAll('.pdf-page-flow');
+							flowingPages.forEach(flowPage => {
+								const footerBlock = flowPage.querySelector('.pdf-footer-block');
+								if (!footerBlock) return;
+
+								// Reset any existing spacer first
+								const existingSpacer = flowPage.querySelector('.print-spacer');
+								if (existingSpacer) {
+									existingSpacer.remove();
+								}
+
+								// Get the cumulative height of all preceding siblings inside the flowing container
+								let contentHeight = 0;
+								for (let child of flowPage.children) {
+									if (child === footerBlock || child.classList.contains('print-spacer')) {
+										break;
+									}
+									contentHeight += child.offsetHeight;
+								}
+
+								// In print, the A4 page height is pageHeight.
+								// Each page has 15mm top (57px) and 10mm bottom (38px) padding (total 25mm = 95px).
+								// So the printable content area on each page is exactly pageContentHeight.
+								const pageContentHeight = pageHeight - 95;
+								const footerHeight = footerBlock.offsetHeight;
+
+								const currentPageOffset = contentHeight % pageContentHeight;
+								let spacerHeight = pageContentHeight - currentPageOffset - footerHeight;
+								if (spacerHeight < 0) {
+									// If it doesn't fit on the current page, push to the next page
+									spacerHeight = pageContentHeight + spacerHeight;
+								}
+
+								if (spacerHeight > 5) {
+									const spacer = document.createElement('div');
+									spacer.style.height = spacerHeight + 'px';
+									spacer.className = 'print-spacer';
+									footerBlock.parentNode.insertBefore(spacer, footerBlock);
+								}
+							});
+						})()
+					");
 				}
 				catch (Exception contentEx)
 				{

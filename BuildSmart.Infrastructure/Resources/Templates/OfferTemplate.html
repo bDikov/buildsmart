@@ -9,13 +9,28 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #333333;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
-        /* Print optimizations for multi-page document */
-        @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page-break { page-break-after: always; }
-            .no-break { page-break-inside: avoid; }
+        .pdf-page-fixed, .pdf-page-flow {
+            width: 100%;
+            max-width: 56rem; /* max-w-4xl */
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 4rem; /* p-16 */
+            padding-bottom: 12rem; /* Make room for absolutely positioned footer */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative; /* Establish relative positioning context */
+        }
+
+        .pdf-footer-block {
+            position: absolute;
+            bottom: 4rem;
+            left: 4rem;
+            right: 4rem;
         }
 
         .separator {
@@ -24,49 +39,116 @@
             width: 100%;
             margin: 20px 0;
         }
+
+        /* Screen style (when viewed in browser) */
+        @media screen {
+            body {
+                background-color: #f3f4f6; /* bg-gray-50 */
+                padding: 2rem 0;
+            }
+            .pdf-page-fixed {
+                min-height: 1050px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+                border-radius: 0.5rem;
+                margin-bottom: 2rem;
+            }
+            .pdf-page-flow {
+                min-height: 1050px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+                border-radius: 0.5rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* Print style (when generating PDF) */
+        @media print {
+            body {
+                background-color: #ffffff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .pdf-page-fixed {
+                width: 100%;
+                max-width: 100%;
+                min-height: 275mm;
+                box-shadow: none;
+                margin: 0;
+                padding: 15mm;
+                padding-bottom: 10mm; /* Bring footer closer to bottom edge */
+                border-radius: 0;
+                display: flex;
+                flex-direction: column;
+            }
+            .pdf-page-flow {
+                width: 100%;
+                max-width: 100%;
+                min-height: 275mm;
+                box-shadow: none;
+                margin: 0;
+                padding: 15mm;
+                padding-bottom: 10mm; /* Bring footer closer to bottom edge */
+                border-radius: 0;
+                display: block; /* Force block layout in print to prevent flexbox page-break bugs */
+            }
+            .pdf-footer-block {
+                position: static;
+                margin-top: auto; /* Pushes footer to bottom in flex containers */
+                width: 100%;
+            }
+            .page-break { page-break-after: always; }
+            .no-break { page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
 
     <!-- PAGE 1: COVER -->
-    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col justify-center page-break">
-        <h1 class="text-8xl font-extrabold text-black mb-12 tracking-tight">{{Header_Hello}}</h1>
-        <div class="mb-24">
-            <h2 class="text-5xl font-bold text-gray-900">{{JobTitle}}</h2>
-            <p class="text-2xl text-gray-500 mt-4 uppercase tracking-widest">{{Header_ProjectProposal}}</p>
+    <div class="pdf-page-fixed justify-between page-break">
+        <div class="mt-8">
+            <h1 class="text-8xl font-extrabold text-black mb-12 tracking-tight">{{Header_Hello}}</h1>
+            <div class="mb-24">
+                <h2 class="text-5xl font-bold text-gray-900">{{JobTitle}}</h2>
+                <p class="text-2xl text-gray-500 mt-4 uppercase tracking-widest">{{Header_ProjectProposal}}</p>
+            </div>
         </div>
-        <div class="mt-auto">
-            <p class="text-xl font-bold text-black">{{TradesmanName}}</p>
-            <p class="text-lg text-gray-500">Ref: #{{JobId}}</p>
+        <div class="flex justify-between items-end">
+            <div>
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">{{Header_PreparedBy}}</p>
+                <p class="text-xl font-bold text-black">{{TradesmanName}}</p>
+                <p class="text-lg text-gray-500">Ref: #{{JobId}}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">{{Header_PreparedFor}}</p>
+                <p class="text-xl font-semibold text-black">{{ClientName}}</p>
+                <p class="text-lg text-gray-600">{{ClientAddress}}</p>
+            </div>
         </div>
     </div>
 
     <!-- PAGE 2: PROJECT BRIEF -->
-    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col page-break">
+    <div class="{{BriefClass}} {{#if ShowPageBreakAfterBrief}}page-break{{/if}}">
         <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_ProjectBrief}}</h2>
         
-        <div class="mb-16">
+        <div class="mb-16 flex-grow">
             <h3 class="text-3xl font-bold text-black mb-6">{{Header_Overview}}</h3>
             <p class="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
                 {{ScopeDescription}}
             </p>
         </div>
 
-        <div class="mb-auto">
-            <h3 class="text-3xl font-bold text-black mb-6">{{Header_PreparedFor}}</h3>
-            <p class="text-lg text-gray-700 font-semibold">{{ClientName}}</p>
-            <p class="text-lg text-gray-600">{{ClientAddress}}</p>
-        </div>
-
+        {{#if ShowPageBreakAfterBrief}}
         <!-- Footer -->
-        <div class="mt-16 pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
-            <p>{{TradesmanName}}</p>
-            <p>{{Date}}</p>
+        <div class="pdf-footer-block">
+            <div class="flex justify-between text-sm text-gray-500">
+                <p>{{TradesmanName}}</p>
+                <p>{{Date}}</p>
+            </div>
         </div>
+        {{/if}}
     </div>
 
     <!-- PRICING BREAKDOWN (GROUPED BY CATEGORY) -->
-    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg page-break">
+    <div class="{{PricingClass}} {{#if ShowPageBreakAfterPricing}}page-break{{/if}}">
         <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_PricingBreakdown}}</h2>
         
         <div class="flex justify-between items-end mb-6">
@@ -110,23 +192,25 @@
             {{/each}}
         </div>
 
-        <div class="separator"></div>
+        <div class="pdf-footer-block no-break">
+            <div class="separator"></div>
 
-        <!-- Grand Total -->
-        <div class="flex justify-between items-center text-3xl font-extrabold text-black mb-16 no-break">
-            <span>{{Label_GrandTotal}}</span>
-            <span>{{CurrencySymbol}}{{TotalAmount}}</span>
-        </div>
+            <!-- Grand Total -->
+            <div class="flex justify-between items-center text-3xl font-extrabold text-black mb-8">
+                <span>{{Label_GrandTotal}}</span>
+                <span>{{CurrencySymbol}}{{TotalAmount}}</span>
+            </div>
 
-        <!-- Footer -->
-        <div class="pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500 no-break">
-            <p>{{TradesmanName}}</p>
-            <p>{{Date}}</p>
+            <!-- Footer -->
+            <div class="pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
+                <p>{{TradesmanName}}</p>
+                <p>{{Date}}</p>
+            </div>
         </div>
     </div>
 
     <!-- PAGE 4: TERMS & CONDITIONS -->
-    <div class="max-w-4xl mx-auto bg-white p-16 shadow-lg min-h-[1050px] flex flex-col">
+    <div class="{{TermsClass}}">
         <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_TC}}</h2>
         
         <div class="mb-auto">
@@ -144,13 +228,15 @@
         </div>
 
         <!-- Footer -->
-        <div class="mt-auto pt-8 border-t border-gray-200 flex flex-col gap-4">
-            <div class="text-xs text-gray-400 italic text-center">
-                {{Footer_Validity}}
-            </div>
-            <div class="flex justify-between text-sm text-gray-500">
-                <p>{{TradesmanName}}</p>
-                <p>{{Date}}</p>
+        <div class="pdf-footer-block">
+            <div class="flex flex-col gap-4">
+                <div class="text-xs text-gray-400 italic text-center">
+                    {{Footer_Validity}}
+                </div>
+                <div class="flex justify-between text-sm text-gray-500">
+                    <p>{{TradesmanName}}</p>
+                    <p>{{Date}}</p>
+                </div>
             </div>
         </div>
     </div>
