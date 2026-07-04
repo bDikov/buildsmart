@@ -13,6 +13,8 @@ namespace BuildSmart.Api.Tests
 {
     public class TestApplicationFactory : WebApplicationFactory<Program>
     {
+        private readonly string _dbName = $"InMemoryDbForTesting_{System.Guid.NewGuid()}";
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureTestServices(services =>
@@ -30,7 +32,7 @@ namespace BuildSmart.Api.Tests
                 // Add in-memory database for testing
                 services.AddDbContext<AppDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                    options.UseInMemoryDatabase(_dbName);
                 });
 
                 // We want to override the default authentication scheme with our test scheme.

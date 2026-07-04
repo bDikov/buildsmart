@@ -458,7 +458,8 @@ public partial class Program
 					.GroupBy(r => r.Culture)
 					.ToDictionary(
 						g => g.Key,
-						g => g.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase),
+						g => g.GroupBy(r => r.Key, StringComparer.OrdinalIgnoreCase)
+							.ToDictionary(k => k.Key, k => k.First().Value, StringComparer.OrdinalIgnoreCase),
 						StringComparer.OrdinalIgnoreCase
 					);
 				cacheService.Initialize(cacheData);

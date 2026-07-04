@@ -3,6 +3,7 @@
 @attribute [AllowAnonymous]
 @layout BuildSmart.SharedUI.Components.Layout.BlankLayout
 @inject CreateAccountPageViewModel ViewModel
+@inject VerifyEmailPageViewModel VerifyViewModel
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
 
 <div class="register-container">
@@ -19,32 +20,52 @@
 
         <h2 class="register-title">@Loc["CreateAccount_Title"]</h2>
 
-        <form @onsubmit="HandleSubmit" class="register-form">
+        <form @onsubmit="HandleSubmit" class="register-form" novalidate>
             <div class="form-row">
                 <div class="form-group flex-fill">
                     <label for="firstName" class="form-label">@Loc["CreateAccount_FirstName"]</label>
-                    <input type="text" class="bs-input register-input" id="firstName" @bind="ViewModel.FirstName" />
+                    <input type="text" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.FirstNameError) ? "" : "bs-invalid")" id="firstName" @bind="ViewModel.FirstName" placeholder="e.g. John / Иван" />
+                    @if (!string.IsNullOrEmpty(ViewModel.FirstNameError))
+                    {
+                        <span class="validation-message">@ViewModel.FirstNameError</span>
+                    }
                 </div>
 
                 <div class="form-group flex-fill">
                     <label for="lastName" class="form-label">@Loc["CreateAccount_LastName"]</label>
-                    <input type="text" class="bs-input register-input" id="lastName" @bind="ViewModel.LastName" />
+                    <input type="text" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.LastNameError) ? "" : "bs-invalid")" id="lastName" @bind="ViewModel.LastName" placeholder="e.g. Doe / Иванов" />
+                    @if (!string.IsNullOrEmpty(ViewModel.LastNameError))
+                    {
+                        <span class="validation-message">@ViewModel.LastNameError</span>
+                    }
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="email" class="form-label">@Loc["CreateAccount_Email"]</label>
-                <input type="email" class="bs-input register-input" id="email" @bind="ViewModel.Email" />
+                <input type="email" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.EmailError) ? "" : "bs-invalid")" id="email" @bind="ViewModel.Email" placeholder="e.g. user@example.com" />
+                @if (!string.IsNullOrEmpty(ViewModel.EmailError))
+                {
+                    <span class="validation-message">@ViewModel.EmailError</span>
+                }
             </div>
 
             <div class="form-group">
                 <label for="phoneNumber" class="form-label">@Loc["CreateAccount_PhoneNumber"]</label>
-                <input type="tel" class="bs-input register-input" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
+                <input type="tel" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.PhoneNumberError) ? "" : "bs-invalid")" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
+                @if (!string.IsNullOrEmpty(ViewModel.PhoneNumberError))
+                {
+                    <span class="validation-message">@ViewModel.PhoneNumberError</span>
+                }
             </div>
 
             <div class="form-group">
                 <label for="password" class="form-label">@Loc["CreateAccount_Password"]</label>
-                <input type="password" class="bs-input register-input" id="password" @bind="ViewModel.Password" />
+                <input type="password" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.PasswordError) ? "" : "bs-invalid")" id="password" @bind="ViewModel.Password" placeholder="Minimum 6 characters" />
+                @if (!string.IsNullOrEmpty(ViewModel.PasswordError))
+                {
+                    <span class="validation-message">@ViewModel.PasswordError</span>
+                }
             </div>
 
             <div class="form-checkbox-group">
@@ -60,9 +81,20 @@
                     }
                 </label>
             </div>
+            @if (!string.IsNullOrEmpty(ViewModel.AgreeToTermsError))
+            {
+                <span class="validation-message">@ViewModel.AgreeToTermsError</span>
+            }
 
-            <button class="bs-btn-primary register-btn w-100" type="submit">
-                @Loc["CreateAccount_CreateButton"]
+            <button class="bs-btn-primary register-btn w-100" type="submit" disabled="@ViewModel.IsBusy">
+                @if (ViewModel.IsBusy)
+                {
+                    <span>@GetText("VerifyEmail_Loading", "Изпращане...", "Submitting...")</span>
+                }
+                else
+                {
+                    <span>@Loc["CreateAccount_CreateButton"]</span>
+                }
             </button>
             
             <div class="login-prompt">
@@ -72,6 +104,63 @@
 
     </div>
 </div>
+
+@if (ViewModel.IsRegistrationSuccess)
+{
+    <div class="verify-modal-backdrop">
+        <div class="verify-modal-content bs-card">
+            <div class="modal-header-section">
+                <div class="modal-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+                <h3 class="modal-title">@GetText("VerifyEmail_Title", "Потвърждаване на имейл", "Verify your email")</h3>
+                <p class="modal-subtitle">
+                    @string.Format(
+                        GetText(
+                            "VerifyEmail_InstructionsSent", 
+                            "Изпратихме 6-цифрен код за потвърждение на {0}. Моля, въведете го по-долу, за да активирате Вашия акаунт.", 
+                            "We sent a 6-digit verification code to {0}. Please enter it below to activate your account."
+                        ), 
+                        ViewModel.Email
+                    )
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="modalCode" class="form-label text-center w-100">@GetText("VerifyEmail_Code", "6-цифрен код", "6-digit code")</label>
+                <input type="text" class="bs-input code-input @(string.IsNullOrEmpty(VerifyViewModel.Code) ? "" : (VerifyViewModel.Code.Length != 6 ? "bs-invalid" : ""))" id="modalCode" maxlength="6" placeholder="123456" @bind="VerifyViewModel.Code" />
+                @if (!string.IsNullOrEmpty(VerifyViewModel.Code) && VerifyViewModel.Code.Length != 6)
+                {
+                    <span class="validation-message text-center">@GetText("VerifyEmail_CodeLengthWarning", "Кодът трябва да бъде точно 6 цифри.", "The code must be exactly 6 digits.")</span>
+                }
+            </div>
+
+            <button class="bs-btn-primary verify-btn w-100" type="button" @onclick="HandleVerifyCode" disabled="@VerifyViewModel.IsBusy">
+                @if (VerifyViewModel.IsBusy)
+                {
+                    <span>@GetText("VerifyEmail_Verifying", "Потвърждаване...", "Verifying...")</span>
+                }
+                else
+                {
+                    <span>@GetText("VerifyEmail_VerifyButton", "Потвърди акаунт", "Verify account")</span>
+                }
+            </button>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-link resend-btn" @onclick="HandleResendCode" disabled="@VerifyViewModel.IsBusy">
+                    @GetText("VerifyEmail_ResendCode", "Изпрати нов код", "Resend code")
+                </button>
+                <span class="divider">|</span>
+                <button type="button" class="btn-link cancel-btn" @onclick="CloseVerificationModal">
+                    @GetText("VerifyEmail_Cancel", "Отказ", "Cancel")
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 <style>
     .register-container {
@@ -128,7 +217,7 @@
             max-width: 100%;
         }
         .register-title {
-            margin-top: 0; /* Remove top margin since logo is there now */
+            margin-top: 0;
         }
     }
 
@@ -251,12 +340,172 @@
     .legal-link:hover {
         text-decoration: underline;
     }
+
+    /* Form validation classes */
+    .bs-input.bs-invalid {
+        border-color: var(--color-danger);
+    }
+
+    .validation-message {
+        color: var(--color-danger);
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 2px;
+        display: block;
+    }
+
+    /* Modal Backdrop */
+    .verify-modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    /* Modal Card */
+    .verify-modal-content {
+        width: 100%;
+        max-width: 440px;
+        padding: 35px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        box-shadow: var(--elevation-12dp, 0 12px 24px rgba(0, 0, 0, 0.15));
+        background-color: var(--bg-card);
+        border-radius: 12px;
+        animation: scaleIn 0.3s ease-out;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .modal-header-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .modal-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: var(--bg-card-alt);
+        color: var(--color-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .modal-title {
+        font-family: var(--font-heading);
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .modal-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 5px;
+    }
+
+    .code-input {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 8px;
+    }
+
+    .btn-link {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .resend-btn:disabled {
+        color: var(--text-muted);
+        cursor: not-allowed;
+        text-decoration: none;
+    }
+
+    .divider {
+        color: var(--border-color);
+    }
 </style>
 
 @code {
+    private string GetText(string key, string bgDefault, string enDefault)
+    {
+        var local = Loc[key];
+        if (local.ResourceNotFound)
+        {
+            var isBg = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase);
+            return isBg ? bgDefault : enDefault;
+        }
+        return local.Value;
+    }
+
     private async Task HandleSubmit()
     {
         await ViewModel.CreateAccountCommand.ExecuteAsync(null);
+        if (ViewModel.IsRegistrationSuccess)
+        {
+            VerifyViewModel.Email = ViewModel.Email;
+            VerifyViewModel.Code = string.Empty;
+        }
+    }
+
+    private async Task HandleVerifyCode()
+    {
+        await VerifyViewModel.VerifyEmailCommand.ExecuteAsync(null);
+    }
+
+    private async Task HandleResendCode()
+    {
+        await VerifyViewModel.ResendCodeCommand.ExecuteAsync(null);
+    }
+
+    private void CloseVerificationModal()
+    {
+        ViewModel.IsRegistrationSuccess = false;
     }
 }
-

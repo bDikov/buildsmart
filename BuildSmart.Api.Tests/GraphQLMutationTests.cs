@@ -96,7 +96,8 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 			Id = Guid.NewGuid(),
 			Email = "test@example.com",
 			HashedPassword = BCrypt.Net.BCrypt.HashPassword("password123"),
-			Role = BuildSmart.Core.Domain.Enums.UserRoleTypes.Homeowner
+			Role = BuildSmart.Core.Domain.Enums.UserRoleTypes.Homeowner,
+			IsEmailVerified = true
 		};
 		mockUserRepository.Setup(repo => repo.GetByEmailAsync("test@example.com"))
 			.ReturnsAsync(testUser);

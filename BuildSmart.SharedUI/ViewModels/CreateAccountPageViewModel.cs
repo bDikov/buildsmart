@@ -33,6 +33,30 @@ namespace BuildSmart.SharedUI.ViewModels
         [ObservableProperty]
         private bool _agreeToTerms = false;
 
+        [ObservableProperty]
+        private string _firstNameError = string.Empty;
+
+        [ObservableProperty]
+        private string _lastNameError = string.Empty;
+
+        [ObservableProperty]
+        private string _emailError = string.Empty;
+
+        [ObservableProperty]
+        private string _phoneNumberError = string.Empty;
+
+        [ObservableProperty]
+        private string _passwordError = string.Empty;
+
+        [ObservableProperty]
+        private string _agreeToTermsError = string.Empty;
+
+        [ObservableProperty]
+        private bool _isRegistrationSuccess;
+
+        [ObservableProperty]
+        private bool _isBusy;
+
         public CreateAccountPageViewModel(
             IBuildSmartApiClient apiClient, 
             IAuthService authService, 
@@ -45,56 +69,142 @@ namespace BuildSmart.SharedUI.ViewModels
             _localizer = localizer;
         }
 
+        private string GetLocalizedText(string key, string bgDefault, string enDefault)
+        {
+            var localized = _localizer[key];
+            if (localized.ResourceNotFound)
+            {
+                var isBg = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", System.StringComparison.OrdinalIgnoreCase);
+                return isBg ? bgDefault : enDefault;
+            }
+            return localized.Value;
+        }
+
+        public bool Validate()
+        {
+            FirstNameError = string.Empty;
+            LastNameError = string.Empty;
+            EmailError = string.Empty;
+            PhoneNumberError = string.Empty;
+            PasswordError = string.Empty;
+            AgreeToTermsError = string.Empty;
+
+            bool isValid = true;
+
+            // Name validation supporting Cyrillic (Bulgarian) and Latin alphabets, spaces, and hyphens
+            var nameRegex = @"^[A-Za-zА-Яа-яЁёІіЇїЄєҐґ\s\-'\u0400-\u04FF]+$";
+
+            if (string.IsNullOrWhiteSpace(FirstName))
+            {
+                FirstNameError = GetLocalizedText("Validation_FirstName_Required", "Името е задължително.", "First name is required.");
+                isValid = false;
+            }
+            else if (FirstName.Trim().Length < 2 || FirstName.Trim().Length > 50)
+            {
+                FirstNameError = GetLocalizedText("Validation_FirstName_Length", "Името трябва да бъде между 2 и 50 знака.", "First name must be between 2 and 50 characters.");
+                isValid = false;
+            }
+            else if (!Regex.IsMatch(FirstName.Trim(), nameRegex))
+            {
+                FirstNameError = GetLocalizedText("Validation_FirstName_Invalid", "Името съдържа невалидни символи.", "First name contains invalid characters.");
+                isValid = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(LastName))
+            {
+                LastNameError = GetLocalizedText("Validation_LastName_Required", "Фамилията е задължителна.", "Last name is required.");
+                isValid = false;
+            }
+            else if (LastName.Trim().Length < 2 || LastName.Trim().Length > 50)
+            {
+                LastNameError = GetLocalizedText("Validation_LastName_Length", "Фамилията трябва да бъде между 2 и 50 знака.", "Last name must be between 2 and 50 characters.");
+                isValid = false;
+            }
+            else if (!Regex.IsMatch(LastName.Trim(), nameRegex))
+            {
+                LastNameError = GetLocalizedText("Validation_LastName_Invalid", "Фамилията съдържа невалидни символи.", "Last name contains invalid characters.");
+                isValid = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                EmailError = GetLocalizedText("Validation_Email_Required", "Имейл адресът е задължителен.", "Email address is required.");
+                isValid = false;
+            }
+            else if (!Regex.IsMatch(Email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                EmailError = GetLocalizedText("Validation_Email_Invalid", "Моля, въведете валиден имейл адрес.", "Please enter a valid email address.");
+                isValid = false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(PhoneNumber))
+            {
+                var normalized = PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+                if (!Regex.IsMatch(normalized, @"^(?:\+359|00359|0)([2-9]\d{7,8}|8[7-9]\d{7}|9[8-9]\d{7})$"))
+                {
+                    PhoneNumberError = GetLocalizedText("Validation_Phone_Invalid", "Моля, въведете валиден български телефонен номер (напр. 0888123456).", "Please enter a valid Bulgarian phone number (e.g. 0888123456).");
+                    isValid = false;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                PasswordError = GetLocalizedText("Validation_Password_Required", "Паролата е задължителна.", "Password is required.");
+                isValid = false;
+            }
+            else if (Password.Length < 6)
+            {
+                PasswordError = GetLocalizedText("Validation_Password_Length", "Паролата трябва да бъде поне 6 знака.", "Password must be at least 6 characters.");
+                isValid = false;
+            }
+
+            if (!AgreeToTerms)
+            {
+                AgreeToTermsError = GetLocalizedText("Validation_AgreeToTerms_Required", "Трябва да се съгласите с условията, за да продължите.", "You must accept the Terms and Conditions to proceed.");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
         [RelayCommand]
         private async Task CreateAccountAsync()
         {
-            if (!AgreeToTerms)
+            if (IsBusy) return;
+
+            if (!Validate())
             {
-                await AppServiceLocator.Alerts.DisplayAlert(
-                    _localizer["Validation_Error"] ?? "Validation Error", 
-                    _localizer["CreateAccount_AgreeToTermsRequired"] ?? "You must accept the Terms and Conditions and Privacy Policy to register.", 
-                    "OK");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName) || string.IsNullOrWhiteSpace(Password))
+            try
             {
-                await AppServiceLocator.Alerts.DisplayAlert("Validation Error", "First name, last name, and password are required.", "OK");
-                return;
-            }
-
-            if (!Regex.IsMatch(Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            {
-                await AppServiceLocator.Alerts.DisplayAlert("Validation Error", "Please enter a valid email address.", "OK");
-                return;
-            }
-
-            string? finalPhone = null;
-            if (!string.IsNullOrWhiteSpace(PhoneNumber))
-            {
-                // Validate Bulgarian phone format (e.g., +359888123456 or 0888123456)
-                if (!Regex.IsMatch(PhoneNumber.Trim(), @"^(\+359|0)\d{9}$"))
+                IsBusy = true;
+                string? finalPhone = null;
+                if (!string.IsNullOrWhiteSpace(PhoneNumber))
                 {
-                    await AppServiceLocator.Alerts.DisplayAlert("Validation Error", "Please enter a valid Bulgarian phone number (e.g., 0888123456 or +359888123456).", "OK");
-                    return;
+                    finalPhone = PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
                 }
-                finalPhone = PhoneNumber.Trim();
-            }
 
-            var result = await _apiClient.RegisterUser.ExecuteAsync(FirstName, LastName, Email, Password, finalPhone);
+                var result = await _apiClient.RegisterUser.ExecuteAsync(FirstName.Trim(), LastName.Trim(), Email.Trim(), Password, finalPhone);
 
-            if (result.Errors.Count == 0)
-            {
-                // Account created successfully. Navigate to email verification screen.
-                await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
+                if (result.Errors.Count == 0)
                 {
-                    await AppServiceLocator.Navigation.NavigateToAsync($"VerifyEmailPage?email={Email}");
-                });
+                    IsRegistrationSuccess = true;
+                }
+                else
+                {
+                    var errorMsg = string.Join("\n", result.Errors.Select(e => e.Message));
+                    await AppServiceLocator.Alerts.DisplayAlert("Registration Failed", errorMsg, "OK");
+                }
             }
-            else
+            catch (System.Exception ex)
             {
-                var errorMsg = string.Join("\n", result.Errors.Select(e => e.Message));
-                await AppServiceLocator.Alerts.DisplayAlert("Registration Failed", errorMsg, "OK");
+                await AppServiceLocator.Alerts.DisplayAlert("Error", $"An unexpected error occurred: {ex.Message}", "OK");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
     }
