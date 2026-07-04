@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using BuildSmart.Core.Application.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,11 +13,13 @@ public class NotificationHub : Hub
 {
     private readonly IActiveProjectChatTracker _tracker;
     private readonly IUserPresenceService _presenceService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public NotificationHub(IActiveProjectChatTracker tracker, IUserPresenceService presenceService)
+    public NotificationHub(IActiveProjectChatTracker tracker, IUserPresenceService presenceService, IServiceProvider serviceProvider)
     {
         _tracker = tracker;
         _presenceService = presenceService;
+        _serviceProvider = serviceProvider;
     }
 
     public override async Task OnConnectedAsync()
@@ -25,6 +28,19 @@ public class NotificationHub : Hub
         var userId = Context.UserIdentifier;
         if (!string.IsNullOrEmpty(userId))
         {
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var user = await unitOfWork.Users.GetByIdAsync(userGuid);
+                if (user != null)
+                {
+                    user.LastSeenAt = DateTime.UtcNow;
+                    unitOfWork.Users.Update(user);
+                    await unitOfWork.SaveChangesAsync();
+                }
+            }
+
             var wasOnline = _presenceService.IsUserOnline(userId);
             _presenceService.UserConnected(Context.ConnectionId, userId);
             if (!wasOnline)
@@ -85,6 +101,19 @@ public class NotificationHub : Hub
         var userId = _presenceService.UserDisconnected(Context.ConnectionId);
         if (!string.IsNullOrEmpty(userId))
         {
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var user = await unitOfWork.Users.GetByIdAsync(userGuid);
+                if (user != null)
+                {
+                    user.LastSeenAt = DateTime.UtcNow;
+                    unitOfWork.Users.Update(user);
+                    await unitOfWork.SaveChangesAsync();
+                }
+            }
+
             var isStillOnline = _presenceService.IsUserOnline(userId);
             if (!isStillOnline)
             {

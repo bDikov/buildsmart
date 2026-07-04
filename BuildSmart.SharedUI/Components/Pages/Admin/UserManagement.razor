@@ -1,10 +1,15 @@
 @page "/user-management"
 @using BuildSmart.SharedUI.ViewModels.Admin
 @using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.Services
 @using Microsoft.AspNetCore.Authorization
+@using System.Collections.Specialized
 @attribute [Authorize(Roles = "Admin, ADMIN, admin")]
 @inject UserManagementViewModel ViewModel
 @inject NavigationManager NavManager
+@inject SignalRService SignalRService
+@inject IBuildSmartApiClient ApiClient
+@implements IDisposable
 
 <div class="admin-container">
     <div class="header-section">
@@ -12,10 +17,23 @@
             <h1 class="page-title">User Management</h1>
             <p class="page-subtitle">Manage system users, roles, and access.</p>
         </div>
-        <button class="bs-btn-secondary" @onclick="() => ViewModel.LoadUsersCommand.ExecuteAsync(null)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-            Refresh
-        </button>
+        <div class="action-group" style="display: flex; gap: 16px; align-items: center;">
+            <div class="filter-wrapper" style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--text-muted); font-size: 14px; font-weight: 500;">Status:</span>
+                <select class="bs-input form-select form-select-sm w-auto" 
+                        style="border-radius: 8px; font-weight: bold; background-color: var(--bg-card-alt); color: var(--text-primary); border: 1px solid var(--border-color); padding: 8px 12px; cursor: pointer;" 
+                        @bind="selectedStatusFilter">
+                    <option value="All">All Statuses</option>
+                    <option value="Online">Online</option>
+                    <option value="RecentlyOnline">Recently Online</option>
+                    <option value="Offline">Offline</option>
+                </select>
+            </div>
+            <button class="bs-btn-secondary" @onclick="() => ViewModel.LoadUsersCommand.ExecuteAsync(null)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                Refresh
+            </button>
+        </div>
     </div>
 
     @if (ViewModel.IsBusy && ViewModel.Users.Count == 0)
@@ -42,11 +60,12 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var user in ViewModel.Users)
+                    @foreach (var user in GetFilteredUsers())
                     {
                         <tr>
                             <td class="font-weight-bold">@user.FirstName @user.LastName</td>
@@ -55,6 +74,28 @@
                                 <span class="role-badge @user.Role.ToString().ToLower()">@user.Role</span>
                             </td>
                             <td>
+                                @{
+                                    var activeStatus = GetUserStatus(user.Id, user.ActiveStatus);
+                                }
+                                <span class="status-badge @activeStatus.ToString().ToLower()">
+                                    <span class="status-dot"></span>
+                                    @GetStatusLabel(user.Id, activeStatus, user.LastSeenAt)
+                                </span>
+                            </td>
+                            <td>
+                                @if (user.Role == UserRoleTypes.Homeowner)
+                                {
+                                    @if (loadingChatUserIds.Contains(user.Id))
+                                    {
+                                        <span class="spinner-border spinner-border-sm text-primary" role="status" style="margin: 0 12px; display: inline-block; vertical-align: middle;"></span>
+                                    }
+                                    else
+                                    {
+                                        <button class="bs-btn-text" style="color: var(--color-primary); margin-right: 8px;" @onclick="() => StartChatAsync(user.Id, user.FirstName, user.LastName)">
+                                            Chat
+                                        </button>
+                                    }
+                                }
                                 <button class="bs-btn-text" @onclick='() => NavManager.NavigateTo($"/user-edit?userId={user.Id}")'>
                                     Edit
                                 </button>
@@ -169,6 +210,48 @@
         color: #4CAF50;
     }
 
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.online {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4CAF50;
+    }
+    .status-badge.online .status-dot {
+        background-color: #4CAF50;
+    }
+
+    .status-badge.recentlyonline {
+        background: rgba(255, 152, 0, 0.15);
+        color: #FF9800;
+    }
+    .status-badge.recentlyonline .status-dot {
+        background-color: #FF9800;
+    }
+
+    .status-badge.offline {
+        background: rgba(158, 158, 158, 0.15);
+        color: #9E9E9E;
+    }
+    .status-badge.offline .status-dot {
+        background-color: #9E9E9E;
+    }
+
     .bs-btn-text {
         background: transparent;
         border: none;
@@ -186,11 +269,201 @@
 </style>
 
 @code {
+    private string selectedStatusFilter = "All";
+    private Dictionary<string, UserActiveStatus> userStatuses = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, DateTimeOffset> localLastSeenTimes = new(StringComparer.OrdinalIgnoreCase);
+
     protected override async Task OnInitializedAsync()
     {
         if (ViewModel.Users.Count == 0)
         {
             await ViewModel.LoadUsersCommand.ExecuteAsync(null);
         }
+
+        InitializeUserStatuses();
+
+        ViewModel.Users.CollectionChanged += OnUsersCollectionChanged;
+        SignalRService.UserPresenceChanged += OnUserPresenceChanged;
+
+        try
+        {
+            await SignalRService.ConnectAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error connecting to SignalR presence: {ex.Message}");
+        }
+    }
+
+    private void OnUsersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            InitializeUserStatuses();
+            StateHasChanged();
+        });
+    }
+
+    private void InitializeUserStatuses()
+    {
+        foreach (var user in ViewModel.Users)
+        {
+            userStatuses[user.Id] = user.ActiveStatus;
+        }
+
+        // Clean up removed keys
+        var currentIds = ViewModel.Users.Select(u => u.Id).ToHashSet();
+        foreach (var key in userStatuses.Keys.ToList())
+        {
+            if (!currentIds.Contains(key))
+            {
+                userStatuses.Remove(key);
+                localLastSeenTimes.Remove(key);
+            }
+        }
+    }
+
+    private void OnUserPresenceChanged(string userId, bool isOnline)
+    {
+        InvokeAsync(async () =>
+        {
+            if (userStatuses.ContainsKey(userId))
+            {
+                userStatuses[userId] = isOnline ? UserActiveStatus.Online : UserActiveStatus.RecentlyOnline;
+                
+                if (!isOnline)
+                {
+                    localLastSeenTimes[userId] = DateTimeOffset.UtcNow;
+                }
+
+                StateHasChanged();
+            }
+            else
+            {
+                // New user connected (registered or logged in) - reload the full user list
+                await ViewModel.LoadUsersCommand.ExecuteAsync(null);
+            }
+        });
+    }
+
+    private UserActiveStatus GetUserStatus(string userId, UserActiveStatus fallbackStatus)
+    {
+        if (userStatuses.TryGetValue(userId, out var status))
+        {
+            return status;
+        }
+        return fallbackStatus;
+    }
+
+    private string GetStatusLabel(string userId, UserActiveStatus status, DateTimeOffset? originalLastSeenAt)
+    {
+        if (status == UserActiveStatus.Online)
+        {
+            return "Online";
+        }
+
+        DateTimeOffset? lastSeen = originalLastSeenAt;
+        if (localLastSeenTimes.TryGetValue(userId, out var localTime))
+        {
+            lastSeen = localTime;
+        }
+
+        if (lastSeen == null)
+        {
+            return "Offline";
+        }
+
+        var timeSince = DateTimeOffset.UtcNow - lastSeen.Value;
+        if (timeSince.TotalSeconds < 60)
+        {
+            return "Just now";
+        }
+        if (timeSince.TotalMinutes < 60)
+        {
+            int minutes = (int)timeSince.TotalMinutes;
+            return $"{minutes} {(minutes == 1 ? "min" : "mins")} ago";
+        }
+        if (timeSince.TotalHours < 24)
+        {
+            int hours = (int)timeSince.TotalHours;
+            return $"{hours} {(hours == 1 ? "hour" : "hours")} ago";
+        }
+        int days = (int)timeSince.TotalDays;
+        return $"{days} {(days == 1 ? "day" : "days")} ago";
+    }
+
+    private IEnumerable<IGetUsers_Users> GetFilteredUsers()
+    {
+        if (selectedStatusFilter == "All")
+        {
+            return ViewModel.Users;
+        }
+
+        return ViewModel.Users.Where(u =>
+        {
+            var status = GetUserStatus(u.Id, u.ActiveStatus);
+            return status.ToString().Equals(selectedStatusFilter, StringComparison.OrdinalIgnoreCase);
+        });
+    }
+
+    private HashSet<string> loadingChatUserIds = new();
+
+    private async Task StartChatAsync(string userId, string firstName, string lastName)
+    {
+        if (loadingChatUserIds.Contains(userId)) return;
+
+        loadingChatUserIds.Add(userId);
+        StateHasChanged();
+
+        try
+        {
+            var userGuid = Guid.Parse(userId);
+            var filter = new ProjectFilterInput
+            {
+                HomeownerId = new UuidOperationFilterInput
+                {
+                    Eq = userGuid
+                }
+            };
+
+            var result = await ApiClient.GetAllProjects.ExecuteAsync(filter, null);
+            if (result.Errors.Count == 0 && result.Data?.AllProjects != null && result.Data.AllProjects.Any())
+            {
+                // Open the first active project's chat
+                var project = result.Data.AllProjects.First();
+                NavManager.NavigateTo($"/project-messages?projectId={project.Id}");
+            }
+            else
+            {
+                // Create a new support project/chat
+                var title = $"Support - {firstName} {lastName}";
+                var description = "Default support chat room.";
+                var createResult = await ApiClient.CreateProject.ExecuteAsync(userGuid, title, description, "en");
+                if (createResult.Errors.Count == 0 && createResult.Data?.CreateProject != null)
+                {
+                    NavManager.NavigateTo($"/project-messages?projectId={createResult.Data.CreateProject.Id}");
+                }
+                else
+                {
+                    var errMsg = createResult.Errors.FirstOrDefault()?.Message ?? "Failed to create support chat.";
+                    await AppServiceLocator.Alerts.DisplayAlert("Error", errMsg, "OK");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            loadingChatUserIds.Remove(userId);
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        ViewModel.Users.CollectionChanged -= OnUsersCollectionChanged;
+        SignalRService.UserPresenceChanged -= OnUserPresenceChanged;
     }
 }

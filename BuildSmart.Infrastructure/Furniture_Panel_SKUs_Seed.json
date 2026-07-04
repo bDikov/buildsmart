@@ -1,0 +1,101 @@
+{
+  "categoryName": "Монтаж на мебели и интериорни панели",
+  "skus": [
+    {
+      "skuCode": "FURN-KITCHEN",
+      "name": "Монтаж на кухня",
+      "description": "Сглобяване и нивелация на кухненски шкафове, монтаж на термоплот и уреди.",
+      "basePrice": 200,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'Кухня'), if(Contains(furn_kitchen_complexity, 'права'), 200.00, 450.00), 0.0)"
+    },
+    {
+      "skuCode": "FURN-CABINET",
+      "name": "Сглобяване на шкаф/чекмедже",
+      "description": "Монтаж на самостоятелни шкафове, чекмеджета и комоди.",
+      "basePrice": 20,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'Шкафове'), furn_cabinet_count, 0.0) * 20.00"
+    },
+    {
+      "skuCode": "FURN-TABLE",
+      "name": "Сглобяване на маса/стол",
+      "description": "Сглобяване на трапезарни или холни маси и столове.",
+      "basePrice": 15,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'Маси'), furn_table_count, 0.0) * 15.00"
+    },
+    {
+      "skuCode": "FURN-WARDROBE",
+      "name": "Сглобяване на легло/гардероб",
+      "description": "Сглобяване на спални легла, гардероби и секции.",
+      "basePrice": 50,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'Легла'), furn_wardrobe_count, 0.0) * 50.00"
+    },
+    {
+      "skuCode": "FURN-DOOR",
+      "name": "Монтаж на интериорна врата",
+      "description": "Монтаж на крило, каса, брава и дръжки.",
+      "basePrice": 60,
+      "unitType": "pcs",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'врати'), furn_doors_count, 0.0) * 60.00"
+    },
+    {
+      "skuCode": "TILE-PANEL-MDF",
+      "name": "Монтаж на MDF панели",
+      "description": "Полагане на MDF/дървена ламперия на стена.",
+      "basePrice": 12.78,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'MDF'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0) * 12.78"
+    },
+    {
+      "skuCode": "TILE-PANEL-PVC",
+      "name": "Монтаж на PVC панели",
+      "description": "Полагане на влагоустойчива PVC ламперия.",
+      "basePrice": 15.34,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'PVC'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0) * 15.34"
+    },
+    {
+      "skuCode": "TILE-PANEL-WPC",
+      "name": "Монтаж на WPC композитни панели",
+      "description": "Полагане на декоративни композитни (WPC) панели.",
+      "basePrice": 15.34,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'WPC'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0) * 15.34"
+    },
+    {
+      "skuCode": "TILE-PANEL-GYPSUM",
+      "name": "Монтаж на 3D гипсови панели",
+      "description": "Лепене и фугиране на декоративни 3D гипсови панели.",
+      "basePrice": 20.45,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'Гипсови'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0) * 20.45"
+    },
+    {
+      "skuCode": "TILE-PANEL-SOFT",
+      "name": "Монтаж на тапицирани панели",
+      "description": "Полагане на меки тапицирани панели за стена.",
+      "basePrice": 17.90,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'Тапицирани'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0) * 17.90"
+    },
+    {
+      "skuCode": "TILE-PANEL-GRID",
+      "name": "Изграждане на подконструкция (скара)",
+      "description": "Изработка на носеща дървена скара за монтаж на панели.",
+      "basePrice": 3.07,
+      "unitType": "sqm",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_mounting, 'конструкция'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0) * 3.07"
+    },
+    {
+      "skuCode": "TILE-PANEL-TRIM",
+      "name": "Монтаж на завършващи лайсни",
+      "description": "Монтаж на завършващи и преходни профили, лайсни или первази.",
+      "basePrice": 2.05,
+      "unitType": "m",
+      "calculationFormula": "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_needs_trims, 'Да'), (panel_wall_width * 2.0) + (if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6) * 2.0), 0.0) * 2.05"
+    }
+  ]
+}

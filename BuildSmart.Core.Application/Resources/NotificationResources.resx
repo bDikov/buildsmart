@@ -114,4 +114,10 @@
   <data name="Error_AiRequestLimitExceeded" xml:space="preserve">
     <value>You have reached your monthly limit of {0} AI scope generation requests. Please contact our support team if you need further assistance or would like to increase your limit.</value>
   </data>
+  <data name="Title_AdminNewOffer" xml:space="preserve">
+    <value>New Offer Generated</value>
+  </data>
+  <data name="Msg_AdminNewOffer" xml:space="preserve">
+    <value>A new offer has been generated for project '{0}'.</value>
+  </data>
 </root>

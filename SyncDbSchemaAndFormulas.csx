@@ -261,6 +261,22 @@ using (var conn = new NpgsqlConnection(connString)) {
             skusToInsert.Add(new SkuDef(demoId, "DEMO-LABOR-STAIRS", "Сваляне на отпадъци по стълби", "Ръчен труд при липса на асансьор (цена на етаж за всеки контейнер).", 10m, "floors", "if(Contains(demo_disposal, 'Да') && Contains(global_logistics, 'Няма асансьор'), Ceiling((if(Contains(demo_what, 'Цяла баня'), global_bathroom_count * 20, 0) + demo_brick_sqm + demo_conc_sqm) / 15 + (demo_floor_sqm / 35)) * global_floor, 0)"));
         }
 
+        // Furniture & Panels
+        if (categories.TryGetValue("Монтаж на мебели и интериорни панели", out var furnId)) {
+            skusToInsert.Add(new SkuDef(furnId, "FURN-KITCHEN", "Монтаж на кухня", "Сглобяване и нивелация на кухненски шкафове, монтаж на термоплот и уреди.", 200m, "pcs", "if(Contains(furn_panel_install_types, 'Кухня'), if(Contains(furn_kitchen_complexity, 'права'), 1.0, 2.25), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "FURN-CABINET", "Сглобяване на шкаф/чекмедже", "Монтаж на самостоятелни шкафове, чекмеджета и комоди.", 20m, "pcs", "if(Contains(furn_panel_install_types, 'Шкафове'), furn_cabinet_count, 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "FURN-TABLE", "Сглобяване на маса/стол", "Сглобяване на трапезарни или холни маси и столове.", 15m, "pcs", "if(Contains(furn_panel_install_types, 'Маси'), furn_table_count, 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "FURN-WARDROBE", "Сглобяване на легло/гардероб", "Сглобяване на спални легла, гардероби и секции.", 50m, "pcs", "if(Contains(furn_panel_install_types, 'Легла'), furn_wardrobe_count, 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "FURN-DOOR", "Монтаж на интериорна врата", "Монтаж на крило, каса, брава и дръжки.", 60m, "pcs", "if(Contains(furn_panel_install_types, 'врати'), furn_doors_count, 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-MDF", "Монтаж на MDF панели", "Полагане на MDF/дървена ламперия на стена.", 12.78m, "sqm", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'MDF'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-PVC", "Монтаж на PVC панели", "Полагане на влагоустойчива PVC ламперия.", 15.34m, "sqm", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'PVC'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-WPC", "Монтаж на WPC композитни панели", "Полагане на декоративни композитни (WPC) панели.", 15.34m, "sqm", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'WPC'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-GYPSUM", "Монтаж на 3D гипсови панели", "Лепене и фугиране на декоративни 3D гипсови панели.", 20.45m, "sqm", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'Гипсови'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-SOFT", "Монтаж на тапицирани панели", "Полагане на меки тапицирани панели за стена.", 17.90m, "sqm", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_type, 'Тапицирани'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-GRID", "Изграждане на подконструкция (скара)", "Изработка на носеща дървена скара за монтаж на панели.", 3.07m, "sqm", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_mounting, 'конструкция'), panel_wall_width * if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6), 0.0)"));
+            skusToInsert.Add(new SkuDef(furnId, "TILE-PANEL-TRIM", "Монтаж на завършващи лайсни", "Монтаж на завършващи и преходни профили, лайсни или первази.", 2.05m, "m", "if(Contains(furn_panel_install_types, 'панели') && Contains(panel_needs_trims, 'Да'), (panel_wall_width * 2.0) + (if(Contains(global_ceiling_height, 'Висока'), 3.0, 2.6) * 2.0), 0.0)"));
+        }
+
         // Sync SKUs
         int processedCount = 0;
         foreach (var sku in skusToInsert) {

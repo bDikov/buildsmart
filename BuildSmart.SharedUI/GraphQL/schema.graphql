@@ -1395,6 +1395,12 @@ enum UserRoleTypes {
   ADMIN
 }
 
+enum UserActiveStatus {
+  OFFLINE
+  RECENTLY_ONLINE
+  ONLINE
+}
+
 scalar UUID
 
 "Represents a specific acceptance criterion for a job task."
@@ -1542,6 +1548,8 @@ type User {
   homeownerProfile: HomeownerProfile
   tradesmanProfile: TradesmanProfile
   isOnline: Boolean!
+  lastSeenAt: DateTime
+  activeStatus: UserActiveStatus!
   isEmailVerified: Boolean!
   emailVerificationToken: String
   emailVerificationTokenExpires: DateTime

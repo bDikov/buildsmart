@@ -26,6 +26,7 @@ public class User : BaseEntity
 
 	public int AiRequestCount { get; set; } = 0;
 	public DateTime? LastAiRequestDate { get; set; }
+	public DateTime? LastSeenAt { get; set; }
 
 	public bool EmailOnOfferReady { get; set; } = true;
 	public bool EmailOnNewChatMessage { get; set; } = false;

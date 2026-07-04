@@ -75,4 +75,61 @@ public class UserPresenceServiceTests
         // Assert
         Assert.Null(result);
     }
+
+    [Fact]
+    public void GetUserActiveStatus_ShouldReturnOnline_WhenUserIsConnected()
+    {
+        // Arrange
+        var service = new UserPresenceService();
+        var userId = Guid.NewGuid().ToString();
+        service.UserConnected("conn-123", userId);
+
+        // Act
+        var status = service.GetUserActiveStatus(userId, DateTime.UtcNow.AddHours(-48));
+
+        // Assert
+        Assert.Equal(BuildSmart.Core.Domain.Enums.UserActiveStatus.Online, status);
+    }
+
+    [Fact]
+    public void GetUserActiveStatus_ShouldReturnRecentlyOnline_WhenUserLastSeenWithin24Hours()
+    {
+        // Arrange
+        var service = new UserPresenceService();
+        var userId = Guid.NewGuid().ToString();
+
+        // Act
+        var status = service.GetUserActiveStatus(userId, DateTime.UtcNow.AddHours(-5));
+
+        // Assert
+        Assert.Equal(BuildSmart.Core.Domain.Enums.UserActiveStatus.RecentlyOnline, status);
+    }
+
+    [Fact]
+    public void GetUserActiveStatus_ShouldReturnOffline_WhenUserLastSeenOlderThan24Hours()
+    {
+        // Arrange
+        var service = new UserPresenceService();
+        var userId = Guid.NewGuid().ToString();
+
+        // Act
+        var status = service.GetUserActiveStatus(userId, DateTime.UtcNow.AddHours(-25));
+
+        // Assert
+        Assert.Equal(BuildSmart.Core.Domain.Enums.UserActiveStatus.Offline, status);
+    }
+
+    [Fact]
+    public void GetUserActiveStatus_ShouldReturnOffline_WhenUserLastSeenIsNull()
+    {
+        // Arrange
+        var service = new UserPresenceService();
+        var userId = Guid.NewGuid().ToString();
+
+        // Act
+        var status = service.GetUserActiveStatus(userId, null);
+
+        // Assert
+        Assert.Equal(BuildSmart.Core.Domain.Enums.UserActiveStatus.Offline, status);
+    }
 }

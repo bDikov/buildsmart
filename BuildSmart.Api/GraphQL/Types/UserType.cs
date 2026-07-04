@@ -38,6 +38,17 @@ public class UserType : ObjectType<User>
 				return presenceService.IsUserOnline(user.Id.ToString());
 			});
 
+		descriptor.Field(u => u.LastSeenAt).Type<DateTimeType>();
+
+		descriptor.Field("activeStatus")
+			.Type<NonNullType<EnumType<BuildSmart.Core.Domain.Enums.UserActiveStatus>>>()
+			.Resolve(ctx =>
+			{
+				var user = ctx.Parent<User>();
+				var presenceService = ctx.Service<IUserPresenceService>();
+				return presenceService.GetUserActiveStatus(user.Id.ToString(), user.LastSeenAt);
+			});
+
 		descriptor.Field("remainingAiRequests")
 			.Type<NonNullType<IntType>>()
 			.Resolve(ctx =>

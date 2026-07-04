@@ -213,7 +213,7 @@ public class JobPostService : IJobPostService
 	public async Task<Project> CreateProjectAsync(Guid homeownerId, string title, string description, string? languageCode = null)
 	{
 		var user = await _unitOfWork.Users.GetByIdAsync(homeownerId);
-		if (user == null || user.HashedPassword == null)
+		if (user == null || (user.HashedPassword == null && (user.Email == null || user.Email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase))))
 		{
 			throw new UnauthorizedAccessException("Guest users cannot create standard projects.");
 		}
@@ -223,7 +223,7 @@ public class JobPostService : IJobPostService
 			HomeownerId = homeownerId,
 			Title = title,
 			Description = description,
-			LanguageCode = languageCode ?? "en",
+			LanguageCode = languageCode ?? "bg",
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};

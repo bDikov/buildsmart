@@ -5,6 +5,8 @@ query GetUsers {
     lastName
     email
     role
+    lastSeenAt
+    activeStatus
     tradesmanProfile {
       id
       skills {

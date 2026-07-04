@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using BuildSmart.Core.Application.Resources;
 using System.Globalization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 
@@ -767,6 +768,22 @@ public class ScopeGenerationWorker
 						projectWithUser.Id,
 						"Project"
 					);
+
+					// Notify all admins
+					var admins = await unitOfWork.Users.GetQueryable()
+						.Where(u => u.Role == UserRoleTypes.Admin)
+						.ToListAsync();
+					foreach (var admin in admins)
+					{
+						await notificationService.SendLocalizedNotificationAsync(
+							admin.Id,
+							"Title_AdminNewOffer",
+							"Msg_AdminNewOffer",
+							new object[] { projectWithUser.Title },
+							projectWithUser.Id,
+							"Project"
+						);
+					}
 				}
 
 				// Enqueue the fire-and-forget email sender Hangfire job!

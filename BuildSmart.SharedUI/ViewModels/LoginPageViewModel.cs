@@ -80,10 +80,18 @@ namespace BuildSmart.SharedUI.ViewModels
 						var navManager = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.NavigationManager)) as Microsoft.AspNetCore.Components.NavigationManager;
 						if (navManager != null)
 						{
-							var uri = navManager.ToAbsoluteUri(navManager.Uri);
-							if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+							try
 							{
-								destination = returnUrlValues.FirstOrDefault() ?? "/";
+								var uri = navManager.ToAbsoluteUri(navManager.Uri);
+								if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+								{
+									destination = returnUrlValues.FirstOrDefault() ?? "/";
+								}
+							}
+							catch (InvalidOperationException)
+							{
+								// NavigationManager is not initialized yet because login is triggered from a native MAUI page
+								destination = "/";
 							}
 						}
 

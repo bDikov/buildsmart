@@ -114,4 +114,10 @@
   <data name="Error_AiRequestLimitExceeded" xml:space="preserve">
     <value>Достигнахте месечния си лимит от {0} заявки за генериране на AI оферти. Моля, свържете се с екипа ни за поддръжка, ако имате нужда от съдействие или желаете да увеличите лимита си.</value>
   </data>
+  <data name="Title_AdminNewOffer" xml:space="preserve">
+    <value>Генерирана е нова оферта</value>
+  </data>
+  <data name="Msg_AdminNewOffer" xml:space="preserve">
+    <value>Генерирана е нова оферта за проект '{0}'.</value>
+  </data>
 </root>

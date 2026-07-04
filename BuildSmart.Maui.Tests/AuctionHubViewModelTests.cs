@@ -29,7 +29,9 @@ public class AuctionHubViewModelTests
             authServiceMock.Object,
             mockNav.Object,
             mockAlert.Object,
-            mockMainThread.Object);
+            mockMainThread.Object,
+            null,
+            null);
         _viewModel = new AuctionHubViewModel(_mockApiClient.Object, _mockSignalRService.Object);
     }
 

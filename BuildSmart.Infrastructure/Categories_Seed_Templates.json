@@ -830,6 +830,162 @@
       ]
     }
   },
+  "furniture_panel_category": {
+    "name": "Монтаж на мебели и интериорни панели",
+    "translations": {
+      "bg": "Монтаж на мебели и панели",
+      "en": "Furniture and Panel Installation"
+    },
+    "templateStructure": {
+      "questions": [
+        {
+          "id": "furn_panel_install_types",
+          "text": {
+            "bg": "Какво желаете да монтираме?",
+            "en": "What would you like us to install?"
+          },
+          "type": "multiselect",
+          "required": true,
+          "options": {
+            "bg": [
+              "Декоративни интериорни панели",
+              "Кухня",
+              "Шкафове и чекмеджета",
+              "Маси и столове",
+              "Легла и гардероби",
+              "Интериорни врати"
+            ],
+            "en": [
+              "Decorative interior panels",
+              "Kitchen",
+              "Cabinets and drawers",
+              "Tables and chairs",
+              "Beds and wardrobes",
+              "Interior doors"
+            ]
+          }
+        },
+        {
+          "id": "panel_type",
+          "text": {
+            "bg": "Какъв тип панели ще се монтират?",
+            "en": "What type of panels will be installed?"
+          },
+          "type": "choice",
+          "required": true,
+          "options": [
+            "MDF / Дървена ламперия",
+            "PVC ламперия",
+            "WPC (композитни) панели",
+            "3D Гипсови панели",
+            "Тапицирани (меки) панели"
+          ],
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Декоративни интериорни панели"
+        },
+        {
+          "id": "panel_wall_width",
+          "text": {
+            "bg": "Каква е общата ширина на стената/стените в метри? (например: 3.5)",
+            "en": "What is the total width of the wall(s) in meters? (e.g. 3.5)"
+          },
+          "type": "number",
+          "required": true,
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Декоративни интериорни панели"
+        },
+        {
+          "id": "panel_mounting",
+          "text": {
+            "bg": "Какъв е начинът на монтаж на панелите?",
+            "en": "What is the mounting method for the panels?"
+          },
+          "type": "choice",
+          "required": true,
+          "options": [
+            "Директно лепене към стената",
+            "Монтаж върху конструкция (скара)"
+          ],
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Декоративни интериорни панели"
+        },
+        {
+          "id": "panel_needs_trims",
+          "text": {
+            "bg": "Имате ли нужда от завършващи лайсни за краищата на панелите?",
+            "en": "Do you need finishing trims for the edges of the panels?"
+          },
+          "type": "choice",
+          "required": true,
+          "options": [
+            "Да, за всички краища (странични и хоризонтални)",
+            "Не са необходими завършващи лайсни"
+          ],
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Декоративни интериорни панели"
+        },
+        {
+          "id": "furn_kitchen_complexity",
+          "text": {
+            "bg": "Каква е сложността на кухненския монтаж?",
+            "en": "What is the complexity of the kitchen installation?"
+          },
+          "type": "choice",
+          "required": true,
+          "options": [
+            "Стандартна права кухня (до 3 линейни метра)",
+            "Г-образна / П-образна кухня с уреди за вграждане"
+          ],
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Кухня"
+        },
+        {
+          "id": "furn_cabinet_count",
+          "text": {
+            "bg": "Колко броя самостоятелни шкафове/чекмеджета ще се монтират?",
+            "en": "How many standalone cabinets/drawers will be installed?"
+          },
+          "type": "number",
+          "required": true,
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Шкафове и чекмеджета"
+        },
+        {
+          "id": "furn_table_count",
+          "text": {
+            "bg": "Колко броя маси/столове ще се сглобяват?",
+            "en": "How many tables/chairs will be assembled?"
+          },
+          "type": "number",
+          "required": true,
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Маси и столове"
+        },
+        {
+          "id": "furn_wardrobe_count",
+          "text": {
+            "bg": "Колко броя легла/гардероби ще се сглобяват?",
+            "en": "How many beds/wardrobes will be assembled?"
+          },
+          "type": "number",
+          "required": true,
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Легла и гардероби"
+        },
+        {
+          "id": "furn_doors_count",
+          "text": {
+            "bg": "Колко броя интериорни врати ще се монтират?",
+            "en": "How many interior doors will be installed?"
+          },
+          "type": "number",
+          "required": true,
+          "dependsOn": "furn_panel_install_types",
+          "dependsOnValue": "Интериорни врати"
+        }
+      ]
+    }
+  },
   "user_category": {
     "name": "User Information",
     "translations": {
