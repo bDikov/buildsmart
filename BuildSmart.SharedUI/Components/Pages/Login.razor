@@ -6,6 +6,7 @@
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 @inject IServiceProvider ServiceProvider
+@inject IJSRuntime JSRuntime
 
 <div class="login-container">
     <div class="login-card bs-card">
@@ -304,6 +305,25 @@
             {
                 // Save the token securely
                 await AuthService.SaveTokenAsync(actualToken);
+
+                // Identify the user in PostHog
+                try
+                {
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(actualToken);
+                    var userId = jwtToken.Claims.FirstOrDefault(c => 
+                        c.Type == "sub" || 
+                        c.Type == "id" || 
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Login] Failed to identify user in PostHog: {ex.Message}");
+                }
 
                 // Notify the application that the user is now logged in
                 var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;

@@ -835,6 +835,18 @@
                 }
             }
 
+            if (!string.IsNullOrEmpty(ApiConfig.PostHogApiKey))
+            {
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("initializePostHog", ApiConfig.PostHogApiKey, ApiConfig.PostHogApiHost);
+                }
+                catch (Exception)
+                {
+                    // Prevent errors in testing or pre-rendering from breaking execution
+                }
+            }
+
             // Load preferred language from localStorage first to apply it instantly
             try
             {

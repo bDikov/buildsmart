@@ -62,4 +62,9 @@
 - **Avoid Custom Package Mirrors**: Do not replace standard package manager mirrors (like replacing `deb.debian.org` with `mirrors.cloudflare.com` inside Dockerfiles) because they can fail to resolve under specific VPS network configurations, causing builds to fail.
 - **Post-Deploy Asset Verifications**: When verifying deployments, always check that the live site (e.g., `https://buildsmart.bg`) is serving the new asset version suffixes (e.g., `v=1.2`) to confirm that the fresh build is live.
 
-
+## 11. Marketing and Advertisement (PostHog Tracking)
+- **Automatic UTM Tracking**: PostHog automatically captures UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`) from the URL query string on initialization. Do not write custom parser logic to extract these parameters; they are native out-of-the-box.
+- **Dynamic Event Instrumentation**: When implementing new advertising/landing pages or promo features, use `JSRuntime.InvokeVoidAsync("posthog.capture", "event_name", properties)` to log key conversion interactions (e.g. clicking a promo CTA).
+- **Safety Wrappers (Try/Catch)**: All client-side analytics calls must be wrapped in `try/catch` blocks. This ensures that if PostHog fails to load, is blocked by adblockers, or is not configured (empty `ApiKey`), the application continues working without throwing JavaScript interop exceptions.
+- **Campaign Custom Funnels**: Pre-defined funnel events (`wizard_started`, `wizard_step_completed`, `ai_estimate_generated`) can be queried directly in the PostHog Cloud dashboard to build ad-to-conversion analytics reports.
+- **Landing Page Layouts**: If creating custom blank/ad landing pages that bypass the default `MainLayout.razor`, make sure to manually call `initializePostHog` during the page's `OnAfterRenderAsync` to ensure tracking script activation.

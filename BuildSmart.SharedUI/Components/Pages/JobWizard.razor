@@ -298,7 +298,7 @@
                                 </div>
 
                                 <div class="d-flex flex-column gap-3 mt-4">
-                                    <button class="bs-btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.SubmitProjectCommand.Execute(null)">
+                                    <button class="bs-btn-primary w-100 fw-bold" disabled="@ViewModel.IsBusy" @onclick="HandleSubmitProject">
                                         @Loc["JobWizard_PostProject"]
                                     </button>
                                     
@@ -344,6 +344,17 @@
         {
             NavManager.NavigateTo("/my-projects");
         }
+    }
+
+    private async Task HandleSubmitProject()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("posthog.capture", "ai_estimate_generated");
+        }
+        catch { }
+
+        await ViewModel.SubmitProject();
     }
 
     [SupplyParameterFromQuery] public Guid? ProjectId { get; set; }
@@ -403,6 +414,12 @@
             {
                 Console.WriteLine($"Error loading JS: {ex.Message}");
             }
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("posthog.capture", "wizard_started");
+            }
+            catch { }
 
             // Give the UI a moment to settle, then wiggle the first card
             _wiggleCts = new CancellationTokenSource();
@@ -595,6 +612,16 @@
             if (ViewModel.CurrentStepNumber > _previousStepNumber)
             {
                 _transitionClass = "slide-enter-right";
+                try
+                {
+                    var completedStepIdx = _previousStepNumber - 1;
+                    if (ViewModel.WizardSteps != null && completedStepIdx >= 0 && completedStepIdx < ViewModel.WizardSteps.Count)
+                    {
+                        var step = ViewModel.WizardSteps[completedStepIdx];
+                        await JSRuntime.InvokeVoidAsync("posthog.capture", "wizard_step_completed", new { stepIndex = completedStepIdx, stepName = step.Title ?? step.Type.ToString() });
+                    }
+                }
+                catch { }
             }
             else if (ViewModel.CurrentStepNumber < _previousStepNumber)
             {
