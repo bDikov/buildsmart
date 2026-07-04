@@ -14,11 +14,26 @@ public class AuthService : IAuthService
 {
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IConfiguration _configuration;
+	private readonly IEmailService _emailService;
 
-	public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
+	public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration, IEmailService emailService)
 	{
 		_unitOfWork = unitOfWork;
 		_configuration = configuration;
+		_emailService = emailService;
+	}
+
+	private bool IsValidBulgarianPhoneNumber(string? phoneNumber)
+	{
+		if (string.IsNullOrWhiteSpace(phoneNumber))
+			return false;
+
+		// Normalize by removing spaces, dashes, and parentheses
+		var normalized = phoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+
+		// Check Bulgarian format using regex (supporting landlines and mobile, starting with +359, 00359, or 0)
+		var regex = new System.Text.RegularExpressions.Regex(@"^(?:\+359|00359|0)([2-9]\d{7,8}|8[7-9]\d{7}|9[8-9]\d{7})$");
+		return regex.IsMatch(normalized);
 	}
 
 	public async Task<User> RegisterUserAsync(string firstName, string lastName, string email, string password, string? phoneNumber = null)
@@ -27,6 +42,11 @@ public class AuthService : IAuthService
 		if (string.IsNullOrWhiteSpace(password))
 		{
 			throw new Exception("Password is required for standard registration.");
+		}
+
+		if (!string.IsNullOrWhiteSpace(phoneNumber) && !IsValidBulgarianPhoneNumber(phoneNumber))
+		{
+			throw new Exception("Please enter a valid Bulgarian phone number.");
 		}
 
 		// 2. Check if user exists
@@ -39,8 +59,8 @@ public class AuthService : IAuthService
 		// 3. Hash password
 		var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
-		// 4. Generate verification token
-		var verificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+		// 4. Generate 6-digit verification code
+		var verificationToken = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
 
 		// 5. Create user
 		var user = new User
@@ -53,7 +73,7 @@ public class AuthService : IAuthService
 			Role = UserRoleTypes.Homeowner, // Default role
 			IsEmailVerified = false,
 			EmailVerificationToken = verificationToken,
-			EmailVerificationTokenExpires = DateTime.UtcNow.AddDays(1)
+			EmailVerificationTokenExpires = DateTime.UtcNow.AddMinutes(30) // Expire in 30 minutes
 		};
 
 		// Create default Homeowner profile
@@ -65,18 +85,47 @@ public class AuthService : IAuthService
 
 		// 5. Add user to repository
 		await _unitOfWork.Users.AddAsync(user);
-		// await _unitOfWork.HomeownerProfiles.AddAsync(user.HomeownerProfile); // EF Core cascades this usually, but explicit is safer if not configured
 		await _unitOfWork.SaveChangesAsync();
 
-		// 6. Send verification email (simulation)
-		Console.WriteLine($"Verification email sent to {email}. Token: {verificationToken}");
-		Console.WriteLine($"Verification URL: https://localhost:44378/api/auth/verify-email?token={verificationToken}");
+		// 6. Send verification email
+		var emailSubject = "Confirm your BuildSmart Account";
+		var emailBody = $@"
+			<html>
+			<body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+				<h2>Welcome to BuildSmart!</h2>
+				<p>Thank you for registering. Please use the following 6-digit verification code to confirm your email address and activate your account:</p>
+				<div style='font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; color: #1E3A8A;'>
+					{verificationToken}
+				</div>
+				<p>This code will expire in 30 minutes.</p>
+				<p>If you did not create this account, please ignore this email.</p>
+				<br/>
+				<p>Best regards,<br/>The BuildSmart Team</p>
+			</body>
+			</html>";
+
+		try
+		{
+			await _emailService.SendGenericEmailAsync(email, emailSubject, emailBody);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Failed to send verification email to {email}: {ex.Message}");
+		}
+
+		// Console Logging for local debug convenience
+		Console.WriteLine($"Verification email sent to {email}. Code: {verificationToken}");
 
 		return user;
 	}
 
 	public async Task<User> UpdateUserProfileAsync(Guid userId, string firstName, string lastName, string? bio, string? location, string? profilePictureUrl, string? phoneNumber, string? email)
 	{
+		if (!string.IsNullOrWhiteSpace(phoneNumber) && !IsValidBulgarianPhoneNumber(phoneNumber))
+		{
+			throw new Exception("Please enter a valid Bulgarian phone number.");
+		}
+
 		var user = await _unitOfWork.Users.GetByIdAsync(userId);
 		if (user == null)
 		{
@@ -154,11 +203,11 @@ public class AuthService : IAuthService
 		return user;
 	}
 
-	public async Task<bool> VerifyEmailAsync(string token)
+	public async Task<bool> VerifyEmailAsync(string email, string code)
 	{
-		var user = await _unitOfWork.Users.GetByVerificationTokenAsync(token);
+		var user = await _unitOfWork.Users.GetByEmailAsync(email);
 
-		if (user == null || user.EmailVerificationTokenExpires < DateTime.UtcNow)
+		if (user == null || user.EmailVerificationToken != code || user.EmailVerificationTokenExpires < DateTime.UtcNow)
 		{
 			return false;
 		}
@@ -169,6 +218,59 @@ public class AuthService : IAuthService
 
 		_unitOfWork.Users.Update(user);
 		await _unitOfWork.SaveChangesAsync();
+
+		return true;
+	}
+
+	public async Task<bool> ResendVerificationCodeAsync(string email)
+	{
+		var user = await _unitOfWork.Users.GetByEmailAsync(email);
+		if (user == null)
+		{
+			throw new Exception("User not found.");
+		}
+
+		if (user.IsEmailVerified)
+		{
+			throw new Exception("Email is already verified.");
+		}
+
+		// Generate new 6-digit verification code
+		var verificationCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+
+		user.EmailVerificationToken = verificationCode;
+		user.EmailVerificationTokenExpires = DateTime.UtcNow.AddMinutes(30);
+
+		_unitOfWork.Users.Update(user);
+		await _unitOfWork.SaveChangesAsync();
+
+		// Send email
+		var emailSubject = "Confirm your BuildSmart Account";
+		var emailBody = $@"
+			<html>
+			<body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+				<h2>Welcome to BuildSmart!</h2>
+				<p>Please use the following 6-digit verification code to confirm your email address and activate your account:</p>
+				<div style='font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; color: #1E3A8A;'>
+					{verificationCode}
+				</div>
+				<p>This code will expire in 30 minutes.</p>
+				<br/>
+				<p>Best regards,<br/>The BuildSmart Team</p>
+			</body>
+			</html>";
+
+		try
+		{
+			await _emailService.SendGenericEmailAsync(email, emailSubject, emailBody);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Failed to send verification email to {email}: {ex.Message}");
+		}
+
+		// Console Logging for local debug convenience
+		Console.WriteLine($"Verification email resent to {email}. Code: {verificationCode}");
 
 		return true;
 	}

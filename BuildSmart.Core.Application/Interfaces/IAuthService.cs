@@ -7,6 +7,7 @@ public interface IAuthService
     Task<User> RegisterUserAsync(string firstName, string lastName, string email, string password, string? phoneNumber = null);
     Task<User> UpdateUserProfileAsync(Guid userId, string firstName, string lastName, string? bio, string? location, string? profilePictureUrl, string? phoneNumber, string? email);
     Task<User> UpdateUserRoleAndCategoriesAsync(Guid userId, BuildSmart.Core.Domain.Enums.UserRoleTypes newRole, List<Guid>? serviceCategoryIds);
-    Task<bool> VerifyEmailAsync(string token);
+    Task<bool> VerifyEmailAsync(string email, string code);
+    Task<bool> ResendVerificationCodeAsync(string email);
     Task<string> GenerateJwtTokenForExternalLogin(string email, string name, string? profilePictureUrl = null);
 }

@@ -242,6 +242,16 @@ public partial class UserProfileViewModel : ObservableObject
     {
         if (IsBusy) return;
 
+        if (!string.IsNullOrWhiteSpace(PhoneNumber))
+        {
+            var normalized = PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(normalized, @"^(?:\+359|00359|0)([2-9]\d{7,8}|8[7-9]\d{7}|9[8-9]\d{7})$"))
+            {
+                await AppServiceLocator.Alerts.DisplayAlert("Validation Error", "Please enter a valid Bulgarian phone number (e.g., 0888123456 or +359888123456).", "OK");
+                return;
+            }
+        }
+
         try
         {
             IsBusy = true;

@@ -85,39 +85,11 @@ namespace BuildSmart.SharedUI.ViewModels
 
             if (result.Errors.Count == 0)
             {
-                // Account created successfully. Automatically log in instead of redirecting to login.
-                try
+                // Account created successfully. Navigate to email verification screen.
+                await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    await _authService.ClearTokenAsync();
-                    
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-                    var loginResult = await _apiClient.Login.ExecuteAsync(Email, Password, cts.Token);
-
-                    if (loginResult.Errors.Count == 0 && !string.IsNullOrEmpty(loginResult.Data?.Login))
-                    {
-                        var token = loginResult.Data.Login;
-                        await _authService.SaveTokenAsync(token);
-
-                        // Notify Blazor that the user is now authenticated
-                        var authStateProvider = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
-                        authStateProvider?.NotifyAuthenticationStateChanged();
-
-                        await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
-                        {
-                            await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
-                        });
-                    }
-                    else
-                    {
-                        // Fallback if auto-login fails
-                        await AppServiceLocator.Navigation.NavigateToAsync("//LoginPage");
-                    }
-                }
-                catch
-                {
-                    // Fallback to login page on any exception during auto-login
-                    await AppServiceLocator.Navigation.NavigateToAsync("//LoginPage");
-                }
+                    await AppServiceLocator.Navigation.NavigateToAsync($"VerifyEmailPage?email={Email}");
+                });
             }
             else
             {

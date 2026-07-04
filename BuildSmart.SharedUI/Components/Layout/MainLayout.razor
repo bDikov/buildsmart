@@ -741,6 +741,12 @@
         NavManager.LocationChanged += OnLocationChanged;
 
         NavigationRegistry.CurrentManager = NavManager;
+        if (!string.IsNullOrEmpty(NavigationRegistry.PendingRoute))
+        {
+            var pending = NavigationRegistry.PendingRoute;
+            NavigationRegistry.PendingRoute = null;
+            NavManager.NavigateTo(pending);
+        }
         NavigationRegistry.GoBackAction = async () =>
         {
             await JSRuntime.InvokeVoidAsync("window.history.back");

@@ -8,6 +8,7 @@ public interface IBlazorNavigationRegistry
 {
     NavigationManager? CurrentManager { get; set; }
     Func<Task>? GoBackAction { get; set; }
+    string? PendingRoute { get; set; }
     Task GoBackAsync();
 }
 
@@ -15,6 +16,7 @@ public class BlazorNavigationRegistry : IBlazorNavigationRegistry
 {
     public NavigationManager? CurrentManager { get; set; }
     public Func<Task>? GoBackAction { get; set; }
+    public string? PendingRoute { get; set; }
 
     public async Task GoBackAsync()
     {

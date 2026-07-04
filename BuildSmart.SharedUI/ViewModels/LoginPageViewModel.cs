@@ -38,9 +38,28 @@ namespace BuildSmart.SharedUI.ViewModels
 
 				if (result.Errors.Count > 0)
 				{
-					var errorMessage = result.Errors.FirstOrDefault()?.Message ?? "Unknown GraphQL error.";
-					await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(() =>
-						AppServiceLocator.Alerts.DisplayAlert("Login Failed", errorMessage, "OK"));
+					var error = result.Errors.FirstOrDefault();
+					var errorMessage = error?.Message ?? "Unknown GraphQL error.";
+					var errorCode = error?.Code;
+
+					await AppServiceLocator.MainThread.InvokeOnMainThreadAsync(async () =>
+					{
+						if (errorCode == "AUTH_EMAIL_NOT_VERIFIED" || errorMessage.Contains("verify", StringComparison.OrdinalIgnoreCase))
+						{
+							bool verifyNow = await AppServiceLocator.Alerts.DisplayAlert(
+								"Email Not Verified",
+								"Your email is not verified. Would you like to verify it now?",
+								"Yes", "No");
+							if (verifyNow)
+							{
+								await AppServiceLocator.Navigation.NavigateToAsync($"VerifyEmailPage?email={Email}");
+							}
+						}
+						else
+						{
+							await AppServiceLocator.Alerts.DisplayAlert("Login Failed", errorMessage, "OK");
+						}
+					});
 					return;
 				}
 

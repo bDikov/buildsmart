@@ -19,6 +19,12 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.RegisterUser(default!, default!, default!, default!, default!, default!))
             .Description("Creates a new user in the system."); // No authorization
 
+        descriptor.Field(m => m.VerifyEmail(default!, default!, default!))
+            .Description("Verifies a user's email using a 6-digit code.");
+
+        descriptor.Field(m => m.ResendVerificationCode(default!, default!))
+            .Description("Resends the 6-digit email verification code.");
+
         descriptor.Field(m => m.SubmitReview(default!, default!, default!, default!, default!))
             .Description("Submits a review and updates the tradesman's average rating.")
             .Authorize(roles: new[] { "Homeowner" }); // Only Homeowner

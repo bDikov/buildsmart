@@ -209,6 +209,11 @@ public class Mutation
 			throw new GraphQLException(new Error("Invalid credentials", "AUTH_INVALID_CREDENTIALS"));
 		}
 
+		if (!user.IsEmailVerified)
+		{
+			throw new GraphQLException(new Error("Please verify your email address before logging in.", "AUTH_EMAIL_NOT_VERIFIED"));
+		}
+
 		var issuer = configuration["Jwt:Issuer"];
 		var audience = configuration["Jwt:Audience"];
 		var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]!);
@@ -230,6 +235,21 @@ public class Mutation
 		var tokenHandler = new JwtSecurityTokenHandler();
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		return tokenHandler.WriteToken(token);
+	}
+
+	public async Task<bool> VerifyEmail(
+		string email,
+		string code,
+		[Service] IAuthService authService)
+	{
+		return await authService.VerifyEmailAsync(email, code);
+	}
+
+	public async Task<bool> ResendVerificationCode(
+		string email,
+		[Service] IAuthService authService)
+	{
+		return await authService.ResendVerificationCodeAsync(email);
 	}
 
 	public async Task<User> RegisterUser(

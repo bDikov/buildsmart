@@ -122,6 +122,7 @@ builder.Services.AddHttpClient<IQuestionManagementApiClient, QuestionManagementA
 builder.Services.AddTransient<LoginPageViewModel>();
 builder.Services.AddTransient<DetailedViewPageViewModel>();
 builder.Services.AddTransient<CreateAccountPageViewModel>();
+builder.Services.AddTransient<VerifyEmailPageViewModel>();
 builder.Services.AddScoped<FeedPageViewModel>();
 builder.Services.AddTransient<TradesmanDetailsViewModel>();
 builder.Services.AddTransient<BookingPageViewModel>();

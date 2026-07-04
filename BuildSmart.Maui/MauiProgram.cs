@@ -129,6 +129,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<DetailedViewPageViewModel>();
 		builder.Services.AddTransient<CreateAccountPage>();
 		builder.Services.AddTransient<CreateAccountPageViewModel>();
+		builder.Services.AddTransient<VerifyEmailPageViewModel>();
 
 		builder.Services.AddTransient<FeedPage>();
 		builder.Services.AddScoped<FeedPageViewModel>();

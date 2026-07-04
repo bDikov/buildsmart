@@ -1,0 +1,244 @@
+@page "/verify-email"
+@using BuildSmart.SharedUI.ViewModels
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@inject VerifyEmailPageViewModel ViewModel
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+
+<div class="verify-container">
+    <div class="verify-card bs-card">
+        
+        <div class="logo-block">
+            <div class="logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+            <span class="logo-text">BuildSmart</span>
+        </div>
+
+        <h2 class="verify-title">@GetText("VerifyEmail_Title", "Потвърждаване на имейл", "Verify Your Email")</h2>
+        <p class="verify-subtitle">@GetText("VerifyEmail_Instructions", "Въведете 6-цифрения код, изпратен на Вашия имейл адрес, за да активирате акаунта си.", "Enter the 6-digit code sent to your email to verify and activate your account.")</p>
+
+        <form @onsubmit="HandleSubmit" class="verify-form">
+            <div class="form-group">
+                <label for="email" class="form-label">@GetText("VerifyEmail_Email", "Имейл адрес", "Email Address")</label>
+                <input type="email" class="bs-input verify-input" id="email" @bind="ViewModel.Email" placeholder="e.g. user@example.com" />
+            </div>
+
+            <div class="form-group">
+                <label for="code" class="form-label">@GetText("VerifyEmail_Code", "6-цифрен код", "6-Digit Code")</label>
+                <input type="text" class="bs-input verify-input code-input" id="code" maxlength="6" placeholder="123456" @bind="ViewModel.Code" />
+            </div>
+
+            <button class="bs-btn-primary verify-btn w-100" type="submit" disabled="@ViewModel.IsBusy">
+                @if (ViewModel.IsBusy)
+                {
+                    <span>@GetText("VerifyEmail_Verifying", "Потвърждаване...", "Verifying...")</span>
+                }
+                else
+                {
+                    <span>@GetText("VerifyEmail_VerifyButton", "Потвърди акаунт", "Verify Account")</span>
+                }
+            </button>
+            
+            <div class="actions-group">
+                <button type="button" class="btn-link resend-btn" @onclick="HandleResend" disabled="@ViewModel.IsBusy">
+                    @GetText("VerifyEmail_ResendCode", "Изпрати нов код", "Resend Code")
+                </button>
+                <span class="divider">|</span>
+                <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault class="btn-link">@GetText("VerifyEmail_BackToLogin", "Вход", "Log In")</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<style>
+    .verify-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100dvh;
+        background-color: var(--bg-page);
+        font-family: var(--font-primary);
+        margin: 0;
+        padding: 0;
+    }
+
+    .verify-card {
+        width: 100%;
+        max-width: 450px;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        box-sizing: border-box;
+    }
+
+    .verify-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .logo-block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 5px;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background-color: var(--text-primary);
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--bg-card);
+    }
+
+    .logo-text {
+        font-family: var(--font-heading);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .verify-title {
+        color: var(--text-primary);
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+        font-family: var(--font-heading);
+    }
+
+    .verify-subtitle {
+        color: var(--text-muted, #6B7280);
+        font-size: 15px;
+        text-align: center;
+        margin: 0 0 10px 0;
+        line-height: 1.5;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-label {
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .verify-input {
+        height: 52px;
+        padding: 0 15px;
+    }
+
+    .code-input {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 8px;
+    }
+
+    .verify-btn {
+        height: 56px;
+        font-weight: 600;
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+    .actions-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 10px;
+    }
+
+    .btn-link {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .resend-btn:disabled {
+        color: var(--text-muted, #9CA3AF);
+        cursor: not-allowed;
+        text-decoration: none;
+    }
+
+    .divider {
+        color: var(--border-color, #E5E7EB);
+    }
+
+    @@media (max-width: 480px) {
+        .verify-container {
+            align-items: flex-start;
+        }
+        .verify-card {
+            min-height: 100dvh;
+            padding: 20px 20px 40px 20px;
+            justify-content: flex-start;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            margin: 0;
+            max-width: 100%;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(Email))
+        {
+            ViewModel.Email = Email;
+        }
+    }
+
+    private string GetText(string key, string bgDefault, string enDefault)
+    {
+        var local = Loc[key];
+        if (local.ResourceNotFound)
+        {
+            var isBg = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase);
+            return isBg ? bgDefault : enDefault;
+        }
+        return local.Value;
+    }
+
+    private async Task HandleSubmit()
+    {
+        await ViewModel.VerifyEmailCommand.ExecuteAsync(null);
+    }
+
+    private async Task HandleResend()
+    {
+        await ViewModel.ResendCodeCommand.ExecuteAsync(null);
+    }
+}
