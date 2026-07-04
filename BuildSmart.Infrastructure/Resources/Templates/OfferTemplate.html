@@ -95,8 +95,18 @@
                 margin-top: auto; /* Pushes footer to bottom in flex containers */
                 width: 100%;
             }
-            .page-break { page-break-after: always; }
-            .no-break { page-break-inside: avoid; }
+            .page-break {
+                break-after: page;
+                page-break-after: always;
+            }
+            .page-break-before {
+                break-before: page;
+                page-break-before: always;
+            }
+            .no-break {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -210,7 +220,7 @@
     </div>
 
     <!-- PAGE 4: TERMS & CONDITIONS -->
-    <div class="{{TermsClass}}">
+    <div class="{{TermsClass}} page-break-before">
         <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_TC}}</h2>
         
         <div class="mb-auto">
