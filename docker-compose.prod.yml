@@ -62,6 +62,8 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       # Inform the Web UI where the GraphQL endpoint lives, using the Caddy domain
       - ApiConfig__BaseUrlOverride=https://${DOMAIN_WEB:-app.buildsmart.localhost}
+      - PostHog__ApiKey=${POSTHOG_API_KEY}
+      - PostHog__ApiHost=${POSTHOG_API_HOST:-https://us.i.posthog.com}
     depends_on:
       - api
 

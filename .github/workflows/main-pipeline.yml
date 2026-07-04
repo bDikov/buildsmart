@@ -143,6 +143,8 @@ jobs:
             echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
             echo "SMTP_SENDER_EMAIL=${{ secrets.SMTP_SENDER_EMAIL }}" >> .env
             echo "SMTP_SENDER_NAME=${{ secrets.SMTP_SENDER_NAME }}" >> .env
+            echo "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
+            echo "POSTHOG_API_HOST=${{ secrets.POSTHOG_API_HOST }}" >> .env
             
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build
