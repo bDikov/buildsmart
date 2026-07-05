@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /feed
+Allow: /faq
+Allow: /terms
+Allow: /privacy
+Allow: /request-consultation
+
+# Disallow internal pages requiring authentication
+Disallow: /admin/
+Disallow: /admin-job-review
+Disallow: /project-detail
+Disallow: /project-messages
+Disallow: /scope-review
+Disallow: /user-profile
+Disallow: /notifications
+Disallow: /active-jobs
+Disallow: /auction-hub
+
+Sitemap: https://buildsmart.bg/sitemap.xml

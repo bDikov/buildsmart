@@ -109,7 +109,7 @@
                                                 <p class="bs-hero-subtitle mb-4">@Loc["Feed_FaqSectionSubtitle"]</p>
                                                 
                                                 <div class="bs-reels-faq-benefits d-flex flex-column gap-3">
-                                                    <div class="bs-faq-benefit-item" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                                    <div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("advance")'>
                                                         <div class="bs-benefit-icon">
                                                             <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -122,7 +122,7 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    <div class="bs-faq-benefit-item" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                                    <div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("visits")'>
                                                         <div class="bs-benefit-icon">
                                                             <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                 <circle cx="12" cy="12" r="10" />
@@ -135,7 +135,7 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    <div class="bs-faq-benefit-item" @onclick='() => NavManager.NavigateTo("/faq")'>
+                                                    <div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("stress")'>
                                                         <div class="bs-benefit-icon">
                                                             <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                 <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
@@ -326,6 +326,65 @@
                      AcceptText="@Loc["Feed_AuthAlert_Accept"]"
                      CancelText="@Loc["Feed_AuthAlert_Cancel"]"
                      OnConfirmationChanged="OnAuthConfirmationChanged" />
+
+@if (_showBenefitModal)
+{
+    <div class="bs-modal-overlay" @onclick="() => _showBenefitModal = false">
+        <div class="bs-modal-card bs-card" @onclick:stopPropagation="true">
+            <button class="bs-modal-close-btn" @onclick="() => _showBenefitModal = false" aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="bs-modal-icon-container">
+                @if (_benefitType == "advance")
+                {
+                    <svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 11 2 2 4-4"/>
+                    </svg>
+                }
+                else if (_benefitType == "visits")
+                {
+                    <svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                }
+                else if (_benefitType == "stress")
+                {
+                    <svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
+                        <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.5"/>
+                        <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.5"/>
+                    </svg>
+                }
+            </div>
+
+            <h3 class="bs-modal-title">
+                @if (_benefitType == "advance") { @Loc["Feed_BenefitNoAdvanceTitle"] }
+                else if (_benefitType == "visits") { @Loc["Feed_BenefitNoVisitsTitle"] }
+                else if (_benefitType == "stress") { @Loc["Feed_BenefitNoStressTitle"] }
+            </h3>
+
+            <p class="bs-modal-message mb-3">
+                @if (_benefitType == "advance") { @Loc["Feed_BenefitNoAdvanceDesc"] }
+                else if (_benefitType == "visits") { @Loc["Feed_BenefitNoVisitsDesc"] }
+                else if (_benefitType == "stress") { @Loc["Feed_BenefitNoStressDesc"] }
+            </p>
+
+            <a href="/faq" class="bs-modal-more-link mb-4" @onclick="() => _showBenefitModal = false">
+                @Loc["Feed_FaqSectionLink"]
+            </a>
+
+            <button class="bs-btn-primary w-100 py-3 px-4" @onclick="HandleBenefitCtaClick">
+                @Loc["Feed_HeroCta"]
+            </button>
+        </div>
+    </div>
+}
 
 <style>
     /* --- SWIPE CAROUSEL --- */
@@ -1001,6 +1060,111 @@
             transform: translateY(0); /* Go back up to 0 */
         }
     }
+    /* Benefit Modal Styles */
+    .bs-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+        animation: bsModalFadeIn 0.2s ease-out;
+    }
+
+    .bs-modal-card {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        padding: 32px 24px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-sizing: border-box;
+        animation: bsModalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bs-modal-close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .bs-modal-close-btn:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: var(--text-primary);
+    }
+
+    .bs-modal-icon-container {
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+        background-color: rgba(99, 102, 241, 0.1);
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .bs-modal-title {
+        font-family: var(--font-heading), sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 12px 0;
+    }
+
+    .bs-modal-message {
+        font-family: var(--font-primary), sans-serif;
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0 0 28px 0;
+    }
+
+    .bs-modal-more-link {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: inline-block;
+    }
+
+    .bs-modal-more-link:hover {
+        color: var(--color-primary-hover, var(--color-primary));
+        text-decoration: underline;
+    }
+
+    @@keyframes bsModalFadeIn {
+        from { background: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
+        to { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); }
+    }
+
+    @@keyframes bsModalSlideUp {
+        from { transform: translateY(20px) scale(0.95); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
 </style>
 
 @code {
@@ -1136,6 +1300,20 @@
     }
 
     private bool _showAuthModal = false;
+    private bool _showBenefitModal = false;
+    private string _benefitType = "";
+
+    private void ShowBenefitModal(string type)
+    {
+        _benefitType = type;
+        _showBenefitModal = true;
+    }
+
+    private void HandleBenefitCtaClick()
+    {
+        _showBenefitModal = false;
+        HandleCreateProjectClick();
+    }
 
     private void HandleCreateProjectClick()
     {
