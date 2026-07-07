@@ -169,6 +169,7 @@ window.reelsObserver = {
             });
 
             let lastClickTime = 0;
+            let clickTimeout = null;
             element.addEventListener('click', (e) => {
                 if (e.target.closest('.bs-reel-action-btn') || 
                     e.target.closest('.plyr__controls') || 
@@ -186,6 +187,11 @@ window.reelsObserver = {
                     
                     if (timeDiff < 300) {
                         // Double tap/click detected: Exit theater mode
+                        if (clickTimeout) {
+                            clearTimeout(clickTimeout);
+                            clickTimeout = null;
+                        }
+                        
                         element.classList.remove('bs-theater-mode');
                         if (container) {
                             container.classList.remove('in-theater-mode');
@@ -195,21 +201,49 @@ window.reelsObserver = {
                         // Ensure the video continues playing when exiting
                         const player = window.reelsObserver.players[videoId];
                         if (player) {
-                            if (player.paused) {
-                                player.play().catch(e => {});
-                            }
+                            player.play().catch(e => {});
                         } else {
                             const nativeVideo = element.querySelector('video');
-                            if (nativeVideo && nativeVideo.paused) {
+                            if (nativeVideo) {
                                 nativeVideo.play().catch(e => {});
                             }
                         }
                         return;
                     }
                     lastClickTime = currentTime;
-                }
 
-                if (!isInTheaterMode) {
+                    if (clickTimeout) {
+                        clearTimeout(clickTimeout);
+                    }
+                    
+                    clickTimeout = setTimeout(() => {
+                        // Toggle play/pause when already in theater mode
+                        const player = window.reelsObserver.players[videoId];
+                        if (player) {
+                            player.togglePlay();
+                            
+                            const plyrContainer = document.getElementById(videoId)?.closest('.plyr');
+                            if (plyrContainer) {
+                                const areControlsHidden = plyrContainer.classList.contains('plyr--hide-controls');
+                                if (areControlsHidden) {
+                                    player.toggleControls(true);
+                                } else {
+                                    player.toggleControls(false);
+                                }
+                            }
+                        } else {
+                            // Native video fallback (e.g. in ReelsFeed.razor)
+                            const nativeVideo = element.querySelector('video');
+                            if (nativeVideo) {
+                                if (nativeVideo.paused) {
+                                    nativeVideo.play().catch(e => {});
+                                } else {
+                                    nativeVideo.pause();
+                                }
+                            }
+                        }
+                    }, 250);
+                } else {
                     // Enter theater mode on single click
                     element.classList.add('bs-theater-mode');
                     if (container) {
@@ -220,40 +254,12 @@ window.reelsObserver = {
                     // Auto-play the video when entering theater mode
                     const player = window.reelsObserver.players[videoId];
                     if (player) {
-                        if (player.paused) {
-                            player.play().catch(e => {});
-                        }
-                    } else {
-                        // Native video fallback (e.g. in ReelsFeed.razor)
-                        const nativeVideo = element.querySelector('video');
-                        if (nativeVideo && nativeVideo.paused) {
-                            nativeVideo.play().catch(e => {});
-                        }
-                    }
-                } else {
-                    // Toggle play/pause when already in theater mode
-                    const player = window.reelsObserver.players[videoId];
-                    if (player) {
-                        player.togglePlay();
-                        
-                        const plyrContainer = document.getElementById(videoId)?.closest('.plyr');
-                        if (plyrContainer) {
-                            const areControlsHidden = plyrContainer.classList.contains('plyr--hide-controls');
-                            if (areControlsHidden) {
-                                player.toggleControls(true);
-                            } else {
-                                player.toggleControls(false);
-                            }
-                        }
+                        player.play().catch(e => {});
                     } else {
                         // Native video fallback (e.g. in ReelsFeed.razor)
                         const nativeVideo = element.querySelector('video');
                         if (nativeVideo) {
-                            if (nativeVideo.paused) {
-                                nativeVideo.play().catch(e => {});
-                            } else {
-                                nativeVideo.pause();
-                            }
+                            nativeVideo.play().catch(e => {});
                         }
                     }
                 }

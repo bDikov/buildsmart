@@ -94,6 +94,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Auto-update assets version for cache busting
+        run: |
+          sed -i -E 's/\?v=[0-9.]+/?v=${{ github.run_number }}/g' BuildSmart.Web/Components/App.razor
+
       - name: Create tarball package of source files
         run: tar -czf buildsmart.tar.gz docker-compose.prod.yml Caddyfile BuildSmart.sln BuildSmart.Api BuildSmart.Web BuildSmart.Core.Domain BuildSmart.Core.Application BuildSmart.Infrastructure BuildSmart.SharedUI SeedLiveCategories.sql
 
