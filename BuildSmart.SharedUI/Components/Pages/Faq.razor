@@ -313,6 +313,10 @@
     private int openIndex = -1;
     private string[] activeTab = new string[10];
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
     protected override void OnInitialized()
     {
         var currentCultureName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
@@ -349,7 +353,23 @@
 
     private async Task GoBack()
     {
-        await JSRuntime.InvokeVoidAsync("history.back");
+        var fallback = string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl;
+        await JSRuntime.InvokeVoidAsync("eval", $@"
+            (function() {{
+                var originalPath = window.location.pathname;
+                var hasBack = window.history.length > 1;
+                if (hasBack) {{
+                    window.history.back();
+                    setTimeout(function() {{
+                        if (window.location.pathname === originalPath) {{
+                            window.location.href = '{fallback}';
+                        }}
+                    }}, 150);
+                }} else {{
+                    window.location.href = '{fallback}';
+                }}
+            }})()
+        ");
     }
 
     private class FaqItem

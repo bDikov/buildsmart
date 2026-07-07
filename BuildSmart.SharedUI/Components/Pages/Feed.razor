@@ -12,1354 +12,1498 @@
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 
 <ErrorBoundary>
-    <ChildContent>
-        @if (ViewModel == null)
-        {
-            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">@Loc["Feed_Loading"]</span>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="container-fluid py-3" style="overflow-x: hidden;">
-                <!-- Tradesman Feed Header -->
-                @if (ViewModel.IsTradesman)
-                {
-                    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
-                        <h2 class="h5 fw-bold mb-0">@Loc["Feed_AvailableAuctions"]</h2>
-                        <a href="#" class="text-primary text-decoration-underline" style="font-size: 0.85rem;" @onclick='() => NavManager.NavigateTo("/passed-auctions")' @onclick:preventDefault>
-                            @Loc["Feed_DismissedJobs"]
-                        </a>
-                    </div>
-                }
+	<ChildContent>
+		@if (ViewModel == null)
+		{
+			<div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">@Loc["Feed_Loading"]</span>
+				</div>
+			</div>
+		}
+		else
+		{
+			<div class="container-fluid py-3" style="overflow-x: hidden;">
+				<!-- Tradesman Feed Header -->
+				@if (ViewModel.IsTradesman)
+				{
+					<div class="d-flex justify-content-between align-items-center mb-4 px-2">
+						<h2 class="h5 fw-bold mb-0">@Loc["Feed_AvailableAuctions"]</h2>
+						<a href="#" class="text-primary text-decoration-underline" style="font-size: 0.85rem;" @onclick='() => NavManager.NavigateTo("/passed-auctions")' @onclick:preventDefault>
+							@Loc["Feed_DismissedJobs"]
+						</a>
+					</div>
+				}
 
-                <!-- Loading Indicator -->
-                @if (ViewModel.IsLoading)
-                {
-                    <div class="text-center my-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">@Loc["Feed_Loading"]</span>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <!-- 1. Homeowner View: Pros Directory (Reels) -->
-                    @if (ViewModel.IsHomeowner)
-                    {
-                        var galleryImages = ViewModel.FeedVideos?.Take(3).Select(v => v.ImageUrl).ToList() ?? new List<string>();
-                        while (galleryImages.Count < 3)
-                        {
-                            galleryImages.Add(""); 
-                        }
+				<!-- Loading Indicator -->
+				@if (ViewModel.IsLoading)
+				{
+					<div class="text-center my-5">
+						<div class="spinner-border text-primary" role="status">
+							<span class="visually-hidden">@Loc["Feed_Loading"]</span>
+						</div>
+					</div>
+				}
+				else
+				{
+					<!-- 1. Homeowner View: Pros Directory (Reels) -->
+					@if (ViewModel.IsHomeowner)
+					{
+						var galleryImages = ViewModel.FeedVideos?.Take(3).Select(v => v.ImageUrl).ToList() ?? new List<string>();
+						while (galleryImages.Count < 3)
+						{
+							galleryImages.Add("");
+						}
 
-                        <div class="bs-homeowner-page-container">
-                            <!-- Background Split for Desktop -->
-                            <div class="bs-hero-bg-split d-none d-lg-block"></div>
+						<div class="bs-homeowner-page-container">
+							<!-- Background Split for Desktop -->
+							<div class="bs-hero-bg-split d-none d-lg-block"></div>
 
-                            <!-- Desktop Split Layout / Mobile Stack Layout -->
-                            <div class="bs-homeowner-layout-wrapper">
-                                <!-- LEFT COLUMN on Desktop / BOTTOM SECTION on Mobile -->
-                                <div @key='"homeowner_left_col"' class="bs-homeowner-content-col">
-                                    <!-- Mini Logo (Desktop only) -->
-                                    <div class="d-none d-lg-block">
-                                        <div class="bs-hero-mini-logo">BuildSmart</div>
-                                        <div class="bs-hero-mini-slogan">@Loc["Feed_HeroMiniSlogan"]</div>
-                                    </div>
+							<!-- Desktop Split Layout / Mobile Stack Layout -->
+							<div class="bs-homeowner-layout-wrapper">
+								<!-- LEFT COLUMN on Desktop / BOTTOM SECTION on Mobile -->
+								<div @key='"homeowner_left_col"' class="bs-homeowner-content-col">
+									<!-- Mini Logo (Desktop only) -->
+									<div class="d-none d-lg-block">
+										<div class="bs-hero-mini-logo">BuildSmart</div>
+										<div class="bs-hero-mini-slogan">@Loc["Feed_HeroMiniSlogan"]</div>
+									</div>
 
-                                    <!-- Carousel container with swipe pointer events -->
-                                    <div class="bs-carousel-container" @onpointerdown="OnPointerDown" @onpointerup="OnPointerUp">
-                                        <div class="bs-carousel-track" style="transform: translateX(-@($"{_activeSlideIndex * 100}%"));">
-                                            <!-- Slide 1: Hero Info & CTA -->
-                                            <div class="bs-carousel-slide">
-                                                <h1 class="bs-hero-title mb-2">@Loc["Feed_HeroTitle"]</h1>
-                                                <p class="bs-hero-subtitle mb-4">@Loc["Feed_HeroSubtitle"]</p>
-                                                
-                                                <!-- Main CTA Button -->
-                                                <button class="bs-btn-primary bs-hero-cta py-3 px-4 w-100 mb-3" 
-                                                        @onclick="HandleCreateProjectClick">
-                                                    @Loc["Feed_HeroCta"]
-                                                </button>
+									<!-- Carousel container with swipe pointer events -->
+									<div class="bs-carousel-container" @onpointerdown="OnPointerDown" @onpointerup="OnPointerUp">
+										<div class="bs-carousel-track" style="transform: translateX(-@($"{_activeSlideIndex * 100}%"));">
+											<!-- Slide 1: Hero Info & CTA -->
+											<div class="bs-carousel-slide">
+												<h1 class="bs-hero-title mb-2">@Loc["Feed_HeroTitle"]</h1>
+												<p class="bs-hero-subtitle mb-4">@Loc["Feed_HeroSubtitle"]</p>
 
-                                                <!-- Social Icons -->
-                                                <div class="bs-social-icons">
-                                                    <a href="https://youtube.com" target="_blank" class="bs-social-icon-link">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2a29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
-                                                    </a>
-                                                    <a href="https://instagram.com" target="_blank" class="bs-social-icon-link">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                                                    </a>
-                                                    <a href="https://facebook.com" target="_blank" class="bs-social-icon-link">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                                                    </a>
-                                                    <a href="https://twitter.com" target="_blank" class="bs-social-icon-link">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
-                                                    </a>
-                                                    <a href="https://linkedin.com" target="_blank" class="bs-social-icon-link">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-                                                    </a>
-                                                </div>
-                                            </div>
+												<!-- Main CTA Button -->
+												<button class="bs-btn-primary bs-hero-cta py-3 px-4 w-100 mb-3"
+														@onclick="HandleCreateProjectClick">
+													@Loc["Feed_HeroCta"]
+												</button>
 
-                                            <!-- Slide 2: Why BuildSmart FAQ / Benefits -->
-                                            <div class="bs-carousel-slide">
-                                                <h1 class="bs-hero-title mb-2" style="color: var(--color-primary);">@Loc["Feed_FaqSectionTitle"]</h1>
-                                                <p class="bs-hero-subtitle mb-4">@Loc["Feed_FaqSectionSubtitle"]</p>
-                                                
-                                                <div class="bs-reels-faq-benefits d-flex flex-column gap-3">
-                                                    <div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("advance")'>
-                                                        <div class="bs-benefit-icon">
-                                                            <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                                                                <path d="m9 11 2 2 4-4"/>
-                                                            </svg>
-                                                        </div>
-                                                        <div class="bs-benefit-content">
-                                                            <h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoAdvanceTitle"]</h5>
-                                                            <p class="mb-0 small">@Loc["Feed_BenefitNoAdvanceDesc"]</p>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("visits")'>
-                                                        <div class="bs-benefit-icon">
-                                                            <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                <circle cx="12" cy="12" r="10" />
-                                                                <polyline points="12 6 12 12 16 14" />
-                                                            </svg>
-                                                        </div>
-                                                        <div class="bs-benefit-content">
-                                                            <h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoVisitsTitle"]</h5>
-                                                            <p class="mb-0 small">@Loc["Feed_BenefitNoVisitsDesc"]</p>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("stress")'>
-                                                        <div class="bs-benefit-icon">
-                                                            <svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
-                                                                <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.5"/>
-                                                                <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.5"/>
-                                                            </svg>
-                                                        </div>
-                                                        <div class="bs-benefit-content">
-                                                            <h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoStressTitle"]</h5>
-                                                            <p class="mb-0 small">@Loc["Feed_BenefitNoStressDesc"]</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+												<!-- Social Icons -->
+												<div class="bs-social-icons">
+													<a href="https://youtube.com" target="_blank" class="bs-social-icon-link">
+														<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2a29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+													</a>
+													<a href="https://instagram.com" target="_blank" class="bs-social-icon-link">
+														<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+													</a>
+													<a href="https://facebook.com" target="_blank" class="bs-social-icon-link">
+														<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+													</a>
+													<a href="https://twitter.com" target="_blank" class="bs-social-icon-link">
+														<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+													</a>
+													<a href="https://linkedin.com" target="_blank" class="bs-social-icon-link">
+														<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+													</a>
+												</div>
+											</div>
+
+											<!-- Slide 2: Why BuildSmart FAQ / Benefits -->
+											<div class="bs-carousel-slide">
+												<h1 class="bs-hero-title mb-2" style="color: var(--color-primary);">@Loc["Feed_FaqSectionTitle"]</h1>
+												<p class="bs-hero-subtitle mb-4">@Loc["Feed_FaqSectionSubtitle"]</p>
+
+												<div class="bs-reels-faq-benefits d-flex flex-column gap-3">
+													<div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("advance")'>
+														<div class="bs-benefit-icon">
+															<svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+																<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+																<path d="m9 11 2 2 4-4" />
+															</svg>
+														</div>
+														<div class="bs-benefit-content">
+															<h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoAdvanceTitle"]</h5>
+															<p class="mb-0 small">@Loc["Feed_BenefitNoAdvanceDesc"]</p>
+														</div>
+													</div>
+
+													<div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("visits")'>
+														<div class="bs-benefit-icon">
+															<svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+																<circle cx="12" cy="12" r="10" />
+																<polyline points="12 6 12 12 16 14" />
+															</svg>
+														</div>
+														<div class="bs-benefit-content">
+															<h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoVisitsTitle"]</h5>
+															<p class="mb-0 small">@Loc["Feed_BenefitNoVisitsDesc"]</p>
+														</div>
+													</div>
+
+													<div class="bs-faq-benefit-item" @onclick='() => ShowBenefitModal("stress")'>
+														<div class="bs-benefit-icon">
+															<svg class="bs-benefit-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+																<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" />
+																<path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.5" />
+																<path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.5" />
+															</svg>
+														</div>
+														<div class="bs-benefit-content">
+															<h5 class="fw-bold mb-1">@Loc["Feed_BenefitNoStressTitle"]</h5>
+															<p class="mb-0 small">@Loc["Feed_BenefitNoStressDesc"]</p>
+														</div>
+													</div>
+												</div>
 
 
-                                            </div>
-                                        </div>
-                                    </div>
+											</div>
+										</div>
+									</div>
 
-                                    <!-- Carousel Dot Indicators -->
-                                    <div class="bs-carousel-indicators">
-                                        <button class="bs-indicator @(_activeSlideIndex == 0 ? "active" : "")" @onclick="() => { _activeSlideIndex = 0; ResetAutoPlayTimer(); }" title="Slide 1"></button>
-                                        <button class="bs-indicator @(_activeSlideIndex == 1 ? "active" : "")" @onclick="() => { _activeSlideIndex = 1; ResetAutoPlayTimer(); }" title="Slide 2"></button>
-                                    </div>
-                                </div>
+									<!-- Carousel Dot Indicators -->
+									<div class="bs-carousel-indicators">
+										<button class="bs-indicator @(_activeSlideIndex == 0 ? "active" : "")" @onclick="() => { _activeSlideIndex = 0; ResetAutoPlayTimer(); }" title="Slide 1"></button>
+										<button class="bs-indicator @(_activeSlideIndex == 1 ? "active" : "")" @onclick="() => { _activeSlideIndex = 1; ResetAutoPlayTimer(); }" title="Slide 2"></button>
+									</div>
+								</div>
 
-                                <!-- RIGHT COLUMN on Desktop / TOP SECTION on Mobile -->
-                                <div @key='"homeowner_right_col"' class="bs-homeowner-visual-col">
-                                    <!-- Category Filters (Placed directly on top of the videos!) -->
-                                    <div class="bs-category-filters-container @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed") mb-3">
-                                        <div class="bs-category-filters-scroll">
-                                            <div class="bs-category-filters-list">
-                                                <button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")" 
-                                                        @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
-                                                    @Loc["Feed_All"]
-                                                </button>
-                                                
-                                                @foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
-                                                {
-                                                    <button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")" 
-                                                            @onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
-                                                        @cat.Name
-                                                    </button>
-                                                }
-                                            </div>
-                                        </div>
-                                        
-                                        @if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
-                                        {
-                                            <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-                                                @Loc["Feed_ViewAll"]
-                                            </button>
-                                        }
-                                        
-                                        @if (ViewModel.IsFilterExpanded)
-                                        {
-                                            <button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-                                                @Loc["Feed_Collapse"]
-                                            </button>
-                                        }
-                                    </div>
+								<!-- RIGHT COLUMN on Desktop / TOP SECTION on Mobile -->
+								<div @key='"homeowner_right_col"' class="bs-homeowner-visual-col">
+									<!-- Category Filters (Placed directly on top of the videos!) -->
+									<div class="bs-category-filters-container @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed") mb-3">
+										<div class="bs-category-filters-scroll">
+											<div class="bs-category-filters-list">
+												<button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")"
+														@onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
+													@Loc["Feed_All"]
+												</button>
 
-                                    <div id="reels-feed-container" class="bs-reels-container">
-                                        @if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
-                                        {
-                                            @foreach (var video in ViewModel.FeedVideos)
-                                            {
-                                                var videoId = $"video_{video.Id}";
-                                                var wrapperId = $"wrapper_{videoId}";
-                                                var isFirst = ViewModel.FeedVideos.IndexOf(video) == 0;
-                                                <div @key="video.Id" class="bs-reel-item @(isFirst ? "bs-first-reel-cue" : "")" data-video-id="@videoId" id="@wrapperId">
-                                                    <video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="auto" poster="@video.ImageUrl" muted>
-                                                        @if (!string.IsNullOrEmpty(video.MobileVideoUrl))
-                                                        {
-                                                            <source src="@video.MobileVideoUrl" media="(max-width: 768px)" type="video/mp4" />
-                                                        }
-                                                        <source src="@video.VideoUrl" type="video/mp4" />
-                                                    </video>
-                                                    
-                                                    <!-- Theater Mode Navigation (Hidden unless in theater mode) -->
-                                                    <button type="button" class="bs-theater-btn bs-theater-close" title="Close Theater Mode">
-                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                                        </svg>
-                                                    </button>
+												@foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
+												{
+													<button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")"
+															@onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
+														@cat.Name
+													</button>
+												}
+											</div>
+										</div>
 
-                                                    @if (isFirst)
-                                                    {
-                                                        <!-- Swipe Guide Hint (Fades out automatically) -->
-                                                        <div class="bs-swipe-indicator">
-                                                            <div class="bs-swipe-icon">
-                                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                    <polyline points="17 11 12 6 7 11"></polyline>
-                                                                    <polyline points="17 18 12 13 7 18" style="opacity: 0.4;"></polyline>
-                                                                </svg>
-                                                            </div>
-                                                            <span class="bs-swipe-text">@Loc["Feed_SwipeHint"]</span>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <div class="d-flex align-items-center justify-content-center h-100 w-100 p-5 text-center" style="min-height: 200px;">
-                                                <p class="text-muted mb-0">@Loc["Feed_NoMediaFound"]</p>
-                                            </div>
-                                        }
-                                    </div>
+										@if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
+										{
+											<button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+												@Loc["Feed_ViewAll"]
+											</button>
+										}
 
-                                    <!-- Video Disclaimer (Visible under the videos on desktop) -->
-                                    <div class="bs-video-disclaimer mt-3 px-2 text-center" style="max-width: 440px; margin-left: auto; margin-right: auto;">
-                                        <p class="small text-secondary mb-0" style="font-size: 0.8rem; font-style: italic; line-height: 1.3;">
-                                            @Loc["Feed_VideoCaption"]
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
+										@if (ViewModel.IsFilterExpanded)
+										{
+											<button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+												@Loc["Feed_Collapse"]
+											</button>
+										}
+									</div>
 
-                    <!-- 2. Tradesman View: Available Auctions Feed -->
-                    @if (ViewModel.IsTradesman && ViewModel.Auctions != null)
-                    {
-                        <div class="d-flex flex-column gap-3">
-                            @foreach (var auction in ViewModel.Auctions)
-                            {
-                                <div class="bs-card shadow-sm">
-                                    <div class="card-body p-3">
-                                        <!-- Job Header -->
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">@auction.Job?.Title</h5>
-                                                <small class="text-primary d-block">@auction.Job?.ServiceCategory?.Name</small>
-                                            </div>
-                                            <span class="fw-bold text-success" style="font-size: 1.1rem;">
-                                                @(auction.Job?.EstimatedBudget != null ? string.Format("{0:C0}", auction.Job.EstimatedBudget.Total) : Loc["Feed_NA"])
-                                            </span>
-                                        </div>
+									<div id="reels-feed-container" class="bs-reels-container">
+										@if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+										{
+											@foreach (var video in ViewModel.FeedVideos)
+											{
+												var videoId = $"video_{video.Id}";
+												var wrapperId = $"wrapper_{videoId}";
+												var isFirst = ViewModel.FeedVideos.IndexOf(video) == 0;
+												<div @key="video.Id" class="bs-reel-item @(isFirst ? "bs-first-reel-cue" : "")" data-video-id="@videoId" id="@wrapperId">
+													<video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="auto" poster="@video.ImageUrl" muted>
+														@if (!string.IsNullOrEmpty(video.MobileVideoUrl))
+														{
+															<source src="@video.MobileVideoUrl" media="(max-width: 768px)" type="video/mp4" />
+														}
+														<source src="@video.VideoUrl" type="video/mp4" />
+													</video>
 
-                                        <!-- Details -->
-                                        <p class="mb-3" style="font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                            @auction.Job?.Description
-                                        </p>
-                                        
-                                        <div class="d-flex gap-4 mb-3">
-                                            <div class="d-flex align-items-center">
-                                                <span class="me-1" style="font-size: 0.8rem;">📍</span>
-                                                <small class="text-muted">@auction.Job?.Location</small>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <span class="me-1" style="font-size: 0.8rem;">💬</span>
-                                                <small class="text-muted">@string.Format(Loc["Feed_QuestionsCount"], auction.Questions?.Count ?? 0)</small>
-                                            </div>
-                                        </div>
+													<!-- Theater Mode Navigation (Hidden unless in theater mode) -->
+													<button type="button" class="bs-theater-btn bs-theater-close" title="Close Theater Mode">
+														<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+															<line x1="18" y1="6" x2="6" y2="18"></line>
+															<line x1="6" y1="6" x2="18" y2="18"></line>
+														</svg>
+													</button>
 
-                                        <!-- Actions -->
-                                        <div class="d-flex gap-2">
-                                            <button class="bs-btn-dark w-50 py-2" @onclick="() => ViewModel.PassAuctionCommand.Execute(auction)">
-                                                @Loc["Feed_Pass"]
-                                            </button>
-                                            <button class="bs-btn-primary w-50 py-2" @onclick="() => ViewModel.NavigateToDetailsCommand.Execute(auction)">
-                                                @Loc["Feed_ViewAndBid"]
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                }
-            </div>
-        }
-    </ChildContent>
-    <ErrorContent>
-        <div class="alert alert-danger m-3">
-            <h4>@Loc["Feed_RenderingError"]</h4>
-            <p>@context.Message</p>
-            <pre style="font-size: 10px; overflow-x: auto;">@context.StackTrace</pre>
-        </div>
-    </ErrorContent>
+													@if (isFirst)
+													{
+														<!-- Swipe Guide Hint (Fades out automatically) -->
+														<div class="bs-swipe-indicator">
+															<div class="bs-swipe-icon">
+																<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+																	<polyline points="17 11 12 6 7 11"></polyline>
+																	<polyline points="17 18 12 13 7 18" style="opacity: 0.4;"></polyline>
+																</svg>
+															</div>
+															<span class="bs-swipe-text">@Loc["Feed_SwipeHint"]</span>
+														</div>
+													}
+												</div>
+											}
+										}
+										else
+										{
+											<div class="d-flex align-items-center justify-content-center h-100 w-100 p-5 text-center" style="min-height: 200px;">
+												<p class="text-muted mb-0">@Loc["Feed_NoMediaFound"]</p>
+											</div>
+										}
+									</div>
+
+									<!-- Video Disclaimer (Visible under the videos on desktop) -->
+									<div class="bs-video-disclaimer mt-3 px-2 text-center" style="max-width: 440px; margin-left: auto; margin-right: auto;">
+										<p class="small text-secondary mb-0" style="font-size: 0.8rem; font-style: italic; line-height: 1.3;">
+											@Loc["Feed_VideoCaption"]
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					}
+
+					<!-- 2. Tradesman View: Available Auctions Feed -->
+					@if (ViewModel.IsTradesman && ViewModel.Auctions != null)
+					{
+						<div class="d-flex flex-column gap-3">
+							@foreach (var auction in ViewModel.Auctions)
+							{
+								<div class="bs-card shadow-sm">
+									<div class="card-body p-3">
+										<!-- Job Header -->
+										<div class="d-flex justify-content-between align-items-start mb-2">
+											<div>
+												<h5 class="fw-bold mb-0" style="font-size: 1.1rem;">@auction.Job?.Title</h5>
+												<small class="text-primary d-block">@auction.Job?.ServiceCategory?.Name</small>
+											</div>
+											<span class="fw-bold text-success" style="font-size: 1.1rem;">
+												@(auction.Job?.EstimatedBudget != null ? string.Format("{0:C0}", auction.Job.EstimatedBudget.Total) : Loc["Feed_NA"])
+											</span>
+										</div>
+
+										<!-- Details -->
+										<p class="mb-3" style="font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+											@auction.Job?.Description
+										</p>
+
+										<div class="d-flex gap-4 mb-3">
+											<div class="d-flex align-items-center">
+												<span class="me-1" style="font-size: 0.8rem;">📍</span>
+												<small class="text-muted">@auction.Job?.Location</small>
+											</div>
+											<div class="d-flex align-items-center">
+												<span class="me-1" style="font-size: 0.8rem;">💬</span>
+												<small class="text-muted">@string.Format(Loc["Feed_QuestionsCount"], auction.Questions?.Count ?? 0)</small>
+											</div>
+										</div>
+
+										<!-- Actions -->
+										<div class="d-flex gap-2">
+											<button class="bs-btn-dark w-50 py-2" @onclick="() => ViewModel.PassAuctionCommand.Execute(auction)">
+												@Loc["Feed_Pass"]
+											</button>
+											<button class="bs-btn-primary w-50 py-2" @onclick="() => ViewModel.NavigateToDetailsCommand.Execute(auction)">
+												@Loc["Feed_ViewAndBid"]
+											</button>
+										</div>
+									</div>
+								</div>
+							}
+						</div>
+					}
+				}
+			</div>
+		}
+	</ChildContent>
+	<ErrorContent>
+		<div class="alert alert-danger m-3">
+			<h4>@Loc["Feed_RenderingError"]</h4>
+			<p>@context.Message</p>
+			<pre style="font-size: 10px; overflow-x: auto;">@context.StackTrace</pre>
+		</div>
+	</ErrorContent>
 </ErrorBoundary>
 
 <BsConfirmationModal IsVisible="_showAuthModal"
-                     Title="@Loc["Feed_AuthAlert_Title"]"
-                     Message="@Loc["Feed_AuthAlert_Message"]"
-                     AcceptText="@Loc["Feed_AuthAlert_Accept"]"
-                     CancelText="@Loc["Feed_AuthAlert_Cancel"]"
-                     OnConfirmationChanged="OnAuthConfirmationChanged" />
+					 Title="@Loc["Feed_AuthAlert_Title"]"
+					 Message="@Loc["Feed_AuthAlert_Message"]"
+					 AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+					 CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+					 OnConfirmationChanged="OnAuthConfirmationChanged" />
 
 @if (_showBenefitModal)
 {
-    <div class="bs-modal-overlay" @onclick="() => _showBenefitModal = false">
-        <div class="bs-modal-card bs-card" @onclick:stopPropagation="true">
-            <button class="bs-modal-close-btn" @onclick="() => _showBenefitModal = false" aria-label="Close">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+	<div class="bs-modal-overlay" @onclick="() => _showBenefitModal = false">
+		<div class="bs-modal-card bs-card" @onclick:stopPropagation="true">
+			<button class="bs-modal-close-btn" @onclick="() => _showBenefitModal = false" aria-label="Close">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
+				</svg>
+			</button>
 
-            <div class="bs-modal-icon-container">
-                @if (_benefitType == "advance")
-                {
-                    <svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <path d="m9 11 2 2 4-4"/>
-                    </svg>
-                }
-                else if (_benefitType == "visits")
-                {
-                    <svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                }
-                else if (_benefitType == "stress")
-                {
-                    <svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
-                        <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.5"/>
-                        <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.5"/>
-                    </svg>
-                }
-            </div>
+			<div class="bs-modal-icon-container">
+				@if (_benefitType == "advance")
+				{
+					<svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+						<path d="m9 11 2 2 4-4" />
+					</svg>
+				}
+				else if (_benefitType == "visits")
+				{
+					<svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="12" cy="12" r="10" />
+						<polyline points="12 6 12 12 16 14" />
+					</svg>
+				}
+				else if (_benefitType == "stress")
+				{
+					<svg class="bs-benefit-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" />
+						<path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.5" />
+						<path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.5" />
+					</svg>
+				}
+			</div>
 
-            <h3 class="bs-modal-title">
-                @if (_benefitType == "advance") { @Loc["Feed_BenefitNoAdvanceTitle"] }
-                else if (_benefitType == "visits") { @Loc["Feed_BenefitNoVisitsTitle"] }
-                else if (_benefitType == "stress") { @Loc["Feed_BenefitNoStressTitle"] }
-            </h3>
+			<h3 class="bs-modal-title">
+				@if (_benefitType == "advance")
+				{
+					@Loc["Feed_BenefitNoAdvanceTitle"]
+				}
+				else if (_benefitType == "visits")
+				{
 
-            <p class="bs-modal-message mb-3">
-                @if (_benefitType == "advance") { @Loc["Feed_BenefitNoAdvanceDesc"] }
-                else if (_benefitType == "visits") { @Loc["Feed_BenefitNoVisitsDesc"] }
-                else if (_benefitType == "stress") { @Loc["Feed_BenefitNoStressDesc"] }
-            </p>
+					@Loc["Feed_BenefitNoVisitsTitle"]
+				}
+				else if (_benefitType == "stress")
+				{
 
-            <a href="/faq" class="bs-modal-more-link mb-4" @onclick="() => _showBenefitModal = false">
-                @Loc["Feed_FaqSectionLink"]
-            </a>
+					@Loc["Feed_BenefitNoStressTitle"]
+				}
+			</h3>
 
-            <button class="bs-btn-primary w-100 py-3 px-4" @onclick="HandleBenefitCtaClick">
-                @Loc["Feed_HeroCta"]
-            </button>
-        </div>
-    </div>
+			<p class="bs-modal-message mb-3">
+				@if (_benefitType == "advance")
+				{
+					@Loc["Feed_BenefitNoAdvanceDesc"]
+				}
+				else if (_benefitType == "visits")
+				{
+
+					@Loc["Feed_BenefitNoVisitsDesc"]
+				}
+				else if (_benefitType == "stress")
+				{
+
+					@Loc["Feed_BenefitNoStressDesc"]
+				}
+			</p>
+
+			<a href="/faq" class="bs-modal-more-link mb-4" @onclick="() => _showBenefitModal = false">
+				@Loc["Feed_FaqSectionLink"]
+			</a>
+
+			<button class="bs-btn-primary w-100 py-3 px-4" @onclick="HandleBenefitCtaClick">
+				@Loc["Feed_HeroCta"]
+			</button>
+		</div>
+	</div>
 }
 
 <style>
-    /* --- SWIPE CAROUSEL --- */
-    .bs-carousel-container {
-        width: 100%;
-        overflow: hidden;
-        position: relative;
-        touch-action: pan-y;
-        user-select: none;
-        cursor: grab;
-    }
-    .bs-carousel-container:active {
-        cursor: grabbing;
-    }
-    .bs-carousel-track {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-        width: 100%;
-    }
-    .bs-carousel-slide {
-        width: 100%;
-        flex: 0 0 100%;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        text-align: center;
-    }
-    .bs-carousel-indicators {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 12px;
-        margin-top: 1.5rem;
-        padding: 8px 4px;
-    }
-    .bs-indicator {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background-color: var(--border-color);
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: all 0.25s ease;
-    }
-    .bs-indicator:hover {
-        background-color: var(--text-secondary);
-        transform: scale(1.1);
-    }
-    .bs-indicator.active {
-        background-color: var(--color-primary);
-        width: 32px;
-        border-radius: 6px;
-    }
-
-    /* --- COMPACT CATEGORY FILTERS --- */
-    .bs-category-filters-container {
-        position: relative;
-        z-index: 10; 
-        width: 100%;
-        max-width: 600px;
-        margin: -10px auto 1rem auto; /* Reduced from 2.5rem to pull videos closer */
-        box-sizing: border-box;
-        transition: all 0.3s ease;
-    }
-
-    .bs-category-filters-container.collapsed {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0 1rem;
-    }
-
-    .bs-category-filters-container.expanded {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-        background-color: var(--bg-card);
-        border-radius: 16px;
-        box-shadow: var(--elevation-08dp);
-    }
-
-    .bs-category-filters-scroll {
-        flex: 1;
-        min-width: 0; /* Important for flex child to allow inner scroll */
-    }
-
-    .bs-category-filters-container.collapsed .bs-category-filters-scroll {
-        overflow-x: auto;
-        scrollbar-width: none; /* Firefox */
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .bs-category-filters-container.collapsed .bs-category-filters-scroll::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
-    }
-
-    .bs-category-filters-container.expanded .bs-category-filters-scroll {
-        overflow: visible;
-    }
-
-    .bs-category-filters-list {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .bs-category-filters-container.collapsed .bs-category-filters-list {
-        flex-wrap: nowrap;
-    }
-
-    .bs-category-filters-container.expanded .bs-category-filters-list {
-        flex-wrap: wrap;
-    }
-
-    .bs-chip {
-        flex: 0 0 auto;
-        height: 32px; /* Smaller height */
-        background-color: var(--bg-card-alt);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        font-family: var(--font-body-2, sans-serif);
-        font-weight: 500;
-        font-size: 0.85rem; /* Smaller text */
-        color: var(--text-primary);
-        padding: 0 12px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        box-shadow: var(--elevation-01dp);
-    }
-
-    .bs-chip.active {
-        background-color: var(--color-primary);
-        color: var(--bg-page);
-        font-weight: 700;
-        border-color: var(--color-primary);
-    }
-
-    .bs-chip-add {
-        flex: 0 0 auto;
-        height: 32px;
-        background-color: var(--bg-card);
-        border: 1px solid var(--color-primary);
-        border-radius: 16px;
-        font-family: var(--font-body-2, sans-serif);
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: var(--color-primary);
-        padding: 0 12px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        box-shadow: var(--elevation-01dp);
-    }
-
-    .bs-category-filters-container.expanded .bs-chip-add {
-        align-self: flex-start;
-    }
-    
-    .bs-chip-add:hover {
-        background-color: var(--color-primary);
-        color: var(--bg-page);
-    }
-
-    .bs-reels-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 480px; /* Locked height for premium scroll container card */
-        max-width: 356px; /* Match standard mobile screen widths */
-        margin: 0 auto;
-        overflow-y: scroll;
-        scroll-snap-type: y mandatory;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        border-radius: 24px;
-        box-shadow: var(--elevation-08dp);
-    }
-
-    .bs-reels-container::-webkit-scrollbar {
-        display: none;
-    }
-
-    .bs-reel-item {
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
-        flex: 0 0 100%;
-        width: 100%;
-        height: 100%;
-        position: relative;
-        background-color: var(--bg-card);
-        border: 2px solid var(--border-color, var(--bg-card-alt));
-        border-radius: 24px;
-        overflow: hidden;
-        cursor: pointer;
-        pointer-events: auto;
-    }
-
-    /* --- THEATER MODE --- */
-    .bs-reels-container.in-theater-mode {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        max-width: none !important;
-        height: 100vh !important;
-        height: 100dvh !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        border: none !important;
-        z-index: 999999 !important; /* Float above everything including navbars */
-        background-color: black !important;
-        box-shadow: none !important;
-    }
-
-    .bs-reels-container.in-theater-mode .bs-reel-item {
-        border-radius: 0 !important;
-        border: none !important;
-    }
-
-    .bs-reel-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* --- PLYR VIDEO CONTROLS FIX --- */
-    /* Force Plyr wrapper to fill the container so vertical videos aren't letterboxed weirdly */
-    #reels-feed-container .plyr {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        width: 100%;
-        height: 100%;
-    }
-    #reels-feed-container .plyr__video-wrapper,
-    #reels-feed-container .plyr__video-wrapper video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* Standard controls padding */
-    #reels-feed-container .plyr__controls {
-        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-        z-index: 20;
-        background: transparent;
-    }
-
-    /* --- THEATER MODE NAVIGATION BUTTONS --- */
-    .bs-theater-btn {
-        display: none; /* Hidden by default */
-        position: absolute;
-        z-index: 30; /* Above everything */
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 56px; /* Increased for better mobile tap target */
-        height: 56px;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        backdrop-filter: blur(4px);
-        transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .bs-theater-btn:hover {
-        background: rgba(0, 0, 0, 0.8);
-        transform: scale(1.1);
-    }
-
-    /* Only show these buttons when theater mode is active */
-    .bs-theater-mode .bs-theater-btn {
-        display: flex;
-    }
-
-    /* Hide theater buttons when Plyr auto-hides controls, but add a delay so they don't vanish too fast */
-    .bs-theater-mode .plyr.plyr--hide-controls ~ .bs-theater-btn {
-        opacity: 0;
-        /* Removed pointer-events: none; to fix the desktop hover flickering bug */
-        transition: opacity 0.5s ease 0.5s; /* 0.5s delay before fading out */
-    }
-
-    .bs-theater-close {
-        top: calc(20px + env(safe-area-inset-top, 0px));
-        right: calc(20px + env(safe-area-inset-right, 0px));
-    }
-
-
-    @@media (min-width: 992px) {
-        /* Larger video card in normal mode on desktop */
-        .bs-reels-container:not(.in-theater-mode) {
-            height: 600px !important;
-            max-width: 440px !important;
-        }
-
-        /* Center the vertical video in theater mode with 9:16 ratio */
-        .bs-reels-container.in-theater-mode .plyr {
-            position: absolute !important;
-            top: 0 !important;
-            bottom: 0 !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: auto !important;
-            height: 100% !important;
-            aspect-ratio: 9 / 16 !important;
-            max-width: calc(100vh * (9/16)) !important;
-            max-width: calc(100dvh * (9/16)) !important;
-        }
-        
-        /* Adjust theater close button on desktop */
-        .bs-reels-container.in-theater-mode .bs-theater-close {
-            position: fixed !important;
-            top: 100px !important;
-            right: 40px !important;
-            z-index: 1000000 !important;
-        }
-    }
-    
-    /* Hero Header & Subtitle Styles (Figma Web Header 11 compliant) */
-    .bs-homeowner-page-container {
-        display: flex;
-        flex-direction: column;
-        background-color: var(--bg-card);
-        width: 100%;
-        margin-bottom: 2rem;
-        position: relative;
-        border-radius: 24px;
-        overflow: hidden;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--elevation-02dp);
-    }
-
-    .bs-homeowner-layout-wrapper {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        position: relative;
-        z-index: 2;
-    }
-
-    .bs-homeowner-content-col {
-        width: 100%;
-        padding: 2rem 1.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-
-    .bs-homeowner-visual-col {
-        width: 100%;
-        padding: 2rem 1.5rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        min-height: 400px;
-    }
-
-    .bs-hero-bg-split {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 45%;
-        height: 100%;
-        background-color: var(--bg-card-alt);
-        opacity: 0.5;
-        z-index: 1;
-        border-left: 1px solid var(--border-color);
-    }
-
-    .bs-hero-title {
-        font: var(--font-h2);
-        font-weight: 800;
-        color: var(--text-primary);
-    }
-
-    .bs-hero-subtitle {
-        font: var(--font-body-1);
-        color: var(--text-secondary);
-        line-height: 1.5;
-    }
-
-    .bs-hero-cta {
-        border-radius: 12px; 
-        font-weight: bold; 
-        font-size: 0.95rem; 
-        max-width: 356px; 
-        margin: 0 auto; 
-        display: block;
-    }
-
-    .bs-hero-mini-logo {
-        font-family: var(--font-heading), sans-serif;
-        font-weight: 700;
-        font-size: 1.5rem;
-        color: var(--color-primary);
-        margin-bottom: 0.25rem;
-    }
-
-    .bs-hero-mini-slogan {
-        font: var(--font-body-2);
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .bs-social-icons {
-        display: flex;
-        gap: 16px;
-        margin-top: 1.5rem;
-        color: var(--text-muted);
-        justify-content: center;
-    }
-
-    .bs-social-icon-link {
-        color: inherit;
-        transition: color 0.2s ease;
-    }
-
-    .bs-social-icon-link:hover {
-        color: var(--color-primary);
-    }
-
-    /* Reels container integration styling */
-    .bs-homeowner-visual-col .bs-reels-container {
-        position: relative;
-        margin: 0 auto;
-    }
-
-    @@media (min-width: 992px) and (min-height: 800px) {
-        html, body {
-            overflow: hidden !important;
-        }
-    }
-
-    @@media (min-width: 992px) {
-        .bs-homeowner-layout-wrapper {
-            flex-direction: row;
-            min-height: 600px;
-        }
-
-        .bs-homeowner-content-col {
-            width: 55%;
-            padding: 3rem 4rem;
-            align-items: flex-start;
-            text-align: left;
-        }
-
-        .bs-homeowner-visual-col {
-            width: 45%;
-            padding: 3rem;
-            min-height: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .bs-hero-cta {
-            margin: 0;
-        }
-
-        .bs-carousel-slide {
-            align-items: flex-start;
-            text-align: left;
-        }
-    }
-
-    @@media (max-width: 991px) {
-        .bs-homeowner-page-container {
-            border-radius: 16px;
-        }
-
-        .bs-homeowner-content-col {
-            order: 3;
-        }
-
-        .bs-homeowner-visual-col {
-            order: 2;
-            min-height: 400px;
-            padding: 1rem 0;
-        }
-
-
-
-        .bs-hero-title {
-            font: var(--font-h5);
-            font-weight: 800;
-        }
-
-        .bs-hero-subtitle {
-            font: var(--font-body-2);
-        }
-    }
-
-    /* FAQ & Benefits Section styles */
-    .bs-reels-faq-section {
-        display: block; /* Always visible to show core benefits */
-        width: 100%;
-        max-width: 356px;
-        margin: 1.5rem auto 0 auto;
-        padding: 20px;
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 20px;
-        box-shadow: var(--elevation-02dp);
-        transition: all 0.3s ease;
-    }
-
-    .bs-reels-faq-section:hover {
-        box-shadow: var(--elevation-04dp);
-    }
-
-
-
-    .bs-reels-faq-header h4 {
-        color: var(--text-primary);
-        font-family: var(--font-primary), sans-serif;
-    }
-
-    .bs-reels-faq-header p {
-        color: var(--text-muted);
-    }
-
-    .bs-faq-benefit-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background-color: var(--bg-card-alt);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: left;
-    }
-
-    .bs-faq-benefit-item:hover {
-        border-color: var(--color-primary);
-        transform: translateY(-2px);
-        box-shadow: var(--elevation-01dp);
-    }
-
-    .bs-benefit-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-        color: var(--color-primary);
-        flex-shrink: 0;
-    }
-
-    .bs-benefit-content h5 {
-        font-size: 0.9rem;
-        color: var(--text-primary);
-        margin: 0;
-    }
-
-    .bs-benefit-content p {
-        font-size: 0.75rem;
-        line-height: 1.4;
-        margin: 0;
-        color: var(--text-secondary);
-    }
-
-    /* Responsive limits for Desktop viewports */
-    @@media (min-width: 992px) {
-        .bs-reels-faq-section {
-            max-width: 440px !important;
-        }
-    }
-
-    /* Swipe Guide Hint Indicator */
-    .bs-swipe-indicator {
-        position: absolute;
-        bottom: 50px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        z-index: 99; /* Higher than Plyr players and posters */
-        color: white; /* Hardcoded white for dark/video overlay context */
-        background: rgba(17, 17, 17, 0.75);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        padding: 8px 18px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: var(--elevation-03dp);
-        pointer-events: none; /* Let swipes pass through to the video container */
-        animation: bsSwipeFade 8.5s forwards;
-    }
-
-    .bs-swipe-icon {
-        animation: bsSwipeBounce 1.2s infinite;
-    }
-
-    .bs-swipe-text {
-        font-family: var(--font-primary), sans-serif;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.9);
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        opacity: 0.9;
-        white-space: nowrap;
-    }
-
-    @@keyframes bsSwipeBounce {
-        0%, 100% {
-            transform: translateY(0);
-            opacity: 0.3;
-        }
-        50% {
-            transform: translateY(-8px);
-            opacity: 1;
-        }
-    }
-
-    @@keyframes bsSwipeFade {
-        0% {
-            opacity: 0;
-        }
-        10% {
-            opacity: 1;
-        }
-        80% {
-            opacity: 1;
-        }
-        100% {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
-
-    /* Swipe Peek Animation for the first video card stack */
-    .bs-first-reel-cue {
-        animation: bsFirstReelCueAnimation 2.2s cubic-bezier(0.25, 1, 0.5, 1) 0.5s; /* 0.5s delay to let layout settle */
-    }
-
-    @@keyframes bsFirstReelCueAnimation {
-        0% {
-            transform: translateY(0);
-        }
-        35% {
-            transform: translateY(50%); /* Swipe down to reveal 50% of the next video */
-        }
-        65% {
-            transform: translateY(50%); /* Hold to let user see it */
-        }
-        100% {
-            transform: translateY(0); /* Go back up to 0 */
-        }
-    }
-    /* Benefit Modal Styles */
-    .bs-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        padding: 20px;
-        animation: bsModalFadeIn 0.2s ease-out;
-    }
-
-    .bs-modal-card {
-        position: relative;
-        width: 100%;
-        max-width: 400px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        padding: 32px 24px 24px 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        box-sizing: border-box;
-        animation: bsModalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .bs-modal-close-btn {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: transparent;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-
-    .bs-modal-close-btn:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: var(--text-primary);
-    }
-
-    .bs-modal-icon-container {
-        width: 56px;
-        height: 56px;
-        border-radius: 28px;
-        background-color: rgba(99, 102, 241, 0.1);
-        color: var(--color-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-
-    .bs-modal-title {
-        font-family: var(--font-heading), sans-serif;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 12px 0;
-    }
-
-    .bs-modal-message {
-        font-family: var(--font-primary), sans-serif;
-        font-size: 0.95rem;
-        color: var(--text-secondary);
-        line-height: 1.5;
-        margin: 0 0 28px 0;
-    }
-
-    .bs-modal-more-link {
-        color: var(--color-primary);
-        font-weight: 600;
-        text-decoration: none;
-        transition: color 0.2s ease;
-        display: inline-block;
-    }
-
-    .bs-modal-more-link:hover {
-        color: var(--color-primary-hover, var(--color-primary));
-        text-decoration: underline;
-    }
-
-    @@keyframes bsModalFadeIn {
-        from { background: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
-        to { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); }
-    }
-
-    @@keyframes bsModalSlideUp {
-        from { transform: translateY(20px) scale(0.95); opacity: 0; }
-        to { transform: translateY(0) scale(1); opacity: 1; }
-    }
+	/* --- SWIPE CAROUSEL --- */
+	.bs-carousel-container {
+		width: 100%;
+		overflow: hidden;
+		position: relative;
+		touch-action: pan-y;
+		user-select: none;
+		cursor: grab;
+	}
+
+		.bs-carousel-container:active {
+			cursor: grabbing;
+		}
+
+	.bs-carousel-track {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+		width: 100%;
+	}
+
+	.bs-carousel-slide {
+		width: 100%;
+		flex: 0 0 100%;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+		text-align: center;
+	}
+
+	.bs-carousel-indicators {
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		gap: 12px;
+		margin-top: 1.5rem;
+		padding: 8px 4px;
+	}
+
+	.bs-indicator {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background-color: var(--border-color);
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		transition: all 0.25s ease;
+	}
+
+		.bs-indicator:hover {
+			background-color: var(--text-secondary);
+			transform: scale(1.1);
+		}
+
+		.bs-indicator.active {
+			background-color: var(--color-primary);
+			width: 32px;
+			border-radius: 6px;
+		}
+
+	/* --- COMPACT CATEGORY FILTERS --- */
+	.bs-category-filters-container {
+		position: relative;
+		z-index: 10;
+		width: 100%;
+		max-width: 600px;
+		margin: -10px auto 1rem auto; /* Reduced from 2.5rem to pull videos closer */
+		box-sizing: border-box;
+		transition: all 0.3s ease;
+	}
+
+		.bs-category-filters-container.collapsed {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0 1rem;
+		}
+
+		.bs-category-filters-container.expanded {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+			padding: 1rem;
+			background-color: var(--bg-card);
+			border-radius: 16px;
+			box-shadow: var(--elevation-08dp);
+		}
+
+	.bs-category-filters-scroll {
+		flex: 1;
+		min-width: 0; /* Important for flex child to allow inner scroll */
+	}
+
+	.bs-category-filters-container.collapsed .bs-category-filters-scroll {
+		overflow-x: auto;
+		scrollbar-width: none; /* Firefox */
+		-webkit-overflow-scrolling: touch;
+	}
+
+		.bs-category-filters-container.collapsed .bs-category-filters-scroll::-webkit-scrollbar {
+			display: none; /* Chrome/Safari */
+		}
+
+	.bs-category-filters-container.expanded .bs-category-filters-scroll {
+		overflow: visible;
+	}
+
+	.bs-category-filters-list {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.bs-category-filters-container.collapsed .bs-category-filters-list {
+		flex-wrap: nowrap;
+	}
+
+	.bs-category-filters-container.expanded .bs-category-filters-list {
+		flex-wrap: wrap;
+	}
+
+	.bs-chip {
+		flex: 0 0 auto;
+		height: 32px; /* Smaller height */
+		background-color: var(--bg-card-alt);
+		border: 1px solid var(--border-color);
+		border-radius: 16px;
+		font-family: var(--font-body-2, sans-serif);
+		font-weight: 500;
+		font-size: 0.85rem; /* Smaller text */
+		color: var(--text-primary);
+		padding: 0 12px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+		box-shadow: var(--elevation-01dp);
+	}
+
+		.bs-chip.active {
+			background-color: var(--color-primary);
+			color: var(--bg-page);
+			font-weight: 700;
+			border-color: var(--color-primary);
+		}
+
+	.bs-chip-add {
+		flex: 0 0 auto;
+		height: 32px;
+		background-color: var(--bg-card);
+		border: 1px solid var(--color-primary);
+		border-radius: 16px;
+		font-family: var(--font-body-2, sans-serif);
+		font-weight: 600;
+		font-size: 0.85rem;
+		color: var(--color-primary);
+		padding: 0 12px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+		box-shadow: var(--elevation-01dp);
+	}
+
+	.bs-category-filters-container.expanded .bs-chip-add {
+		align-self: flex-start;
+	}
+
+	.bs-chip-add:hover {
+		background-color: var(--color-primary);
+		color: var(--bg-page);
+	}
+
+	.bs-reels-container {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		height: 480px; /* Locked height for premium scroll container card */
+		max-width: 356px; /* Match standard mobile screen widths */
+		margin: 0 auto;
+		overflow-y: scroll;
+		scroll-snap-type: y mandatory;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+		border-radius: 24px;
+		box-shadow: var(--elevation-08dp);
+	}
+
+		.bs-reels-container::-webkit-scrollbar {
+			display: none;
+		}
+
+	.bs-reel-item {
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
+		flex: 0 0 100%;
+		width: 100%;
+		height: 100%;
+		position: relative;
+		background-color: var(--bg-card);
+		border: 2px solid var(--border-color, var(--bg-card-alt));
+		border-radius: 24px;
+		overflow: hidden;
+		cursor: pointer;
+		pointer-events: auto;
+	}
+
+	/* --- THEATER MODE --- */
+	/* Raise stacking context of parent wrappers when theater mode is active so fixed child is not clipped or hidden by siblings */
+	body.bs-body-theater-mode .bs-homeowner-page-container {
+		z-index: 999999 !important;
+		overflow: visible !important;
+	}
+
+	body.bs-body-theater-mode .bs-homeowner-layout-wrapper {
+		z-index: 999999 !important;
+	}
+
+	.bs-reels-container.in-theater-mode {
+		position: fixed !important;
+		top: 0 !important;
+		left: 0 !important;
+		width: 100vw !important;
+		max-width: none !important;
+		height: 100vh !important;
+		height: 100dvh !important;
+		margin: 0 !important;
+		border-radius: 0 !important;
+		border: none !important;
+		z-index: 999999 !important; /* Float above everything including navbars */
+		background-color: black !important;
+		box-shadow: none !important;
+	}
+
+		.bs-reels-container.in-theater-mode .bs-reel-item {
+			border-radius: 0 !important;
+			border: none !important;
+		}
+
+		.bs-reels-container.in-theater-mode .plyr video,
+		.bs-reels-container.in-theater-mode .bs-reel-video {
+			object-fit: contain !important;
+		}
+
+	.bs-reel-video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* --- PLYR VIDEO CONTROLS FIX --- */
+	/* Force Plyr wrapper to fill the container so vertical videos aren't letterboxed weirdly */
+	#reels-feed-container .plyr {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	#reels-feed-container .plyr__video-wrapper,
+	#reels-feed-container .plyr__video-wrapper video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* Standard controls padding */
+	#reels-feed-container .plyr__controls {
+		padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+		z-index: 20;
+		background: transparent;
+	}
+
+	/* Fix mobile touch scrolling over Plyr video */
+	#reels-feed-container .plyr,
+	#reels-feed-container .plyr * {
+		touch-action: pan-y !important;
+	}
+
+	/* --- THEATER MODE NAVIGATION BUTTONS --- */
+	.bs-theater-btn {
+		display: none; /* Hidden by default */
+		position: absolute;
+		z-index: 30; /* Above everything */
+		background: rgba(0, 0, 0, 0.5);
+		color: white;
+		border: none;
+		border-radius: 50%;
+		width: 56px; /* Increased for better mobile tap target */
+		height: 56px;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		backdrop-filter: blur(4px);
+		transition: background 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+		.bs-theater-btn:hover {
+			background: rgba(0, 0, 0, 0.8);
+			transform: scale(1.1);
+		}
+
+	/* Only show these buttons when theater mode is active */
+	.bs-theater-mode .bs-theater-btn {
+		display: flex;
+	}
+
+	/* Hide theater buttons when Plyr auto-hides controls, but add a delay so they don't vanish too fast */
+	.bs-theater-mode .plyr.plyr--hide-controls ~ .bs-theater-btn {
+		opacity: 0;
+		pointer-events: none; /* Prevents clicks on the invisible close button */
+		/* Removed pointer-events: none; to fix the desktop hover flickering bug, but added transition for pointer-events to prevent clicks when invisible */
+		transition: opacity 0.5s ease 0.5s, pointer-events 0s linear 1s; /* 0.5s delay before fading out, pointer-events: none after fade finishes */
+	}
+
+	.bs-theater-close {
+		top: calc(20px + env(safe-area-inset-top, 0px));
+		right: calc(20px + env(safe-area-inset-right, 0px));
+	}
+
+
+	@@media (min-width: 992px) {
+		/* Larger video card in normal mode on desktop */
+		.bs-reels-container:not(.in-theater-mode) {
+			height: 600px !important;
+			max-width: 440px !important;
+		}
+		/* Center the vertical video in theater mode with 9:16 ratio */
+		.bs-reels-container.in-theater-mode .plyr {
+			position: absolute !important;
+			top: 0 !important;
+			bottom: 0 !important;
+			left: 50% !important;
+			transform: translateX(-50%) !important;
+			width: auto !important;
+			height: 100% !important;
+			aspect-ratio: 9 / 16 !important;
+			max-width: calc(100vh * (9/16)) !important;
+			max-width: calc(100dvh * (9/16)) !important;
+		}
+		/* Adjust theater close button on desktop */
+		.bs-reels-container.in-theater-mode .bs-theater-close {
+			position: fixed !important;
+			top: 100px !important;
+			right: 40px !important;
+			z-index: 1000000 !important;
+		}
+	}
+
+	/* Hero Header & Subtitle Styles (Figma Web Header 11 compliant) */
+	.bs-homeowner-page-container {
+		display: flex;
+		flex-direction: column;
+		background-color: var(--bg-card);
+		width: 100%;
+		margin-bottom: 2rem;
+		position: relative;
+		border-radius: 24px;
+		overflow: hidden;
+		border: 1px solid var(--border-color);
+		box-shadow: var(--elevation-02dp);
+	}
+
+	.bs-homeowner-layout-wrapper {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		position: relative;
+		z-index: 2;
+	}
+
+	.bs-homeowner-content-col {
+		width: 100%;
+		padding: 2rem 1.5rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+	}
+
+	.bs-homeowner-visual-col {
+		width: 100%;
+		padding: 2rem 1.5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		min-height: 400px;
+	}
+
+	.bs-hero-bg-split {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 45%;
+		height: 100%;
+		background-color: var(--bg-card-alt);
+		opacity: 0.5;
+		z-index: 1;
+		border-left: 1px solid var(--border-color);
+	}
+
+	.bs-hero-title {
+		font: var(--font-h2);
+		font-weight: 800;
+		color: var(--text-primary);
+	}
+
+	.bs-hero-subtitle {
+		font: var(--font-body-1);
+		color: var(--text-secondary);
+		line-height: 1.5;
+	}
+
+	.bs-hero-cta {
+		border-radius: 12px;
+		font-weight: bold;
+		font-size: 0.95rem;
+		max-width: 356px;
+		margin: 0 auto;
+		display: block;
+	}
+
+	.bs-hero-mini-logo {
+		font-family: var(--font-heading), sans-serif;
+		font-weight: 700;
+		font-size: 1.5rem;
+		color: var(--color-primary);
+		margin-bottom: 0.25rem;
+	}
+
+	.bs-hero-mini-slogan {
+		font: var(--font-body-2);
+		color: var(--text-muted);
+		margin-bottom: 1.5rem;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+
+	.bs-social-icons {
+		display: flex;
+		gap: 16px;
+		margin-top: 1.5rem;
+		color: var(--text-muted);
+		justify-content: center;
+	}
+
+	.bs-social-icon-link {
+		color: inherit;
+		transition: color 0.2s ease;
+	}
+
+		.bs-social-icon-link:hover {
+			color: var(--color-primary);
+		}
+
+	/* Reels container integration styling */
+	.bs-homeowner-visual-col .bs-reels-container {
+		position: relative;
+		margin: 0 auto;
+	}
+
+	@@media (min-width: 992px) and (min-height: 800px) {
+		html, body {
+			overflow: hidden !important;
+		}
+	}
+
+	@@media (min-width: 992px) {
+		.bs-homeowner-layout-wrapper {
+			flex-direction: row;
+			min-height: 600px;
+		}
+
+		.bs-homeowner-content-col {
+			width: 55%;
+			padding: 3rem 4rem;
+			align-items: flex-start;
+			text-align: left;
+		}
+
+		.bs-homeowner-visual-col {
+			width: 45%;
+			padding: 3rem;
+			min-height: 520px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: flex-start;
+		}
+
+		.bs-hero-cta {
+			margin: 0;
+		}
+
+		.bs-carousel-slide {
+			align-items: flex-start;
+			text-align: left;
+		}
+	}
+
+	@@media (max-width: 991px) {
+		.bs-homeowner-page-container {
+			border-radius: 16px;
+		}
+
+		.bs-homeowner-content-col {
+			order: 3;
+		}
+
+		.bs-homeowner-visual-col {
+			order: 2;
+			min-height: 400px;
+			padding: 1rem 0;
+		}
+
+
+
+		.bs-hero-title {
+			font: var(--font-h5);
+			font-weight: 800;
+		}
+
+		.bs-hero-subtitle {
+			font: var(--font-body-2);
+		}
+	}
+
+	/* FAQ & Benefits Section styles */
+	.bs-reels-faq-section {
+		display: block; /* Always visible to show core benefits */
+		width: 100%;
+		max-width: 356px;
+		margin: 1.5rem auto 0 auto;
+		padding: 20px;
+		background-color: var(--bg-card);
+		border: 1px solid var(--border-color);
+		border-radius: 20px;
+		box-shadow: var(--elevation-02dp);
+		transition: all 0.3s ease;
+	}
+
+		.bs-reels-faq-section:hover {
+			box-shadow: var(--elevation-04dp);
+		}
+
+
+
+	.bs-reels-faq-header h4 {
+		color: var(--text-primary);
+		font-family: var(--font-primary), sans-serif;
+	}
+
+	.bs-reels-faq-header p {
+		color: var(--text-muted);
+	}
+
+	.bs-faq-benefit-item {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 12px;
+		background-color: var(--bg-card-alt);
+		border: 1px solid var(--border-color);
+		border-radius: 12px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		text-align: left;
+	}
+
+		.bs-faq-benefit-item:hover {
+			border-color: var(--color-primary);
+			transform: translateY(-2px);
+			box-shadow: var(--elevation-01dp);
+		}
+
+	.bs-benefit-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background-color: var(--bg-card);
+		border: 1px solid var(--border-color);
+		color: var(--color-primary);
+		flex-shrink: 0;
+	}
+
+	.bs-benefit-content h5 {
+		font-size: 0.9rem;
+		color: var(--text-primary);
+		margin: 0;
+	}
+
+	.bs-benefit-content p {
+		font-size: 0.75rem;
+		line-height: 1.4;
+		margin: 0;
+		color: var(--text-secondary);
+	}
+
+	/* Responsive limits for Desktop viewports */
+	@@media (min-width: 992px) {
+		.bs-reels-faq-section {
+			max-width: 440px !important;
+		}
+	}
+
+	/* Swipe Guide Hint Indicator */
+	.bs-swipe-indicator {
+		position: absolute;
+		bottom: 50px;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		z-index: 99; /* Higher than Plyr players and posters */
+		color: white; /* Hardcoded white for dark/video overlay context */
+		background: rgba(17, 17, 17, 0.75);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		padding: 8px 18px;
+		border-radius: 20px;
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		box-shadow: var(--elevation-03dp);
+		pointer-events: none; /* Let swipes pass through to the video container */
+		animation: bsSwipeFade 8.5s forwards;
+	}
+
+	.bs-swipe-icon {
+		animation: bsSwipeBounce 1.2s infinite;
+	}
+
+	.bs-swipe-text {
+		font-family: var(--font-primary), sans-serif;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.9);
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
+		opacity: 0.9;
+		white-space: nowrap;
+	}
+
+	@@keyframes bsSwipeBounce {
+		0%, 100% {
+			transform: translateY(0);
+			opacity: 0.3;
+		}
+
+		50% {
+			transform: translateY(-8px);
+			opacity: 1;
+		}
+	}
+
+	@@keyframes bsSwipeFade {
+		0% {
+			opacity: 0;
+		}
+
+		10% {
+			opacity: 1;
+		}
+
+		80% {
+			opacity: 1;
+		}
+
+		100% {
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+
+	/* Swipe Peek Animation for the first video card stack */
+	.bs-first-reel-cue {
+		animation: bsFirstReelCueAnimation 2.2s cubic-bezier(0.25, 1, 0.5, 1) 0.5s; /* 0.5s delay to let layout settle */
+	}
+
+	@@keyframes bsFirstReelCueAnimation {
+		0% {
+			transform: translateY(0);
+		}
+
+		35% {
+			transform: translateY(50%); /* Swipe down to reveal 50% of the next video */
+		}
+
+		65% {
+			transform: translateY(50%); /* Hold to let user see it */
+		}
+
+		100% {
+			transform: translateY(0); /* Go back up to 0 */
+		}
+	}
+	/* Benefit Modal Styles */
+	.bs-modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.4);
+		backdrop-filter: blur(10px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 10000;
+		padding: 20px;
+		animation: bsModalFadeIn 0.2s ease-out;
+	}
+
+	.bs-modal-card {
+		position: relative;
+		width: 100%;
+		max-width: 400px;
+		background: var(--bg-card);
+		border: 1px solid var(--border-color);
+		border-radius: 20px;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+		padding: 32px 24px 24px 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		box-sizing: border-box;
+		animation: bsModalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.bs-modal-close-btn {
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		background: transparent;
+		border: none;
+		color: var(--text-secondary);
+		cursor: pointer;
+		padding: 8px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+	}
+
+		.bs-modal-close-btn:hover {
+			background-color: rgba(0, 0, 0, 0.05);
+			color: var(--text-primary);
+		}
+
+	.bs-modal-icon-container {
+		width: 56px;
+		height: 56px;
+		border-radius: 28px;
+		background-color: rgba(99, 102, 241, 0.1);
+		color: var(--color-primary);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 20px;
+	}
+
+	.bs-modal-title {
+		font-family: var(--font-heading), sans-serif;
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin: 0 0 12px 0;
+	}
+
+	.bs-modal-message {
+		font-family: var(--font-primary), sans-serif;
+		font-size: 0.95rem;
+		color: var(--text-secondary);
+		line-height: 1.5;
+		margin: 0 0 28px 0;
+	}
+
+	.bs-modal-more-link {
+		color: var(--color-primary);
+		font-weight: 600;
+		text-decoration: none;
+		transition: color 0.2s ease;
+		display: inline-block;
+	}
+
+		.bs-modal-more-link:hover {
+			color: var(--color-primary-hover, var(--color-primary));
+			text-decoration: underline;
+		}
+
+	@@keyframes bsModalFadeIn {
+		from {
+			background: rgba(0, 0, 0, 0);
+			backdrop-filter: blur(0px);
+		}
+
+		to {
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(10px);
+		}
+	}
+
+	@@keyframes bsModalSlideUp {
+		from {
+			transform: translateY(20px) scale(0.95);
+			opacity: 0;
+		}
+
+		to {
+			transform: translateY(0) scale(1);
+			opacity: 1;
+		}
+	}
 </style>
 
 @code {
-    private int _activeSlideIndex = 0;
-    private double _pointerStartX;
-    private System.Threading.Timer? _autoPlayTimer;
+	public static Action? OnFeedResetRequested;
 
-    private void OnPointerDown(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
-    {
-        _pointerStartX = e.ClientX;
-    }
+	private int _activeSlideIndex = 0;
+	private double _pointerStartX;
+	private System.Threading.Timer? _autoPlayTimer;
 
-    private void OnPointerUp(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
-    {
-        var diffX = e.ClientX - _pointerStartX;
-        if (Math.Abs(diffX) > 40)
-        {
-            if (diffX < 0)
-            {
-                _activeSlideIndex = 1;
-            }
-            else
-            {
-                _activeSlideIndex = 0;
-            }
-            ResetAutoPlayTimer();
-        }
-    }
+	private void OnPointerDown(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+	{
+		_pointerStartX = e.ClientX;
+	}
 
-    private void ResetAutoPlayTimer()
-    {
-        _autoPlayTimer?.Change(7000, 7000);
-    }
+	private void OnPointerUp(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+	{
+		var diffX = e.ClientX - _pointerStartX;
+		if (Math.Abs(diffX) > 40)
+		{
+			if (diffX < 0)
+			{
+				_activeSlideIndex = 1;
+			}
+			else
+			{
+				_activeSlideIndex = 0;
+			}
+			ResetAutoPlayTimer();
+		}
+	}
 
-    private string _errorMessage = string.Empty;
-    private DotNetObjectReference<Feed>? _objRef;
-    private bool _isJsInitialized = false;
+	private void ResetAutoPlayTimer()
+	{
+		_autoPlayTimer?.Change(7000, 7000);
+	}
 
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+	private string _errorMessage = string.Empty;
+	private DotNetObjectReference<Feed>? _objRef;
+	private bool _isJsInitialized = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            if (ViewModel != null)
-            {
-                ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-                await ViewModel.LoadFeedCommand.ExecuteAsync(null);
-            }
+	[Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
-            _autoPlayTimer = new System.Threading.Timer(_ =>
-            {
-                if (ViewModel.IsHomeowner)
-                {
-                    _activeSlideIndex = (_activeSlideIndex + 1) % 2;
-                    InvokeAsync(StateHasChanged);
-                }
-            }, null, 7000, 7000);
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = ex.Message;
-            Console.WriteLine($"[Feed.razor] OnInitializedAsync Error: {ex}");
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			OnFeedResetRequested += ResetFeed;
+			if (ViewModel != null)
+			{
+				ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+				await ViewModel.LoadFeedCommand.ExecuteAsync(null);
+			}
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (ViewModel.IsHomeowner && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
-        {
-            try
-            {
-                if (firstRender || !_isJsInitialized)
-                {
-                    _objRef = DotNetObjectReference.Create(this);
-                    await JSRuntime.InvokeVoidAsync("reelsObserver.initialize", _objRef, "reels-feed-container");
-                    _isJsInitialized = true;
-                }
-                
-                // Re-observe elements (the JS safely handles duplicates)
-                foreach (var video in ViewModel.FeedVideos)
-                {
-                    var vId = $"video_{video.Id}";
-                    var wId = $"wrapper_{vId}";
-                    await JSRuntime.InvokeVoidAsync("reelsObserver.observeVideo", wId, vId);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Graceful degradation: The video will still render and have controls, 
-                // but auto-play on scroll won't work until the browser cache is cleared.
-                Console.WriteLine($"[Feed.razor] JSInterop Error: {ex.Message}. Please Hard Refresh (Ctrl+F5) to clear browser cache.");
-            }
-        }
-    }
+			_autoPlayTimer = new System.Threading.Timer(_ =>
+			{
+				if (ViewModel.IsHomeowner)
+				{
+					_activeSlideIndex = (_activeSlideIndex + 1) % 2;
+					InvokeAsync(StateHasChanged);
+				}
+			}, null, 7000, 7000);
+		}
+		catch (Exception ex)
+		{
+			_errorMessage = ex.Message;
+			Console.WriteLine($"[Feed.razor] OnInitializedAsync Error: {ex}");
+		}
+	}
 
-    [JSInvokable]
-    public async Task OnVideoVisible(string videoId)
-    {
-        if (!string.IsNullOrEmpty(videoId) && videoId.StartsWith("video_"))
-        {
-            var guidStr = videoId.Substring(6);
-            if (Guid.TryParse(guidStr, out var id))
-            {
-                ViewModel.ActiveVideoId = id;
-                if (ViewModel.ShouldLoadMore())
-                {
-                    // Fire and forget
-                    _ = ViewModel.LoadMoreFeedMediaAsync();
-                }
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-    }
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (ViewModel.IsHomeowner && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
+		{
+			try
+			{
+				if (firstRender || !_isJsInitialized)
+				{
+					_objRef = DotNetObjectReference.Create(this);
+					await JSRuntime.InvokeVoidAsync("reelsObserver.initialize", _objRef, "reels-feed-container");
+					_isJsInitialized = true;
+				}
 
-    private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-profile?TradesmanId={id}");
+				// Re-observe elements (the JS safely handles duplicates)
+				foreach (var video in ViewModel.FeedVideos)
+				{
+					var vId = $"video_{video.Id}";
+					var wId = $"wrapper_{vId}";
+					await JSRuntime.InvokeVoidAsync("reelsObserver.observeVideo", wId, vId);
+				}
+			}
+			catch (Exception ex)
+			{
+				// Graceful degradation: The video will still render and have controls,
+				// but auto-play on scroll won't work until the browser cache is cleared.
+				Console.WriteLine($"[Feed.razor] JSInterop Error: {ex.Message}. Please Hard Refresh (Ctrl+F5) to clear browser cache.");
+			}
+		}
+	}
 
-    private async Task ClearVideos()
-    {
-        if (_isJsInitialized)
-        {
-            try
-            {
-                await JSRuntime.InvokeVoidAsync("reelsObserver.clearAll");
-            }
-            catch { /* ignore */ }
-        }
-    }
+	[JSInvokable]
+	public async Task OnVideoVisible(string videoId)
+	{
+		if (!string.IsNullOrEmpty(videoId) && videoId.StartsWith("video_"))
+		{
+			var guidStr = videoId.Substring(6);
+			if (Guid.TryParse(guidStr, out var id))
+			{
+				ViewModel.ActiveVideoId = id;
+				if (ViewModel.ShouldLoadMore())
+				{
+					// Fire and forget
+					_ = ViewModel.LoadMoreFeedMediaAsync();
+				}
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+	}
 
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        InvokeAsync(StateHasChanged);
-    }
+	private void NavigateToTradesmanProfile(string id) => NavManager.NavigateTo($"/tradesman-profile?TradesmanId={id}");
 
-    private bool _showAuthModal = false;
-    private bool _showBenefitModal = false;
-    private string _benefitType = "";
+	private async Task ClearVideos()
+	{
+		if (_isJsInitialized)
+		{
+			try
+			{
+				await JSRuntime.InvokeVoidAsync("reelsObserver.clearAll");
+			}
+			catch { /* ignore */ }
+		}
+	}
 
-    private void ShowBenefitModal(string type)
-    {
-        _benefitType = type;
-        _showBenefitModal = true;
-    }
+	private async void ResetFeed()
+	{
+		await InvokeAsync(async () =>
+		{
+			// 1. Close theater mode if open
+			if (_isJsInitialized)
+			{
+				try
+				{
+					await JSRuntime.InvokeVoidAsync("reelsObserver.closeTheaterMode");
+				}
+				catch { }
+			}
 
-    private void HandleBenefitCtaClick()
-    {
-        _showBenefitModal = false;
-        HandleCreateProjectClick();
-    }
+			// 2. Clear category filter and load original feed
+			await ClearVideos();
+			if (ViewModel != null)
+			{
+				await ViewModel.SelectCategoryCommand.ExecuteAsync(null);
+				await ViewModel.LoadFeedCommand.ExecuteAsync(null);
+			}
 
-    private void HandleCreateProjectClick()
-    {
-        if (AuthService != null && !AuthService.IsAuthenticated)
-        {
-            _showAuthModal = true;
-        }
-        else
-        {
-            NavigateToWizard();
-        }
-    }
+			// 3. Scroll page back to top
+			if (_isJsInitialized)
+			{
+				try
+				{
+					await JSRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+				}
+				catch { }
+			}
 
-    private void OnAuthConfirmationChanged(bool proceed)
-    {
-        _showAuthModal = false;
-        if (proceed)
-        {
-            NavigateToWizard();
-        }
-    }
+			StateHasChanged();
+		});
+	}
 
-    private void NavigateToWizard()
-    {
-        string targetUrl = ViewModel.SelectedCategoryId.HasValue 
-            ? $"/job-wizard?TargetCategoryId={ViewModel.SelectedCategoryId.Value}" 
-            : "/job-wizard";
-        NavManager.NavigateTo(targetUrl);
-    }
+	private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		InvokeAsync(StateHasChanged);
+	}
 
-    public async ValueTask DisposeAsync()
-    {
-        _autoPlayTimer?.Dispose();
-        if (ViewModel != null)
-        {
-            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        }
-        
-        if (_isJsInitialized)
-        {
-            try
-            {
-                await JSRuntime.InvokeVoidAsync("reelsObserver.dispose");
-            }
-            catch { /* Ignore if JS interop is disconnected */ }
-        }
-        _objRef?.Dispose();
-    }
+	private bool _showAuthModal = false;
+	private bool _showBenefitModal = false;
+	private string _benefitType = "";
+
+	private void ShowBenefitModal(string type)
+	{
+		_benefitType = type;
+		_showBenefitModal = true;
+	}
+
+	private void HandleBenefitCtaClick()
+	{
+		_showBenefitModal = false;
+		HandleCreateProjectClick();
+	}
+
+	private async void HandleCreateProjectClick()
+	{
+		bool isGuest = await CheckIsGuestAsync();
+		if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+		{
+			_showAuthModal = true;
+			StateHasChanged();
+		}
+		else
+		{
+			NavigateToWizard();
+		}
+	}
+
+	private async void OnAuthConfirmationChanged(bool proceed)
+	{
+		_showAuthModal = false;
+		if (proceed)
+		{
+			bool isGuest = await CheckIsGuestAsync();
+			if (isGuest)
+			{
+				NavManager.NavigateTo("/login");
+			}
+			else
+			{
+				NavigateToWizard();
+			}
+		}
+	}
+
+	private void NavigateToWizard()
+	{
+		string targetUrl = ViewModel.SelectedCategoryId.HasValue
+			? $"/job-wizard?TargetCategoryId={ViewModel.SelectedCategoryId.Value}"
+			: "/job-wizard";
+		NavManager.NavigateTo(targetUrl);
+	}
+
+	private async Task<bool> CheckIsGuestAsync()
+	{
+		try
+		{
+			if (AuthService == null) return false;
+			var token = await AuthService.GetTokenAsync();
+			if (string.IsNullOrEmpty(token)) return false;
+			var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+			var jwtToken = handler.ReadJwtToken(token);
+			var email = jwtToken.Claims.FirstOrDefault(c =>
+				c.Type == "email" ||
+				c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+			return email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		OnFeedResetRequested -= ResetFeed;
+		_autoPlayTimer?.Dispose();
+		if (ViewModel != null)
+		{
+			ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+		}
+
+		if (_isJsInitialized)
+		{
+			try
+			{
+				await JSRuntime.InvokeVoidAsync("reelsObserver.dispose");
+			}
+			catch { /* Ignore if JS interop is disconnected */ }
+		}
+		_objRef?.Dispose();
+	}
 }

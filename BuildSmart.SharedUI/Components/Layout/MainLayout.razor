@@ -21,7 +21,7 @@
     <div class="mobile-header">
         @if (!_isGuest)
         {
-            <div class="logo-block" @onclick='() => Navigate("/feed")'>
+            <div class="logo-block" @onclick='() => HandleFeedNavigation()'>
                 <div class="logo-icon" style="width: 32px; height: 32px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -32,7 +32,7 @@
         }
         else
         {
-            <div class="logo-block">
+            <div class="logo-block" @onclick='() => HandleFeedNavigation()' style="cursor: pointer;">
                 <div class="logo-icon" style="width: 32px; height: 32px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -56,6 +56,17 @@
                     }
                 </a>
             }
+            else
+            {
+                <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 py-1 px-2" @onclick="HandleExitClick" @onclick:preventDefault="true" style="font-size: 0.8rem; border-radius: 12px; font-weight: 600; background: transparent; border: 1px solid var(--color-danger, #ff3b30); color: var(--color-danger, #ff3b30);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    @(_currentLang == "bg" ? "Изход" : "Exit")
+                </button>
+            }
         </div>
     </div>
 
@@ -63,7 +74,7 @@
 
     <div class="sidebar shadow-sm @(_isSidebarOpen ? "open" : "")">
         <div class="sidebar-header">
-            <div class="logo-block" @onclick='() => Navigate("/feed")'>
+            <div class="logo-block" @onclick='() => HandleFeedNavigation()'>
                 <div class="logo-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -78,23 +89,17 @@
         <div class="nav flex-column sidebar-nav">
             
             <!-- Standard Blazor Links -->
-            @if (!_isGuest)
-            {
-                <a class="nav-item-dark" href="feed" @onclick="CloseSidebar">
-                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                    @Loc["Nav_Marketplace"]
-                </a>
-            }
+            <a class="nav-item-dark" href="feed" @onclick="CloseSidebar">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                @Loc["Nav_Marketplace"]
+            </a>
 
             <!-- Role-based Native XAML Bridges & Blazor Pages -->
             <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman, Admin, ADMIN, admin">
-                @if (!_isGuest)
-                {
                     <a class="nav-item-dark" href="/my-projects" @onclick="CloseSidebar">
                         <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                         @Loc["Nav_MyProjects"]
                     </a>
-                }
                 <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman" Context="innerContext">
                     @if (_hasProjects)
                     {
@@ -154,6 +159,17 @@
                 </a>
             </AuthorizeView>
 
+                <a class="nav-item-dark" @onclick="HandleSupportChatClick" style="cursor: pointer; position: relative;">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+                @(_currentLang == "bg" ? "Чат за поддръжка" : "Support Chat")
+                @if (_isStartingChat)
+                {
+                    <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true" style="width: 12px; height: 12px; border-width: 2px; vertical-align: middle;"></span>
+                }
+            </a>
+
         </div>
 
         <div class="sidebar-account">
@@ -188,7 +204,7 @@
                     </div>
                 </div>
             }
-            <button class="logout-btn" @onclick="ShowLogoutConfirmation" @onclick:preventDefault title="@(_isGuest ? "Exit Chat" : "Logout")">
+            <button type="button" class="logout-btn" @onclick="HandleExitClick" @onclick:preventDefault="true" title="@(_isGuest ? "Exit Chat" : "Logout")">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2 2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </button>
         </div>
@@ -219,35 +235,35 @@
     </main>
 
     <!-- Bottom Mobile Navigation Bar -->
-    @if (!_isGuest)
-    {
-        <div class="mobile-bottom-nav">
-            <a class="bottom-nav-item @(IsActivePage("/feed") ? "active" : "")" @onclick='() => Navigate("/feed")'>
-                <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-                <span class="bottom-nav-text">@Loc["Nav_Marketplace"]</span>
-            </a>
+    <div class="mobile-bottom-nav">
+        <a class="bottom-nav-item @(IsActivePage("/feed") || IsActivePage("/") ? "active" : "")" @onclick='() => HandleFeedNavigation()'>
+            <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span class="bottom-nav-text">@Loc["Nav_Marketplace"]</span>
+        </a>
             <a class="bottom-nav-item @(IsActivePage("/my-projects") ? "active" : "")" @onclick='() => Navigate("/my-projects")'>
                 <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span class="bottom-nav-text">@Loc["Nav_MyProjects"]</span>
             </a>
-            @if (_hasProjects)
-            {
-                <a class="bottom-nav-item @(IsChatActive() ? "active" : "")" @onclick="NavigateToChat" style="position: relative;">
-                    <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    @if (_hasUnreadChatMessages)
-                    {
-                        <span class="chat-unread-dot"></span>
-                    }
-                    <span class="bottom-nav-text">@Loc["Nav_Chat"]</span>
-                </a>
-            }
+        @if (_hasProjects || _isGuest)
+        {
+            <a class="bottom-nav-item @(IsChatActive() ? "active" : "")" @onclick="HandleSupportChatClick" style="position: relative;">
+                <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                @if (_hasUnreadChatMessages && !_isGuest)
+                {
+                    <span class="chat-unread-dot"></span>
+                }
+                <span class="bottom-nav-text">@(_isGuest ? (_currentLang == "bg" ? "Чат" : "Chat") : Loc["Nav_Chat"])</span>
+            </a>
+        }
+        @if (!_isGuest)
+        {
             <a class="bottom-nav-item @(IsActivePage("/user-profile") ? "active" : "")" @onclick='() => Navigate("/user-profile")'>
                 <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -255,8 +271,8 @@
                 </svg>
                 <span class="bottom-nav-text">@Loc["Settings_Title"]</span>
             </a>
-        </div>
-    }
+        }
+    </div>
     <!-- Auth Prompt Modal -->
     <BsConfirmationModal IsVisible="_showAuthModal"
                          Title="@Loc["Feed_AuthAlert_Title"]"
@@ -272,6 +288,19 @@
                          AcceptText="@Loc["MainLayout_LogoutAlert_Accept"]"
                          CancelText="@Loc["MainLayout_LogoutAlert_Cancel"]"
                          OnConfirmationChanged="OnLogoutConfirmationChanged" />
+
+    @if (!IsActivePage("/project-messages") && !IsActivePage("/admin-support-chats"))
+    {
+        <button class="bs-floating-chat-btn" @onclick="HandleSupportChatClick" title="@(_currentLang == "bg" ? "Чат за поддръжка" : "Support Chat")">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            @if (_isStartingChat)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width: 14px; height: 14px; border-width: 2px; position: absolute; top: 12px; right: 12px;"></span>
+            }
+        </button>
+    }
 </div>
 
 <style>
@@ -535,7 +564,7 @@
             margin-left: 0;
             width: 100%;
             padding-top: 60px; /* Space for fixed mobile header */
-            padding-bottom: 74px; /* Space for bottom sticky menu */
+            padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px)); /* Space for bottom sticky menu + safe area */
         }
 
         .mobile-header {
@@ -592,13 +621,13 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 64px;
+            height: calc(64px + env(safe-area-inset-bottom, 0px));
             background-color: var(--bg-card);
             border-top: 1px solid var(--border-color);
             z-index: 95;
             justify-content: space-around;
             align-items: center;
-            padding: 4px 8px 12px 8px; /* Extra bottom padding for safe area / iOS home bar */
+            padding: 4px 8px calc(12px + env(safe-area-inset-bottom, 0px)) 8px; /* Extra bottom padding for safe area / iOS home bar */
             box-sizing: border-box;
             box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
         }
@@ -682,6 +711,45 @@
             box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
         }
     }
+    .bs-floating-chat-btn {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+        background-color: var(--color-primary);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 999;
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .bs-floating-chat-btn:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+    }
+    .bs-floating-chat-btn:active {
+        transform: scale(0.95);
+    }
+    @@media (max-width: 991px) {
+        .bs-floating-chat-btn {
+            bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+            right: 20px;
+        }
+    }
+
+    /* Hide layout components when video theater mode is active for full immersion */
+    body.bs-body-theater-mode .mobile-header,
+    body.bs-body-theater-mode .mobile-bottom-nav,
+    body.bs-body-theater-mode .sidebar,
+    body.bs-body-theater-mode .bs-floating-chat-btn {
+        display: none !important;
+    }
 </style>
 
 @code {
@@ -696,6 +764,7 @@
     private bool _isGuest = false;
     private Guid? _supportProjectId;
     private bool _hasProjects = false;
+    private bool _isStartingChat = false;
 
     private static bool _hasAttemptedLanguageSync = false;
 
@@ -965,11 +1034,25 @@
     {
         CloseSidebar();
         
-        bool isRestricted = route.Contains("/my-projects") || 
-                            route.Contains("/user-profile") || 
+        bool isRestricted = route.Contains("/user-profile") || 
                             route.Contains("/job-wizard");
                             
-        if (isRestricted && AuthService != null && !AuthService.IsAuthenticated)
+        bool isMyProjects = route.Contains("/my-projects");
+
+        bool needsLogin = false;
+        if (AuthService != null)
+        {
+            if (!AuthService.IsAuthenticated)
+            {
+                needsLogin = true;
+            }
+            else if (_isGuest && isRestricted)
+            {
+                needsLogin = true;
+            }
+        }
+                            
+        if (needsLogin)
         {
             _pendingNavigationRoute = route;
             _showAuthModal = true;
@@ -980,15 +1063,49 @@
         NavigationBridge.NavigateToAsync(route);
     }
 
+    private void HandleFeedNavigation()
+    {
+        var uri = new Uri(NavManager.Uri);
+        var path = uri.AbsolutePath.ToLower();
+        
+        if (path == "/" || path == "/feed")
+        {
+            BuildSmart.SharedUI.Components.Pages.Feed.OnFeedResetRequested?.Invoke();
+        }
+        else
+        {
+            Navigate("/feed");
+        }
+    }
+
     private void OnAuthConfirmationChanged(bool proceed)
     {
         _showAuthModal = false;
         if (proceed && !string.IsNullOrEmpty(_pendingNavigationRoute))
         {
-            NavigationBridge.NavigateToAsync(_pendingNavigationRoute);
+            if (_isGuest)
+            {
+                Navigate("/login");
+            }
+            else
+            {
+                NavigationBridge.NavigateToAsync(_pendingNavigationRoute);
+            }
         }
         _pendingNavigationRoute = null;
         StateHasChanged();
+    }
+
+    private async Task HandleExitClick()
+    {
+        if (_isGuest)
+        {
+            await LogoutAsync();
+        }
+        else
+        {
+            ShowLogoutConfirmation();
+        }
     }
 
     private void ShowLogoutConfirmation()
@@ -1112,6 +1229,11 @@
         EnforceGuestRestrictions();
         InvokeAsync(async () =>
         {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("reelsObserver.closeTheaterMode");
+            }
+            catch { }
             await LoadUnreadStatusAsync();
             await LoadProjectsStatusAsync();
             StateHasChanged();
@@ -1150,11 +1272,19 @@
                 
                 bool isAllowedPage = path.Equals("privacy", StringComparison.OrdinalIgnoreCase) ||
                                      path.Equals("terms", StringComparison.OrdinalIgnoreCase) ||
-                                     path.Equals("project-messages", StringComparison.OrdinalIgnoreCase);
+                                     path.Equals("project-messages", StringComparison.OrdinalIgnoreCase) ||
+                                     path.Equals("feed", StringComparison.OrdinalIgnoreCase) ||
+                                     path.Equals("my-projects", StringComparison.OrdinalIgnoreCase) ||
+                                     path.Equals("project-detail", StringComparison.OrdinalIgnoreCase) ||
+                                     string.IsNullOrEmpty(path);
                                      
                 if (!isAllowedPage)
                 {
-                    if (_supportProjectId.HasValue)
+                    if (path.Equals("job-wizard", StringComparison.OrdinalIgnoreCase) || path.Equals("user-profile", StringComparison.OrdinalIgnoreCase))
+                    {
+                        NavManager.NavigateTo("/login");
+                    }
+                    else if (_supportProjectId.HasValue)
                     {
                         NavManager.NavigateTo($"/project-messages?projectId={_supportProjectId.Value}");
                     }
@@ -1302,6 +1432,73 @@
         {
             Console.WriteLine($"[MainLayout] Error in NavigateToChat: {ex.Message}");
             NavigationBridge.NavigateToAsync("/my-projects");
+        }
+    }
+
+    private async Task HandleSupportChatClick()
+    {
+        CloseSidebar();
+
+        // 1. If already a guest with a support project, go directly to it
+        if (_isGuest && _supportProjectId.HasValue)
+        {
+            NavManager.NavigateTo($"/project-messages?projectId={_supportProjectId.Value}");
+            return;
+        }
+
+        // 2. If admin, go to admin support board
+        bool isAdmin = false;
+        bool isAuthenticated = false;
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            isAuthenticated = user.Identity?.IsAuthenticated == true;
+            isAdmin = user.IsInRole("Admin") || user.IsInRole("ADMIN") || user.IsInRole("admin");
+        }
+        catch { }
+
+        if (isAdmin)
+        {
+            NavigationBridge.NavigateToAsync("/admin-support-chats");
+            return;
+        }
+
+        // 3. If authenticated regular user, navigate to chat
+        if (isAuthenticated)
+        {
+            await NavigateToChat();
+            return;
+        }
+
+        // 4. Otherwise, start an anonymous support chat session (guest)
+        if (_isStartingChat) return;
+        _isStartingChat = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await ApiClient.StartAnonymousSupportChat.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.StartAnonymousSupportChat != null)
+            {
+                var payload = result.Data.StartAnonymousSupportChat;
+                await AuthService.SaveTokenAsync(payload.Token);
+                NavManager.NavigateTo($"/project-messages?projectId={payload.ProjectId}", forceLoad: true);
+            }
+            else
+            {
+                var error = result.Errors.FirstOrDefault()?.Message ?? "Failed to start support chat.";
+                System.Diagnostics.Debug.WriteLine($"[MainLayout] Error starting chat: {error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainLayout] Exception starting chat: {ex.Message}");
+        }
+        finally
+        {
+            _isStartingChat = false;
+            StateHasChanged();
         }
     }
 }

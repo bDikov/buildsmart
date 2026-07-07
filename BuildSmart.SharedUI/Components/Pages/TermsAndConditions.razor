@@ -2,6 +2,7 @@
 @attribute [AllowAnonymous]
 @layout BuildSmart.SharedUI.Components.Layout.BlankLayout
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 
 <div class="legal-page-container">
     <div class="legal-card bs-card">
@@ -317,6 +318,10 @@
 @code {
     private bool isBulgarian = true;
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
     protected override void OnInitialized()
     {
         var currentCultureName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
@@ -328,8 +333,24 @@
         isBulgarian = bulgarian;
     }
 
-    private void GoBack()
+    private async Task GoBack()
     {
-        NavManager.NavigateTo("/");
+        var fallback = string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl;
+        await JSRuntime.InvokeVoidAsync("eval", $@"
+            (function() {{
+                var originalPath = window.location.pathname;
+                var hasBack = window.history.length > 1;
+                if (hasBack) {{
+                    window.history.back();
+                    setTimeout(function() {{
+                        if (window.location.pathname === originalPath) {{
+                            window.location.href = '{fallback}';
+                        }}
+                    }}, 150);
+                }} else {{
+                    window.location.href = '{fallback}';
+                }}
+            }})()
+        ");
     }
 }

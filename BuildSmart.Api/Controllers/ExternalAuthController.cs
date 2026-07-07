@@ -71,12 +71,53 @@ namespace BuildSmart.Api.Controllers
 
                 // Redirect back to the MAUI or Blazor Web App with the token
                 var separator = returnUrl.Contains("?") ? "&" : "?";
-                return Redirect($"{returnUrl}{separator}token={token}");
+                var redirectUrl = $"{returnUrl}{separator}token={token}";
+                return Redirect(GetSafeRedirectUrl(redirectUrl));
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal Server Error: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}");
             }
+        }
+
+        private static string GetSafeRedirectUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return "buildsmart://auth";
+            }
+
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < url.Length; i++)
+            {
+                char ch = url[i];
+                if (ch <= 127)
+                {
+                    sb.Append(ch);
+                }
+                else
+                {
+                    if (char.IsHighSurrogate(ch) && i + 1 < url.Length && char.IsLowSurrogate(url[i + 1]))
+                    {
+                        var surrogateStr = url.Substring(i, 2);
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(surrogateStr);
+                        foreach (var b in bytes)
+                        {
+                            sb.AppendFormat("%{0:X2}", b);
+                        }
+                        i++;
+                    }
+                    else
+                    {
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(ch.ToString());
+                        foreach (var b in bytes)
+                        {
+                            sb.AppendFormat("%{0:X2}", b);
+                        }
+                    }
+                }
+            }
+            return sb.ToString();
         }
     }
 }

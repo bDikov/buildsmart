@@ -1,7 +1,5 @@
-using HotChocolate.AspNetCore;
 using BuildSmart.Api.GraphQL;
 using BuildSmart.Api.GraphQL.Types;
-using BuildSmart.Api.Workers;
 using BuildSmart.Api.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using BuildSmart.Core.Application.Interfaces;
@@ -18,13 +16,9 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
-using AspNet.Security.OAuth.Apple;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Serilog;
-using Sentry;
-using Sentry.AspNetCore;
 using Sentry.Hangfire;
 
 [assembly: InternalsVisibleTo("BuildSmart.Api.Tests")]
@@ -223,6 +217,8 @@ public partial class Program
 		{
 			options.Cookie.Name = "ExternalCookie";
 			options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+			options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+			options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.Always;
 		})
 		.AddJwtBearer(options =>
 		{
@@ -245,6 +241,8 @@ public partial class Program
 			options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "YOUR_CLIENT_SECRET";
 			options.CallbackPath = "/api/externalauth/signin-google";
 			options.ClaimActions.MapJsonKey("picture", "picture", "url");
+			options.CorrelationCookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+			options.CorrelationCookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.Always;
 		});
 		// .AddApple(options =>
 		// {

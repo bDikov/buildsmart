@@ -165,8 +165,10 @@ window.reelsObserver = {
                 element.classList.remove('bs-theater-mode');
                 const container = element.closest('.bs-reels-container');
                 if (container) container.classList.remove('in-theater-mode');
+                document.body.classList.remove('bs-body-theater-mode');
             });
 
+            let lastClickTime = 0;
             element.addEventListener('click', (e) => {
                 if (e.target.closest('.bs-reel-action-btn') || 
                     e.target.closest('.plyr__controls') || 
@@ -176,7 +178,36 @@ window.reelsObserver = {
                 const container = element.closest('.bs-reels-container') || element.closest('.reels-feed-container');
                 const isReelsPage = !!element.closest('.reels-page-container');
                 const isInTheaterMode = isReelsPage || element.classList.contains('bs-theater-mode') || 
-                                        (container && container.classList.contains('in-theater-mode'));
+                                         (container && container.classList.contains('in-theater-mode'));
+
+                if (isInTheaterMode) {
+                    const currentTime = new Date().getTime();
+                    const timeDiff = currentTime - lastClickTime;
+                    
+                    if (timeDiff < 300) {
+                        // Double tap/click detected: Exit theater mode
+                        element.classList.remove('bs-theater-mode');
+                        if (container) {
+                            container.classList.remove('in-theater-mode');
+                        }
+                        document.body.classList.remove('bs-body-theater-mode');
+                        
+                        // Ensure the video continues playing when exiting
+                        const player = window.reelsObserver.players[videoId];
+                        if (player) {
+                            if (player.paused) {
+                                player.play().catch(e => {});
+                            }
+                        } else {
+                            const nativeVideo = element.querySelector('video');
+                            if (nativeVideo && nativeVideo.paused) {
+                                nativeVideo.play().catch(e => {});
+                            }
+                        }
+                        return;
+                    }
+                    lastClickTime = currentTime;
+                }
 
                 if (!isInTheaterMode) {
                     // Enter theater mode on single click
@@ -184,6 +215,7 @@ window.reelsObserver = {
                     if (container) {
                         container.classList.add('in-theater-mode');
                     }
+                    document.body.classList.add('bs-body-theater-mode');
                     
                     // Auto-play the video when entering theater mode
                     const player = window.reelsObserver.players[videoId];
@@ -361,6 +393,7 @@ window.reelsObserver = {
             if (activeItem) {
                 activeItem.classList.remove('bs-theater-mode');
             }
+            document.body.classList.remove('bs-body-theater-mode');
         }
     }
 };
@@ -382,6 +415,7 @@ window.addEventListener('keydown', (e) => {
         e.preventDefault();
         activeItem.classList.remove('bs-theater-mode');
         container.classList.remove('in-theater-mode');
+        document.body.classList.remove('bs-body-theater-mode');
     } else if (e.key === ' ') {
         e.preventDefault();
         const videoId = activeItem.getAttribute('data-video-id');

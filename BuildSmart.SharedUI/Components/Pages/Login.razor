@@ -55,11 +55,11 @@
         <div class="login-legal-footnote">
             @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
             {
-                <span>С влизането си или с регистрацията се съгласявате с нашите <a href="/terms" class="legal-link">Общи условия</a> и се запознавате с <a href="/privacy" class="legal-link">Политиката за поверителност</a>.</span>
+                <span>С влизането си или с регистрацията се съгласявате с нашите <a href="/terms?returnUrl=/login" class="legal-link">Общи условия</a> и се запознавате с <a href="/privacy?returnUrl=/login" class="legal-link">Политиката за поверителност</a>.</span>
             }
             else
             {
-                <span>By logging in or creating an account, you agree to our <a href="/terms" class="legal-link">Terms & Conditions</a> and acknowledge the <a href="/privacy" class="legal-link">Privacy Policy</a>.</span>
+                <span>By logging in or creating an account, you agree to our <a href="/terms?returnUrl=/login" class="legal-link">Terms & Conditions</a> and acknowledge the <a href="/privacy?returnUrl=/login" class="legal-link">Privacy Policy</a>.</span>
             }
         </div>
 

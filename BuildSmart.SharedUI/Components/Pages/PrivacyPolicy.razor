@@ -6,6 +6,7 @@
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
 @inject IBuildSmartApiClient ApiClient
 @inject IAuthService AuthService
+@inject IJSRuntime JSRuntime
 
 <div class="legal-page-container">
     <div style="display: none; visibility: hidden; opacity: 0; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
@@ -679,6 +680,10 @@
     private string _captchaAnswerInput = string.Empty;
     private string? _captchaError;
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
     protected override void OnInitialized()
     {
         var currentCultureName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
@@ -690,9 +695,25 @@
         isBulgarian = bulgarian;
     }
 
-    private void GoBack()
+    private async Task GoBack()
     {
-        NavManager.NavigateTo("/");
+        var fallback = string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl;
+        await JSRuntime.InvokeVoidAsync("eval", $@"
+            (function() {{
+                var originalPath = window.location.pathname;
+                var hasBack = window.history.length > 1;
+                if (hasBack) {{
+                    window.history.back();
+                    setTimeout(function() {{
+                        if (window.location.pathname === originalPath) {{
+                            window.location.href = '{fallback}';
+                        }}
+                    }}, 150);
+                }} else {{
+                    window.location.href = '{fallback}';
+                }}
+            }})()
+        ");
     }
 
     private void GenerateCaptcha()

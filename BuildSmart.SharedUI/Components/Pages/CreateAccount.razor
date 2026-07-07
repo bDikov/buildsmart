@@ -73,11 +73,11 @@
                 <label for="agreeToTerms" class="checkbox-label">
                     @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
                     {
-                        <span>Съгласявам се с <a href="/terms" target="_blank" class="legal-link">Общите условия</a> и се запознах с <a href="/privacy" target="_blank" class="legal-link">Политиката за поверителност</a>.</span>
+                        <span>Съгласявам се с <a href="/terms?returnUrl=/create-account" target="_blank" class="legal-link">Общите условия</a> и се запознах с <a href="/privacy?returnUrl=/create-account" target="_blank" class="legal-link">Политиката за поверителност</a>.</span>
                     }
                     else
                     {
-                        <span>I agree to the <a href="/terms" target="_blank" class="legal-link">Terms and Conditions</a> and acknowledge the <a href="/privacy" target="_blank" class="legal-link">Privacy Policy</a>.</span>
+                        <span>I agree to the <a href="/terms?returnUrl=/create-account" target="_blank" class="legal-link">Terms and Conditions</a> and acknowledge the <a href="/privacy?returnUrl=/create-account" target="_blank" class="legal-link">Privacy Policy</a>.</span>
                     }
                 </label>
             </div>
