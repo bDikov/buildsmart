@@ -285,11 +285,27 @@ window.reelsObserver = {
 
     unobserveVideo: function (wrapperId, videoId) {
         const element = document.getElementById(wrapperId);
-        if (element && this.observer) {
-            this.observer.unobserve(element);
+        if (element) {
+            // Unload the video element to force release browser hardware decoders
+            const videoEl = element.querySelector('video');
+            if (videoEl) {
+                videoEl.pause();
+                videoEl.removeAttribute('src');
+                const sources = videoEl.querySelectorAll('source');
+                sources.forEach(s => s.remove());
+                try {
+                    videoEl.load();
+                } catch (e) {}
+            }
+
+            if (this.observer) {
+                this.observer.unobserve(element);
+            }
         }
         if (this.players[videoId]) {
-            this.players[videoId].destroy();
+            try {
+                this.players[videoId].destroy();
+            } catch (e) {}
             delete this.players[videoId];
         }
     },
@@ -322,6 +338,16 @@ window.reelsObserver = {
         
         const container = document.getElementById("reels-feed-container");
         if (container) {
+            // Unload all native video tags inside the container
+            container.querySelectorAll('video').forEach(videoEl => {
+                videoEl.pause();
+                videoEl.removeAttribute('src');
+                const sources = videoEl.querySelectorAll('source');
+                sources.forEach(s => s.remove());
+                try {
+                    videoEl.load();
+                } catch (e) {}
+            });
             container.scrollTop = 0;
         }
     },

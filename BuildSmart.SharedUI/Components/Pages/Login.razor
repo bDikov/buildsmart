@@ -317,7 +317,26 @@
                         c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                     if (!string.IsNullOrEmpty(userId))
                     {
-                        await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
+                        var email = jwtToken.Claims.FirstOrDefault(c => 
+                            c.Type == "email" || 
+                            c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                        var name = jwtToken.Claims.FirstOrDefault(c => 
+                            c.Type == "name" || 
+                            c.Type == "unique_name" || 
+                            c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+                        var properties = new Dictionary<string, object>();
+                        if (!string.IsNullOrEmpty(email)) properties["email"] = email;
+                        if (!string.IsNullOrEmpty(name)) properties["name"] = name;
+
+                        if (properties.Count > 0)
+                        {
+                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId, properties);
+                        }
+                        else
+                        {
+                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
+                        }
                     }
                 }
                 catch (Exception ex)

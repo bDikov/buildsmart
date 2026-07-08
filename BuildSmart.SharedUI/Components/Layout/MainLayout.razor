@@ -949,6 +949,24 @@
                 var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
                 if (userResult.Data?.CurrentUser != null)
                 {
+                    // Identify user in PostHog
+                    if (!string.IsNullOrEmpty(ApiConfig.PostHogApiKey))
+                    {
+                        try
+                        {
+                            var user = userResult.Data.CurrentUser;
+                            var userId = user.Id.ToString();
+                            var email = user.Email;
+                            var name = $"{user.FirstName} {user.LastName}";
+                            
+                            var properties = new Dictionary<string, object>();
+                            if (!string.IsNullOrEmpty(email)) properties["email"] = email;
+                            if (!string.IsNullOrEmpty(name)) properties["name"] = name;
+                            
+                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId, properties);
+                        }
+                        catch (Exception) { }
+                    }
                     if (!string.IsNullOrEmpty(userResult.Data.CurrentUser.PreferredTheme))
                     {
                         var theme = userResult.Data.CurrentUser.PreferredTheme;
