@@ -165,38 +165,41 @@
 								<!-- RIGHT COLUMN on Desktop / TOP SECTION on Mobile -->
 								<div @key='"homeowner_right_col"' class="bs-homeowner-visual-col">
 									<!-- Category Filters (Placed directly on top of the videos!) -->
-									<div class="bs-category-filters-container @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed") mb-3">
-										<div class="bs-category-filters-scroll">
-											<div class="bs-category-filters-list">
-												<button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")"
-														@onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
-													@Loc["Feed_All"]
-												</button>
-
-												@foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
-												{
-													<button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")"
-															@onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
-														@cat.Name
+									@if (ViewModel.Categories != null && ViewModel.Categories.Any())
+									{
+										<div class="bs-category-filters-container @(ViewModel.IsFilterExpanded ? "expanded" : "collapsed") mb-3">
+											<div class="bs-category-filters-scroll">
+												<div class="bs-category-filters-list">
+													<button class="bs-chip @(ViewModel.SelectedCategoryId == null ? "active" : "")"
+															@onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(null); }">
+														@Loc["Feed_All"]
 													</button>
-												}
+
+													@foreach (var cat in (ViewModel.IsFilterExpanded ? ViewModel.Categories : ViewModel.Categories.Take(4)))
+													{
+														<button class="bs-chip @(ViewModel.SelectedCategoryId == cat.Id ? "active" : "")"
+																@onclick="async () => { await ClearVideos(); await ViewModel.SelectCategoryCommand.ExecuteAsync(cat.Id); }">
+															@cat.Name
+														</button>
+													}
+												</div>
 											</div>
+
+											@if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
+											{
+												<button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+													@Loc["Feed_ViewAll"]
+												</button>
+											}
+
+											@if (ViewModel.IsFilterExpanded)
+											{
+												<button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
+													@Loc["Feed_Collapse"]
+												</button>
+											}
 										</div>
-
-										@if (!ViewModel.IsFilterExpanded && ViewModel.Categories.Count > 4)
-										{
-											<button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-												@Loc["Feed_ViewAll"]
-											</button>
-										}
-
-										@if (ViewModel.IsFilterExpanded)
-										{
-											<button class="bs-chip-add" @onclick="() => ViewModel.ToggleFilterCommand.Execute(null)">
-												@Loc["Feed_Collapse"]
-											</button>
-										}
-									</div>
+									}
 
 									<div id="reels-feed-container" class="bs-reels-container">
 										@if (ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
@@ -205,9 +208,16 @@
 											{
 												var videoId = $"video_{video.Id}";
 												var wrapperId = $"wrapper_{videoId}";
-												var isFirst = ViewModel.FeedVideos.IndexOf(video) == 0;
+												var index = ViewModel.FeedVideos.IndexOf(video);
+												var isFirst = index == 0;
+												var activeVideo = ViewModel.ActiveVideoId.HasValue 
+													? ViewModel.FeedVideos.FirstOrDefault(v => v.Id == ViewModel.ActiveVideoId.Value) 
+													: null;
+												var activeIndex = activeVideo != null ? ViewModel.FeedVideos.IndexOf(activeVideo) : 0;
+												var preload = (index <= activeIndex) ? "auto" : (index == activeIndex + 1) ? "metadata" : "none";
+
 												<div @key="video.Id" class="bs-reel-item @(isFirst ? "bs-first-reel-cue" : "")" data-video-id="@videoId" id="@wrapperId">
-													<video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="auto" poster="@video.ImageUrl" muted>
+													<video id="@videoId" class="bs-reel-video plyr" loop playsinline preload="@preload" poster="@video.ImageUrl" muted>
 														@if (!string.IsNullOrEmpty(video.MobileVideoUrl))
 														{
 															<source src="@video.MobileVideoUrl" media="(max-width: 768px)" type="video/mp4" />

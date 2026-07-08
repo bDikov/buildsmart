@@ -27,16 +27,18 @@
         <div id="reels-feed-container" class="reels-feed-container">
             @foreach (var reel in Reels)
             {
-                var isRendered = Math.Abs(Reels.IndexOf(reel) - CurrentIndex) <= 1; // Rule of 3 (prev, current, next)
+                var index = Reels.IndexOf(reel);
+                var isRendered = Math.Abs(index - CurrentIndex) <= 1; // Rule of 3 (prev, current, next)
 
-                <div class="reel-wrapper" id="@reel.Id" data-video-id="@reel.Id">
+                <div class="reel-wrapper" id="@reel.Id" data-video-id="@reel.Id" @key="reel.Id">
                     @if (isRendered)
                     {
+                        var preload = (index == CurrentIndex) ? "auto" : "metadata";
                         <video class="reel-video" 
                                loop 
                                muted="false" 
                                playsinline 
-                               preload="auto"
+                               preload="@preload"
                                poster="@reel.ImageUrl">
                             @if (!string.IsNullOrEmpty(reel.MobileVideoUrl))
                             {
@@ -209,14 +211,16 @@
                 var profile = result.Data.TradesmanProfiles.FirstOrDefault(p => p.User.Id.ToString() == TradesmanId || p.Id.ToString() == TradesmanId);
                 if (profile?.Media != null)
                 {
-                    Reels = profile.Media.Select(m => new ReelModel
-                    {
-                        Id = m.Id.ToString(),
-                        VideoUrl = m.VideoUrl,
-                        MobileVideoUrl = m.MobileVideoUrl,
-                        ImageUrl = m.ImageUrl,
-                        Title = "Tradesman Portfolio"
-                    }).ToList();
+                    Reels = profile.Media
+                        .Where(m => m.IsActive)
+                        .Select(m => new ReelModel
+                        {
+                            Id = m.Id.ToString(),
+                            VideoUrl = m.VideoUrl,
+                            MobileVideoUrl = m.MobileVideoUrl,
+                            ImageUrl = m.ImageUrl,
+                            Title = "Tradesman Portfolio"
+                        }).ToList();
                 }
             }
         }

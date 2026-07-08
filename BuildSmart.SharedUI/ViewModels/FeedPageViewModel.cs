@@ -270,20 +270,40 @@ namespace BuildSmart.SharedUI.ViewModels
 				var result = await _apiClient.GetServiceCategories.ExecuteAsync();
 				if (result.Data?.ServiceCategories != null)
 				{
+					// Fetch active feed media to check which categories actually have videos
+					var mediaResult = await _apiClient.GetFeedMedia.ExecuteAsync(null, 0, 1000);
+					var activeCategoryIds = new HashSet<Guid>();
+					if (mediaResult.Data?.FeedMedia?.Items != null)
+					{
+						foreach (var item in mediaResult.Data.FeedMedia.Items)
+						{
+							if (item?.ServiceCategoryId.HasValue == true)
+							{
+								activeCategoryIds.Add(item.ServiceCategoryId.Value);
+							}
+						}
+					}
+
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
 						Categories.Clear();
 						var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
-						// Filter only Active categories of CategorySpecific type
+						// Filter only Active categories of CategorySpecific type and has active videos
 						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.Type == CategoryType.CategorySpecific))
 						{
+							var catGuid = Guid.Parse(cat.Id.ToString());
+							if (!activeCategoryIds.Contains(catGuid))
+							{
+								continue; // Skip categories that have no active videos!
+							}
+
 							// Find translation for current culture, fallback to default Bulgarian name
 							var displayName = currentCulture.StartsWith("en", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(cat.EnglishName) ? cat.EnglishName : cat.Name;
 
 							Categories.Add(new CategoryItem 
 							{ 
-								Id = Guid.Parse(cat.Id.ToString()), 
+								Id = catGuid, 
 								Name = displayName 
 							});
 						}

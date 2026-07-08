@@ -4,6 +4,8 @@ window.reelsObserver = {
     players: {},
     playPromises: {}, 
     globalMuted: true,
+    currentlyActiveVideoId: null,
+    staggerTimeout: null,
 
     initialize: function (dotNetHelper, containerId) {
         this.dotNetRef = dotNetHelper;
@@ -28,6 +30,7 @@ window.reelsObserver = {
                 const player = this.players[videoId];
 
                 if (entry.isIntersecting) {
+                    window.reelsObserver.currentlyActiveVideoId = videoId;
                     if (player) {
                         player.__ignoreVolumeChangeUntil = Date.now() + 200;
                         player.muted = window.reelsObserver.globalMuted;
@@ -132,6 +135,19 @@ window.reelsObserver = {
                     window.reelsObserver.globalMuted = true;
                 }
             });
+
+            // If this video is the currently active/intersecting one, play it immediately!
+            if (videoId === window.reelsObserver.currentlyActiveVideoId) {
+                const activePlayer = this.players[videoId];
+                activePlayer.__ignoreVolumeChangeUntil = Date.now() + 200;
+                activePlayer.muted = window.reelsObserver.globalMuted;
+                if (!window.reelsObserver.globalMuted) {
+                    activePlayer.volume = 1;
+                }
+                activePlayer.play().catch(e => {
+                    console.log('Autoplay prevented on lazy load init', e);
+                });
+            }
         }
 
         if (element && this.observer) {
@@ -288,6 +304,11 @@ window.reelsObserver = {
     },
 
     clearAll: function () {
+        this.currentlyActiveVideoId = null;
+        if (this.staggerTimeout) {
+            clearTimeout(this.staggerTimeout);
+            this.staggerTimeout = null;
+        }
         for (const videoId in this.players) {
             if (this.players[videoId]) {
                 try {
@@ -354,12 +375,9 @@ window.reelsObserver = {
                         const originalTime = videoEl.currentTime;
                         
                         // Only nudge if the video is currently at the very beginning (0)
-                        // If the user already watched some of it, the frame is already cached!
                         if (originalTime === 0) {
                             videoEl.currentTime = 0.001; 
                         } else {
-                            // If they already watched it, nudge it forward slightly and back to force a refresh
-                            // without losing their spot.
                             videoEl.currentTime = originalTime + 0.001;
                             setTimeout(() => {
                                 if (videoEl.paused) {
@@ -377,7 +395,34 @@ window.reelsObserver = {
 
             // Next video (down)
             let next = centerElement.nextElementSibling;
-            tryPreDecode(next);
+            
+            // Stagger preloading the next video to avoid network contention with active video.
+            // We set next video to preload="metadata" initially, then upgrade to "auto" after 1.5s.
+            if (next) {
+                const nextVideoId = next.getAttribute('data-video-id');
+                if (nextVideoId) {
+                    const nextVideoEl = document.getElementById(nextVideoId);
+                    if (nextVideoEl) {
+                        nextVideoEl.setAttribute('preload', 'metadata');
+                        
+                        if (this.staggerTimeout) {
+                            clearTimeout(this.staggerTimeout);
+                        }
+                        
+                        this.staggerTimeout = setTimeout(() => {
+                            // Upgrade to auto and trigger load
+                            nextVideoEl.setAttribute('preload', 'auto');
+                            try {
+                                nextVideoEl.load();
+                                // After metadata/media starts loading, try pre-decoding its frame
+                                setTimeout(() => {
+                                    tryPreDecode(next);
+                                }, 300);
+                            } catch(e) {}
+                        }, 1500);
+                    }
+                }
+            }
             
         } catch (e) {
             console.error("Failed to pre-decode adjacent videos", e);

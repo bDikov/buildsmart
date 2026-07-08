@@ -1208,12 +1208,31 @@ public class Mutation
 	[Authorize(Roles = new[] { "Admin" })]
 	public async Task<bool> DeleteTradesmanMedia(
 		Guid mediaId,
-		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext)
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext,
+		[Service] IMultimediaStorageService storageService)
 	{
 		if (dbContext == null) throw new GraphQLException("Database context not found.");
 
 		var media = await dbContext.TradesmanMedia.FirstOrDefaultAsync(m => m.Id == mediaId)
 			?? throw new GraphQLException("Media not found.");
+
+		// Delete from storage service (CDN / Cloudflare R2)
+		if (!string.IsNullOrEmpty(media.VideoUrl))
+		{
+			try { await storageService.DeleteFileAsync(media.VideoUrl); } catch { /* ignore or log */ }
+		}
+		if (!string.IsNullOrEmpty(media.MobileVideoUrl))
+		{
+			try { await storageService.DeleteFileAsync(media.MobileVideoUrl); } catch { /* ignore or log */ }
+		}
+		if (!string.IsNullOrEmpty(media.ImageUrl))
+		{
+			try { await storageService.DeleteFileAsync(media.ImageUrl); } catch { /* ignore or log */ }
+		}
+		if (!string.IsNullOrEmpty(media.ThumbnailUrl))
+		{
+			try { await storageService.DeleteFileAsync(media.ThumbnailUrl); } catch { /* ignore or log */ }
+		}
 
 		dbContext.TradesmanMedia.Remove(media);
 		await dbContext.SaveChangesAsync();

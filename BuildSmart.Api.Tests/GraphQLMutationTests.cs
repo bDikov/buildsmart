@@ -1,4 +1,5 @@
 using Xunit;
+using BuildSmart.Infrastructure.Persistence;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -797,6 +798,93 @@ public class GraphQLMutationTests : IClassFixture<TestApplicationFactory>
 		Assert.All(jobs, j => Assert.Equal(location, j.Location));
 		mockJobPostRepo.Verify(r => r.Update(It.IsAny<JobPost>()), Times.Exactly(2));
 		mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+	}
+
+	[Fact]
+	public async Task DeleteTradesmanMedia_ValidId_DeletesDbRecordAndCDNFiles()
+	{
+		// Arrange
+		var adminToken = TestTokenHelper.GenerateJwtToken(Guid.NewGuid(), "admin@example.com", "Admin", _configuration);
+		var mediaId = Guid.NewGuid();
+		var videoUrl = "https://pub-my-cool-url.r2.dev/myvid.mp4";
+		var imageUrl = "https://pub-my-cool-url.r2.dev/thumb.jpg";
+
+		// Setup Mock MultimediaStorageService
+		var mockStorageService = new Mock<IMultimediaStorageService>();
+		mockStorageService.Setup(s => s.DeleteFileAsync(It.IsAny<string>()))
+			.Returns(Task.CompletedTask);
+
+		var client = CreateClient(services =>
+		{
+			services.RemoveAll(typeof(IMultimediaStorageService));
+			services.AddSingleton(mockStorageService.Object);
+		}, adminToken);
+
+		// Seed database
+		using (var scope = _factory.Services.CreateScope())
+		{
+			var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+			db.Database.EnsureCreated();
+
+			var testMedia = new TradesmanMedia
+			{
+				Id = mediaId,
+				TradesmanId = Guid.NewGuid(),
+				VideoUrl = videoUrl,
+				ImageUrl = imageUrl,
+				Type = Core.Domain.Enums.MediaType.Video,
+				IsActive = true,
+				CreatedAt = DateTime.UtcNow
+			};
+
+			db.TradesmanMedia.Add(testMedia);
+			await db.SaveChangesAsync();
+		}
+
+		// Act: Execute GraphQL mutation
+		var graphQLRequest = new
+		{
+			query = @"
+                mutation DeleteMedia($mediaId: UUID!) {
+                  deleteTradesmanMedia(mediaId: $mediaId)
+                }",
+			variables = new
+			{
+				mediaId = mediaId.ToString()
+			}
+		};
+
+		var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+		{
+			Content = new StringContent(
+				JsonConvert.SerializeObject(graphQLRequest),
+				Encoding.UTF8,
+				"application/json")
+		};
+
+		var response = await client.SendAsync(request);
+
+		// Assert
+		var content = await response.Content.ReadAsStringAsync();
+		_output.WriteLine(content);
+		response.EnsureSuccessStatusCode();
+
+		var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
+		Assert.Null(jsonResponse.errors);
+		bool success = jsonResponse.data.deleteTradesmanMedia;
+		Assert.True(success);
+
+		// Verify CDN file deletion calls
+		mockStorageService.Verify(s => s.DeleteFileAsync(videoUrl), Times.Once);
+		mockStorageService.Verify(s => s.DeleteFileAsync(imageUrl), Times.Once);
+
+		// Verify database removal
+		using (var scope = _factory.Services.CreateScope())
+		{
+			var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+			var mediaInDb = await db.TradesmanMedia.FindAsync(mediaId);
+			Assert.Null(mediaInDb);
+		}
 	}
 }
 

@@ -93,7 +93,7 @@
                 <div class="video-list">
                     @foreach (var media in currentTradesman.Media)
                     {
-                        <div class="video-item" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem; border-bottom: 1px solid var(--border-color, #ccc);">
+                        <div class="video-item" @key="media.Id" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem; border-bottom: 1px solid var(--border-color, #ccc);">
                             <div>
                                 <video src="@media.VideoUrl" style="width: 100px; height: 100px; object-fit: cover;" muted></video>
                             </div>

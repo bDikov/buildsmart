@@ -176,7 +176,7 @@ public class MutationType : ObjectType<Mutation>
             .Description("Updates the category assigned to a tradesman's media reel.")
             .Authorize(roles: new[] { "Admin" });
 
-        descriptor.Field(m => m.DeleteTradesmanMedia(default!, default!))
+        descriptor.Field(m => m.DeleteTradesmanMedia(default!, default!, default!))
             .Description("Deletes a tradesman's media reel from the database.")
             .Authorize(roles: new[] { "Admin" });
 
