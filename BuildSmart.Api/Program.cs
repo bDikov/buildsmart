@@ -498,7 +498,11 @@ public partial class Program
 
 		app.UseMiddleware<BuildSmart.Api.Middleware.LanguageMiddleware>();
 
-		app.UseHangfireDashboard("/hangfire");
+		var dashboardToken = builder.Configuration["HANGFIRE_DASHBOARD_TOKEN"];
+		app.UseHangfireDashboard("/hangfire", new DashboardOptions
+		{
+			Authorization = new[] { new BuildSmart.Api.Services.HangfireDashboardAuthorizationFilter(dashboardToken ?? string.Empty) }
+		});
 
 		// Authenticate and Authorize for ALL requests BEFORE any endpoint routing
 		app.UseAuthentication();
