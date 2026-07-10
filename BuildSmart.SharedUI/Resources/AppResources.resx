@@ -101,7 +101,7 @@
     <value>Sign up</value>
   </data>
   <data name="CreateAccount_Title" xml:space="preserve">
-    <value>Create Account</value>
+    <value>Create your account</value>
   </data>
   <data name="CreateAccount_FirstName" xml:space="preserve">
     <value>First Name:</value>
@@ -729,6 +729,60 @@
   </data>
   <data name="Login_TermsConsentNotice" xml:space="preserve">
     <value>By logging in or creating an account, you agree to our Terms and Conditions and acknowledge the Privacy Policy.</value>
+  </data>
+  <data name="CreateAccount_SubtitleGoogle" xml:space="preserve">
+    <value>Get started in seconds with Google</value>
+  </data>
+  <data name="CreateAccount_GoogleButton" xml:space="preserve">
+    <value>Continue with Google</value>
+  </data>
+  <data name="CreateAccount_Feature1_Title" xml:space="preserve">
+    <value>Secure &amp; private</value>
+  </data>
+  <data name="CreateAccount_Feature1_Desc" xml:space="preserve">
+    <value>Your data is protected with industry-leading security.</value>
+  </data>
+  <data name="CreateAccount_Feature2_Title" xml:space="preserve">
+    <value>Quick &amp; easy</value>
+  </data>
+  <data name="CreateAccount_Feature2_Desc" xml:space="preserve">
+    <value>One-click sign up so you can get to building faster.</value>
+  </data>
+  <data name="CreateAccount_Feature3_Title" xml:space="preserve">
+    <value>Access anywhere</value>
+  </data>
+  <data name="CreateAccount_Feature3_Desc" xml:space="preserve">
+    <value>Use BuildSmart on any device, anytime.</value>
+  </data>
+  <data name="CreateAccount_LegalFootnote" xml:space="preserve">
+    <value>By continuing, you agree to our Terms &amp; Conditions and Privacy Policy.</value>
+  </data>
+  <data name="Login_TitleMain" xml:space="preserve">
+    <value>Log in to your account</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Welcome back! Please log in to continue.</value>
+  </data>
+  <data name="Login_GoogleButton" xml:space="preserve">
+    <value>Continue with Google</value>
+  </data>
+  <data name="Login_ForgotPassword" xml:space="preserve">
+    <value>Forgot password?</value>
+  </data>
+  <data name="Login_LegalFootnote" xml:space="preserve">
+    <value>By logging in, you agree to our Terms &amp; Conditions and Privacy Policy.</value>
+  </data>
+  <data name="Login_RegisterLink" xml:space="preserve">
+    <value>Register</value>
+  </data>
+  <data name="CreateAccount_EmailSignUp" xml:space="preserve">
+    <value>Sign up with Email</value>
+  </data>
+  <data name="CreateAccount_BackToGoogle" xml:space="preserve">
+    <value>Back to Google sign up</value>
+  </data>
+  <data name="CreateAccount_EnterDetails" xml:space="preserve">
+    <value>Enter your details to create an account</value>
   </data>
   <data name="Profile_LegalSectionTitle" xml:space="preserve">
     <value>Legal &amp; Policies</value>

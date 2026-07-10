@@ -101,7 +101,7 @@
     <value>Регистрация</value>
   </data>
   <data name="CreateAccount_Title" xml:space="preserve">
-    <value>Създаване на акаунт</value>
+    <value>Създайте своя акаунт</value>
   </data>
   <data name="CreateAccount_FirstName" xml:space="preserve">
     <value>Име:</value>
@@ -732,6 +732,60 @@
   </data>
   <data name="Login_TermsConsentNotice" xml:space="preserve">
     <value>С влизането в профила си или с регистрацията се съгласявате с нашите Общи условия и се запознавате с Политиката за поверителност.</value>
+  </data>
+  <data name="CreateAccount_SubtitleGoogle" xml:space="preserve">
+    <value>Започнете за секунди с Google</value>
+  </data>
+  <data name="CreateAccount_GoogleButton" xml:space="preserve">
+    <value>Продължи с Google</value>
+  </data>
+  <data name="CreateAccount_Feature1_Title" xml:space="preserve">
+    <value>Сигурно и поверително</value>
+  </data>
+  <data name="CreateAccount_Feature1_Desc" xml:space="preserve">
+    <value>Вашите данни са защитени с водеща за индустрията сигурност.</value>
+  </data>
+  <data name="CreateAccount_Feature2_Title" xml:space="preserve">
+    <value>Бързо и лесно</value>
+  </data>
+  <data name="CreateAccount_Feature2_Desc" xml:space="preserve">
+    <value>Регистрация с един клик, за да започнете да строите по-бързо.</value>
+  </data>
+  <data name="CreateAccount_Feature3_Title" xml:space="preserve">
+    <value>Достъп отвсякъде</value>
+  </data>
+  <data name="CreateAccount_Feature3_Desc" xml:space="preserve">
+    <value>Използвайте BuildSmart на всяко устройство по всяко време.</value>
+  </data>
+  <data name="CreateAccount_LegalFootnote" xml:space="preserve">
+    <value>Продължавайки, вие се съгласявате с нашите Общи условия и Политика за поверителност.</value>
+  </data>
+  <data name="Login_TitleMain" xml:space="preserve">
+    <value>Влезте в акаунта си</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Добре дошли отново! Моля, влезте, за да продължите.</value>
+  </data>
+  <data name="Login_GoogleButton" xml:space="preserve">
+    <value>Продължи с Google</value>
+  </data>
+  <data name="Login_ForgotPassword" xml:space="preserve">
+    <value>Забравена парола?</value>
+  </data>
+  <data name="Login_LegalFootnote" xml:space="preserve">
+    <value>Влизайки, вие се съгласявате с нашите Общи условия и Политика за поверителност.</value>
+  </data>
+  <data name="Login_RegisterLink" xml:space="preserve">
+    <value>Регистрирайте се</value>
+  </data>
+  <data name="CreateAccount_EmailSignUp" xml:space="preserve">
+    <value>Регистрирай се с Имейл</value>
+  </data>
+  <data name="CreateAccount_BackToGoogle" xml:space="preserve">
+    <value>Назад към регистрация с Google</value>
+  </data>
+  <data name="CreateAccount_EnterDetails" xml:space="preserve">
+    <value>Въведете данните си, за да създадете акаунт</value>
   </data>
   <data name="Profile_LegalSectionTitle" xml:space="preserve">
     <value>Правни документи</value>

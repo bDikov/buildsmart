@@ -43,7 +43,7 @@
         }
         
         <div style="display: flex; align-items: center; gap: 8px;">
-            @if (!_isGuest)
+            @if (AuthService.IsAuthenticated && !_isGuest)
             {
                 <a class="notification-bell mobile-bell" href="/notifications">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -58,13 +58,13 @@
             }
             else
             {
-                <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 py-1 px-2" @onclick="HandleExitClick" @onclick:preventDefault="true" style="font-size: 0.8rem; border-radius: 12px; font-weight: 600; background: transparent; border: 1px solid var(--color-danger, #ff3b30); color: var(--color-danger, #ff3b30);">
+                <button type="button" class="btn btn-sm d-flex align-items-center gap-1 py-1 px-2" @onclick="HandleExitClick" @onclick:preventDefault="true" style="font-size: 0.8rem; border-radius: 12px; font-weight: 600; background: transparent; border: 1px solid var(--color-primary, #111111); color: var(--color-primary, #111111);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
                     </svg>
-                    @(_currentLang == "bg" ? "Изход" : "Exit")
+                    @(_currentLang == "bg" ? "Вход" : "Log In")
                 </button>
             }
         </div>
@@ -173,7 +173,7 @@
         </div>
 
         <div class="sidebar-account">
-            @if (!_isGuest)
+            @if (AuthService.IsAuthenticated && !_isGuest)
             {
                 <a href="/user-profile" class="account-info" @onclick="CloseSidebar" style="text-decoration: none; cursor: pointer;">
                     <div class="account-avatar" style="overflow: hidden;">
@@ -200,12 +200,27 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </div>
                     <div class="account-details">
-                        <span class="account-name">Guest Support</span>
+                        <span class="account-name">@(_isGuest ? "Guest Support" : (_currentLang == "bg" ? "Гост" : "Guest"))</span>
                     </div>
                 </div>
             }
-            <button type="button" class="logout-btn" @onclick="HandleExitClick" @onclick:preventDefault="true" title="@(_isGuest ? "Exit Chat" : "Logout")">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2 2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <button type="button" class="logout-btn @(IsGuestUser ? "login-mode" : "")" @onclick="HandleExitClick" @onclick:preventDefault="true" title="@(IsGuestUser ? (_currentLang == "bg" ? "Вход" : "Log In") : (_currentLang == "bg" ? "Изход" : "Logout"))">
+                @if (IsGuestUser)
+                {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                }
+                else
+                {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                }
             </button>
         </div>
     </div>
@@ -486,6 +501,11 @@
         background-color: rgba(255, 107, 107, 0.1);
     }
 
+    .logout-btn.login-mode:hover {
+        color: #3b82f6;
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+
     .main-content {
         margin-left: 312px;
         width: calc(100% - 312px);
@@ -762,6 +782,7 @@
     private bool _hasUnreadNotifications = false;
     private bool _hasUnreadChatMessages = false;
     private bool _isGuest = false;
+    private bool IsGuestUser => _isGuest || (AuthService != null && !AuthService.IsAuthenticated);
     private Guid? _supportProjectId;
     private bool _hasProjects = false;
     private bool _isStartingChat = false;
@@ -1116,14 +1137,35 @@
 
     private async Task HandleExitClick()
     {
-        if (_isGuest)
+        if (IsGuestUser)
         {
-            await LogoutAsync();
+            await RegisterFromGuestAsync();
         }
         else
         {
             ShowLogoutConfirmation();
         }
+    }
+
+    private async Task RegisterFromGuestAsync()
+    {
+        try 
+        { 
+            StoreAccessor.OperationStore.Clear(); 
+        } 
+        catch { }
+
+        await AuthService.ClearTokenAsync();
+        
+        if (AuthStateProvider is MauiAuthenticationStateProvider mauiProvider)
+        {
+            mauiProvider.NotifyAuthenticationStateChanged();
+        }
+        
+        await BuildSmart.SharedUI.MauiMocks.MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            NavigationBridge.NavigateToAsync("CreateAccountPage");
+        });
     }
 
     private void ShowLogoutConfirmation()

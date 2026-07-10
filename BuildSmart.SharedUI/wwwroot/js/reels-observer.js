@@ -1,5 +1,6 @@
 window.reelsObserver = {
     observer: null,
+    mutationObserver: null,
     dotNetRef: null,
     players: {},
     playPromises: {}, 
@@ -16,6 +17,20 @@ window.reelsObserver = {
             setTimeout(() => {
                 container.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 200);
+
+            // MutationObserver to intercept unmounting video elements and force release decoders
+            this.mutationObserver = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    mutation.removedNodes.forEach(node => {
+                        if (node.nodeName === 'VIDEO') {
+                            window.reelsObserver.cleanupVideo(node);
+                        } else if (node.querySelectorAll) {
+                            node.querySelectorAll('video').forEach(window.reelsObserver.cleanupVideo);
+                        }
+                    });
+                });
+            });
+            this.mutationObserver.observe(container, { childList: true, subtree: true });
         }
 
         let options = {
@@ -97,6 +112,20 @@ window.reelsObserver = {
             player.pause();
         }
         delete this.playPromises[videoId];
+    },
+
+    cleanupVideo: function(videoEl) {
+        if (!videoEl) return;
+        try {
+            videoEl.pause();
+            videoEl.removeAttribute('src');
+            const sources = videoEl.querySelectorAll('source');
+            sources.forEach(s => s.remove());
+            videoEl.load();
+            console.log("[ReelsObserver] Successfully reclaimed hardware decoder for unmounted video.");
+        } catch (e) {
+            console.error("[ReelsObserver] Error cleaning up unmounted video:", e);
+        }
     },
 
     observeVideo: function (wrapperId, videoId) {
@@ -289,13 +318,7 @@ window.reelsObserver = {
             // Unload the video element to force release browser hardware decoders
             const videoEl = element.querySelector('video');
             if (videoEl) {
-                videoEl.pause();
-                videoEl.removeAttribute('src');
-                const sources = videoEl.querySelectorAll('source');
-                sources.forEach(s => s.remove());
-                try {
-                    videoEl.load();
-                } catch (e) {}
+                window.reelsObserver.cleanupVideo(videoEl);
             }
 
             if (this.observer) {
@@ -311,6 +334,10 @@ window.reelsObserver = {
     },
 
     dispose: function () {
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect();
+            this.mutationObserver = null;
+        }
         if (this.observer) {
             this.observer.disconnect();
             this.observer = null;
@@ -340,13 +367,7 @@ window.reelsObserver = {
         if (container) {
             // Unload all native video tags inside the container
             container.querySelectorAll('video').forEach(videoEl => {
-                videoEl.pause();
-                videoEl.removeAttribute('src');
-                const sources = videoEl.querySelectorAll('source');
-                sources.forEach(s => s.remove());
-                try {
-                    videoEl.load();
-                } catch (e) {}
+                window.reelsObserver.cleanupVideo(videoEl);
             });
             container.scrollTop = 0;
         }

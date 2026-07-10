@@ -5,102 +5,209 @@
 @inject CreateAccountPageViewModel ViewModel
 @inject VerifyEmailPageViewModel VerifyViewModel
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject IServiceProvider ServiceProvider
 
 <div class="register-container">
-    <div class="register-card bs-card">
+    <div class="register-card @(showEmailForm ? "show-form" : "show-intro")">
         
-        <div class="logo-block">
-            <div class="logo-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
+        <!-- Left Panel: Figma Left Screen (Google signup + Features) -->
+        <div class="register-left">
+            <div class="logo-block">
+                <div class="logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="logo-text">BuildSmart</span>
             </div>
-            <span class="logo-text">BuildSmart</span>
+
+            <h1 class="register-title">@Loc["CreateAccount_Title"]</h1>
+            <p class="register-subtitle">@Loc["CreateAccount_SubtitleGoogle"]</p>
+
+            <button class="google-btn" type="button" @onclick="HandleGoogleSignUp">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span>@Loc["CreateAccount_GoogleButton"]</span>
+            </button>
+
+            <!-- Toggle to Email Form on Mobile -->
+            <div class="mobile-email-toggle-container">
+                <button type="button" class="email-btn-toggle" @onclick="() => showEmailForm = true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <span>@Loc["CreateAccount_EmailSignUp"]</span>
+                </button>
+            </div>
+
+            <!-- Features list (Figma screen 1) -->
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon secure">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h3>@Loc["CreateAccount_Feature1_Title"]</h3>
+                        <p>@Loc["CreateAccount_Feature1_Desc"]</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon easy">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h3>@Loc["CreateAccount_Feature2_Title"]</h3>
+                        <p>@Loc["CreateAccount_Feature2_Desc"]</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon access">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h3>@Loc["CreateAccount_Feature3_Title"]</h3>
+                        <p>@Loc["CreateAccount_Feature3_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lock and Footnote -->
+            <div class="legal-footnote-intro">
+                <span class="lock-icon">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </span>
+                <span>@Loc["CreateAccount_LegalFootnote"]</span>
+            </div>
+
+            <div class="login-prompt">
+                <span>@Loc["CreateAccount_AlreadyHaveAccount"] <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault class="login-link">@Loc["CreateAccount_LogIn"]</a></span>
+            </div>
         </div>
 
-        <h2 class="register-title">@Loc["CreateAccount_Title"]</h2>
+        <!-- Right Panel: The Email Registration Form -->
+        <div class="register-right">
+            <button type="button" class="back-btn" @onclick="() => showEmailForm = false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12,19 5,12 12,5"></polyline>
+                </svg>
+                <span>@Loc["CreateAccount_BackToGoogle"]</span>
+            </button>
 
-        <form @onsubmit="HandleSubmit" class="register-form" novalidate>
-            <div class="form-row">
-                <div class="form-group flex-fill">
-                    <label for="firstName" class="form-label">@Loc["CreateAccount_FirstName"]</label>
-                    <input type="text" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.FirstNameError) ? "" : "bs-invalid")" id="firstName" @bind="ViewModel.FirstName" placeholder="e.g. John / Иван" />
-                    @if (!string.IsNullOrEmpty(ViewModel.FirstNameError))
+            <h2 class="form-title">@Loc["CreateAccount_EnterDetails"]</h2>
+
+            <form @onsubmit="HandleSubmit" class="register-form" novalidate>
+                <div class="form-row">
+                    <div class="form-group flex-fill">
+                        <label for="firstName" class="form-label">@Loc["CreateAccount_FirstName"]</label>
+                        <input type="text" class="register-input @(string.IsNullOrEmpty(ViewModel.FirstNameError) ? "" : "invalid")" id="firstName" @bind="ViewModel.FirstName" placeholder="e.g. John / Иван" />
+                        @if (!string.IsNullOrEmpty(ViewModel.FirstNameError))
+                        {
+                            <span class="validation-message">@ViewModel.FirstNameError</span>
+                        }
+                    </div>
+
+                    <div class="form-group flex-fill">
+                        <label for="lastName" class="form-label">@Loc["CreateAccount_LastName"]</label>
+                        <input type="text" class="register-input @(string.IsNullOrEmpty(ViewModel.LastNameError) ? "" : "invalid")" id="lastName" @bind="ViewModel.LastName" placeholder="e.g. Doe / Иванов" />
+                        @if (!string.IsNullOrEmpty(ViewModel.LastNameError))
+                        {
+                            <span class="validation-message">@ViewModel.LastNameError</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">@Loc["CreateAccount_Email"]</label>
+                    <input type="email" class="register-input @(string.IsNullOrEmpty(ViewModel.EmailError) ? "" : "invalid")" id="email" @bind="ViewModel.Email" placeholder="e.g. user@example.com" />
+                    @if (!string.IsNullOrEmpty(ViewModel.EmailError))
                     {
-                        <span class="validation-message">@ViewModel.FirstNameError</span>
+                        <span class="validation-message">@ViewModel.EmailError</span>
                     }
                 </div>
 
-                <div class="form-group flex-fill">
-                    <label for="lastName" class="form-label">@Loc["CreateAccount_LastName"]</label>
-                    <input type="text" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.LastNameError) ? "" : "bs-invalid")" id="lastName" @bind="ViewModel.LastName" placeholder="e.g. Doe / Иванов" />
-                    @if (!string.IsNullOrEmpty(ViewModel.LastNameError))
+                <div class="form-group">
+                    <label for="phoneNumber" class="form-label">@Loc["CreateAccount_PhoneNumber"]</label>
+                    <input type="tel" class="register-input @(string.IsNullOrEmpty(ViewModel.PhoneNumberError) ? "" : "invalid")" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
+                    @if (!string.IsNullOrEmpty(ViewModel.PhoneNumberError))
                     {
-                        <span class="validation-message">@ViewModel.LastNameError</span>
+                        <span class="validation-message">@ViewModel.PhoneNumberError</span>
                     }
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="email" class="form-label">@Loc["CreateAccount_Email"]</label>
-                <input type="email" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.EmailError) ? "" : "bs-invalid")" id="email" @bind="ViewModel.Email" placeholder="e.g. user@example.com" />
-                @if (!string.IsNullOrEmpty(ViewModel.EmailError))
-                {
-                    <span class="validation-message">@ViewModel.EmailError</span>
-                }
-            </div>
-
-            <div class="form-group">
-                <label for="phoneNumber" class="form-label">@Loc["CreateAccount_PhoneNumber"]</label>
-                <input type="tel" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.PhoneNumberError) ? "" : "bs-invalid")" id="phoneNumber" placeholder="e.g. 0888123456" @bind="ViewModel.PhoneNumber" />
-                @if (!string.IsNullOrEmpty(ViewModel.PhoneNumberError))
-                {
-                    <span class="validation-message">@ViewModel.PhoneNumberError</span>
-                }
-            </div>
-
-            <div class="form-group">
-                <label for="password" class="form-label">@Loc["CreateAccount_Password"]</label>
-                <input type="password" class="bs-input register-input @(string.IsNullOrEmpty(ViewModel.PasswordError) ? "" : "bs-invalid")" id="password" @bind="ViewModel.Password" placeholder="Minimum 6 characters" />
-                @if (!string.IsNullOrEmpty(ViewModel.PasswordError))
-                {
-                    <span class="validation-message">@ViewModel.PasswordError</span>
-                }
-            </div>
-
-            <div class="form-checkbox-group">
-                <input type="checkbox" class="bs-checkbox" id="agreeToTerms" @bind="ViewModel.AgreeToTerms" />
-                <label for="agreeToTerms" class="checkbox-label">
-                    @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
+                <div class="form-group">
+                    <label for="password" class="form-label">@Loc["CreateAccount_Password"]</label>
+                    <div class="input-wrapper">
+                        <input type="@(showRegPassword ? "text" : "password")" class="register-input @(string.IsNullOrEmpty(ViewModel.PasswordError) ? "" : "invalid")" id="password" @bind="ViewModel.Password" placeholder="Minimum 6 characters" />
+                        <button type="button" class="password-toggle-btn" @onclick="ToggleRegPasswordVisibility" aria-label="Toggle password visibility">
+                            @if (showRegPassword)
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            }
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewModel.PasswordError))
                     {
-                        <span>Съгласявам се с <a href="/terms?returnUrl=/create-account" target="_blank" class="legal-link">Общите условия</a> и се запознах с <a href="/privacy?returnUrl=/create-account" target="_blank" class="legal-link">Политиката за поверителност</a>.</span>
+                        <span class="validation-message">@ViewModel.PasswordError</span>
+                    }
+                </div>
+
+                <div class="form-checkbox-group">
+                    <input type="checkbox" class="bs-checkbox" id="agreeToTerms" @bind="ViewModel.AgreeToTerms" />
+                    <label for="agreeToTerms" class="checkbox-label">
+                        @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span>Съгласявам се с <a href="/terms?returnUrl=/create-account" target="_blank" class="legal-link">Общите условия</a> и се запознах с <a href="/privacy?returnUrl=/create-account" target="_blank" class="legal-link">Политиката за поверителност</a>.</span>
+                        }
+                        else
+                        {
+                            <span>I agree to the <a href="/terms?returnUrl=/create-account" target="_blank" class="legal-link">Terms and Conditions</a> and acknowledge the <a href="/privacy?returnUrl=/create-account" target="_blank" class="legal-link">Privacy Policy</a>.</span>
+                        }
+                    </label>
+                </div>
+                @if (!string.IsNullOrEmpty(ViewModel.AgreeToTermsError))
+                {
+                    <span class="validation-message">@ViewModel.AgreeToTermsError</span>
+                }
+
+                <button class="register-btn" type="submit" disabled="@ViewModel.IsBusy">
+                    @if (ViewModel.IsBusy)
+                    {
+                        <span class="btn-spinner"></span>
                     }
                     else
                     {
-                        <span>I agree to the <a href="/terms?returnUrl=/create-account" target="_blank" class="legal-link">Terms and Conditions</a> and acknowledge the <a href="/privacy?returnUrl=/create-account" target="_blank" class="legal-link">Privacy Policy</a>.</span>
+                        <span>@Loc["CreateAccount_CreateButton"]</span>
                     }
-                </label>
-            </div>
-            @if (!string.IsNullOrEmpty(ViewModel.AgreeToTermsError))
-            {
-                <span class="validation-message">@ViewModel.AgreeToTermsError</span>
-            }
-
-            <button class="bs-btn-primary register-btn w-100" type="submit" disabled="@ViewModel.IsBusy">
-                @if (ViewModel.IsBusy)
-                {
-                    <span>@GetText("VerifyEmail_Loading", "Изпращане...", "Submitting...")</span>
-                }
-                else
-                {
-                    <span>@Loc["CreateAccount_CreateButton"]</span>
-                }
-            </button>
-            
-            <div class="login-prompt">
-                <span>@Loc["CreateAccount_AlreadyHaveAccount"] <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault>@Loc["CreateAccount_LogIn"]</a></span>
-            </div>
-        </form>
+                </button>
+            </form>
+        </div>
 
     </div>
 </div>
@@ -108,7 +215,7 @@
 @if (ViewModel.IsRegistrationSuccess)
 {
     <div class="verify-modal-backdrop">
-        <div class="verify-modal-content bs-card">
+        <div class="verify-modal-content">
             <div class="modal-header-section">
                 <div class="modal-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -131,17 +238,17 @@
 
             <div class="form-group">
                 <label for="modalCode" class="form-label text-center w-100">@GetText("VerifyEmail_Code", "6-цифрен код", "6-digit code")</label>
-                <input type="text" class="bs-input code-input @(string.IsNullOrEmpty(VerifyViewModel.Code) ? "" : (VerifyViewModel.Code.Length != 6 ? "bs-invalid" : ""))" id="modalCode" maxlength="6" placeholder="123456" @bind="VerifyViewModel.Code" />
+                <input type="text" class="register-input code-input @(string.IsNullOrEmpty(VerifyViewModel.Code) ? "" : (VerifyViewModel.Code.Length != 6 ? "invalid" : ""))" id="modalCode" maxlength="6" placeholder="123456" @bind="VerifyViewModel.Code" />
                 @if (!string.IsNullOrEmpty(VerifyViewModel.Code) && VerifyViewModel.Code.Length != 6)
                 {
                     <span class="validation-message text-center">@GetText("VerifyEmail_CodeLengthWarning", "Кодът трябва да бъде точно 6 цифри.", "The code must be exactly 6 digits.")</span>
                 }
             </div>
 
-            <button class="bs-btn-primary verify-btn w-100" type="button" @onclick="HandleVerifyCode" disabled="@VerifyViewModel.IsBusy">
+            <button class="register-btn" type="button" @onclick="HandleVerifyCode" disabled="@VerifyViewModel.IsBusy">
                 @if (VerifyViewModel.IsBusy)
                 {
-                    <span>@GetText("VerifyEmail_Verifying", "Потвърждаване...", "Verifying...")</span>
+                    <span class="btn-spinner"></span>
                 }
                 else
                 {
@@ -153,7 +260,7 @@
                 <button type="button" class="btn-link resend-btn" @onclick="HandleResendCode" disabled="@VerifyViewModel.IsBusy">
                     @GetText("VerifyEmail_ResendCode", "Изпрати нов код", "Resend code")
                 </button>
-                <span class="divider">|</span>
+                <span class="modal-actions-divider">|</span>
                 <button type="button" class="btn-link cancel-btn" @onclick="CloseVerificationModal">
                     @GetText("VerifyEmail_Cancel", "Отказ", "Cancel")
                 </button>
@@ -168,32 +275,346 @@
         justify-content: center;
         align-items: center;
         min-height: 100dvh;
-        background-color: var(--bg-page);
-        font-family: var(--font-primary);
+        background-color: var(--bg-page, #fcfcfc);
+        font-family: var(--font-primary, 'Lato', sans-serif);
         margin: 0;
-        padding: 0;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
     }
 
     .register-card {
         width: 100%;
-        max-width: 500px;
+        background-color: var(--bg-card, #ffffff);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 16px;
         padding: 40px;
         display: flex;
         flex-direction: column;
-        gap: 25px;
         box-sizing: border-box;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+        margin: auto;
+    }
+
+    /* Desktop View */
+    @@media (min-width: 992px) {
+        .register-card {
+            max-width: 960px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            padding: 50px;
+        }
+        .register-left {
+            border-right: 1px solid var(--border-color, #e2e8f0);
+            padding-right: 50px;
+        }
+        .back-btn {
+            display: none !important;
+        }
+        .mobile-email-toggle-container {
+            display: none !important;
+        }
+    }
+
+    /* Mobile View Steps */
+    @@media (max-width: 991px) {
+        .register-card {
+            max-width: 440px;
+        }
+        .register-card.show-intro .register-right {
+            display: none !important;
+        }
+        .register-card.show-form .register-left {
+            display: none !important;
+        }
+        .register-left {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .register-right {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .register-container {
+            padding: 0;
+            background-color: var(--bg-card, #ffffff);
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+        .register-card {
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            padding: 30px 20px 40px 20px;
+            min-height: 100dvh;
+            height: auto;
+            justify-content: flex-start;
+            margin: 0;
+        }
+    }
+
+    .logo-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+
+    @@media (max-width: 991px) {
+        .logo-block {
+            justify-content: center;
+        }
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #000000;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #ffffff;
+    }
+
+    .logo-text {
+        font-family: var(--font-heading, 'Lato', sans-serif);
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-primary, #111111);
+        letter-spacing: -0.5px;
+    }
+
+    .register-title {
+        color: var(--text-primary, #111111);
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        font-family: var(--font-heading, 'Lato', sans-serif);
+        letter-spacing: -0.5px;
+    }
+
+    @@media (max-width: 991px) {
+        .register-title {
+            text-align: center;
+        }
+    }
+
+    .register-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary, #71717a);
+        margin: -10px 0 10px 0;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    @@media (max-width: 991px) {
+        .register-subtitle {
+            text-align: center;
+        }
+    }
+
+    .google-btn {
+        background-color: #000000;
+        border: none;
+        border-radius: 8px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .google-btn:hover {
+        background-color: #1a1a1a;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .google-btn:active {
+        transform: scale(0.98);
+    }
+
+    .mobile-email-toggle-container {
+        margin-top: 5px;
+    }
+
+    .email-btn-toggle {
+        background-color: #ffffff;
+        color: var(--text-primary, #111111);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 8px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .email-btn-toggle:hover {
+        background-color: #fafafa;
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .email-btn-toggle:active {
+        transform: scale(0.98);
+    }
+
+    .features-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin: 25px 0;
+    }
+
+    .feature-item {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .feature-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .feature-icon.secure {
+        background-color: #e6f4ea;
+        color: #137333;
+    }
+
+    .feature-icon.easy {
+        background-color: #e8f0fe;
+        color: #1a73e8;
+    }
+
+    .feature-icon.access {
+        background-color: #f3e8ff;
+        color: #7c3aed;
+    }
+
+    .feature-text h3 {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary, #111111);
+        margin: 0 0 4px 0;
+    }
+
+    .feature-text p {
+        font-size: 13px;
+        color: var(--text-secondary, #71717a);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .legal-footnote-intro {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-muted, #a1a1aa);
+        line-height: 1.4;
+        text-align: left;
+        margin-top: 10px;
+    }
+
+    @@media (min-width: 992px) {
+        .legal-footnote-intro {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+    }
+
+    .lock-icon {
+        color: var(--text-muted, #a1a1aa);
+        flex-shrink: 0;
+        margin-top: 1px;
+        display: inline-flex;
+    }
+
+    .signup-prompt, .login-prompt {
+        text-align: center;
+        font-size: 14px;
+        color: var(--text-secondary, #71717a);
+        margin-top: 15px;
+        border-top: 1px solid var(--border-color, #e2e8f0);
+        padding-top: 20px;
+    }
+
+    .login-link {
+        color: #3b82f6;
+        font-weight: 600;
+        text-decoration: none;
+        margin-left: 4px;
+    }
+
+    .login-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Right Panel (Form) Styles */
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        background: none;
+        color: #3b82f6;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 0;
+        margin-bottom: 15px;
+        transition: color 0.15s ease;
+    }
+
+    .back-btn:hover {
+        color: #2563eb;
+    }
+
+    .form-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary, #111111);
+        margin: 0 0 15px 0;
+        font-family: var(--font-heading, 'Lato', sans-serif);
+        letter-spacing: -0.3px;
     }
 
     .register-form {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 16px;
     }
 
     .form-row {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 16px;
     }
 
     @@media (min-width: 481px) {
@@ -202,137 +623,97 @@
         }
     }
 
-    @@media (max-width: 480px) {
-        .register-container {
-            align-items: flex-start;
-        }
-        .register-card {
-            min-height: 100dvh;
-            padding: 20px 20px 40px 20px;
-            justify-content: flex-start;
-            border-radius: 0;
-            border: none;
-            box-shadow: none;
-            margin: 0;
-            max-width: 100%;
-        }
-        .register-title {
-            margin-top: 0;
-        }
-    }
-
-    .logo-block {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        margin-bottom: 10px;
-        margin-top: 10px;
-    }
-
-    .logo-icon {
-        width: 40px;
-        height: 40px;
-        background-color: var(--text-primary);
-        border-radius: 4px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: var(--bg-card);
-    }
-
-    .logo-text {
-        font-family: var(--font-heading);
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--text-primary);
-        letter-spacing: -0.5px;
-    }
-
-    .register-title {
-        color: var(--text-primary);
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0;
-        text-align: center;
-        font-family: var(--font-heading);
-    }
-
     .form-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
 
     .form-label {
-        color: var(--text-primary);
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
-        opacity: 0.9;
+        color: var(--text-primary, #111111);
     }
 
     .register-input {
-        height: 52px;
-        padding: 0 15px;
+        width: 100%;
+        height: 48px;
+        padding: 0 16px;
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 8px;
+        background-color: #ffffff;
+        font-size: 14px;
+        color: var(--text-primary, #111111);
+        outline: none;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
     }
 
-    .register-btn {
-        height: 56px;
-        font-weight: 600;
-        font-size: 18px;
-        margin-top: 10px;
+    .register-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
     }
 
-    .login-prompt {
-        text-align: center;
-        margin-top: 10px;
+    .register-input.invalid {
+        border-color: var(--color-danger, #dc3545);
     }
 
-    .login-prompt span {
-        color: var(--text-primary);
-        font-size: 15px;
-        font-weight: 500;
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
     }
 
-    .login-prompt a {
-        color: var(--color-primary);
-        font-weight: 600;
-        text-decoration: none;
+    .input-wrapper .register-input {
+        padding-right: 48px;
     }
 
-    .login-prompt a:hover {
-        text-decoration: underline;
+    .password-toggle-btn {
+        position: absolute;
+        right: 16px;
+        background: none;
+        border: none;
+        color: var(--text-muted, #a1a1aa);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .password-toggle-btn:hover {
+        color: var(--text-primary, #111111);
     }
 
     .form-checkbox-group {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
+        gap: 10px;
         margin-top: 5px;
-        margin-bottom: 5px;
     }
 
     .bs-checkbox {
         width: 18px;
         height: 18px;
-        accent-color: var(--color-primary);
+        accent-color: #000000;
         cursor: pointer;
         border-radius: 4px;
-        border: 1px solid var(--border-color);
-        margin-top: 2px;
+        border: 1px solid var(--border-color, #e2e8f0);
+        margin-top: 1px;
         flex-shrink: 0;
     }
 
     .checkbox-label {
-        font-size: 14px;
-        color: var(--text-primary);
+        font-size: 13px;
+        color: var(--text-secondary, #71717a);
         line-height: 1.4;
         cursor: pointer;
         user-select: none;
     }
 
     .legal-link {
-        color: var(--color-primary);
+        color: #3b82f6;
         font-weight: 600;
         text-decoration: none;
     }
@@ -341,17 +722,57 @@
         text-decoration: underline;
     }
 
-    /* Form validation classes */
-    .bs-input.bs-invalid {
-        border-color: var(--color-danger);
+    .register-btn {
+        background-color: #000000;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        height: 52px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 10px;
+    }
+
+    .register-btn:hover {
+        background-color: #1a1a1a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .register-btn:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .register-btn:disabled {
+        background-color: #cbd5e1;
+        color: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
     }
 
     .validation-message {
-        color: var(--color-danger);
-        font-size: 13px;
+        color: var(--color-danger, #dc3545);
+        font-size: 12px;
         font-weight: 500;
         margin-top: 2px;
         display: block;
+    }
+
+    .btn-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
     }
 
     /* Modal Backdrop */
@@ -379,10 +800,12 @@
         display: flex;
         flex-direction: column;
         gap: 25px;
-        box-shadow: var(--elevation-12dp, 0 12px 24px rgba(0, 0, 0, 0.15));
-        background-color: var(--bg-card);
+        box-shadow: var(--shadow-hover, 0 12px 24px rgba(0, 0, 0, 0.15));
+        background-color: var(--bg-card, #ffffff);
+        border: 1px solid var(--border-color, #e2e8f0);
         border-radius: 12px;
         animation: scaleIn 0.3s ease-out;
+        box-sizing: border-box;
     }
 
     @@keyframes scaleIn {
@@ -408,8 +831,8 @@
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background-color: var(--bg-card-alt);
-        color: var(--color-primary);
+        background-color: #f3f4f6;
+        color: #111111;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -417,16 +840,16 @@
     }
 
     .modal-title {
-        font-family: var(--font-heading);
+        font-family: var(--font-heading, 'Lato', sans-serif);
         font-size: 22px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text-primary, #111111);
         margin: 0;
     }
 
     .modal-subtitle {
         font-size: 14px;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #71717a);
         line-height: 1.5;
         margin: 0;
     }
@@ -447,7 +870,7 @@
     }
 
     .btn-link {
-        color: var(--color-primary);
+        color: #3b82f6;
         font-weight: 600;
         text-decoration: none;
         background: none;
@@ -462,17 +885,30 @@
     }
 
     .resend-btn:disabled {
-        color: var(--text-muted);
+        color: var(--text-muted, #a1a1aa);
         cursor: not-allowed;
         text-decoration: none;
     }
 
-    .divider {
-        color: var(--border-color);
+    .modal-actions-divider {
+        color: var(--border-color, #e2e8f0);
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 
 @code {
+    private bool showEmailForm = false;
+    private bool showRegPassword = false;
+
+    private void ToggleRegPasswordVisibility()
+    {
+        showRegPassword = !showRegPassword;
+    }
+
     private string GetText(string key, string bgDefault, string enDefault)
     {
         var local = Loc[key];
@@ -507,5 +943,31 @@
     private void CloseVerificationModal()
     {
         ViewModel.IsRegistrationSuccess = false;
+    }
+
+    private async Task HandleGoogleSignUp()
+    {
+        try
+        {
+            var token = await AuthService.AuthenticateWithGoogleAsync();
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await AuthService.SaveTokenAsync(token);
+
+                var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+                authStateProvider?.NotifyAuthenticationStateChanged();
+
+                await BuildSmart.SharedUI.Services.AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // User canceled the authentication
+        }
+        catch (Exception ex)
+        {
+            await BuildSmart.SharedUI.Services.AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+        }
     }
 }
