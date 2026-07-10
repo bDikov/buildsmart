@@ -70,7 +70,8 @@ public class CloudflareR2MediaService : IMediaService
             BucketName = _bucketName,
             Key = fileName,
             InputStream = stream,
-            ContentType = contentType
+            ContentType = contentType,
+            DisablePayloadSigning = true // CRITICAL: Cloudflare R2 does not support streaming signature payloads
         };
 
         await _s3Client.PutObjectAsync(putRequest);
