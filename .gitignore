@@ -44,3 +44,6 @@ secrets.json
 
 # Docker
 docker-compose.override.yml
+
+# Scratch files
+scratch/

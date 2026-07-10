@@ -421,7 +421,7 @@
     }
 
     .google-btn {
-        background-color: #000000;
+        background-color: var(--color-primary, #000000);
         border: none;
         border-radius: 8px;
         height: 52px;
@@ -439,7 +439,7 @@
     }
 
     .google-btn:hover {
-        background-color: #1a1a1a;
+        background-color: var(--color-primary-hover, #1a1a1a);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
@@ -452,7 +452,7 @@
     }
 
     .email-btn-toggle {
-        background-color: #ffffff;
+        background-color: var(--bg-card-alt, #fafafa);
         color: var(--text-primary, #111111);
         border: 1px solid var(--border-color, #e2e8f0);
         border-radius: 8px;
@@ -470,8 +470,8 @@
     }
 
     .email-btn-toggle:hover {
-        background-color: #fafafa;
-        border-color: #cbd5e1;
+        background-color: var(--border-color, #cbd5e1);
+        border-color: var(--border-color, #cbd5e1);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
@@ -723,9 +723,9 @@
     }
 
     .register-btn {
-        background-color: #000000;
-        color: #ffffff;
-        border: none;
+        background-color: var(--bg-card-alt, #fafafa);
+        color: var(--text-primary, #111111);
+        border: 1px solid var(--border-color, #e2e8f0);
         border-radius: 8px;
         height: 52px;
         font-size: 16px;
@@ -741,18 +741,24 @@
     }
 
     .register-btn:hover {
-        background-color: #1a1a1a;
+        background-color: var(--border-color, #cbd5e1);
+        border-color: var(--border-color, #cbd5e1);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .register-btn:active {
         transform: translateY(0) scale(0.98);
     }
 
+    .register-btn .btn-spinner {
+        border: 2px solid var(--border-color, rgba(0, 0, 0, 0.1));
+        border-top-color: var(--text-primary, #000000);
+    }
+
     .register-btn:disabled {
-        background-color: #cbd5e1;
-        color: #94a3b8;
+        background-color: var(--border-color, #cbd5e1);
+        color: var(--text-muted, #94a3b8);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;

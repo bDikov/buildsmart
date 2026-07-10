@@ -23,9 +23,15 @@ window.reelsObserver = {
                 mutations.forEach(mutation => {
                     mutation.removedNodes.forEach(node => {
                         if (node.nodeName === 'VIDEO') {
-                            window.reelsObserver.cleanupVideo(node);
+                            if (!document.body.contains(node)) {
+                                window.reelsObserver.cleanupVideo(node);
+                            }
                         } else if (node.querySelectorAll) {
-                            node.querySelectorAll('video').forEach(window.reelsObserver.cleanupVideo);
+                            node.querySelectorAll('video').forEach(v => {
+                                if (!document.body.contains(v)) {
+                                    window.reelsObserver.cleanupVideo(v);
+                                }
+                            });
                         }
                     });
                 });

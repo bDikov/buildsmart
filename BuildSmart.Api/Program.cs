@@ -482,7 +482,15 @@ public partial class Program
 		app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildSmart.Api v1"));
 
 		// Enable serving static files from wwwroot (like the generated PDFs)
-		app.UseStaticFiles();
+		app.UseStaticFiles(new StaticFileOptions
+		{
+			OnPrepareResponse = ctx =>
+			{
+				ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+				ctx.Context.Response.Headers.Append("Access-Control-Allow-Headers", "*");
+				ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "*");
+			}
+		});
 
 		app.UseCors(MyAllowSpecificOrigins);
 

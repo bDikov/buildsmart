@@ -96,18 +96,6 @@
             }
         </button>
 
-        <div class="guest-prompt">
-            <a href="#" @onclick="ContinueAsGuest" @onclick:preventDefault class="guest-link">
-                @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase))
-                {
-                    <span>Продължи като гост</span>
-                }
-                else
-                {
-                    <span>Continue as Guest</span>
-                }
-            </a>
-        </div>
 
         <div class="login-legal-footnote">
             <span class="lock-icon">
@@ -230,7 +218,7 @@
     }
 
     .google-btn {
-        background-color: #000000;
+        background-color: var(--color-primary, #000000);
         border: none;
         border-radius: 8px;
         height: 52px;
@@ -248,7 +236,7 @@
     }
 
     .google-btn:hover {
-        background-color: #1a1a1a;
+        background-color: var(--color-primary-hover, #1a1a1a);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
@@ -359,9 +347,9 @@
     }
 
     .login-btn {
-        background-color: #000000;
-        color: #ffffff;
-        border: none;
+        background-color: var(--bg-card-alt, #fafafa);
+        color: var(--text-primary, #111111);
+        border: 1px solid var(--border-color, #e2e8f0);
         border-radius: 8px;
         height: 52px;
         font-size: 16px;
@@ -376,18 +364,24 @@
     }
 
     .login-btn:hover {
-        background-color: #1a1a1a;
+        background-color: var(--border-color, #cbd5e1);
+        border-color: var(--border-color, #cbd5e1);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .login-btn:active {
         transform: translateY(0) scale(0.98);
     }
 
+    .login-btn .btn-spinner {
+        border: 2px solid var(--border-color, rgba(0, 0, 0, 0.1));
+        border-top-color: var(--text-primary, #000000);
+    }
+
     .login-btn:disabled {
-        background-color: #cbd5e1;
-        color: #94a3b8;
+        background-color: var(--border-color, #cbd5e1);
+        color: var(--text-muted, #94a3b8);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
@@ -402,22 +396,6 @@
         animation: spin 0.8s linear infinite;
     }
 
-    .guest-prompt {
-        text-align: center;
-        margin-top: 5px;
-    }
-
-    .guest-link {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-secondary, #71717a);
-        text-decoration: underline;
-        transition: color 0.15s ease;
-    }
-
-    .guest-link:hover {
-        color: var(--text-primary, #111111);
-    }
 
     .login-legal-footnote {
         display: flex;
@@ -658,24 +636,5 @@
         }
     }
 
-    private async Task ContinueAsGuest()
-    {
-        try
-        {
-            // Clear any old/expired token so we are guaranteed to be unauthenticated
-            await AuthService.ClearTokenAsync();
-            
-            // Notify provider so that it evaluates authentication state as anonymous
-            var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
-            authStateProvider?.NotifyAuthenticationStateChanged();
 
-            // Navigate to main feed (using Shell tab switch in MAUI, or root path in Web)
-            await BuildSmart.SharedUI.Services.AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Login] Error continuing as guest: {ex.Message}");
-            NavManager.NavigateTo("/", forceLoad: true);
-        }
-    }
 }
