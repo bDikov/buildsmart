@@ -10,7 +10,7 @@ public class HangfireDashboardAuthorizationFilter : IDashboardAuthorizationFilte
 
     public HangfireDashboardAuthorizationFilter(string secretToken)
     {
-        _secretToken = secretToken;
+        _secretToken = (secretToken ?? string.Empty).Trim('"', '\'');
     }
 
     public bool Authorize(DashboardContext context)

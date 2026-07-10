@@ -149,6 +149,7 @@ jobs:
             echo "SMTP_SENDER_NAME=${{ secrets.SMTP_SENDER_NAME }}" >> .env
             echo "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
             echo "POSTHOG_API_HOST=${{ secrets.POSTHOG_API_HOST }}" >> .env
+            echo "HANGFIRE_DASHBOARD_TOKEN=${{ secrets.HANGFIRE_DASHBOARD_TOKEN }}" >> .env
             
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build --no-cache
