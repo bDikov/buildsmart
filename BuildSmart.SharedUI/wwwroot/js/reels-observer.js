@@ -171,16 +171,28 @@ window.reelsObserver = {
                 }
             });
 
-            // If this video is the currently active/intersecting one, play it immediately!
-            if (videoId === window.reelsObserver.currentlyActiveVideoId) {
-                const activePlayer = this.players[videoId];
-                activePlayer.__ignoreVolumeChangeUntil = Date.now() + 200;
-                activePlayer.muted = window.reelsObserver.globalMuted;
-                if (!window.reelsObserver.globalMuted) {
-                    activePlayer.volume = 1;
+            // If this video is the currently active/intersecting one, play it as soon as the player is ready!
+            const playIfActive = () => {
+                if (videoId === window.reelsObserver.currentlyActiveVideoId) {
+                    const activePlayer = this.players[videoId];
+                    if (activePlayer) {
+                        activePlayer.__ignoreVolumeChangeUntil = Date.now() + 200;
+                        activePlayer.muted = window.reelsObserver.globalMuted;
+                        if (!window.reelsObserver.globalMuted) {
+                            activePlayer.volume = 1;
+                        }
+                        activePlayer.play().catch(e => {
+                            console.log('Autoplay prevented on lazy load init', e);
+                        });
+                    }
                 }
-                activePlayer.play().catch(e => {
-                    console.log('Autoplay prevented on lazy load init', e);
+            };
+
+            if (this.players[videoId].ready) {
+                playIfActive();
+            } else {
+                this.players[videoId].on('ready', () => {
+                    playIfActive();
                 });
             }
         }
