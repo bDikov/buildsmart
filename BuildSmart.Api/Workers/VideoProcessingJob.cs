@@ -49,8 +49,8 @@ public class VideoProcessingJob
 
         await EnsureFfmpegBinaryAsync();
 
-        // Create a temporary workspace folder in scratch
-        var tempDir = System.IO.Path.Combine(@"C:\Users\bonch\source\repos\BuildSmart\scratch", "video_temp", Guid.NewGuid().ToString());
+        // Create a temporary workspace folder in the system temp directory
+        var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "buildsmart_video_temp", Guid.NewGuid().ToString());
         if (!Directory.Exists(tempDir))
         {
             Directory.CreateDirectory(tempDir);
