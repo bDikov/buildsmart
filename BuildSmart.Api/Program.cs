@@ -197,6 +197,7 @@ public partial class Program
 		{
 			options.ServerName = String.Format("{0}:DefaultServer", Environment.MachineName);
 			options.Queues = new[] { "default" };
+			options.WorkerCount = 2; // Prevent CPU/RAM exhaustion during heavy jobs (like FFmpeg transcoding)
 		});
 
 		builder.Services.AddHangfireServer(options =>
