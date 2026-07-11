@@ -58,15 +58,18 @@ public class VideoProcessingJob
 
         var originalVideoPath = System.IO.Path.Combine(tempDir, "input.mp4");
         var mobileVideoPath = System.IO.Path.Combine(tempDir, "mobile.mp4");
+        var desktopVideoPath = System.IO.Path.Combine(tempDir, "desktop.mp4");
         var posterImagePath = System.IO.Path.Combine(tempDir, "poster.jpg");
+
+        var originalRawUrl = media.VideoUrl;
 
         try
         {
             // 1. Download original video
-            _logger.LogInformation("Downloading original video from {Url} to {Path}", media.VideoUrl, originalVideoPath);
+            _logger.LogInformation("Downloading original video from {Url} to {Path}", originalRawUrl, originalVideoPath);
             using (var httpClient = new HttpClient())
             {
-                using var response = await httpClient.GetAsync(media.VideoUrl);
+                using var response = await httpClient.GetAsync(originalRawUrl);
                 response.EnsureSuccessStatusCode();
                 using var fileStream = System.IO.File.Create(originalVideoPath);
                 await response.Content.CopyToAsync(fileStream);
@@ -74,11 +77,15 @@ public class VideoProcessingJob
 
             var ffmpegExe = GetFfmpegPath();
 
-            // 2. Compress video for mobile
-            // H.264, scale to 720p (preserving aspect ratio, divisible by 2), audio copy or aac
+            // 2. Compress video for mobile (720p)
             _logger.LogInformation("Compressing video for mobile...");
-            var compressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 28 -preset fast -filter:v \"scale=720:-2\" -acodec aac -b:a 128k -y \"{mobileVideoPath}\"";
+            var compressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 28 -preset fast -filter:v \"scale=720:-2\" -acodec aac -b:a 128k -movflags +faststart -y \"{mobileVideoPath}\"";
             await RunProcessAsync(ffmpegExe, compressArgs);
+
+            // 2.5 Compress video for desktop (1080p web-optimized)
+            _logger.LogInformation("Compressing video for desktop...");
+            var desktopCompressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 23 -preset fast -filter:v \"scale=-2:min(1080,ih)\" -acodec aac -b:a 192k -movflags +faststart -y \"{desktopVideoPath}\"";
+            await RunProcessAsync(ffmpegExe, desktopCompressArgs);
 
             // 3. Extract cover thumbnail (if not already uploaded)
             var generatedThumbnail = false;
@@ -91,13 +98,34 @@ public class VideoProcessingJob
                 generatedThumbnail = true;
             }
 
+            // Extract filename and strip existing prefixes to prevent double-prefixing on re-queue
+            var rawFileName = System.IO.Path.GetFileName(originalRawUrl);
+            var cleanFileName = rawFileName;
+            if (cleanFileName.StartsWith("desktop_"))
+            {
+                cleanFileName = cleanFileName.Substring("desktop_".Length);
+            }
+            else if (cleanFileName.StartsWith("mobile_"))
+            {
+                cleanFileName = cleanFileName.Substring("mobile_".Length);
+            }
+
             // 4. Upload mobile video to R2
             string mobileVideoUrl;
             using (var mobileStream = System.IO.File.OpenRead(mobileVideoPath))
             {
-                var mobileFileName = $"mobile_{mediaId}_{System.IO.Path.GetFileName(media.VideoUrl)}";
+                var mobileFileName = $"mobile_{mediaId}_{cleanFileName}";
                 _logger.LogInformation("Uploading mobile video to CDN...");
                 mobileVideoUrl = await _mediaService.UploadFileAsync(mobileStream, mobileFileName, "video/mp4");
+            }
+
+            // 4.5 Upload desktop video to R2
+            string desktopVideoUrl;
+            using (var desktopStream = System.IO.File.OpenRead(desktopVideoPath))
+            {
+                var desktopFileName = $"desktop_{mediaId}_{cleanFileName}";
+                _logger.LogInformation("Uploading desktop video to CDN...");
+                desktopVideoUrl = await _mediaService.UploadFileAsync(desktopStream, desktopFileName, "video/mp4");
             }
 
             // 5. Upload thumbnail image to R2 (if generated)
@@ -113,13 +141,28 @@ public class VideoProcessingJob
             }
 
             // 6. Update database record
+            media.VideoUrl = desktopVideoUrl;
             media.MobileVideoUrl = mobileVideoUrl;
             media.ImageUrl = posterImageUrl;
             media.ThumbnailUrl = posterImageUrl;
             media.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Video processing job complete. Mobile URL: {MobileUrl}, Poster URL: {PosterUrl}", mobileVideoUrl, posterImageUrl);
+            _logger.LogInformation("Video processing job complete. Desktop URL: {DesktopUrl}, Mobile URL: {MobileUrl}, Poster URL: {PosterUrl}", desktopVideoUrl, mobileVideoUrl, posterImageUrl);
+
+            // 7. Delete original raw video from R2 (only if it was not already a compressed version)
+            if (!originalRawUrl.Contains("/desktop_") && !originalRawUrl.Contains("/mobile_"))
+            {
+                try
+                {
+                    _logger.LogInformation("Deleting original raw video {Url} from CDN...", originalRawUrl);
+                    await _mediaService.DeleteFileAsync(originalRawUrl);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to delete original raw video {Url} from CDN.", originalRawUrl);
+                }
+            }
         }
         catch (Exception ex)
         {

@@ -11,4 +11,9 @@ public interface IMediaService
     /// Uploads a file stream directly to the CDN and returns its public URL.
     /// </summary>
     Task<string> UploadFileAsync(Stream stream, string fileName, string contentType);
+
+    /// <summary>
+    /// Deletes a file from the CDN using its public URL.
+    /// </summary>
+    Task DeleteFileAsync(string fileUrl);
 }

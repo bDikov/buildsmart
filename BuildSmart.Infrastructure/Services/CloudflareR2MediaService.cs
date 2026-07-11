@@ -84,4 +84,18 @@ public class CloudflareR2MediaService : IMediaService
 
         return $"{_serviceUrl.TrimEnd('/')}/{_bucketName}/{fileName}";
     }
+
+    public async Task DeleteFileAsync(string fileUrl)
+    {
+        var fileName = System.IO.Path.GetFileName(fileUrl);
+        if (string.IsNullOrEmpty(fileName)) return;
+
+        var deleteRequest = new DeleteObjectRequest
+        {
+            BucketName = _bucketName,
+            Key = fileName
+        };
+
+        await _s3Client.DeleteObjectAsync(deleteRequest);
+    }
 }
