@@ -915,7 +915,7 @@
     <value>Not Logged In</value>
   </data>
   <data name="Feed_AuthAlert_Message" xml:space="preserve">
-    <value>You are not logged in. Do you want to proceed to login or stay on the page?</value>
+    <value>You are not logged in. When you log in or create a free account, you will be able to calculate an exact price estimation in real time for your renovation. Would you like to log in now or stay on this page?</value>
   </data>
   <data name="Feed_AuthAlert_Accept" xml:space="preserve">
     <value>Proceed</value>
