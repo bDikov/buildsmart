@@ -50,7 +50,16 @@ public class VideoProcessingJob
         await EnsureFfmpegBinaryAsync();
 
         // Create a temporary workspace folder in the system temp directory
-        var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "buildsmart_video_temp", Guid.NewGuid().ToString());
+        var tempRoot = System.IO.Path.GetTempPath();
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+        {
+            if (tempRoot.Contains('\\') || tempRoot.Contains(':'))
+            {
+                tempRoot = "/tmp";
+            }
+        }
+
+        var tempDir = System.IO.Path.Combine(tempRoot, "buildsmart_video_temp", Guid.NewGuid().ToString());
         if (!Directory.Exists(tempDir))
         {
             Directory.CreateDirectory(tempDir);

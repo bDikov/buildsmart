@@ -244,6 +244,31 @@ public partial class Program
 			options.ClaimActions.MapJsonKey("picture", "picture", "url");
 			options.CorrelationCookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
 			options.CorrelationCookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.Always;
+			options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+			{
+				OnRemoteFailure = context =>
+				{
+					var returnUrl = "buildsmart://auth";
+					if (context.Properties?.RedirectUri != null)
+					{
+						try
+						{
+							var uri = new Uri(context.Properties.RedirectUri);
+							var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+							if (query.TryGetValue("returnUrl", out var rUrl))
+							{
+								returnUrl = rUrl.ToString();
+							}
+						}
+						catch { }
+					}
+					var errorMessage = context.Failure?.Message ?? "Remote login failed";
+					var separator = returnUrl.Contains("?") ? "&" : "?";
+					context.Response.Redirect($"{returnUrl}{separator}error={System.Web.HttpUtility.UrlEncode(errorMessage)}");
+					context.HandleResponse();
+					return Task.CompletedTask;
+				}
+			};
 		});
 		// .AddApple(options =>
 		// {

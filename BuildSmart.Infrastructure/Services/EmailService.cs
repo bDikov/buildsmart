@@ -29,7 +29,7 @@ namespace BuildSmart.Infrastructure.Services
 			var project = await _unitOfWork.Projects.GetByIdAsync(projectId);
 			if (project == null)
 			{
-				_logger.LogError("Project {ProjectId} not found. Cannot send offer email.", projectId);
+				_logger.LogWarning("Project {ProjectId} not found. Cannot send offer email.", projectId);
 				return;
 			}
 
