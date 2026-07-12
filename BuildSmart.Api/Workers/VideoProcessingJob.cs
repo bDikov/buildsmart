@@ -93,7 +93,7 @@ public class VideoProcessingJob
 
             // 2.5 Compress video for desktop (1080p web-optimized)
             _logger.LogInformation("Compressing video for desktop...");
-            var desktopCompressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 23 -preset fast -filter:v \"scale=-2:min(1080,ih)\" -acodec aac -b:a 192k -movflags +faststart -y \"{desktopVideoPath}\"";
+            var desktopCompressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 23 -preset fast -filter:v \"scale=-2:trunc(min(1080,ih)/2)*2\" -acodec aac -b:a 192k -movflags +faststart -y \"{desktopVideoPath}\"";
             await RunProcessAsync(ffmpegExe, desktopCompressArgs);
 
             // 3. Extract cover thumbnail (if not already uploaded)
