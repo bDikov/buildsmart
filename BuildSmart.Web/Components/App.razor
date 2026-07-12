@@ -1,18 +1,31 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@using System.Globalization
 
 @{
     var theme = HttpContextAccessor.HttpContext?.Request.Cookies["user_theme"] ?? "system";
     var themeAttribute = theme != "system" ? $"data-theme=\"{theme}\"" : "";
+
+    var lang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+    var title = lang == "bg" 
+        ? "BuildSmart.bg - Умно Строителство с Гаранция и Прозрачност" 
+        : "BuildSmart.bg - Smart Construction with Guarantee & Transparency";
+    var description = lang == "bg"
+        ? "BuildSmart.bg е революционна платформа за строителство и ремонти в България. Пресметнете цената на Вашия ремонт, гледайте видеоклипове в реално време от обектите ни, без излишно губене на време и пари за огледи!"
+        : "BuildSmart.bg is a revolutionary platform for construction and renovations in Bulgaria. Calculate the cost of your renovation, watch real-time videos of our projects, and save time and money on site visits!";
 }
 <!DOCTYPE html>
-<html lang="en" @((MarkupString)themeAttribute)>
+<html lang="@lang" @((MarkupString)themeAttribute)>
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <title>BuildSmart.bg - Умно Строителство с Гаранция и Прозрачност</title>
-    <meta name="description" content="BuildSmart.bg е революционна платформа за строителство и ремонти в България. Пресметнете цената на Вашия ремонт, гледайте видеоклипове в реално време от обектите ни, без излишно губене на време и пари за огледи!" />
+    <title>@title</title>
+    <meta name="description" content="@description" />
+    <meta property="og:title" content="@title" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="BuildSmart" />
     
     <script>
         (function () {

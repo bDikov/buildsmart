@@ -83,9 +83,11 @@ namespace BuildSmart.SharedUI.ViewModels
 							try
 							{
 								var uri = navManager.ToAbsoluteUri(navManager.Uri);
-								if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+								var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+								var returnUrlKey = System.Linq.Enumerable.FirstOrDefault(query.Keys, k => k.Equals("ReturnUrl", StringComparison.OrdinalIgnoreCase));
+								if (returnUrlKey != null)
 								{
-									destination = returnUrlValues.FirstOrDefault() ?? "/";
+									destination = query[returnUrlKey].FirstOrDefault() ?? "/";
 								}
 							}
 							catch (InvalidOperationException)
@@ -101,12 +103,18 @@ namespace BuildSmart.SharedUI.ViewModels
 							destination = "/";
 						}
 
-						if (destination == "/")
+						if (navManager != null)
 						{
-							destination = "//BlazorHostPage";
+							navManager.NavigateTo(destination, forceLoad: true);
 						}
-
-						await AppServiceLocator.Navigation.NavigateToAsync(destination);
+						else
+						{
+							if (destination == "/")
+							{
+								destination = "//BlazorHostPage";
+							}
+							await AppServiceLocator.Navigation.NavigateToAsync(destination);
+						}
 					});
 				}
 				else

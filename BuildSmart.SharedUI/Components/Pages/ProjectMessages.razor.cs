@@ -57,8 +57,15 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         catch { }
 
         // SignalR connection
-        SignalRService.ProjectMessageReceived += OnMessageReceived;
-        await SignalRService.JoinProjectGroupAsync(ProjectId.Value.ToString());
+        try
+        {
+            SignalRService.ProjectMessageReceived += OnMessageReceived;
+            await SignalRService.JoinProjectGroupAsync(ProjectId.Value.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProjectMessages] Failed to join SignalR group: {ex.Message}");
+        }
 
         _isLoadingHistory = false;
         _shouldScrollToBottom = true;
@@ -89,6 +96,10 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
             if (projectResult.Data?.ProjectById != null)
             {
                 _projectName = projectResult.Data.ProjectById.Title;
+                if (_projectName == "Support Chat")
+                {
+                    _projectName = Loc["Nav_SupportChat"];
+                }
             }
         }
         catch (Exception ex)
@@ -227,13 +238,43 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
             var result = await ApiClient.SendProjectMessage.ExecuteAsync(ProjectId!.Value, textToSend);
             if (result.Errors.Count == 0 && result.Data?.SendProjectMessage != null)
             {
-                // The message will be broadcast to the group via SignalR,
-                // which will trigger OnMessageReceived and add it.
+                var sentMsg = result.Data.SendProjectMessage;
+                var optimisticMsg = new ChatMessageModel
+                {
+                    Id = sentMsg.Id,
+                    SenderId = sentMsg.SenderId,
+                    SenderName = _isGuest ? Loc["Chat_GuestName"] : Loc["Chat_Me"],
+                    MessageText = sentMsg.MessageText,
+                    CreatedAt = sentMsg.CreatedAt,
+                    IsCurrentUser = true
+                };
+
+                // Add to messages if not already received via SignalR
+                if (!_messages.Any(m => m.Id == optimisticMsg.Id))
+                {
+                    _messages.Add(optimisticMsg);
+                    StateHasChanged();
+                    await ScrollToBottomAsync();
+                }
+            }
+            else if (result.Errors.Count > 0)
+            {
+                var errorMsg = result.Errors[0].Message;
+                await AppServiceLocator.Alerts.DisplayAlert(
+                    Loc["Chat_ErrorTitle"],
+                    string.Format(Loc["Chat_SendErrorMessage"], errorMsg),
+                    "OK"
+                );
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error sending message: {ex.Message}");
+            await AppServiceLocator.Alerts.DisplayAlert(
+                Loc["Chat_ErrorTitle"],
+                string.Format(Loc["Chat_SendErrorMessage"], ex.Message),
+                "OK"
+            );
         }
     }
 
@@ -274,7 +315,14 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         SignalRService.ProjectMessageReceived -= OnMessageReceived;
         if (ProjectId.HasValue)
         {
-            await SignalRService.LeaveProjectGroupAsync(ProjectId.Value.ToString());
+            try
+            {
+                await SignalRService.LeaveProjectGroupAsync(ProjectId.Value.ToString());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ProjectMessages] Failed to leave SignalR group: {ex.Message}");
+            }
         }
     }
 }

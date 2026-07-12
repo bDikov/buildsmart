@@ -65,6 +65,47 @@ public class ProjectChatService : IProjectChatService
             CreatedAt = message.CreatedAt
         });
 
+        // Auto-reply logic if this is the homeowner's first message
+        if (senderId == project.HomeownerId)
+        {
+            var messages = await _unitOfWork.ProjectMessages.GetMessagesPaginatedAsync(projectId, 0, 2);
+            var messageCount = messages.Count();
+            if (messageCount == 1)
+            {
+                var adminUser = await _unitOfWork.Users.GetQueryable()
+                    .FirstOrDefaultAsync(u => u.Role == UserRoleTypes.Admin);
+                if (adminUser != null)
+                {
+                    var currentLang = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+                    var isBg = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase);
+                    var autoReplyText = isBg 
+                        ? "Здравейте! Благодарим Ви за съобщението. Наш сътрудник ще се свърже с Вас възможно най-скоро."
+                        : "Hello! Thank you for your message. A representative will get in touch with you as soon as possible.";
+                    
+                    var autoReply = new ProjectMessage
+                    {
+                        ProjectId = projectId,
+                        SenderId = adminUser.Id,
+                        MessageText = autoReplyText,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    
+                    await _unitOfWork.ProjectMessages.AddAsync(autoReply);
+                    await _unitOfWork.SaveChangesAsync();
+                    
+                    await _notificationService.NotifyProjectGroupAsync(projectId, "ReceiveProjectMessage", new
+                    {
+                        Id = autoReply.Id,
+                        ProjectId = autoReply.ProjectId,
+                        SenderId = autoReply.SenderId,
+                        SenderName = $"{adminUser.FirstName} {adminUser.LastName}",
+                        MessageText = autoReply.MessageText,
+                        CreatedAt = autoReply.CreatedAt
+                    });
+                }
+            }
+        }
+
         var snippet = messageText.Length > 60 ? messageText.Substring(0, 57) + "..." : messageText;
 
         // If the sender is not the homeowner, support replied

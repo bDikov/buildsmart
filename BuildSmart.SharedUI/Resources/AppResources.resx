@@ -915,7 +915,7 @@
     <value>Not Logged In</value>
   </data>
   <data name="Feed_AuthAlert_Message" xml:space="preserve">
-    <value>You are not logged in. Do you want to proceed to login or stay on the feed page?</value>
+    <value>You are not logged in. Do you want to proceed to login or stay on the page?</value>
   </data>
   <data name="Feed_AuthAlert_Accept" xml:space="preserve">
     <value>Proceed</value>
@@ -970,5 +970,35 @@
   </data>
   <data name="TrustBadge_QuoteClarity_Desc" xml:space="preserve">
     <value>Stunning, comparable PDF quote instead of vague emails.</value>
+  </data>
+  <data name="MainLayout_LangBG" xml:space="preserve">
+    <value>Bulgarian (BG)</value>
+  </data>
+  <data name="MainLayout_LangEN" xml:space="preserve">
+    <value>English (EN)</value>
+  </data>
+  <data name="Chat_GuestName" xml:space="preserve">
+    <value>Guest</value>
+  </data>
+  <data name="Chat_ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Chat_SendErrorMessage" xml:space="preserve">
+    <value>Failed to send message: {0}</value>
+  </data>
+  <data name="Nav_SupportChat" xml:space="preserve">
+    <value>Support Chat</value>
+  </data>
+  <data name="Chat_Me" xml:space="preserve">
+    <value>Me</value>
+  </data>
+  <data name="Chat_EmptyTitle" xml:space="preserve">
+    <value>No messages</value>
+  </data>
+  <data name="Chat_EmptySubtitle" xml:space="preserve">
+    <value>Start a conversation with our team about your project.</value>
+  </data>
+  <data name="Chat_Placeholder_WriteMessage" xml:space="preserve">
+    <value>Write a message...</value>
   </data>
 </root>
