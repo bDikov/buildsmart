@@ -277,5 +277,10 @@
         await JSRuntime.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
         
         await JSRuntime.InvokeVoidAsync("setCookie", "user_theme", theme, 365);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "user_theme", theme);
+        }
+        catch (Exception) { }
     }
 }

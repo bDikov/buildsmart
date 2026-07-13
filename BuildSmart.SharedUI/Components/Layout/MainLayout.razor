@@ -1112,6 +1112,11 @@
                         }
                         
                         await JSRuntime.InvokeVoidAsync("setCookie", "user_theme", theme, 365);
+                        try
+                        {
+                            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "user_theme", theme);
+                        }
+                        catch (Exception) { }
                     }
 
                     var preferredLang = userResult.Data.CurrentUser.PreferredLanguage;

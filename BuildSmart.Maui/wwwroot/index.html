@@ -8,6 +8,39 @@
     
     <script>
         (function () {
+            // Apply theme immediately to html element to prevent blinking
+            try {
+                var nameEQ = "user_theme=";
+                var ca = document.cookie.split(';');
+                var theme = null;
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) == 0) {
+                        theme = c.substring(nameEQ.length, c.length);
+                        break;
+                    }
+                }
+
+                if (!theme) {
+                    try {
+                        theme = localStorage.getItem("user_theme");
+                    } catch (e) { }
+                }
+
+                if (!theme || theme === "system") {
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        theme = "dark";
+                    } else {
+                        theme = "light";
+                    }
+                }
+
+                if (theme) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (e) { }
+
             if (navigator.permissions && navigator.permissions.query) {
                 try {
                     navigator.permissions.query = navigator.permissions.query.bind(navigator.permissions);
