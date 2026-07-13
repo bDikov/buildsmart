@@ -960,6 +960,18 @@
                 }
             }
 
+            if (!string.IsNullOrEmpty(ApiConfig.GoogleTagManagerId))
+            {
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("initializeGTM", ApiConfig.GoogleTagManagerId);
+                }
+                catch (Exception)
+                {
+                    // Prevent errors in testing or pre-rendering from breaking execution
+                }
+            }
+
             if (!string.IsNullOrEmpty(ApiConfig.PostHogApiKey))
             {
                 try
@@ -1108,7 +1120,7 @@
         bool isMyProjects = route.Contains("/my-projects");
 
         bool needsLogin = false;
-        if (AuthService != null)
+        if (AuthService != null && !route.StartsWith("/login", StringComparison.OrdinalIgnoreCase))
         {
             if (!AuthService.IsAuthenticated && (isRestricted || isMyProjects))
             {
@@ -1365,7 +1377,8 @@
                 {
                     if (path.Equals("job-wizard", StringComparison.OrdinalIgnoreCase) || path.Equals("user-profile", StringComparison.OrdinalIgnoreCase))
                     {
-                        NavManager.NavigateTo("/login");
+                        var returnUrl = Uri.EscapeDataString("/" + relative);
+                        NavManager.NavigateTo($"/login?ReturnUrl={returnUrl}");
                     }
                     else if (_supportProjectId.HasValue)
                     {

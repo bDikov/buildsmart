@@ -575,6 +575,12 @@
                         {
                             await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
                         }
+
+                        try
+                        {
+                            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "login_success", new { userId = userId });
+                        }
+                        catch { }
                     }
                 }
                 catch (Exception ex)

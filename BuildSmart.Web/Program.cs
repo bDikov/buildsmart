@@ -56,6 +56,7 @@ builder.Services.AddScoped<BuildSmart.SharedUI.Services.ILocalizationStateServic
 var apiUrl = builder.Configuration["ApiConfig:BaseUrlOverride"] ?? builder.Configuration["ApiConfig:BaseUrl"];
 BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = !string.IsNullOrEmpty(apiUrl) ? apiUrl : "https://localhost:7212";
 BuildSmart.SharedUI.ApiConfig.ClarityProjectId = builder.Configuration["Clarity:ProjectId"];
+BuildSmart.SharedUI.ApiConfig.GoogleTagManagerId = builder.Configuration["GoogleTagManager:Id"];
 BuildSmart.SharedUI.ApiConfig.PostHogApiKey = builder.Configuration["PostHog:ApiKey"];
 var postHogHost = builder.Configuration["PostHog:ApiHost"];
 if (!string.IsNullOrEmpty(postHogHost))

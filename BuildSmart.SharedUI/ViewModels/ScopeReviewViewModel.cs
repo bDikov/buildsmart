@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Microsoft.JSInterop;
 
 namespace BuildSmart.SharedUI.ViewModels;
 
@@ -58,10 +59,12 @@ public partial class EditableTaskViewModel : ObservableObject
 public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IBuildSmartApiClient _apiClient;
+    private readonly Microsoft.JSInterop.IJSRuntime _jsRuntime;
 
-    public ScopeReviewViewModel(IBuildSmartApiClient apiClient)
+    public ScopeReviewViewModel(IBuildSmartApiClient apiClient, Microsoft.JSInterop.IJSRuntime jsRuntime)
     {
         _apiClient = apiClient;
+        _jsRuntime = jsRuntime;
         Tasks = new ObservableCollection<EditableTaskViewModel>();
     }
 
@@ -239,6 +242,14 @@ public partial class ScopeReviewViewModel : ObservableObject, IQueryAttributable
                 await AppServiceLocator.Alerts.DisplayAlert("Error Saving Tasks", tasksResult.Errors[0].Message, "OK");
                 return;
             }
+
+            // Trigger project_request_submitted tracking events
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("pushToDataLayer", "project_request_submitted", new { jobId = _jobId });
+                await _jsRuntime.InvokeVoidAsync("posthog.capture", "project_request_submitted", new { jobId = _jobId });
+            }
+            catch { }
 
             // 2. Navigate to the OfferView instead of approving
             await AppServiceLocator.Navigation.NavigateToAsync($"GeneratedOfferPage?jobId={_jobId}");

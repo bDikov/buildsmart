@@ -1452,20 +1452,16 @@
 		}
 	}
 
-	private async void OnAuthConfirmationChanged(bool proceed)
+	private void OnAuthConfirmationChanged(bool proceed)
 	{
 		_showAuthModal = false;
 		if (proceed)
 		{
-			bool isGuest = await CheckIsGuestAsync();
-			if (isGuest)
-			{
-				NavManager.NavigateTo("/login");
-			}
-			else
-			{
-				NavigateToWizard();
-			}
+			string targetUrl = ViewModel.SelectedCategoryId.HasValue
+				? $"/job-wizard?TargetCategoryId={ViewModel.SelectedCategoryId.Value}"
+				: "/job-wizard";
+			var returnUrl = Uri.EscapeDataString(targetUrl);
+			NavManager.NavigateTo($"/login?ReturnUrl={returnUrl}");
 		}
 	}
 

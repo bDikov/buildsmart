@@ -4,6 +4,7 @@ using BuildSmart.SharedUI.MauiMocks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace BuildSmart.SharedUI.ViewModels
 {
@@ -11,6 +12,7 @@ namespace BuildSmart.SharedUI.ViewModels
     public partial class VerifyEmailPageViewModel : ObservableObject
     {
         private readonly IBuildSmartApiClient _apiClient;
+        private readonly Microsoft.JSInterop.IJSRuntime _jsRuntime;
 
         [ObservableProperty]
         private string _email = string.Empty;
@@ -21,9 +23,10 @@ namespace BuildSmart.SharedUI.ViewModels
         [ObservableProperty]
         private bool _isBusy;
 
-        public VerifyEmailPageViewModel(IBuildSmartApiClient apiClient)
+        public VerifyEmailPageViewModel(IBuildSmartApiClient apiClient, Microsoft.JSInterop.IJSRuntime jsRuntime)
         {
             _apiClient = apiClient;
+            _jsRuntime = jsRuntime;
         }
 
         [RelayCommand]
@@ -58,6 +61,13 @@ namespace BuildSmart.SharedUI.ViewModels
 
                 if (result.Data?.VerifyEmail == true)
                 {
+                    try
+                    {
+                        await _jsRuntime.InvokeVoidAsync("pushToDataLayer", "registration_success", new { email = Email.Trim() });
+                        await _jsRuntime.InvokeVoidAsync("posthog.capture", "registration_success", new { email = Email.Trim() });
+                    }
+                    catch { }
+
                     await AppServiceLocator.Alerts.DisplayAlert("Success", "Your email has been verified successfully. You can now log in.", "OK");
                     await AppServiceLocator.Navigation.NavigateToAsync("//LoginPage");
                 }
