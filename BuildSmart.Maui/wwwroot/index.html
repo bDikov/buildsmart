@@ -57,16 +57,25 @@
                 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
                 })(window,document,'script','dataLayer',gtmId);
 
-                // Inject GTM noscript iframe
-                var ns = document.createElement('noscript');
-                var iframe = document.createElement('iframe');
-                iframe.src = 'https://www.googletagmanager.com/ns.html?id=' + gtmId;
-                iframe.height = '0';
-                iframe.width = '0';
-                iframe.style.display = 'none';
-                iframe.style.visibility = 'hidden';
-                ns.appendChild(iframe);
-                document.body.insertBefore(ns, document.body.firstChild);
+                // Inject GTM noscript iframe safely once body is loaded
+                var injectNoscript = function() {
+                    if (!document.body) return;
+                    var ns = document.createElement('noscript');
+                    var iframe = document.createElement('iframe');
+                    iframe.src = 'https://www.googletagmanager.com/ns.html?id=' + gtmId;
+                    iframe.height = '0';
+                    iframe.width = '0';
+                    iframe.style.display = 'none';
+                    iframe.style.visibility = 'hidden';
+                    ns.appendChild(iframe);
+                    document.body.insertBefore(ns, document.body.firstChild);
+                };
+
+                if (document.body) {
+                    injectNoscript();
+                } else {
+                    document.addEventListener('DOMContentLoaded', injectNoscript);
+                }
             };
         })();
     </script>
