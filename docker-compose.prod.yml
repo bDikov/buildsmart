@@ -20,9 +20,7 @@ services:
       start_period: 10s
 
   api:
-    build:
-      context: .
-      dockerfile: BuildSmart.Api/Dockerfile
+    image: buildsmart-api:latest
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -54,9 +52,7 @@ services:
         condition: service_healthy
 
   web:
-    build:
-      context: .
-      dockerfile: BuildSmart.Web/Dockerfile
+    image: buildsmart-web:latest
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production

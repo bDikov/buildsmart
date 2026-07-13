@@ -98,10 +98,38 @@ jobs:
         run: |
           sed -i -E 's/\?v=[0-9.]+/?v=${{ github.run_number }}/g' BuildSmart.Web/Components/App.razor
 
-      - name: Create tarball package of source files
-        run: tar -czf buildsmart.tar.gz docker-compose.prod.yml Caddyfile BuildSmart.sln BuildSmart.Api BuildSmart.Web BuildSmart.Core.Domain BuildSmart.Core.Application BuildSmart.Infrastructure BuildSmart.SharedUI SeedLiveCategories.sql
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Copy repository contents via scp
+      - name: Build and Package API Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: BuildSmart.Api/Dockerfile
+          tags: buildsmart-api:latest
+          outputs: type=docker,dest=buildsmart-api.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Package Web Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: BuildSmart.Web/Dockerfile
+          tags: buildsmart-web:latest
+          outputs: type=docker,dest=buildsmart-web.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Compress Image Tarballs
+        run: |
+          gzip buildsmart-api.tar
+          gzip buildsmart-web.tar
+
+      - name: Create tarball package of configs and images
+        run: tar -czf buildsmart.tar.gz docker-compose.prod.yml Caddyfile SeedLiveCategories.sql buildsmart-api.tar.gz buildsmart-web.tar.gz
+
+      - name: Copy package to VPS via scp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -151,13 +179,20 @@ jobs:
             echo "POSTHOG_API_HOST=${{ secrets.POSTHOG_API_HOST }}" >> .env
             echo "HANGFIRE_DASHBOARD_TOKEN=${{ secrets.HANGFIRE_DASHBOARD_TOKEN }}" >> .env
             
-            docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml build --no-cache
-            docker compose -f docker-compose.prod.yml up -d --force-recreate db api web caddy
+            # Load the new Docker images
+            docker load < buildsmart-api.tar.gz
+            docker load < buildsmart-web.tar.gz
             
-            # Wait for database to initialize before injecting the SKUs
-            sleep 5
+            # Clean up the image tarballs
+            rm buildsmart-api.tar.gz buildsmart-web.tar.gz
+            
+            # Start/update the service containers (only restarts the ones that changed, i.e., api and web)
+            docker compose -f docker-compose.prod.yml up -d
+            
+            # Inject the SKUs
             docker compose -f docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d buildsmart_db < SeedLiveCategories.sql
             
             # Clean up old images to save space
             docker image prune -f
+
+
