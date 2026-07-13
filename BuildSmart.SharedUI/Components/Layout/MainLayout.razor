@@ -43,17 +43,41 @@
         }
         
         <div style="display: flex; align-items: center; gap: 8px;">
-            <!-- Language Switcher Button -->
+            <!-- Language Switcher Dropdown -->
             @if (IsGuestUser)
             {
-                <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center py-1 px-2" @onclick="ToggleLanguageAsync" style="font: var(--font-h3); border-radius: 12px; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); gap: 4px; height: 30px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                    </svg>
-                    <span>@(_currentLang?.ToUpper() ?? "EN")</span>
-                </button>
+                <div class="bs-lang-dropdown-wrapper" style="position: relative; display: inline-block; z-index: 1050;">
+                    <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center py-1 px-2" @onclick="ToggleLangDropdown" @onclick:stopPropagation="true" style="font: var(--font-h3); border-radius: 12px; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); gap: 4px; height: 32px; transition: all 0.2s ease;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>@(_currentLang?.ToUpper() ?? "BG")</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px; transition: transform 0.2s ease; transform: @(_isLangDropdownOpen ? "rotate(180deg)" : "rotate(0deg)")">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    @if (_isLangDropdownOpen)
+                    {
+                        <div class="bs-dropdown-menu" style="position: absolute; right: 0; top: 38px; background: var(--bg-card, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; min-width: 140px; box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)); padding: 6px; display: flex; flex-direction: column; gap: 4px;">
+                            <button type="button" class="bs-dropdown-item @(_currentLang == "bg" ? "active" : "")" @onclick='() => SelectLanguageAsync("bg")' @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; border: none; background: transparent; padding: 8px 12px; font: var(--font-h3); color: var(--text-primary); border-radius: 8px; cursor: pointer; text-align: left; transition: background-color 0.15s ease;">
+                                <span>Български</span>
+                                @if (_currentLang == "bg")
+                                {
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary, #3b82f6);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                }
+                            </button>
+                            <button type="button" class="bs-dropdown-item @(_currentLang == "en" ? "active" : "")" @onclick='() => SelectLanguageAsync("en")' @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; border: none; background: transparent; padding: 8px 12px; font: var(--font-h3); color: var(--text-primary); border-radius: 8px; cursor: pointer; text-align: left; transition: background-color 0.15s ease;">
+                                <span>English</span>
+                                @if (_currentLang == "en")
+                                {
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary, #3b82f6);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                }
+                            </button>
+                        </div>
+                    }
+                </div>
             }
 
             @if (AuthService.IsAuthenticated && !_isGuest)
@@ -107,12 +131,13 @@
 
             <!-- Role-based Native XAML Bridges & Blazor Pages -->
             <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman, Admin, ADMIN, admin">
-                    @* Hiding My Projects link from sidebar navigation
+                @if (!_isGuest)
+                {
                     <a class="nav-item-dark @(IsActivePage("/my-projects") ? "active" : "")" href="/my-projects" @onclick="CloseSidebar">
                         <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                         @Loc["Nav_MyProjects"]
                     </a>
-                    *@
+                }
                 <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman" Context="innerContext">
                     @if (!_isGuest)
                     {
@@ -184,11 +209,35 @@
 
         @if (IsGuestUser)
         {
-            <div class="sidebar-lang-switcher" @onclick="ToggleLanguageAsync" style="padding: 16px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; font: var(--font-h3); color: var(--text-secondary); cursor: pointer;">
-                <span>@Loc["Settings_Language"]</span>
-                <button type="button" class="btn btn-sm d-flex align-items-center gap-1 py-1 px-2" style="border-radius: 12px; font: var(--font-h3); background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); pointer-events: none;">
-                    @(_currentLang == "bg" ? Loc["MainLayout_LangBG"] : Loc["MainLayout_LangEN"])
-                </button>
+            <div class="sidebar-lang-container" style="padding: 16px; border-top: 1px solid var(--border-color); position: relative; z-index: 1040;">
+                <div class="sidebar-lang-switcher" @onclick="ToggleLangDropdown" @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; font: var(--font-h3); color: var(--text-secondary); cursor: pointer;">
+                    <span>@Loc["Settings_Language"]</span>
+                    <button type="button" class="btn btn-sm d-flex align-items-center gap-1 py-1 px-2" style="border-radius: 12px; font: var(--font-h3); background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        <span>@(_currentLang == "bg" ? Loc["MainLayout_LangBG"] : Loc["MainLayout_LangEN"])</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease; transform: @(_isLangDropdownOpen ? "rotate(180deg)" : "rotate(0deg)")">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                @if (_isLangDropdownOpen)
+                {
+                    <div class="bs-dropdown-menu sidebar-lang-dropdown" style="margin-top: 8px; background: var(--bg-card, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1)); padding: 6px; display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box;">
+                        <button type="button" class="bs-dropdown-item @(_currentLang == "bg" ? "active" : "")" @onclick='() => SelectLanguageAsync("bg")' @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; border: none; background: transparent; padding: 8px 12px; font: var(--font-h3); color: var(--text-primary); border-radius: 8px; cursor: pointer; text-align: left; transition: background-color 0.15s ease; width: 100%;">
+                            <span>Български</span>
+                            @if (_currentLang == "bg")
+                            {
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary, #3b82f6);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            }
+                        </button>
+                        <button type="button" class="bs-dropdown-item @(_currentLang == "en" ? "active" : "")" @onclick='() => SelectLanguageAsync("en")' @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; border: none; background: transparent; padding: 8px 12px; font: var(--font-h3); color: var(--text-primary); border-radius: 8px; cursor: pointer; text-align: left; transition: background-color 0.15s ease; width: 100%;">
+                            <span>English</span>
+                            @if (_currentLang == "en")
+                            {
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary, #3b82f6);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            }
+                        </button>
+                    </div>
+                }
             </div>
         }
 
@@ -278,14 +327,15 @@
             </svg>
             <span class="bottom-nav-text">@Loc["Nav_Marketplace"]</span>
         </a>
-            @* Hiding My Projects link from bottom mobile navigation
+        @if (!_isGuest)
+        {
             <a class="bottom-nav-item @(IsActivePage("/my-projects") ? "active" : "")" @onclick='() => Navigate("/my-projects")'>
                 <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span class="bottom-nav-text">@Loc["Nav_MyProjects"]</span>
             </a>
-            *@
+        }
         <a class="bottom-nav-item @(IsChatActive() ? "active" : "")" @onclick="HandleSupportChatClick" style="position: relative;">
             <svg class="bottom-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -799,11 +849,35 @@
     body.bs-body-theater-mode .bs-floating-chat-btn {
         display: none !important;
     }
+
+    /* Premium Language Dropdown Styles */
+    .bs-dropdown-item:hover {
+        background-color: var(--bg-card-alt, #fafafa) !important;
+    }
+    .bs-dropdown-item.active {
+        background-color: rgba(59, 130, 246, 0.05) !important;
+        color: var(--color-primary, #3b82f6) !important;
+        font-weight: 600 !important;
+    }
+    .bs-dropdown-menu {
+        animation: bs-dropdown-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @@keyframes bs-dropdown-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 @code {
     private bool _isSidebarOpen = false;
     private string _currentLang = "bg";
+    private bool _isLangDropdownOpen = false;
     private bool _isLoading = true;
     private string? _userName;
     private string? _userEmail;
@@ -1104,6 +1178,7 @@
     private void CloseSidebar()
     {
         _isSidebarOpen = false;
+        _isLangDropdownOpen = false;
     }
 
     private bool _showAuthModal = false;
@@ -1598,18 +1673,25 @@
         }
     }
 
-    private async Task ToggleLanguageAsync()
+    private void ToggleLangDropdown()
     {
-        var targetLang = _currentLang == "bg" ? "en" : "bg";
-        _currentLang = targetLang;
+        _isLangDropdownOpen = !_isLangDropdownOpen;
+    }
+
+    private async Task SelectLanguageAsync(string lang)
+    {
+        _isLangDropdownOpen = false;
+        if (_currentLang == lang) return;
+        
+        _currentLang = lang;
         
         try
         {
-            var cookieValue = $"c={targetLang}|uic={targetLang}";
+            var cookieValue = $"c={lang}|uic={lang}";
             await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "preferred_language", targetLang);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "preferred_language", lang);
             
-            var culture = new System.Globalization.CultureInfo(targetLang);
+            var culture = new System.Globalization.CultureInfo(lang);
             System.Globalization.CultureInfo.CurrentCulture = culture;
             System.Globalization.CultureInfo.CurrentUICulture = culture;
             System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
@@ -1619,7 +1701,7 @@
 
             if (AuthService.IsAuthenticated)
             {
-                await ApiClient.UpdateUserLanguage.ExecuteAsync(targetLang);
+                await ApiClient.UpdateUserLanguage.ExecuteAsync(lang);
             }
         }
         catch (Exception ex)

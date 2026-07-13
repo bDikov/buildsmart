@@ -176,9 +176,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var supportedCultures = new[] { "en", "bg" };
+var supportedCultures = new[] { "bg", "en" };
 var localizationOptions = new RequestLocalizationOptions()
-    .SetDefaultCulture(supportedCultures[0])
+    .SetDefaultCulture("bg")
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
 
