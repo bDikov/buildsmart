@@ -329,4 +329,85 @@ public class AuthService : IAuthService
 		var token = tokenHandler.CreateToken(tokenDescriptor);
 		return tokenHandler.WriteToken(token);
 	}
-}
+
+	public async Task<User> PromoteGuestToUserAsync(Guid guestUserId, string firstName, string lastName, string newEmail, string password, string? phoneNumber = null)
+	{
+		// 1. Validate inputs
+		if (string.IsNullOrWhiteSpace(password))
+		{
+			throw new Exception("Password is required for registration.");
+		}
+
+		if (!string.IsNullOrWhiteSpace(phoneNumber) && !IsValidBulgarianPhoneNumber(phoneNumber))
+		{
+			throw new Exception("Please enter a valid Bulgarian phone number.");
+		}
+
+		// 2. Fetch the guest user
+		var guestUser = await _unitOfWork.Users.GetByIdAsync(guestUserId);
+		if (guestUser == null)
+		{
+			throw new Exception("Guest user not found.");
+		}
+
+		// Ensure they are actually a guest
+		if (guestUser.Email == null || !guestUser.Email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase))
+		{
+			throw new Exception("The user is already a standard user or not a guest.");
+		}
+
+		// 3. Check if a standard user with the new email already exists
+		var existingUser = await _unitOfWork.Users.GetByEmailAsync(newEmail);
+		if (existingUser != null)
+		{
+			throw new Exception("User with this email already exists.");
+		}
+
+		// 4. Update the user properties in place
+		guestUser.Email = newEmail;
+		guestUser.FirstName = firstName;
+		guestUser.LastName = lastName;
+		guestUser.PhoneNumber = phoneNumber;
+		guestUser.HashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+		guestUser.IsEmailVerified = false;
+
+		// Generate 6-digit verification code
+		var verificationToken = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+		guestUser.EmailVerificationToken = verificationToken;
+		guestUser.EmailVerificationTokenExpires = DateTime.UtcNow.AddMinutes(30);
+
+		_unitOfWork.Users.Update(guestUser);
+		await _unitOfWork.SaveChangesAsync();
+
+		// 5. Send verification email
+		var emailSubject = "Confirm your BuildSmart Account";
+		var emailBody = $@"
+			<html>
+			<body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+				<h2>Welcome to BuildSmart!</h2>
+				<p>Your guest account has been successfully promoted to a registered account. Please use the following 6-digit verification code to confirm your email address and activate your account:</p>
+				<div style='font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; color: #1E3A8A;'>
+					{verificationToken}
+				</div>
+				<p>This code will expire in 30 minutes.</p>
+				<p>If you did not initiate this change, please ignore this email.</p>
+				<br/>
+				<p>Best regards,<br/>The BuildSmart Team</p>
+			</body>
+			</html>";
+
+		try
+		{
+			await _emailService.SendGenericEmailAsync(newEmail, emailSubject, emailBody);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Failed to send verification email to {newEmail}: {ex.Message}");
+		}
+
+		// Console Logging for local debug convenience
+		Console.WriteLine($"Verification email sent to {newEmail}. Code: {verificationToken}");
+
+		return guestUser;
+	}
+}

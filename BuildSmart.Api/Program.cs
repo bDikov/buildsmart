@@ -172,6 +172,8 @@ public partial class Program
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
 		builder.Services.AddScoped<IAiService, GeminiAiService>();
+		builder.Services.AddScoped<BuildSmart.Api.Workers.GuestCleanupJob>();
+
 
 		// --- Hangfire Configuration ---
 		builder.Services.AddHangfire(configuration =>
@@ -529,6 +531,13 @@ public partial class Program
 		{
 			Authorization = new[] { new BuildSmart.Api.Services.HangfireDashboardAuthorizationFilter(dashboardToken ?? string.Empty) }
 		});
+
+		// Register Guest Session Cleanup recurring job
+		RecurringJob.AddOrUpdate<BuildSmart.Api.Workers.GuestCleanupJob>(
+			"expired-guest-cleanup",
+			job => job.RunCleanupAsync(System.Threading.CancellationToken.None),
+			Cron.Daily);
+
 
 		// Authenticate and Authorize for ALL requests BEFORE any endpoint routing
 		app.UseAuthentication();

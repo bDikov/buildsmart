@@ -19,6 +19,11 @@ public class MutationType : ObjectType<Mutation>
         descriptor.Field(m => m.RegisterUser(default!, default!, default!, default!, default!, default!))
             .Description("Creates a new user in the system."); // No authorization
 
+        descriptor.Field(m => m.PromoteGuestToUser(default!, default!, default!, default!, default!, default!, default!))
+            .Description("Promotes an authenticated guest user to a standard user.")
+            .Authorize();
+
+
         descriptor.Field(m => m.VerifyEmail(default!, default!, default!))
             .Description("Verifies a user's email using a 6-digit code.");
 

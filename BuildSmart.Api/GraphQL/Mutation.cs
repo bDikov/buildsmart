@@ -264,6 +264,32 @@ public class Mutation
 	}
 
 	[Authorize]
+	public async Task<User> PromoteGuestToUser(
+		string firstName,
+		string lastName,
+		string email,
+		string password,
+		string? phoneNumber,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IAuthService authService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		try
+		{
+			return await authService.PromoteGuestToUserAsync(userId, firstName, lastName, email, password, phoneNumber);
+		}
+		catch (Exception ex)
+		{
+			throw new GraphQLException(ex.Message);
+		}
+	}
+
+	[Authorize]
 	public async Task<User> UpdateUserLanguage(
 		string languageCode,
 		ClaimsPrincipal claimsPrincipal,
