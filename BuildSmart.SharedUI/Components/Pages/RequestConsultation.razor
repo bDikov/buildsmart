@@ -507,6 +507,13 @@
             }
             
             IsSuccess = true;
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("pushToDataLayer", "consultation_request_submitted", new { projectId = ProjectId, contactMethod = SelectedContactMethod });
+                await JSRuntime.InvokeVoidAsync("posthog.capture", "consultation_request_submitted", new { projectId = ProjectId, contactMethod = SelectedContactMethod });
+            }
+            catch { }
         }
         catch (Exception ex)
         {
