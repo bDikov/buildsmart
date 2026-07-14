@@ -205,6 +205,8 @@ window.reelsObserver = {
             element.__swipeInitialized = true;
             let tapCount = 0;
             let tapTimer = null;
+            let touchStartX = null;
+            let touchStartY = null;
 
             // Wire up the close button to aggressively block Plyr from capturing the touch
             const closeBtn = element.querySelector('.bs-theater-close');
@@ -230,6 +232,53 @@ window.reelsObserver = {
                 if (container) container.classList.remove('in-theater-mode');
                 document.body.classList.remove('bs-body-theater-mode');
             });
+
+            // Detect horizontal swipe to close/exit theater mode
+            element.addEventListener('touchstart', (e) => {
+                const container = element.closest('.bs-reels-container') || element.closest('.reels-feed-container');
+                const isReelsPage = !!element.closest('.reels-page-container');
+                const isInTheaterMode = isReelsPage || element.classList.contains('bs-theater-mode') || 
+                                         (container && container.classList.contains('in-theater-mode'));
+
+                if (isInTheaterMode && e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            element.addEventListener('touchend', (e) => {
+                if (touchStartX === null || touchStartY === null) return;
+
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+
+                // Thresholds: horizontal swipe distance > 60px, and horizontal deviation is greater than vertical deviation
+                if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                    const container = element.closest('.bs-reels-container') || element.closest('.reels-feed-container');
+                    element.classList.remove('bs-theater-mode');
+                    if (container) {
+                        container.classList.remove('in-theater-mode');
+                    }
+                    document.body.classList.remove('bs-body-theater-mode');
+
+                    // Ensure video continues playing when exiting
+                    const player = window.reelsObserver.players[videoId];
+                    if (player) {
+                        player.play().catch(e => {});
+                    } else {
+                        const nativeVideo = element.querySelector('video');
+                        if (nativeVideo) {
+                            nativeVideo.play().catch(e => {});
+                        }
+                    }
+                }
+
+                touchStartX = null;
+                touchStartY = null;
+            }, { passive: true });
 
             let lastClickTime = 0;
             let clickTimeout = null;
