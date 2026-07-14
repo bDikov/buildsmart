@@ -52,3 +52,29 @@ Before assuming a server is offline or online (especially if fronted by Cloudfla
       options.WorkerCount = 2; // Prevents OOM locks on 1-4GB RAM servers
   });
   ```
+
+## 5. Accessing the Live Database inside Docker
+When you need to inspect or modify the live database schema, records, or Hangfire jobs:
+* **Run a single SQL Query**: Run queries against the PostgreSQL container using `docker compose exec`:
+  ```bash
+  ssh -o StrictHostKeyChecking=no root@185.139.230.182 "docker compose -f /opt/buildsmart/docker-compose.prod.yml exec -T db psql -U postgres -d buildsmart_db -c \"SELECT * FROM \\\"TradesmanMedia\\\";\""
+  ```
+  *Note: Always escape double quotes around table names (e.g., `\\\"TradesmanMedia\\\"`) when passing the command through SSH/PowerShell.*
+
+* **Run a Transaction Block**: For data modifications, always wrap commands in a transaction block to ensure atomicity:
+  ```bash
+  ssh -o StrictHostKeyChecking=no root@185.139.230.182 "docker compose -f /opt/buildsmart/docker-compose.prod.yml exec -T db psql -U postgres -d buildsmart_db -c \"
+  BEGIN;
+  UPDATE \\\"TradesmanMedia\\\" SET \\\"IsActive\\\" = false WHERE \\\"Id\\\" = 'SOME-GUID';
+  COMMIT;
+  \""
+  ```
+
+* **Useful Tables & Schemas**:
+  * **Application Data (`public` schema)**:
+    * `public."TradesmanMedia"`: Stores portfolio videos and photos (`Id`, `VideoUrl`, `MobileVideoUrl`, `IsActive`).
+    * `public."TradesmanProfiles"`: Profiles of tradesmen.
+  * **Hangfire Queue Data (`hangfire` schema)**:
+    * `hangfire.job`: Contains job registration data, serialized methods, and arguments.
+    * `hangfire.state`: Full state histories (Enqueued, Processing, Succeeded, Failed).
+    * `hangfire.jobqueue`: Real-time queue for pending tasks (empty when all tasks are complete).
