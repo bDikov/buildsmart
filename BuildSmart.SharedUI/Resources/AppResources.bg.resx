@@ -1004,4 +1004,13 @@
   <data name="Chat_Placeholder_WriteMessage" xml:space="preserve">
     <value>Напишете съобщение...</value>
   </data>
+  <data name="Support_PhoneNumber" xml:space="preserve">
+    <value>+359 888 888 888</value>
+  </data>
+  <data name="MobileCRO_ChatPrompt" xml:space="preserve">
+    <value>Имате въпроси? Пишете ни в чата</value>
+  </data>
+  <data name="MobileCRO_CallPrompt" xml:space="preserve">
+    <value>Обадете ни се</value>
+  </data>
 </root>

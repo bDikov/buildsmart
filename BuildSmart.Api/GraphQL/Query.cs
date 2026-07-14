@@ -283,7 +283,12 @@ public class Query
 		var isAdmin = claimsPrincipal.IsInRole("Admin");
 		if (!isAdmin && project.HomeownerId != userId)
 		{
-			throw new GraphQLException("You are not authorized to view this project.");
+			// Allow tradesmen who have placed a bid on this project's job posts to view it
+			var isBidder = await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId);
+			if (!isBidder)
+			{
+				throw new GraphQLException("You are not authorized to view this project.");
+			}
 		}
 
 		foreach (var jp in project.JobPosts)

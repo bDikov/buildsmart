@@ -107,9 +107,11 @@
         </div>
     </div>
 
-    <div class="sidebar-overlay @(_isSidebarOpen ? "open" : "")" @onclick="CloseSidebar"></div>
+    @if (!IsGuestUser)
+    {
+        <div class="sidebar-overlay @(_isSidebarOpen ? "open" : "")" @onclick="CloseSidebar"></div>
 
-    <div class="sidebar shadow-sm @(_isSidebarOpen ? "open" : "")">
+        <div class="sidebar shadow-sm @(_isSidebarOpen ? "open" : "")">
         <div class="sidebar-header">
             <div class="logo-block" @onclick='() => HandleFeedNavigation()'>
                 <div class="logo-icon">
@@ -293,9 +295,21 @@
             </button>
         </div>
     </div>
+    }
 
-    <main class="main-content">
+    <main class="main-content @(IsGuestUser ? "guest-layout" : "")">
         <div class="top-app-bar desktop-top-bar">
+            @if (IsGuestUser)
+            {
+                <div class="logo-block" @onclick='() => HandleFeedNavigation()' style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <div class="logo-icon" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <span class="logo-text" style="font-size: 18px; font-weight: 600;">BuildSmart</span>
+                </div>
+            }
             <div class="spacer"></div>
             @if (AuthService.IsAuthenticated && !_isGuest)
             {
@@ -309,6 +323,53 @@
                         <span class="bell-unread-dot"></span>
                     }
                 </a>
+            }
+            else if (IsGuestUser)
+            {
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <!-- Language Switcher Dropdown -->
+                    <div class="bs-lang-dropdown-wrapper" style="position: relative; display: inline-block; z-index: 1050;">
+                        <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center py-1 px-3" @onclick="ToggleLangDropdown" @onclick:stopPropagation="true" style="font: var(--font-h3); border-radius: 12px; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); gap: 6px; height: 38px; transition: all 0.2s ease;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <span>@(_currentLang?.ToUpper() ?? "BG")</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px; transition: transform 0.2s ease; transform: @(_isLangDropdownOpen ? "rotate(180deg)" : "rotate(0deg)")">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        @if (_isLangDropdownOpen)
+                        {
+                            <div class="bs-dropdown-menu" style="position: absolute; right: 0; top: 44px; background: var(--bg-card, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; min-width: 140px; box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)); padding: 6px; display: flex; flex-direction: column; gap: 4px;">
+                                <button type="button" class="bs-dropdown-item @(_currentLang == "bg" ? "active" : "")" @onclick='() => SelectLanguageAsync("bg")' @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; border: none; background: transparent; padding: 8px 12px; font: var(--font-h3); color: var(--text-primary); border-radius: 8px; cursor: pointer; text-align: left; transition: background-color 0.15s ease;">
+                                    <span>Български</span>
+                                    @if (_currentLang == "bg")
+                                    {
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary, #3b82f6);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    }
+                                </button>
+                                <button type="button" class="bs-dropdown-item @(_currentLang == "en" ? "active" : "")" @onclick='() => SelectLanguageAsync("en")' @onclick:stopPropagation="true" style="display: flex; align-items: center; justify-content: space-between; border: none; background: transparent; padding: 8px 12px; font: var(--font-h3); color: var(--text-primary); border-radius: 8px; cursor: pointer; text-align: left; transition: background-color 0.15s ease;">
+                                    <span>English</span>
+                                    @if (_currentLang == "en")
+                                    {
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary, #3b82f6);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    }
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <button type="button" class="btn btn-sm d-flex align-items-center gap-2 py-2 px-3" @onclick="HandleExitClick" @onclick:preventDefault="true" style="font-size: 0.9rem; border-radius: 12px; font-weight: 600; background: transparent; border: 1.5px solid var(--color-primary); color: var(--color-primary); transition: all 0.2s ease; height: 38px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        @Loc["Login_LogInButton"]
+                    </button>
+                </div>
             }
         </div>
         <article class="content px-4 py-3">
@@ -375,6 +436,7 @@
 
     @if (!IsActivePage("/project-messages") && !IsActivePage("/admin-support-chats"))
     {
+        <!-- Desktop Floating Chat Button -->
         <button class="bs-floating-chat-btn" @onclick="HandleSupportChatClick" title="@(_currentLang == "bg" ? "Чат за поддръжка" : "Support Chat")">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
@@ -384,6 +446,38 @@
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width: 14px; height: 14px; border-width: 2px; position: absolute; top: 12px; right: 12px;"></span>
             }
         </button>
+
+        <!-- Floating Phone Call Button & Tooltip -->
+        <div class="bs-floating-phone-wrapper">
+            @if (_showPhoneTooltip)
+            {
+                <div class="bs-phone-tooltip shadow-sm">
+                    <a href="tel:@Loc["Support_PhoneNumber"]" class="bs-phone-number-link">
+                        @Loc["Support_PhoneNumber"]
+                    </a>
+                    <button class="bs-phone-copy-btn" @onclick="CopyPhoneToClipboard" title="Копирай номера">
+                        @if (_isPhoneCopied)
+                        {
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        }
+                    </button>
+                </div>
+            }
+            <button class="bs-floating-phone-btn @(_showPhoneTooltip ? "active" : "")" @onclick="TogglePhoneTooltip" title="@Loc["MobileCRO_CallPrompt"]">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2v3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+            </button>
+        </div>
     }
 </div>
 
@@ -592,6 +686,12 @@
         min-height: 100vh;
         transition: margin-left 0.3s ease, width 0.3s ease, background-color 0.3s ease;
         padding-top: 0;
+    }
+
+    .main-content.guest-layout {
+        margin-left: 0;
+        width: 100%;
+        transition: none;
     }
 
     .main-content-unauth {
@@ -835,9 +935,111 @@
     .bs-floating-chat-btn:active {
         transform: scale(0.95);
     }
+    .bs-floating-phone-wrapper {
+        position: fixed;
+        bottom: 104px; /* Stacked 16px above the chat button (bottom: 32px + height: 56px + gap: 16px) */
+        right: 32px;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .bs-floating-phone-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+        background-color: var(--color-primary);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .bs-floating-phone-btn:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+    }
+
+    .bs-floating-phone-btn:active {
+        transform: scale(0.95);
+    }
+
+    .bs-floating-phone-btn.active {
+        background-color: #22c55e;
+        box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
+    }
+
+    .bs-phone-tooltip {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: bs-phone-tooltip-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .bs-phone-number-link {
+        color: var(--text-primary);
+        font-family: 'Inter', var(--font-primary);
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: color 0.2s ease;
+    }
+
+    .bs-phone-number-link:hover {
+        color: var(--color-primary);
+        text-decoration: none;
+    }
+
+    .bs-phone-copy-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .bs-phone-copy-btn:hover {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+    }
+
+    @@keyframes bs-phone-tooltip-fade-in {
+        from {
+            opacity: 0;
+            transform: translateX(10px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
     @@media (max-width: 991px) {
         .bs-floating-chat-btn {
             bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+            right: 20px;
+        }
+
+        .bs-floating-phone-wrapper {
+            bottom: calc(168px + env(safe-area-inset-bottom, 0px)); /* Stacked 16px above mobile chat button */
             right: 20px;
         }
     }
@@ -876,6 +1078,8 @@
 
 @code {
     private bool _isSidebarOpen = false;
+    private bool _showPhoneTooltip = false;
+    private bool _isPhoneCopied = false;
     private string _currentLang = "bg";
     private bool _isLangDropdownOpen = false;
     private bool _isLoading = true;
@@ -891,6 +1095,38 @@
     private bool _isStartingChat = false;
 
     private static bool _hasAttemptedLanguageSync = false;
+
+    private void CheckIsGuestSynchronously()
+    {
+        try
+        {
+            var tokenTask = AuthService.GetTokenAsync();
+            if (tokenTask.IsCompleted)
+            {
+                var token = tokenTask.Result;
+                if (!string.IsNullOrEmpty(token))
+                {
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(token);
+                    
+                    var email = jwtToken.Claims.FirstOrDefault(c => 
+                        c.Type == "email" || 
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                        
+                    _isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        CheckIsGuestSynchronously();
+    }
 
     private async Task<bool> CheckIsGuestFromTokenAsync()
     {
@@ -1184,6 +1420,30 @@
     {
         _isSidebarOpen = false;
         _isLangDropdownOpen = false;
+        _showPhoneTooltip = false;
+    }
+
+    private void TogglePhoneTooltip()
+    {
+        _showPhoneTooltip = !_showPhoneTooltip;
+    }
+
+    private async Task CopyPhoneToClipboard()
+    {
+        try
+        {
+            var number = Loc["Support_PhoneNumber"].Value;
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", number);
+            _isPhoneCopied = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            _isPhoneCopied = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Ignore clipboard errors
+        }
     }
 
     private bool _showAuthModal = false;
@@ -1500,6 +1760,17 @@
         {
             var relative = NavManager.ToBaseRelativePath(NavManager.Uri);
             var path = relative.Split('?')[0].Trim('/');
+            
+            // In Blazor Hybrid (MAUI), paths might be prefixed with "index.html"
+            if (path.StartsWith("index.html/", StringComparison.OrdinalIgnoreCase))
+            {
+                path = path.Substring("index.html/".Length);
+            }
+            else if (path.Equals("index.html", StringComparison.OrdinalIgnoreCase))
+            {
+                path = "";
+            }
+            
             return path.Equals(route.Trim('/'), StringComparison.OrdinalIgnoreCase);
         }
         catch
@@ -1570,6 +1841,13 @@
                 Console.WriteLine($"[MainLayout] Error checking notifications for chat navigation: {ex.Message}");
             }
 
+            // If we have a target project ID from notifications, navigate to it directly (works for both Homeowners and Tradesmen!)
+            if (targetProjectId.HasValue)
+            {
+                NavigationBridge.NavigateToAsync($"/project-messages?projectId={targetProjectId.Value}");
+                return;
+            }
+
             var result = await ApiClient.GetMyProjects.ExecuteAsync();
             if (result.Errors.Count == 0 && result.Data?.MyProjects != null)
             {
@@ -1579,14 +1857,7 @@
                 var actualProjects = projects.Where(p => p.Title != "Support Chat").ToList();
                 if (actualProjects.Any())
                 {
-                    // 1. If targetProjectId from notifications exists and is in projects, navigate to it
-                    if (targetProjectId.HasValue && actualProjects.Any(p => p.Id == targetProjectId.Value))
-                    {
-                        NavigationBridge.NavigateToAsync($"/project-messages?projectId={targetProjectId.Value}");
-                        return;
-                    }
-
-                    // 2. Otherwise, look for any support project that starts with "Support - "
+                    // 1. Look for any support project that starts with "Support - "
                     var supportChat = actualProjects.FirstOrDefault(p => p.Title.StartsWith("Support - "));
                     if (supportChat != null)
                     {
@@ -1594,21 +1865,78 @@
                         return;
                     }
 
-                    // 3. Fallback: navigate to the user's most recently created project
+                    // 2. Fallback: navigate to the user's most recently created project
                     var latestProject = actualProjects.OrderByDescending(p => p.CreatedAt).First();
                     NavigationBridge.NavigateToAsync($"/project-messages?projectId={latestProject.Id}");
                     return;
                 }
             }
 
-            // Fallback: If no projects started, redirect to feed
-            NavigationBridge.NavigateToAsync("/feed");
+            // Fallback: If no projects started, redirect to projects page
+            NavigationBridge.NavigateToAsync("/my-projects");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[MainLayout] Error in NavigateToChat: {ex.Message}");
-            NavigationBridge.NavigateToAsync("/feed");
+            NavigationBridge.NavigateToAsync("/my-projects");
         }
+    }
+
+    private async Task NavigateToSupportChatForAuthenticatedUser()
+    {
+        if (_isStartingChat) return;
+        _isStartingChat = true;
+        StateHasChanged();
+
+        try
+        {
+            var projectsResult = await ApiClient.GetMyProjects.ExecuteAsync();
+            if (projectsResult.Errors.Count == 0 && projectsResult.Data?.MyProjects != null)
+            {
+                var projects = projectsResult.Data.MyProjects;
+                
+                // Find any support project that starts with "Support - " or is exactly "Support Chat"
+                var supportChat = projects.FirstOrDefault(p => p.Title.StartsWith("Support - ") || p.Title == "Support Chat");
+                if (supportChat != null)
+                {
+                    _isStartingChat = false;
+                    StateHasChanged();
+                    NavigationBridge.NavigateToAsync($"/project-messages?projectId={supportChat.Id}");
+                    return;
+                }
+            }
+
+            // Create a new support project for this authenticated user
+            var userResult = await ApiClient.GetCurrentUser.ExecuteAsync();
+            if (userResult.Errors.Count == 0 && userResult.Data?.CurrentUser != null)
+            {
+                var user = userResult.Data.CurrentUser;
+                var currentUserId = Guid.Parse(user.Id);
+                var title = $"Support - {user.FirstName} {user.LastName}";
+                var desc = $"Support session for {user.FirstName} {user.LastName} ({user.Email})";
+                var lang = _currentLang ?? "bg";
+
+                var createResult = await ApiClient.CreateProject.ExecuteAsync(currentUserId, title, desc, lang);
+                if (createResult.Errors.Count == 0 && createResult.Data?.CreateProject != null)
+                {
+                    var newProject = createResult.Data.CreateProject;
+                    _isStartingChat = false;
+                    StateHasChanged();
+                    NavigationBridge.NavigateToAsync($"/project-messages?projectId={newProject.Id}");
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainLayout] Error creating support chat: {ex.Message}");
+        }
+
+        _isStartingChat = false;
+        StateHasChanged();
+        
+        // Fallback: go to latest project
+        await NavigateToChat();
     }
 
     private async Task HandleSupportChatClick()
@@ -1640,10 +1968,10 @@
             return;
         }
 
-        // 3. If authenticated regular user, navigate to chat
+        // 3. If authenticated regular user, navigate to support chat or create one
         if (isAuthenticated)
         {
-            await NavigateToChat();
+            await NavigateToSupportChatForAuthenticatedUser();
             return;
         }
 

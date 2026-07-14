@@ -139,10 +139,7 @@ public class AuthService : IAuthService
 		user.ProfilePictureUrl = profilePictureUrl;
 		user.PhoneNumber = phoneNumber;
 
-		if (!string.IsNullOrWhiteSpace(email))
-		{
-			user.Email = email;
-		}
+		// Note: email/username is read-only during profile updates to protect credentials integrity.
 
 		user.UpdatedAt = DateTime.UtcNow;
 

@@ -1001,4 +1001,13 @@
   <data name="Chat_Placeholder_WriteMessage" xml:space="preserve">
     <value>Write a message...</value>
   </data>
+  <data name="Support_PhoneNumber" xml:space="preserve">
+    <value>+359 888 888 888</value>
+  </data>
+  <data name="MobileCRO_ChatPrompt" xml:space="preserve">
+    <value>Have questions? Chat with us</value>
+  </data>
+  <data name="MobileCRO_CallPrompt" xml:space="preserve">
+    <value>Call us</value>
+  </data>
 </root>

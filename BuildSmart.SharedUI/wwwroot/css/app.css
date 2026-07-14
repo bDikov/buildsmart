@@ -220,6 +220,14 @@ hr {
     border-color: var(--color-primary);
 }
 
+.bs-input[readonly], .bs-input:disabled {
+    background-color: var(--bg-page);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 .bs-input::placeholder {
     color: var(--text-muted);
 }
