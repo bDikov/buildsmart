@@ -108,7 +108,8 @@ public class VideoProcessingJob
             }
 
             // Extract filename and strip existing prefixes to prevent double-prefixing on re-queue
-            var rawFileName = System.IO.Path.GetFileName(originalRawUrl);
+            var decodedUrl = System.Net.WebUtility.UrlDecode(originalRawUrl);
+            var rawFileName = System.IO.Path.GetFileName(decodedUrl);
             var cleanFileName = rawFileName;
             if (cleanFileName.StartsWith("desktop_"))
             {
@@ -160,7 +161,8 @@ public class VideoProcessingJob
             _logger.LogInformation("Video processing job complete. Desktop URL: {DesktopUrl}, Mobile URL: {MobileUrl}, Poster URL: {PosterUrl}", desktopVideoUrl, mobileVideoUrl, posterImageUrl);
 
             // 7. Delete original raw video from R2 (only if it was not already a compressed version)
-            if (!originalRawUrl.Contains("/desktop_") && !originalRawUrl.Contains("/mobile_"))
+            var originalFileName = System.IO.Path.GetFileName(decodedUrl).ToLower();
+            if (!originalFileName.StartsWith("desktop_") && !originalFileName.StartsWith("mobile_"))
             {
                 try
                 {

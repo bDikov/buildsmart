@@ -88,7 +88,8 @@ public class CloudflareR2MediaService : IMediaService
 
     public async Task DeleteFileAsync(string fileUrl)
     {
-        var fileName = System.IO.Path.GetFileName(fileUrl);
+        var decodedUrl = System.Net.WebUtility.UrlDecode(fileUrl);
+        var fileName = System.IO.Path.GetFileName(decodedUrl);
         if (string.IsNullOrEmpty(fileName)) return;
 
         var deleteRequest = new DeleteObjectRequest
