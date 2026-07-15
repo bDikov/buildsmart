@@ -159,5 +159,65 @@ namespace BuildSmart.Infrastructure.Services
 				throw;
 			}
 		}
+
+		public async Task SendChatNotificationEmailAsync(Guid userId, Guid notificationId)
+		{
+			_logger.LogInformation("Starting SendChatNotificationEmailAsync for User {UserId}, Notification {NotificationId}", userId, notificationId);
+
+			var user = await _unitOfWork.Users.GetByIdAsync(userId);
+			if (user == null || string.IsNullOrWhiteSpace(user.Email) || !user.EmailOnNewChatMessage)
+			{
+				_logger.LogInformation("User {UserId} not found, has no email, or email chat notifications disabled.", userId);
+				return;
+			}
+
+			var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
+			if (notification == null)
+			{
+				_logger.LogInformation("Notification {NotificationId} not found.", notificationId);
+				return;
+			}
+
+			if (notification.IsRead)
+			{
+				_logger.LogInformation("Notification {NotificationId} has already been read. Skipping email notification.", notificationId);
+				return;
+			}
+
+			if (user.LastChatEmailSentAt.HasValue && DateTime.UtcNow - user.LastChatEmailSentAt.Value < TimeSpan.FromHours(1))
+			{
+				_logger.LogInformation("User {UserId} received a chat email in the last hour. Throttling email notification.", userId);
+				return;
+			}
+
+			string lang = user.PreferredLanguage ?? "bg";
+			string greeting = lang == "bg" ? $"Здравейте, {user.FirstName}!" : $"Hello, {user.FirstName}!";
+			string closing = lang == "bg" ? "Поздрави,<br/>Екипът на BuildSmart" : "Best regards,<br/>The BuildSmart Team";
+			string emailBody = $@"
+			<html>
+			<body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+				<h2>{greeting}</h2>
+				<p>{notification.Message}</p>
+				<br/>
+				<p>{closing}</p>
+			</body>
+			</html>";
+
+			try
+			{
+				await SendGenericEmailAsync(user.Email, notification.Title, emailBody);
+
+				user.LastChatEmailSentAt = DateTime.UtcNow;
+				_unitOfWork.Users.Update(user);
+				await _unitOfWork.SaveChangesAsync();
+
+				_logger.LogInformation("Successfully sent chat notification email to User {UserId} for Notification {NotificationId}", userId, notificationId);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to send chat notification email to User {UserId} for Notification {NotificationId}", userId, notificationId);
+				throw;
+			}
+		}
 	}
 }

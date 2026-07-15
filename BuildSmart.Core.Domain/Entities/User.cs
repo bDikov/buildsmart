@@ -29,7 +29,8 @@ public class User : BaseEntity
 	public DateTime? LastSeenAt { get; set; }
 
 	public bool EmailOnOfferReady { get; set; } = true;
-	public bool EmailOnNewChatMessage { get; set; } = false;
+	public bool EmailOnNewChatMessage { get; set; } = true;
+	public DateTime? LastChatEmailSentAt { get; set; }
 
 	public virtual HomeownerProfile? HomeownerProfile { get; set; }
 	public virtual TradesmanProfile? TradesmanProfile { get; set; }

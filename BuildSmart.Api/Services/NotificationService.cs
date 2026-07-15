@@ -21,7 +21,7 @@ public class NotificationService : INotificationService
         _localizer = localizer;
     }
 
-    public async Task SendNotificationAsync(Guid userId, string title, string message, Guid? relatedEntityId = null, string? relatedEntityType = null, object? data = null)
+    public async Task<Notification> SendNotificationAsync(Guid userId, string title, string message, Guid? relatedEntityId = null, string? relatedEntityType = null, object? data = null)
     {
         using var scope = _serviceProvider.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -43,6 +43,8 @@ public class NotificationService : INotificationService
 
         // 2. Send via SignalR (Target specific user by ID)
         await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", title, message, data);
+
+        return notification;
     }
 
     public async Task SendLocalizedNotificationAsync(Guid userId, string titleKey, string messageKey, object[]? messageArgs = null, Guid? relatedEntityId = null, string? relatedEntityType = null, object? data = null)
@@ -79,31 +81,24 @@ public class NotificationService : INotificationService
             CultureInfo.CurrentUICulture = originalCulture;
         }
 
-        if (titleKey == "Notification_NewMessage_Title" && targetUser != null && targetUser.EmailOnNewChatMessage && !string.IsNullOrWhiteSpace(targetUser.Email))
+        // Persist and send the localized version
+        var notification = await SendNotificationAsync(userId, title, message, relatedEntityId, relatedEntityType, data);
+
+        // Schedule delayed email check for chat notifications (supporting both homeowner and support replies)
+        if ((titleKey == "Notification_NewMessage_Title" || titleKey == "Notification_SupportReply_Title") && targetUser != null && targetUser.EmailOnNewChatMessage && !string.IsNullOrWhiteSpace(targetUser.Email))
         {
             try
             {
-                string emailSubject = title;
-                string emailBody = $@"
-                <html>
-                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
-                    <h2>Здравейте, {targetUser.FirstName}!</h2>
-                    <p>{message}</p>
-                    <br/>
-                    <p>Поздрави,<br/>Екипът на BuildSmart</p>
-                </body>
-                </html>";
-
-                Hangfire.BackgroundJob.Enqueue<IEmailService>(x => x.SendGenericEmailAsync(targetUser.Email, emailSubject, emailBody));
+                Hangfire.BackgroundJob.Schedule<IEmailService>(
+                    x => x.SendChatNotificationEmailAsync(targetUser.Id, notification.Id),
+                    TimeSpan.FromMinutes(10)
+                );
             }
             catch
             {
                 // Ignore email queue failures to not disrupt SignalR/Notification persistence
             }
         }
-
-        // Persist and send the localized version
-        await SendNotificationAsync(userId, title, message, relatedEntityId, relatedEntityType, data);
     }
 
     public async Task NotifyAuctionGroupAsync(Guid jobPostId, string method, object payload)

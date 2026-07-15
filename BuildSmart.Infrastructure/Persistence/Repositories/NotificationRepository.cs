@@ -18,6 +18,11 @@ public class NotificationRepository : INotificationRepository
         await _context.Notifications.AddAsync(notification);
     }
 
+    public async Task<Notification?> GetByIdAsync(Guid id)
+    {
+        return await _context.Notifications.FindAsync(id);
+    }
+
     public async Task<IEnumerable<Notification>> GetUnreadByUserIdAsync(Guid userId)
     {
         return await _context.Notifications

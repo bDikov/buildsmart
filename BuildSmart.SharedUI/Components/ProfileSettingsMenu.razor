@@ -42,25 +42,23 @@
         </select>
     </div>
 
-    @if (_userRole == "Admin")
-    {
-        <!-- Email Notification for Chat messages -->
-        <div class="menu-item-row">
-            <div class="d-flex align-items-center gap-3">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                </svg>
-                <span class="fw-bold" style="color: var(--text-primary); font-size: 14px;">
-                    @(System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "bg" ? "Имейл известия за чат" : "Email notifications for chat")
-                </span>
-            </div>
-            <div class="form-check form-switch m-0 d-flex align-items-center">
-                <input class="form-check-input" type="checkbox" role="switch" checked="@_emailOnNewChatMessage" @onchange="ToggleEmailOnChat" style="cursor: pointer; width: 36px; height: 18px;" />
-            </div>
+    <!-- Email Notification for Chat messages (Visible to all users) -->
+    <div class="menu-item-row">
+        <div class="d-flex align-items-center gap-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span class="fw-bold" style="color: var(--text-primary); font-size: 14px;">
+                @(System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "bg" ? "Имейл известия за чат" : "Email notifications for chat")
+            </span>
         </div>
-    }
-    else if (_userRole == "Homeowner")
+        <div class="form-check form-switch m-0 d-flex align-items-center">
+            <input class="form-check-input" type="checkbox" role="switch" checked="@_emailOnNewChatMessage" @onchange="ToggleEmailOnChat" style="cursor: pointer; width: 36px; height: 18px;" />
+        </div>
+    </div>
+
+    @if (_userRole == "Homeowner")
     {
         <!-- Email Notification for Offer ready -->
         <div class="menu-item-row">

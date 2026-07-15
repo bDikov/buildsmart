@@ -7,4 +7,5 @@ public interface IEmailService
 {
 	Task SendProjectOfferEmailAsync(Guid projectId);
 	Task SendGenericEmailAsync(string toEmail, string subject, string body);
+	Task SendChatNotificationEmailAsync(Guid userId, Guid notificationId);
 }
