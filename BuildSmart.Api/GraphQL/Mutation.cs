@@ -258,9 +258,31 @@ public class Mutation
 		string email,
 		string password,
 		string? phoneNumber,
-		[Service] IAuthService authService)
+		string? utmSource,
+		string? utmMedium,
+		string? utmCampaign,
+		string? utmContent,
+		string? utmTerm,
+		[Service] IAuthService authService,
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext context)
 	{
-		return await authService.RegisterUserAsync(firstName, lastName, email, password, phoneNumber);
+		var user = await authService.RegisterUserAsync(firstName, lastName, email, password, phoneNumber);
+		if (!string.IsNullOrEmpty(utmSource) && !string.IsNullOrEmpty(utmMedium) && !string.IsNullOrEmpty(utmCampaign))
+		{
+			var metadata = new UserCampaignMetadata
+			{
+				UserId = user.Id,
+				UtmSource = utmSource,
+				UtmMedium = utmMedium,
+				UtmCampaign = utmCampaign,
+				UtmContent = utmContent,
+				UtmTerm = utmTerm,
+				CreatedAt = DateTime.UtcNow
+			};
+			await context.UserCampaignMetadata.AddAsync(metadata);
+			await context.SaveChangesAsync();
+		}
+		return user;
 	}
 
 	[Authorize]
@@ -2322,6 +2344,35 @@ public class Mutation
 		await hubContext.Clients.All.SendAsync("ReceiveLocalizationUpdate", input.Key, input.Culture, input.Value);
 
 		return resource;
+	}
+
+	public async Task<bool> SaveUserCampaignMetadata(
+		Guid userId,
+		string utmSource,
+		string utmMedium,
+		string utmCampaign,
+		string? utmContent,
+		string? utmTerm,
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext context)
+	{
+		var existing = await context.UserCampaignMetadata
+			.FirstOrDefaultAsync(m => m.UserId == userId);
+		if (existing != null) return true;
+
+		var metadata = new UserCampaignMetadata
+		{
+			UserId = userId,
+			UtmSource = utmSource,
+			UtmMedium = utmMedium,
+			UtmCampaign = utmCampaign,
+			UtmContent = utmContent,
+			UtmTerm = utmTerm,
+			CreatedAt = DateTime.UtcNow
+		};
+
+		await context.UserCampaignMetadata.AddAsync(metadata);
+		await context.SaveChangesAsync();
+		return true;
 	}
 
 	private static string GetEnglishUnitType(string unitType)

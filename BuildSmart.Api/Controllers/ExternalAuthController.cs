@@ -64,7 +64,7 @@ namespace BuildSmart.Api.Controllers
                 var picture = principal.FindFirstValue("picture") ?? principal.FindFirstValue("image");
 
                 // Find or create user and generate JWT
-                var token = await _authService.GenerateJwtTokenForExternalLogin(email, name, picture);
+                var (token, isNewUser) = await _authService.GenerateJwtTokenForExternalLogin(email, name, picture);
 
                 // Clean up the temporary cookie
                 await HttpContext.SignOutAsync("ExternalCookie");
@@ -72,6 +72,10 @@ namespace BuildSmart.Api.Controllers
                 // Redirect back to the MAUI or Blazor Web App with the token
                 var separator = returnUrl.Contains("?") ? "&" : "?";
                 var redirectUrl = $"{returnUrl}{separator}token={token}";
+                if (isNewUser)
+                {
+                    redirectUrl += "&isNewUser=true";
+                }
                 return Redirect(GetSafeRedirectUrl(redirectUrl));
             }
             catch (Exception ex)

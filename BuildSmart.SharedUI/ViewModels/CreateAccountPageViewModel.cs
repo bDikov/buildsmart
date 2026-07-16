@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using BuildSmart.SharedUI.GraphQL;
 using Microsoft.Extensions.Localization;
+using Microsoft.JSInterop;
 
 namespace BuildSmart.SharedUI.ViewModels
 {
@@ -186,7 +187,34 @@ namespace BuildSmart.SharedUI.ViewModels
                     finalPhone = PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
                 }
 
-                var result = await _apiClient.RegisterUser.ExecuteAsync(FirstName.Trim(), LastName.Trim(), Email.Trim(), Password, finalPhone);
+                var jsRuntime = _serviceProvider.GetService(typeof(Microsoft.JSInterop.IJSRuntime)) as Microsoft.JSInterop.IJSRuntime;
+                var utms = new Dictionary<string, string>();
+                if (jsRuntime != null)
+                {
+                    try
+                    {
+                        utms = await jsRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+                    }
+                    catch { }
+                }
+
+                string? utmSource = utms.TryGetValue("utm_source", out var s) ? s : null;
+                string? utmMedium = utms.TryGetValue("utm_medium", out var m) ? m : null;
+                string? utmCampaign = utms.TryGetValue("utm_campaign", out var c) ? c : null;
+                string? utmContent = utms.TryGetValue("utm_content", out var co) ? co : null;
+                string? utmTerm = utms.TryGetValue("utm_term", out var t) ? t : null;
+
+                var result = await _apiClient.RegisterUser.ExecuteAsync(
+                    FirstName.Trim(),
+                    LastName.Trim(),
+                    Email.Trim(),
+                    Password,
+                    finalPhone,
+                    utmSource,
+                    utmMedium,
+                    utmCampaign,
+                    utmContent,
+                    utmTerm);
 
                 if (result.Errors.Count == 0)
                 {

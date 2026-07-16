@@ -351,6 +351,7 @@
         try
         {
             await JSRuntime.InvokeVoidAsync("posthog.capture", "ai_estimate_generated");
+            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "project_submitted", new { projectId = ViewModel.CurrentProjectId });
         }
         catch { }
 

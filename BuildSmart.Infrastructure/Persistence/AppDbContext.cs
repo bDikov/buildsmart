@@ -47,6 +47,7 @@ public partial class AppDbContext : DbContext
 	public DbSet<ProjectMilestoneMedia> ProjectMilestoneMedia { get; set; } = null!;
 	public DbSet<ProjectMessage> ProjectMessages { get; set; } = null!;
 	public DbSet<LocalizationResource> LocalizationResources { get; set; } = null!;
+	public DbSet<UserCampaignMetadata> UserCampaignMetadata { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
@@ -56,6 +57,14 @@ public partial class AppDbContext : DbContext
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
+		
+		modelBuilder.Entity<UserCampaignMetadata>(entity =>
+		{
+			entity.HasOne(d => d.User)
+				.WithOne(p => p.CampaignMetadata)
+				.HasForeignKey<UserCampaignMetadata>(d => d.UserId)
+				.OnDelete(DeleteBehavior.Cascade);
+		});
 		
 		modelBuilder.Entity<TradesmanMedia>()
 			.HasOne(m => m.TradesmanProfile)

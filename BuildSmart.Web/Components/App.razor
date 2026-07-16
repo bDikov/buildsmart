@@ -108,6 +108,36 @@
                 window.dataLayer.push(eventData);
             };
 
+            // Capture UTM parameters and save them to sessionStorage
+            (function() {
+                try {
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var utms = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+                    utms.forEach(function(utm) {
+                        if (urlParams.has(utm)) {
+                            sessionStorage.setItem(utm, urlParams.get(utm));
+                        }
+                    });
+                } catch(e) {
+                    console.error("Failed to capture UTMs", e);
+                }
+            })();
+
+            // Helper to get saved UTM parameters
+            window.getSavedUtms = function() {
+                var utms = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+                var result = {};
+                utms.forEach(function(utm) {
+                    try {
+                        var val = sessionStorage.getItem(utm);
+                        if (val) {
+                            result[utm] = val;
+                        }
+                    } catch(e) {}
+                });
+                return result;
+            };
+
             // Google Tag Manager Dynamic Initializer
             window.initializeGTM = function(gtmId) {
                 if (!gtmId || window.gtmInitialized) return;

@@ -63,7 +63,23 @@ namespace BuildSmart.SharedUI.ViewModels
                 {
                     try
                     {
-                        await _jsRuntime.InvokeVoidAsync("pushToDataLayer", "registration_success", new { email = Email.Trim() });
+                        var utms = new Dictionary<string, string>();
+                        try
+                        {
+                            utms = await _jsRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+                        }
+                        catch { }
+
+                        await _jsRuntime.InvokeVoidAsync("pushToDataLayer", "registration_success", new
+                        {
+                            email = Email.Trim(),
+                            method = "email",
+                            utm_source = utms.ContainsKey("utm_source") ? utms["utm_source"] : null,
+                            utm_medium = utms.ContainsKey("utm_medium") ? utms["utm_medium"] : null,
+                            utm_campaign = utms.ContainsKey("utm_campaign") ? utms["utm_campaign"] : null,
+                            utm_content = utms.ContainsKey("utm_content") ? utms["utm_content"] : null,
+                            utm_term = utms.ContainsKey("utm_term") ? utms["utm_term"] : null
+                        });
                         await _jsRuntime.InvokeVoidAsync("posthog.capture", "registration_success", new { email = Email.Trim() });
                     }
                     catch { }

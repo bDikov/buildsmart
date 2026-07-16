@@ -1,0 +1,3 @@
+mutation SaveUserCampaignMetadata($userId: UUID!, $utmSource: String!, $utmMedium: String!, $utmCampaign: String!, $utmContent: String, $utmTerm: String) {
+  saveUserCampaignMetadata(userId: $userId, utmSource: $utmSource, utmMedium: $utmMedium, utmCampaign: $utmCampaign, utmContent: $utmContent, utmTerm: $utmTerm)
+}

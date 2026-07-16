@@ -34,4 +34,5 @@ public class User : BaseEntity
 
 	public virtual HomeownerProfile? HomeownerProfile { get; set; }
 	public virtual TradesmanProfile? TradesmanProfile { get; set; }
+	public virtual UserCampaignMetadata? CampaignMetadata { get; set; }
 }

@@ -7,6 +7,7 @@
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 @inject IServiceProvider ServiceProvider
 @inject IJSRuntime JSRuntime
+@inject BuildSmart.SharedUI.GraphQL.IBuildSmartApiClient ApiClient
 
 <div class="login-container">
     <div class="login-card">
@@ -513,6 +514,12 @@
         string? actualToken = Token;
         var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
         
+        bool isNewUser = false;
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("isNewUser", out var isNewUserValues))
+        {
+            bool.TryParse(isNewUserValues.FirstOrDefault(), out isNewUser);
+        }
+        
         if (string.IsNullOrEmpty(actualToken))
         {
             if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var tokenValues))
@@ -578,7 +585,69 @@
 
                         try
                         {
-                            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "login_success", new { userId = userId });
+                            if (isNewUser)
+                            {
+                                var utms = new Dictionary<string, string>();
+                                try
+                                {
+                                    utms = await JSRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+                                }
+                                catch { }
+
+                                string? utmSource = utms.TryGetValue("utm_source", out var s) ? s : null;
+                                string? utmMedium = utms.TryGetValue("utm_medium", out var m) ? m : null;
+                                string? utmCampaign = utms.TryGetValue("utm_campaign", out var c) ? c : null;
+                                string? utmContent = utms.TryGetValue("utm_content", out var co) ? co : null;
+                                string? utmTerm = utms.TryGetValue("utm_term", out var t) ? t : null;
+
+                                await JSRuntime.InvokeVoidAsync("pushToDataLayer", "registration_success", new
+                                {
+                                    userId = userId,
+                                    method = "social",
+                                    utm_source = utmSource,
+                                    utm_medium = utmMedium,
+                                    utm_campaign = utmCampaign,
+                                    utm_content = utmContent,
+                                    utm_term = utmTerm
+                                });
+
+                                try
+                                {
+                                    await JSRuntime.InvokeVoidAsync("posthog.capture", "registration_success", new
+                                    {
+                                        userId = userId,
+                                        method = "social",
+                                        utm_source = utmSource,
+                                        utm_medium = utmMedium,
+                                        utm_campaign = utmCampaign,
+                                        utm_content = utmContent,
+                                        utm_term = utmTerm
+                                    });
+                                }
+                                catch { }
+
+                                if (!string.IsNullOrEmpty(utmSource) && !string.IsNullOrEmpty(utmMedium) && !string.IsNullOrEmpty(utmCampaign))
+                                {
+                                    try
+                                    {
+                                        await ApiClient.SaveUserCampaignMetadata.ExecuteAsync(
+                                            Guid.Parse(userId),
+                                            utmSource,
+                                            utmMedium,
+                                            utmCampaign,
+                                            utmContent,
+                                            utmTerm);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"[Login] Failed to save campaign metadata: {ex.Message}");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                await JSRuntime.InvokeVoidAsync("pushToDataLayer", "login_success", new { userId = userId });
+                            }
                         }
                         catch { }
                     }

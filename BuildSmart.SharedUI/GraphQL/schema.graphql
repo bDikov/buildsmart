@@ -911,7 +911,8 @@ type Mutation {
   "Authenticates a user and returns a JWT."
   login(email: String! password: String!): String!
   "Creates a new user in the system."
-  registerUser(firstName: String! lastName: String! email: String! password: String! phoneNumber: String): User!
+  registerUser(firstName: String! lastName: String! email: String! password: String! phoneNumber: String utmSource: String utmMedium: String utmCampaign: String utmContent: String utmTerm: String): User!
+  saveUserCampaignMetadata(userId: UUID! utmSource: String! utmMedium: String! utmCampaign: String! utmContent: String utmTerm: String): Boolean!
   "Verifies a user's email using a 6-digit code."
   verifyEmail(email: String! code: String!): Boolean!
   "Resends the 6-digit email verification code."

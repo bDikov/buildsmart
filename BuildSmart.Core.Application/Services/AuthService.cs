@@ -272,9 +272,10 @@ public class AuthService : IAuthService
 		return true;
 	}
 
-	public async Task<string> GenerateJwtTokenForExternalLogin(string email, string name, string? profilePictureUrl = null)
+	public async Task<(string Token, bool IsNewUser)> GenerateJwtTokenForExternalLogin(string email, string name, string? profilePictureUrl = null)
 	{
 		var user = await _unitOfWork.Users.GetByEmailAsync(email);
+		bool isNewUser = user == null;
 
 		if (user == null)
 		{
@@ -327,7 +328,7 @@ public class AuthService : IAuthService
 			SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
 		};
 		var token = tokenHandler.CreateToken(tokenDescriptor);
-		return tokenHandler.WriteToken(token);
+		return (tokenHandler.WriteToken(token), isNewUser);
 	}
 
 	public async Task<User> PromoteGuestToUserAsync(Guid guestUserId, string firstName, string lastName, string newEmail, string password, string? phoneNumber = null)

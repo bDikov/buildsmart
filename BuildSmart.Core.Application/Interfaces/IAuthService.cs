@@ -9,7 +9,7 @@ public interface IAuthService
     Task<User> UpdateUserRoleAndCategoriesAsync(Guid userId, BuildSmart.Core.Domain.Enums.UserRoleTypes newRole, List<Guid>? serviceCategoryIds);
     Task<bool> VerifyEmailAsync(string email, string code);
     Task<bool> ResendVerificationCodeAsync(string email);
-    Task<string> GenerateJwtTokenForExternalLogin(string email, string name, string? profilePictureUrl = null);
+    Task<(string Token, bool IsNewUser)> GenerateJwtTokenForExternalLogin(string email, string name, string? profilePictureUrl = null);
     Task<User> PromoteGuestToUserAsync(Guid guestUserId, string firstName, string lastName, string newEmail, string password, string? phoneNumber = null);
 
 }
