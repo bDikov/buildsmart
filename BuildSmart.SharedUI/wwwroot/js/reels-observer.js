@@ -560,6 +560,21 @@ window.reelsObserver = {
             }
             document.body.classList.remove('bs-body-theater-mode');
         }
+    },
+
+    resetScroll: function () {
+        this.currentlyActiveVideoId = null;
+        for (const videoId in this.players) {
+            if (this.players[videoId]) {
+                try {
+                    this.safePause(videoId, this.players[videoId]);
+                } catch (e) { }
+            }
+        }
+        const container = document.getElementById("reels-feed-container");
+        if (container) {
+            container.scrollTop = 0;
+        }
     }
 };
 

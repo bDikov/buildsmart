@@ -354,9 +354,17 @@ namespace BuildSmart.SharedUI.ViewModels
 		{
 			var state = GetActiveCacheState();
 
-			if (state.CachedVideos.Count > 0 && FeedVideos.Count > 0)
+			if (state.CachedVideos.Count > 0)
 			{
-				// Cache already exists (user navigated back to the page), do not re-fetch.
+				// Restore from cache directly without making network requests
+				AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+				{
+					FeedVideos.Clear();
+					foreach (var video in state.CachedVideos)
+					{
+						FeedVideos.Add(video);
+					}
+				});
 				return;
 			}
 

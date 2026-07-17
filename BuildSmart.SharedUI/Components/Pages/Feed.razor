@@ -1395,12 +1395,27 @@
 				catch { }
 			}
 
-			// 2. Clear category filter and load original feed
-			await ClearVideos();
+			// 2. Clear category filter or reset scroll
 			if (ViewModel != null)
 			{
-				await ViewModel.SelectCategoryCommand.ExecuteAsync(null);
-				await ViewModel.LoadFeedCommand.ExecuteAsync(null);
+				if (ViewModel.SelectedCategoryId != null)
+				{
+					// Switching categories: Clean swap required, so clear old ones
+					await ClearVideos();
+					await ViewModel.SelectCategoryCommand.ExecuteAsync(null);
+				}
+				else
+				{
+					// Already in "All": Just pause and scroll back to top to preserve loaded videos
+					if (_isJsInitialized)
+					{
+						try
+						{
+							await JSRuntime.InvokeVoidAsync("reelsObserver.resetScroll");
+						}
+						catch { }
+					}
+				}
 			}
 
 			// 3. Scroll page back to top
