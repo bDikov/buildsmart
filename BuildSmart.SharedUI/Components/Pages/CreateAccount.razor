@@ -96,7 +96,7 @@
             </div>
 
             <div class="login-prompt">
-                <span>@Loc["CreateAccount_AlreadyHaveAccount"] <a href="#" @onclick='() => NavManager.NavigateTo("/login")' @onclick:preventDefault class="login-link">@Loc["CreateAccount_LogIn"]</a></span>
+                <span>@Loc["CreateAccount_AlreadyHaveAccount"] <a href="#" @onclick='() => NavManager.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/login" : $"/login?ReturnUrl={Uri.EscapeDataString(ReturnUrl)}")' @onclick:preventDefault class="login-link">@Loc["CreateAccount_LogIn"]</a></span>
             </div>
         </div>
 
@@ -976,4 +976,8 @@
             await BuildSmart.SharedUI.Services.AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
         }
     }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "ReturnUrl")]
+    public string? ReturnUrl { get; set; }
 }

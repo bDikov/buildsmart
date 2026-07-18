@@ -845,14 +845,14 @@
     <value>Please select fewer categories to fit within your remaining monthly AI limit of {0} requests. You've selected {1} categories. You can also contact support to upgrade your account.</value>
   </data>
   <data name="Feed_HeroTitle" xml:space="preserve">
-    <value>Making dreams come true!</value>
+    <value>How much does a ready-to-move-in home cost? Find out instantly</value>
   </data>
   <data name="Feed_HeroMiniSlogan" xml:space="preserve">
     <value>Your smart renovation partner</value>
   </data>
 
   <data name="Feed_HeroSubtitle" xml:space="preserve">
-    <value>Like Pinterest and Instagram, but in your own home – and completely filter-free. Find out exactly how much your renovation will cost now: zero paid visits, annoying calls, or runaround.</value>
+    <value>Whether you are finishing a new build from shell/BDS, renovating an old apartment, or building a house. Get an exact budget in seconds—completely free, with no subscription.</value>
   </data>
   <data name="Feed_HeroCta" xml:space="preserve">
     <value>Calculate your renovation cost now, for FREE</value>
@@ -1009,5 +1009,97 @@
   </data>
   <data name="MobileCRO_CallPrompt" xml:space="preserve">
     <value>Call us</value>
+  </data>
+  <data name="Feed_CtaTitle" xml:space="preserve">
+    <value>Ready to start your project?</value>
+  </data>
+  <data name="Feed_CtaDescription" xml:space="preserve">
+    <value>Learn how much it would cost to have your dream home immediately in the next 5 minutes with our up-to-date prices</value>
+  </data>
+  <data name="Feed_CtaButton" xml:space="preserve">
+    <value>Post a Project</value>
+  </data>
+  <data name="Feed_HeroTitle_Guest" xml:space="preserve">
+    <value>How much does it cost to finish or renovate your home to turnkey in {0}?</value>
+  </data>
+  <data name="Feed_HeroSubtitle_Guest" xml:space="preserve">
+    <value>From empty walls or an old property to a ready-to-move-in home. Calculate the price of labor, finishing works, or construction instantly—in the next few minutes! Completely free, no subscriptions, site visits, or email spam.</value>
+  </data>
+  <data name="Feed_HeroGuestLoginPrompt" xml:space="preserve">
+    <value>Register or log in to your profile to proceed, or browse our already finished properties!</value>
+  </data>
+  <data name="Feed_HeroTitle_HasProjects" xml:space="preserve">
+    <value>Track your progress and find inspiration</value>
+  </data>
+  <data name="Feed_HeroSubtitle_HasProjects" xml:space="preserve">
+    <value>Browse real videos of our finished properties and track your active projects.</value>
+  </data>
+  <data name="Feed_HeroCta_HasProjects" xml:space="preserve">
+    <value>View My Projects</value>
+  </data>
+  <data name="Feed_HeroTitle_Draft" xml:space="preserve">
+    <value>Complete your project {0}</value>
+  </data>
+  <data name="Feed_HeroSubtitle_Draft" xml:space="preserve">
+    <value>You have an incomplete draft for project {0}. Complete it now to get price offers in real-time, free and without hidden subscriptions, fees, emails, and others...</value>
+  </data>
+  <data name="Feed_HeroCta_Draft" xml:space="preserve">
+    <value>You're almost ready! Complete your draft here!</value>
+  </data>
+  <data name="Feed_HeroTitle_NoConsultation" xml:space="preserve">
+    <value>Request a consultation for {0}</value>
+  </data>
+  <data name="Feed_HeroSubtitle_NoConsultation" xml:space="preserve">
+    <value>Request a free consultation with our architect/expert for project {0} to finalize your offers.</value>
+  </data>
+  <data name="Feed_HeroCta_NoConsultation" xml:space="preserve">
+    <value>Request a free consultation to learn more details.</value>
+  </data>
+  <data name="Feed_HeroCta_Register" xml:space="preserve">
+    <value>Register or Log In</value>
+  </data>
+  <data name="LandingPage_CopywritingRules" xml:space="preserve">
+    <value>[
+  {
+    &quot;Condition&quot;: &quot;isGuest&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Guest&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Guest&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_Register&quot;,
+    &quot;CtaAction&quot;: &quot;/create-account?ReturnUrl=/job-wizard&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;!isGuest &amp;&amp; !hasProjects&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Guest&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Guest&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta&quot;,
+    &quot;CtaAction&quot;: &quot;/job-wizard&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;hasDraftProject&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Draft&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Draft&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_Draft&quot;,
+    &quot;CtaAction&quot;: &quot;/job-wizard?ProjectId={DraftProjectId}&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;hasActiveProject&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_NoConsultation&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_NoConsultation&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_NoConsultation&quot;,
+    &quot;CtaAction&quot;: &quot;/request-consultation?projectId={ActiveProjectId}&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;hasProjects&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_HasProjects&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_HasProjects&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_HasProjects&quot;,
+    &quot;CtaAction&quot;: &quot;/my-projects&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  }
+]</value>
   </data>
 </root>

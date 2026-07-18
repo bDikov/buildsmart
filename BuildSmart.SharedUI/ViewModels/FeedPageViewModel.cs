@@ -86,6 +86,18 @@ namespace BuildSmart.SharedUI.ViewModels
 		[ObservableProperty]
 		private bool? _hasProjects;
 
+		[ObservableProperty]
+		private string? _latestDraftProjectTitle;
+
+		[ObservableProperty]
+		private Guid? _latestDraftProjectId;
+
+		[ObservableProperty]
+		private string? _latestActiveProjectTitle;
+
+		[ObservableProperty]
+		private Guid? _latestActiveProjectId;
+
 		public class CategoryItem
 		{
 			public Guid Id { get; set; }
@@ -141,19 +153,45 @@ namespace BuildSmart.SharedUI.ViewModels
 			try
 			{
 				var result = await _apiClient.GetMyProjects.ExecuteAsync();
-				if (result.Data?.MyProjects != null && result.Data.MyProjects.Any(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - ")))
+				
+				AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 				{
-					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
-					{
-						HasProjects = true;
-					});
-				}
-				else
+					LatestDraftProjectTitle = null;
+					LatestDraftProjectId = null;
+					LatestActiveProjectTitle = null;
+					LatestActiveProjectId = null;
+					HasProjects = false;
+				});
+
+				if (result.Data?.MyProjects != null)
 				{
-					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+					var filtered = result.Data.MyProjects
+						.Where(p => p.Title != "Support Chat" && !p.Title.StartsWith("Support - "))
+						.OrderByDescending(p => p.CreatedAt)
+						.ToList();
+
+					if (filtered.Any())
 					{
-						HasProjects = false;
-					});
+						var latestDraft = filtered.FirstOrDefault(p => p.Status == ProjectStatus.Draft);
+						var latestActive = filtered.FirstOrDefault(p => p.Status == ProjectStatus.Active);
+
+						AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
+						{
+							HasProjects = true;
+							
+							if (latestDraft != null)
+							{
+								LatestDraftProjectTitle = latestDraft.Title;
+								LatestDraftProjectId = Guid.Parse(latestDraft.Id.ToString());
+							}
+							
+							if (latestActive != null)
+							{
+								LatestActiveProjectTitle = latestActive.Title;
+								LatestActiveProjectId = Guid.Parse(latestActive.Id.ToString());
+							}
+						});
+					}
 				}
 			}
 			catch (Exception ex)

@@ -2,6 +2,7 @@
 @page "/feed"
 @attribute [AllowAnonymous]
 @using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.Services
 @using System.ComponentModel
 @using Microsoft.Extensions.Localization
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
@@ -74,14 +75,24 @@
 										<div class="bs-carousel-track" style="transform: translateX(-@($"{_activeSlideIndex * 100}%"));">
 											<!-- Slide 1: Hero Info & CTA -->
 											<div class="bs-carousel-slide">
-												<h1 class="bs-hero-title mb-2">@Loc["Feed_HeroTitle"]</h1>
-												<p class="bs-hero-subtitle mb-4">@Loc["Feed_HeroSubtitle"]</p>
+												<h1 class="bs-hero-title mb-2">@GetHeroTitle()</h1>
+												<p class="bs-hero-subtitle mb-4">@GetHeroSubtitle()</p>
 
 												<!-- Main CTA Button -->
 												<button class="bs-btn-primary bs-hero-cta py-3 px-4 w-100 mb-3"
-														@onclick="HandleCreateProjectClick">
-													@Loc["Feed_HeroCta"]
+														@onclick="HandleHeroCtaClick">
+													@GetHeroCtaText()
 												</button>
+
+												<!-- Guest Login/Register Prompt -->
+												@if (_activeRule != null && _activeRule.ShowLoginPrompt)
+												{
+													<div class="mb-3 text-center" style="cursor: pointer; width: 100%;" @onclick='() => NavManager.NavigateTo("/login")'>
+														<span style="color: var(--text-secondary); font: var(--font-body-1); text-decoration: underline;">
+															@Loc["Feed_HeroGuestLoginPrompt"]
+														</span>
+													</div>
+												}
 
 												<!-- Social Icons -->
 												<div class="bs-social-icons">
@@ -164,6 +175,12 @@
 
 								<!-- RIGHT COLUMN on Desktop / TOP SECTION on Mobile -->
 								<div @key='"homeowner_right_col"' class="bs-homeowner-visual-col">
+									<!-- Mobile-only Brand Header -->
+									<div class="bs-mobile-brand-header text-center mb-3">
+										<div style="color: var(--text-primary); font: var(--font-h5); margin-bottom: 2px;">BuildSmart</div>
+										<div style="color: var(--text-secondary); font: var(--font-body-1);">@Loc["Feed_HeroMiniSlogan"]</div>
+									</div>
+
 									<!-- Category Filters (Placed directly on top of the videos!) -->
 									@if (ViewModel.Categories != null && ViewModel.Categories.Any())
 									{
@@ -249,12 +266,29 @@
 												</div>
 											}
 										}
-										else
-										{
-											<div class="d-flex align-items-center justify-content-center h-100 w-100 p-5 text-center" style="min-height: 200px;">
-												<p class="text-muted mb-0">@Loc["Feed_NoMediaFound"]</p>
+										
+										<!-- Always render the CTA card at the bottom of the feed -->
+										<div class="bs-reel-item bs-cta-reel-card d-flex flex-column align-items-center justify-content-center text-center p-4">
+											<div class="cta-icon-wrapper mb-4">
+												<div class="pulse-circle">
+													<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+														<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+													</svg>
+												</div>
 											</div>
-										}
+											
+											<h3 class="mb-3" style="color: var(--text-primary); font: var(--font-h5); margin: 0;">
+												@GetHeroTitle()
+											</h3>
+											
+											<p class="mb-4" style="color: var(--text-secondary); font: var(--font-body-1); max-width: 280px; margin: 0;">
+												@GetHeroSubtitle()
+											</p>
+											
+											<button class="bs-btn-primary py-3 px-5 mt-2" style="border-radius: 50px; font: var(--font-body-1); width: auto;" @onclick="HandleHeroCtaClick">
+												@GetHeroCtaText()
+											</button>
+										</div>
 									</div>
 
 									<!-- Video Disclaimer (Visible under the videos on desktop) -->
@@ -419,6 +453,55 @@
 }
 
 <style>
+	/* --- MOBILE BRAND HEADER --- */
+	.bs-mobile-brand-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	@@media (min-width: 992px) {
+		.bs-mobile-brand-header {
+			display: none !important;
+		}
+	}
+	/* --- CTA REEL CARD --- */
+	.bs-cta-reel-card {
+		background: var(--bg-card);
+		border: 2px solid var(--border-color, var(--bg-card-alt));
+		box-sizing: border-box;
+	}
+	.cta-icon-wrapper {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.pulse-circle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 80px;
+		height: 80px;
+		border-radius: 50%;
+		border: 2px solid var(--color-primary);
+		animation: ctaPulse 2s infinite ease-in-out;
+	}
+	@@keyframes ctaPulse {
+		0% {
+			transform: scale(0.95);
+			box-shadow: 0 0 0 0 var(--color-primary);
+		}
+		70% {
+			transform: scale(1);
+			box-shadow: 0 0 0 14px transparent;
+		}
+		100% {
+			transform: scale(0.95);
+			box-shadow: 0 0 0 0 transparent;
+		}
+	}
 	/* --- SWIPE CAROUSEL --- */
 	.bs-carousel-container {
 		width: 100%;
@@ -1288,8 +1371,132 @@
 	private string _errorMessage = string.Empty;
 	private DotNetObjectReference<Feed>? _objRef;
 	private bool _isJsInitialized = false;
+	private bool _isGuest = true;
 
 	[Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+	private LandingPageCopyRule? _activeRule;
+
+	private void ResolveActiveCopyRule()
+	{
+		_activeRule = null;
+		
+		if (!BuildSmart.SharedUI.ApiConfig.LandingPage_EnableDynamicTitles)
+		{
+			return;
+		}
+
+		try
+		{
+			var json = Loc["LandingPage_CopywritingRules"];
+			var rules = LandingPageRuleEvaluator.ParseRules(json);
+			
+			bool hasProjectsVal = ViewModel.HasProjects == true;
+			bool hasDraftVal = ViewModel.LatestDraftProjectId.HasValue;
+			bool hasActiveVal = ViewModel.LatestActiveProjectId.HasValue;
+			
+			foreach (var rule in rules)
+			{
+				if (LandingPageRuleEvaluator.EvaluateCondition(
+					rule.Condition, 
+					_isGuest, 
+					hasProjectsVal, 
+					ViewModel.IsTradesman, 
+					ViewModel.IsHomeowner,
+					hasDraftVal,
+					hasActiveVal))
+				{
+					_activeRule = rule;
+					break;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"[Feed.razor] ResolveActiveCopyRule Error: {ex.Message}");
+		}
+	}
+
+	private string FormatCopywritingText(string rawText)
+	{
+		if (string.IsNullOrEmpty(rawText)) return string.Empty;
+		if (!rawText.Contains("{0}")) return rawText;
+
+		if (_activeRule != null)
+		{
+			if (string.Equals(_activeRule.Condition, "hasDraftProject", StringComparison.OrdinalIgnoreCase))
+			{
+				return string.Format(rawText, ViewModel.LatestDraftProjectTitle ?? string.Empty);
+			}
+			if (string.Equals(_activeRule.Condition, "hasActiveProject", StringComparison.OrdinalIgnoreCase))
+			{
+				return string.Format(rawText, ViewModel.LatestActiveProjectTitle ?? string.Empty);
+			}
+		}
+
+		// Fallback to configured city name
+		var city = BuildSmart.SharedUI.ApiConfig.LandingPage_CityName;
+		return string.Format(rawText, city);
+	}
+
+	private string GetHeroTitle()
+	{
+		ResolveActiveCopyRule();
+		
+		if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.TitleKey))
+		{
+			return FormatCopywritingText(Loc[_activeRule.TitleKey].Value);
+		}
+		return Loc["Feed_HeroTitle"];
+	}
+
+	private string GetHeroSubtitle()
+	{
+		ResolveActiveCopyRule();
+		
+		if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.SubtitleKey))
+		{
+			return FormatCopywritingText(Loc[_activeRule.SubtitleKey].Value);
+		}
+		return Loc["Feed_HeroSubtitle"];
+	}
+
+	private string GetHeroCtaText()
+	{
+		ResolveActiveCopyRule();
+		
+		if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.CtaKey))
+		{
+			return Loc[_activeRule.CtaKey];
+		}
+		return Loc["Feed_HeroCta"];
+	}
+
+	private void HandleHeroCtaClick()
+	{
+		ResolveActiveCopyRule();
+		
+		if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.CtaAction))
+		{
+			var route = _activeRule.CtaAction;
+			
+			// Replace dynamic project ID tokens in route if present
+			if (route.Contains("{DraftProjectId}"))
+			{
+				route = route.Replace("{DraftProjectId}", ViewModel.LatestDraftProjectId?.ToString() ?? string.Empty);
+			}
+			if (route.Contains("{ActiveProjectId}"))
+			{
+				route = route.Replace("{ActiveProjectId}", ViewModel.LatestActiveProjectId?.ToString() ?? string.Empty);
+			}
+			
+			NavManager.NavigateTo(route);
+		}
+		else
+		{
+			HandleCreateProjectClick();
+		}
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -1301,6 +1508,8 @@
 				ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 				await ViewModel.LoadFeedCommand.ExecuteAsync(null);
 			}
+
+			_isGuest = !AuthService.IsAuthenticated || await CheckIsGuestAsync();
 
 			_autoPlayTimer = new System.Threading.Timer(_ =>
 			{
@@ -1476,7 +1685,7 @@
 				? $"/job-wizard?TargetCategoryId={ViewModel.SelectedCategoryId.Value}"
 				: "/job-wizard";
 			var returnUrl = Uri.EscapeDataString(targetUrl);
-			NavManager.NavigateTo($"/login?ReturnUrl={returnUrl}");
+			NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
 		}
 	}
 

@@ -848,14 +848,14 @@
     <value>Моля, изберете по-малко категории, за да се вместите в оставащия ви месечен лимит от {0} заявки към изкуствения интелект. Избрали сте {1} категории. Можете също така да се свържете с поддръжката, за да надстроите профила си.</value>
   </data>
   <data name="Feed_HeroTitle" xml:space="preserve">
-    <value>Сбъдваме мечти!</value>
+    <value>Колко струва готов за нанасяне дом? Разберете веднага</value>
   </data>
   <data name="Feed_HeroMiniSlogan" xml:space="preserve">
     <value>Вашият интелигентен съдружник за ремонти</value>
   </data>
 
   <data name="Feed_HeroSubtitle" xml:space="preserve">
-    <value>Подобно на Pinterest и Instagram, но във вашия дом – без филтри и лъжливи обещания. Разберете колко ще струва вашият ремонт: без платени огледи, досадни разговори и излишно овъртане.</value>
+    <value>Без значение дали довършвате ново строителство от БДС, правите основен ремонт на стар апартамент или строите къща. Получете точна калкулация за секунди — безплатно и без абонамент.</value>
   </data>
   <data name="Feed_HeroCta" xml:space="preserve">
     <value>Пресметнете цената на мечтания дом веднага, БЕЗПЛАТНО</value>
@@ -1012,5 +1012,97 @@
   </data>
   <data name="MobileCRO_CallPrompt" xml:space="preserve">
     <value>Обадете ни се</value>
+  </data>
+  <data name="Feed_CtaTitle" xml:space="preserve">
+    <value>Готови ли сте за вашия проект?</value>
+  </data>
+  <data name="Feed_CtaDescription" xml:space="preserve">
+    <value>Научете колко би струвало да имате своя мечтан дом веднага в следващите 5 минути с нашите актуални цени</value>
+  </data>
+  <data name="Feed_CtaButton" xml:space="preserve">
+    <value>Публикувай проект</value>
+  </data>
+  <data name="Feed_HeroTitle_Guest" xml:space="preserve">
+    <value>Колко струва да завършите, ремонтирате дома си до ключ в {0}?</value>
+  </data>
+  <data name="Feed_HeroSubtitle_Guest" xml:space="preserve">
+    <value>От празни стени или стар имот до готов за нанасяне дом. Изчислете цената за труд, довършителни работи или строеж моментално — в следващите няколко минути! Напълно безплатно, без абонаменти, огледи или изпращане на имейли.</value>
+  </data>
+  <data name="Feed_HeroGuestLoginPrompt" xml:space="preserve">
+    <value>Регистрирайте се или влезте в профила си, за да продължим напред, или разгледайте вече готовите ни обекти!</value>
+  </data>
+  <data name="Feed_HeroTitle_HasProjects" xml:space="preserve">
+    <value>Следете прогреса си и намерете вдъхновение</value>
+  </data>
+  <data name="Feed_HeroSubtitle_HasProjects" xml:space="preserve">
+    <value>Разгледайте реални видеоклипове от завършените ни обекти и следете активните си проекти.</value>
+  </data>
+  <data name="Feed_HeroCta_HasProjects" xml:space="preserve">
+    <value>Преглед на моите проекти</value>
+  </data>
+  <data name="Feed_HeroTitle_Draft" xml:space="preserve">
+    <value>Довършете вашия проект {0}</value>
+  </data>
+  <data name="Feed_HeroSubtitle_Draft" xml:space="preserve">
+    <value>Имате незавършена чернова за проекта {0}. Довършете я сега, за да получите ценови оферти.</value>
+  </data>
+  <data name="Feed_HeroCta_Draft" xml:space="preserve">
+    <value>Довършете черновата</value>
+  </data>
+  <data name="Feed_HeroTitle_NoConsultation" xml:space="preserve">
+    <value>Заявете консултация за {0}</value>
+  </data>
+  <data name="Feed_HeroSubtitle_NoConsultation" xml:space="preserve">
+    <value>Заявете безплатна консултация с наш архитект/експерт за проекта {0}, за да финализираме офертите ви.</value>
+  </data>
+  <data name="Feed_HeroCta_NoConsultation" xml:space="preserve">
+    <value>Заявете консултация</value>
+  </data>
+  <data name="Feed_HeroCta_Register" xml:space="preserve">
+    <value>Регистрирайте се или влезте</value>
+  </data>
+  <data name="LandingPage_CopywritingRules" xml:space="preserve">
+    <value>[
+  {
+    &quot;Condition&quot;: &quot;isGuest&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Guest&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Guest&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_Register&quot;,
+    &quot;CtaAction&quot;: &quot;/create-account?ReturnUrl=/job-wizard&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;!isGuest &amp;&amp; !hasProjects&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Guest&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Guest&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta&quot;,
+    &quot;CtaAction&quot;: &quot;/job-wizard&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;hasDraftProject&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Draft&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Draft&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_Draft&quot;,
+    &quot;CtaAction&quot;: &quot;/job-wizard?ProjectId={DraftProjectId}&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;hasActiveProject&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_NoConsultation&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_NoConsultation&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_NoConsultation&quot;,
+    &quot;CtaAction&quot;: &quot;/request-consultation?projectId={ActiveProjectId}&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  },
+  {
+    &quot;Condition&quot;: &quot;hasProjects&quot;,
+    &quot;TitleKey&quot;: &quot;Feed_HeroTitle_HasProjects&quot;,
+    &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_HasProjects&quot;,
+    &quot;CtaKey&quot;: &quot;Feed_HeroCta_HasProjects&quot;,
+    &quot;CtaAction&quot;: &quot;/my-projects&quot;,
+    &quot;ShowLoginPrompt&quot;: false
+  }
+]</value>
   </data>
 </root>

@@ -16,18 +16,19 @@ public partial class AppDbContext
 
         try
         {
-            // Load existing entries into a HashSet for fast in-memory lookup
+            // Load existing entries into a Dictionary for fast in-memory lookup and value comparison
             var existingEntries = await LocalizationResources
-                .Select(r => new { r.Key, r.Culture })
+                .Select(r => new { r.Key, r.Culture, r.Value })
                 .ToListAsync();
             
-            var existingSet = new HashSet<(string key, string culture)>(
-                existingEntries.Select(e => (e.Key.ToLowerInvariant(), e.Culture.ToLowerInvariant()))
+            var existingMap = existingEntries.ToDictionary(
+                e => (e.Key.ToLowerInvariant(), e.Culture.ToLowerInvariant()),
+                e => e.Value ?? string.Empty
             );
 
             bool addedAny = false;
-            addedAny |= await SeedCultureFromManagerAsync(resourceManager, CultureInfo.InvariantCulture, "en", existingSet);
-            addedAny |= await SeedCultureFromManagerAsync(resourceManager, new CultureInfo("bg"), "bg", existingSet);
+            addedAny |= await SeedCultureFromManagerAsync(resourceManager, CultureInfo.InvariantCulture, "en", existingMap);
+            addedAny |= await SeedCultureFromManagerAsync(resourceManager, new CultureInfo("bg"), "bg", existingMap);
 
             if (addedAny)
             {
@@ -36,7 +37,7 @@ public partial class AppDbContext
             }
             else
             {
-                Console.WriteLine("No new localization resources to seed.");
+                Console.WriteLine("No new or modified localization resources to seed.");
             }
         }
         catch (Exception ex)
@@ -45,7 +46,11 @@ public partial class AppDbContext
         }
     }
 
-    private async Task<bool> SeedCultureFromManagerAsync(ResourceManager resourceManager, CultureInfo cultureInfo, string cultureCode, HashSet<(string key, string culture)> existingSet)
+    private async Task<bool> SeedCultureFromManagerAsync(
+        ResourceManager resourceManager, 
+        CultureInfo cultureInfo, 
+        string cultureCode, 
+        Dictionary<(string key, string culture), string> existingMap)
     {
         var resourceSet = resourceManager.GetResourceSet(cultureInfo, createIfNotExists: true, tryParents: true);
         if (resourceSet == null)
@@ -63,7 +68,7 @@ public partial class AppDbContext
             if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
             {
                 var lookupKey = (key.ToLowerInvariant(), cultureCode.ToLowerInvariant());
-                if (!existingSet.Contains(lookupKey))
+                if (!existingMap.ContainsKey(lookupKey))
                 {
                     var resource = new LocalizationResource
                     {
@@ -75,7 +80,7 @@ public partial class AppDbContext
                         UpdatedAt = DateTime.UtcNow
                     };
                     await LocalizationResources.AddAsync(resource);
-                    existingSet.Add(lookupKey);
+                    existingMap[lookupKey] = value;
                     added = true;
                 }
             }
