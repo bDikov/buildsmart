@@ -1,0 +1,817 @@
+@page "/admin/video-cta"
+@using BuildSmart.SharedUI.Services
+@using BuildSmart.SharedUI.GraphQL
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject IBuildSmartApiClient ApiClient
+@inject IFileService FileService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+@inject BuildSmart.Core.Application.Interfaces.ILocalizationCacheService CacheService
+
+<div class="admin-container" style="padding: 24px; max-width: 1200px; margin: 0 auto; color: var(--text-color, #ffffff); font-family: 'Outfit', sans-serif;">
+    
+    <!-- Page Header -->
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px;">
+        <div class="title-group">
+            <h1 class="page-title" style="font-size: 2.2rem; font-weight: 700; margin: 0; background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Video CTA Rules Workflow</h1>
+            <p class="page-subtitle" style="color: #9ca3af; margin: 4px 0 0 0; font-size: 1rem;">Configure the call-to-action card at the end of the video feed with custom trigger rules, backgrounds, and styling.</p>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 12px;">
+            <button class="bs-btn-secondary" @onclick='() => NavManager.NavigateTo("/admin/localization")' style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                🔙 Translations List
+            </button>
+            <button class="bs-btn-secondary" @onclick="ResetToDefaultsAsync" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                🚨 Reset Defaults
+            </button>
+            <button class="bs-btn-primary" @onclick="SaveChangesAsync" style="display: inline-flex; align-items: center; gap: 8px; background: #3b82f6; border: none; color: #fff; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span>Saving...</span>
+                }
+                else
+                {
+                    <span>💾 Save Flow</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Feedback Alerts -->
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert alert-success" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            @statusMessage
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            @errorMessage
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 80px 0; justify-content: center; gap: 16px;">
+            <div style="width: 48px; height: 48px; border: 4px solid rgba(255, 255, 255, 0.1); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <span style="color: #9ca3af; font-size: 1.1rem;">Loading video CTA workflow...</span>
+        </div>
+    }
+    else
+    {
+        <!-- Visual Flow Connector Container -->
+        <div class="workflow-container" style="position: relative; display: flex; flex-direction: column; gap: 40px; padding-left: 30px; border-left: 3px dashed rgba(255, 255, 255, 0.1); margin-left: 15px; margin-bottom: 30px;">
+            
+            @for (int i = 0; i < ruleEditors.Count; i++)
+            {
+                var index = i;
+                var r = ruleEditors[index];
+                
+                <!-- Rule Wrapper -->
+                <div class="workflow-node" style="position: relative;">
+                    
+                    <!-- Connector Dot -->
+                    <div style="position: absolute; left: -39px; top: 22px; width: 15px; height: 15px; border-radius: 50%; background: #a855f7; border: 3px solid var(--bg-surface, #0f172a); box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);"></div>
+
+                    <!-- Flow Card Block -->
+                    <div class="flow-card" style="background: rgba(255, 255, 255, 0.02); border: 2px solid @(selectedRuleIndex == index ? "#a855f7" : "rgba(255, 255, 255, 0.08)"); border-radius: 16px; padding: 20px; transition: all 0.2s;" @onclick="() => selectedRuleIndex = index">
+                        
+                        <!-- Flow Card Action Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">VIDEO CTA STEP @(index + 1)</span>
+                                <span style="color: #9ca3af; font-size: 0.85rem;">(First matching rule wins)</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="action-btn" @onclick="() => MoveRuleUp(index)" @onclick:stopPropagation="true" disabled="@(index == 0)" title="Move Up" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #fff; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">▲</button>
+                                <button class="action-btn" @onclick="() => MoveRuleDown(index)" @onclick:stopPropagation="true" disabled="@(index == ruleEditors.Count - 1)" title="Move Down" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #fff; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">▼</button>
+                                <button class="action-btn" @onclick="() => DeleteRule(index)" @onclick:stopPropagation="true" title="Delete Rule" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">🗑️</button>
+                            </div>
+                        </div>
+
+                        <!-- 1. IF BLOCK (Trigger / Condition) -->
+                        <div class="if-block" style="background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(245, 158, 11, 0.15); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; padding: 3px 10px; border-radius: 6px; font-weight: 800; font-size: 0.8rem;">IF</span>
+                                <span style="font-weight: 600; font-size: 0.95rem; color: #f59e0b;">User State condition is met:</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px;">Select Trigger Condition</label>
+                                    <select class="bs-select" @onchange="(e) => OnConditionTypeChanged(r, e.Value?.ToString())" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; outline: none; font-size: 0.9rem;">
+                                        <option value="Guest" selected="@(r.ConditionType == "Guest")">Guest / Anonymous Visitor (isGuest)</option>
+                                        <option value="NoProjects" selected="@(r.ConditionType == "NoProjects")">Logged in with 0 projects (!isGuest &amp;&amp; !hasProjects)</option>
+                                        <option value="DraftProject" selected="@(r.ConditionType == "DraftProject")">Logged in with a Draft project (hasDraftProject)</option>
+                                        <option value="ActiveProject" selected="@(r.ConditionType == "ActiveProject")">Logged in with 1+ Active Projects but no consultation (hasActiveProject)</option>
+                                        <option value="HasProjects" selected="@(r.ConditionType == "HasProjects")">Logged in with active projects fallback (hasProjects)</option>
+                                        <option value="Custom" selected="@(r.ConditionType == "Custom")">✏️ Custom automation expression...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    @if (r.ConditionType == "Custom")
+                                    {
+                                        <label style="display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px;">Expression Logic</label>
+                                        <input type="text" @bind="r.CustomCondition" placeholder="e.g. isGuest || !hasProjects" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; outline: none; font-family: monospace; font-size: 0.9rem;" />
+                                    }
+                                    else
+                                    {
+                                        <label style="display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px;">Expression Logic</label>
+                                        <div style="padding: 8px 12px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; font-size: 0.85rem; color: #f59e0b; font-family: monospace;">
+                                            @r.ResolvedCondition
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. THEN BLOCK (Action / Copywriting & Stylist) -->
+                        <div class="then-block" style="background: rgba(168, 85, 247, 0.02); border: 1px solid rgba(168, 85, 247, 0.15); border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <span style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: #fff; padding: 3px 10px; border-radius: 6px; font-weight: 800; font-size: 0.8rem;">THEN</span>
+                                <span style="font-weight: 600; font-size: 0.95rem; color: #a855f7;">Style and display this customized CTA block:</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 16px;">
+                                
+                                <!-- Localization Texts -->
+                                <div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <!-- Bulgarian Translation -->
+                                        <div style="background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.03); border-radius: 8px; padding: 10px;">
+                                            <div style="font-weight: 600; font-size: 0.8rem; color: #10b981; margin-bottom: 8px;">🇧🇬 Bulgarian (bg)</div>
+                                            
+                                            <div style="margin-bottom: 8px;">
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Title Header</label>
+                                                <input type="text" @bind="r.TitleBg" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; outline: none; font-size: 0.8rem;" />
+                                            </div>
+                                            
+                                            <div style="margin-bottom: 8px;">
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Subtitle Text</label>
+                                                <textarea @bind="r.SubtitleBg" rows="2" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; outline: none; font-size: 0.8rem; resize: vertical;"></textarea>
+                                            </div>
+
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Button CTA</label>
+                                                <input type="text" @bind="r.CtaBg" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; outline: none; font-size: 0.8rem;" />
+                                            </div>
+                                        </div>
+
+                                        <!-- English Translation -->
+                                        <div style="background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.03); border-radius: 8px; padding: 10px;">
+                                            <div style="font-weight: 600; font-size: 0.8rem; color: #3b82f6; margin-bottom: 8px;">🇬🇧 English (en)</div>
+                                            
+                                            <div style="margin-bottom: 8px;">
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Title Header</label>
+                                                <input type="text" @bind="r.TitleEn" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; outline: none; font-size: 0.8rem;" />
+                                            </div>
+                                            
+                                            <div style="margin-bottom: 8px;">
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Subtitle Text</label>
+                                                <textarea @bind="r.SubtitleEn" rows="2" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; outline: none; font-size: 0.8rem; resize: vertical;"></textarea>
+                                            </div>
+
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Button CTA</label>
+                                                <input type="text" @bind="r.CtaEn" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; outline: none; font-size: 0.8rem;" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Destination Path -->
+                                    <div style="margin-top: 10px;">
+                                        <label style="display: block; font-size: 0.75rem; color: #9ca3af; margin-bottom: 3px; font-weight: 500;">Button Destination Route / URL</label>
+                                        <input type="text" @bind="r.CtaAction" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: #fff; outline: none; font-family: monospace; font-size: 0.8rem;" />
+                                    </div>
+                                </div>
+
+                                <!-- LIVE REAL-TIME CARD PREVIEW -->
+                                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; text-align: center;">
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #c084fc; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Live Visual Preview</div>
+                                    
+                                    <div style="@GetLivePreviewCardStyle(r) width: 100%; aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 10px; padding: 10px; box-sizing: border-box; overflow: hidden; position: relative;">
+                                        <div style="font-size: 0.7rem; font-weight: 700; margin-bottom: 4px; line-height: 1.1; max-width: 90%; color: @r.TitleColor;">
+                                            @(string.IsNullOrEmpty(r.TitleEn) ? "Title Preview" : r.TitleEn)
+                                        </div>
+                                        <div style="font-size: 0.55rem; margin-bottom: 8px; line-height: 1.1; max-width: 95%; color: @r.SubtitleColor;">
+                                            @(string.IsNullOrEmpty(r.SubtitleEn) ? "Subtitle Description text goes here..." : r.SubtitleEn.Length > 60 ? r.SubtitleEn.Substring(0, 57) + "..." : r.SubtitleEn)
+                                        </div>
+                                        <button type="button" style="background: @r.ButtonColor; color: @r.ButtonTextColor; border: none; border-radius: 20px; font-size: 0.55rem; font-weight: 700; padding: 4px 10px; cursor: default; outline: none;">
+                                            @(string.IsNullOrEmpty(r.CtaEn) ? "Action Link" : r.CtaEn)
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Visual Custom Styling & Background Fields -->
+                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 14px; margin-top: 14px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    
+                                    <!-- Styling Controls -->
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <div style="font-weight: 600; font-size: 0.8rem; color: #c084fc;">🎨 Stylist Properties</div>
+                                        
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Card BG Color</label>
+                                                <div style="display: flex; gap: 6px; align-items: center;">
+                                                    <input type="color" @bind="r.BackgroundColor" style="width: 28px; height: 28px; border: none; cursor: pointer; padding: 0; background: none; border-radius: 4px;" />
+                                                    <input type="text" @bind="r.BackgroundColor" style="width: 100%; padding: 4px 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; font-size: 0.75rem; font-family: monospace;" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Title Color</label>
+                                                <div style="display: flex; gap: 6px; align-items: center;">
+                                                    <input type="color" @bind="r.TitleColor" style="width: 28px; height: 28px; border: none; cursor: pointer; padding: 0; background: none; border-radius: 4px;" />
+                                                    <input type="text" @bind="r.TitleColor" style="width: 100%; padding: 4px 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; font-size: 0.75rem; font-family: monospace;" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Subtitle Color</label>
+                                                <div style="display: flex; gap: 4px; align-items: center;">
+                                                    <input type="color" @bind="r.SubtitleColor" style="width: 24px; height: 24px; border: none; cursor: pointer; padding: 0; background: none; border-radius: 4px;" />
+                                                    <input type="text" @bind="r.SubtitleColor" style="width: 100%; padding: 3px 5px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; font-size: 0.7rem; font-family: monospace;" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Button Color</label>
+                                                <div style="display: flex; gap: 4px; align-items: center;">
+                                                    <input type="color" @bind="r.ButtonColor" style="width: 24px; height: 24px; border: none; cursor: pointer; padding: 0; background: none; border-radius: 4px;" />
+                                                    <input type="text" @bind="r.ButtonColor" style="width: 100%; padding: 3px 5px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; font-size: 0.7rem; font-family: monospace;" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Btn Text Color</label>
+                                                <div style="display: flex; gap: 4px; align-items: center;">
+                                                    <input type="color" @bind="r.ButtonTextColor" style="width: 24px; height: 24px; border: none; cursor: pointer; padding: 0; background: none; border-radius: 4px;" />
+                                                    <input type="text" @bind="r.ButtonTextColor" style="width: 100%; padding: 3px 5px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; font-size: 0.7rem; font-family: monospace;" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Background Image & Custom CSS -->
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <div style="font-weight: 600; font-size: 0.8rem; color: #c084fc;">🖼️ Background Image &amp; Custom CSS</div>
+                                        
+                                        <!-- Image File Selector -->
+                                        <div>
+                                            <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 3px;">Card Background Image</label>
+                                            <div style="display: flex; gap: 8px; align-items: center;">
+                                                <InputFile OnChange="(e) => OnBgImageSelected(r, e)" accept=".jpg,.jpeg,.png" style="display: none;" id="@($"file-upload-{index}")" />
+                                                <button type="button" class="bs-btn-secondary" onclick="document.getElementById('file-upload-@index').click(); return false;" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color:#fff; padding:6px 12px; border-radius:5px; cursor:pointer; font-size:0.75rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                                                    📁 Choose Image...
+                                                </button>
+                                                
+                                                @if (!string.IsNullOrEmpty(r.BackgroundImageUrl))
+                                                {
+                                                    <span style="font-size: 0.7rem; color: #34d399; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;" title="@r.BackgroundImageUrl">✓ Loaded</span>
+                                                    <button type="button" @onclick="() => r.BackgroundImageUrl = string.Empty" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color:#f87171; padding:3px 8px; border-radius:4px; font-size:0.65rem; cursor:pointer;">Remove</button>
+                                                }
+                                                else
+                                                {
+                                                    <span style="font-size: 0.7rem; color: #64748b;">No background image</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Custom CSS override -->
+                                        <div>
+                                            <label style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px;">Custom Inline CSS overrides</label>
+                                            <textarea @bind="r.CustomCss" rows="2" placeholder="e.g. border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" style="width: 100%; padding: 6px 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; color: #fff; font-family: monospace; font-size: 0.75rem; outline: none; resize: vertical;"></textarea>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <!-- Bottom Actions -->
+        <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 60px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px;">
+            <button class="bs-btn-primary" @onclick="AddNewRule" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                ➕ Add Workflow Rule (Step)
+            </button>
+            <button class="bs-btn-primary" @onclick="SaveChangesAsync" style="display: inline-flex; align-items: center; gap: 8px; background: #3b82f6; border: none; color: #fff; padding: 12px 36px; border-radius: 30px; cursor: pointer; font-weight: 700; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3); transition: all 0.2s;" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span>Saving Flow...</span>
+                }
+                else
+                {
+                    <span>💾 Save Video CTA Flow</span>
+                }
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .flow-card:hover {
+        background-color: rgba(255, 255, 255, 0.035) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    .action-btn:hover:not(:disabled) {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    .action-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+</style>
+
+@code {
+    private List<RuleEditorModel> ruleEditors = new();
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private int selectedRuleIndex = -1;
+    private string statusMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private List<LocalizationResourceDto> allLocalizationResources = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        statusMessage = string.Empty;
+        errorMessage = string.Empty;
+        selectedRuleIndex = 0;
+
+        try
+        {
+            var result = await ApiClient.GetAllLocalizationResources.ExecuteAsync();
+            if (result.Errors.Count > 0)
+            {
+                errorMessage = $"Error: {result.Errors[0].Message}";
+                return;
+            }
+
+            if (result.Data?.AllLocalizationResources != null)
+            {
+                allLocalizationResources = result.Data.AllLocalizationResources
+                    .Select(r => new LocalizationResourceDto { Key = r.Key, Culture = r.Culture, Value = r.Value })
+                    .ToList();
+
+                var rulesEntry = allLocalizationResources.FirstOrDefault(r => r.Key == "LandingPage_VideoCtaRules" && r.Culture == "en");
+                if (rulesEntry != null && !string.IsNullOrEmpty(rulesEntry.Value))
+                {
+                    ParseRulesJson(rulesEntry.Value);
+                }
+                else
+                {
+                    ParseRulesJson(GetFallbackDefaultRulesJson());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Exception loading rules workflow: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ParseRulesJson(string json)
+    {
+        try
+        {
+            var rules = JsonSerializer.Deserialize<List<VideoCtaRuleDto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            ruleEditors.Clear();
+
+            if (rules != null)
+            {
+                foreach (var rule in rules)
+                {
+                    var editor = new RuleEditorModel
+                    {
+                        ResolvedCondition = rule.Condition,
+                        CtaAction = rule.CtaAction,
+                        BackgroundImageUrl = rule.BackgroundImageUrl ?? string.Empty,
+                        BackgroundColor = string.IsNullOrEmpty(rule.BackgroundColor) ? "#0f172a" : rule.BackgroundColor,
+                        TitleColor = string.IsNullOrEmpty(rule.TitleColor) ? "#ffffff" : rule.TitleColor,
+                        SubtitleColor = string.IsNullOrEmpty(rule.SubtitleColor) ? "#9ca3af" : rule.SubtitleColor,
+                        ButtonColor = string.IsNullOrEmpty(rule.ButtonColor) ? "#3b82f6" : rule.ButtonColor,
+                        ButtonTextColor = string.IsNullOrEmpty(rule.ButtonTextColor) ? "#ffffff" : rule.ButtonTextColor,
+                        CustomCss = rule.CustomCss ?? string.Empty,
+                        TitleKey = rule.TitleKey,
+                        SubtitleKey = rule.SubtitleKey,
+                        CtaKey = rule.CtaKey
+                    };
+
+                    // Map condition type
+                    if (rule.Condition == "isGuest") editor.ConditionType = "Guest";
+                    else if (rule.Condition == "!isGuest && !hasProjects") editor.ConditionType = "NoProjects";
+                    else if (rule.Condition == "hasDraftProject") editor.ConditionType = "DraftProject";
+                    else if (rule.Condition == "hasActiveProject") editor.ConditionType = "ActiveProject";
+                    else if (rule.Condition == "hasProjects") editor.ConditionType = "HasProjects";
+                    else
+                    {
+                        editor.ConditionType = "Custom";
+                        editor.CustomCondition = rule.Condition;
+                    }
+
+                    // Resolve translations from cache lists
+                    editor.TitleEn = GetValueFromCache(rule.TitleKey, "en");
+                    editor.TitleBg = GetValueFromCache(rule.TitleKey, "bg");
+                    editor.SubtitleEn = GetValueFromCache(rule.SubtitleKey, "en");
+                    editor.SubtitleBg = GetValueFromCache(rule.SubtitleKey, "bg");
+                    editor.CtaEn = GetValueFromCache(rule.CtaKey, "en");
+                    editor.CtaBg = GetValueFromCache(rule.CtaKey, "bg");
+
+                    ruleEditors.Add(editor);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error parsing rules configuration: {ex.Message}";
+        }
+    }
+
+    private string GetValueFromCache(string key, string culture)
+    {
+        if (string.IsNullOrEmpty(key)) return string.Empty;
+        var match = allLocalizationResources.FirstOrDefault(r => r.Key.Equals(key, StringComparison.OrdinalIgnoreCase) && r.Culture.Equals(culture, StringComparison.OrdinalIgnoreCase));
+        return match?.Value ?? string.Empty;
+    }
+
+    private void OnConditionTypeChanged(RuleEditorModel model, string? type)
+    {
+        if (string.IsNullOrEmpty(type)) return;
+        model.ConditionType = type;
+        
+        model.ResolvedCondition = type switch
+        {
+            "Guest" => "isGuest",
+            "NoProjects" => "!isGuest && !hasProjects",
+            "DraftProject" => "hasDraftProject",
+            "ActiveProject" => "hasActiveProject",
+            "HasProjects" => "hasProjects",
+            "Custom" => model.CustomCondition,
+            _ => "isGuest"
+        };
+    }
+
+    private async Task OnBgImageSelected(RuleEditorModel model, InputFileChangeEventArgs e)
+    {
+        errorMessage = string.Empty;
+        statusMessage = string.Empty;
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                // Max file size: 5MB
+                using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+                var url = await FileService.UploadAdminImageAsync(stream, file.Name);
+                if (!string.IsNullOrEmpty(url))
+                {
+                    model.BackgroundImageUrl = url;
+                    statusMessage = $"Background image '{file.Name}' uploaded successfully!";
+                }
+                else
+                {
+                    errorMessage = "Failed to upload background image. Check API connectivity.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error uploading file: {ex.Message}";
+        }
+    }
+
+    private string GetLivePreviewCardStyle(RuleEditorModel r)
+    {
+        var style = $"background-color: {r.BackgroundColor};";
+        if (!string.IsNullOrEmpty(r.BackgroundImageUrl))
+        {
+            var absoluteUrl = r.BackgroundImageUrl.StartsWith("http") 
+                ? r.BackgroundImageUrl 
+                : $"{ApiConfig.GetBaseUrl()}{r.BackgroundImageUrl}";
+            style += $" background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{absoluteUrl}'); background-size: cover; background-position: center;";
+        }
+        if (!string.IsNullOrEmpty(r.CustomCss))
+        {
+            style += $" {r.CustomCss}";
+        }
+        return style;
+    }
+
+    private void AddNewRule()
+    {
+        var randomSuffix = Guid.NewGuid().ToString().Substring(0, 4);
+        var editor = new RuleEditorModel
+        {
+            ConditionType = "Custom",
+            CustomCondition = "isGuest && hasProjects",
+            ResolvedCondition = "isGuest && hasProjects",
+            TitleKey = $"VideoCta_Title_Custom_{randomSuffix}",
+            SubtitleKey = $"VideoCta_Subtitle_Custom_{randomSuffix}",
+            CtaKey = $"VideoCta_Cta_Custom_{randomSuffix}",
+            TitleEn = "New Card Title",
+            TitleBg = "Ново заглавие на картата",
+            SubtitleEn = "New Card Subtitle Description Text",
+            SubtitleBg = "Ново подзаглавие описание на картата",
+            CtaEn = "Learn More",
+            CtaBg = "Научете повече",
+            CtaAction = "/job-wizard",
+            BackgroundColor = "#0f172a",
+            TitleColor = "#ffffff",
+            SubtitleColor = "#9ca3af",
+            ButtonColor = "#3b82f6",
+            ButtonTextColor = "#ffffff",
+            CustomCss = ""
+        };
+        ruleEditors.Add(editor);
+        selectedRuleIndex = ruleEditors.Count - 1;
+    }
+
+    private void DeleteRule(int index)
+    {
+        if (index >= 0 && index < ruleEditors.Count)
+        {
+            ruleEditors.RemoveAt(index);
+            selectedRuleIndex = ruleEditors.Count - 1;
+        }
+    }
+
+    private void MoveRuleUp(int index)
+    {
+        if (index > 0 && index < ruleEditors.Count)
+        {
+            var item = ruleEditors[index];
+            ruleEditors.RemoveAt(index);
+            ruleEditors.Insert(index - 1, item);
+            selectedRuleIndex = index - 1;
+        }
+    }
+
+    private void MoveRuleDown(int index)
+    {
+        if (index >= 0 && index < ruleEditors.Count - 1)
+        {
+            var item = ruleEditors[index];
+            ruleEditors.RemoveAt(index);
+            ruleEditors.Insert(index + 1, item);
+            selectedRuleIndex = index + 1;
+        }
+    }
+
+    private async Task ResetToDefaultsAsync()
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to reset all Video CTA rules and translations to default values? Any unsaved edits will be lost.");
+        if (confirm)
+        {
+            ParseRulesJson(GetFallbackDefaultRulesJson());
+            statusMessage = "Reset to default flow! Click 'Save Video CTA Flow' to commit your changes.";
+        }
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        isSaving = true;
+        statusMessage = string.Empty;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var outputRules = new List<VideoCtaRuleDto>();
+            int ruleCounter = 1;
+
+            foreach (var r in ruleEditors)
+            {
+                if (string.IsNullOrEmpty(r.TitleKey)) r.TitleKey = $"VideoCta_Title_Custom_{ruleCounter}";
+                if (string.IsNullOrEmpty(r.SubtitleKey)) r.SubtitleKey = $"VideoCta_Subtitle_Custom_{ruleCounter}";
+                if (string.IsNullOrEmpty(r.CtaKey)) r.CtaKey = $"VideoCta_Cta_Custom_{ruleCounter}";
+
+                r.ResolvedCondition = (r.ConditionType switch
+                {
+                    "Guest" => "isGuest",
+                    "NoProjects" => "!isGuest && !hasProjects",
+                    "DraftProject" => "hasDraftProject",
+                    "ActiveProject" => "hasActiveProject",
+                    "HasProjects" => "hasProjects",
+                    "Custom" => r.CustomCondition,
+                    _ => "isGuest"
+                }) ?? "isGuest";
+
+                outputRules.Add(new VideoCtaRuleDto
+                {
+                    Condition = r.ResolvedCondition ?? "isGuest",
+                    TitleKey = r.TitleKey ?? string.Empty,
+                    SubtitleKey = r.SubtitleKey ?? string.Empty,
+                    CtaKey = r.CtaKey ?? string.Empty,
+                    CtaAction = r.CtaAction ?? string.Empty,
+                    BackgroundImageUrl = r.BackgroundImageUrl ?? string.Empty,
+                    BackgroundColor = r.BackgroundColor ?? "#0f172a",
+                    TitleColor = r.TitleColor ?? "#ffffff",
+                    SubtitleColor = r.SubtitleColor ?? "#9ca3af",
+                    ButtonColor = r.ButtonColor ?? "#3b82f6",
+                    ButtonTextColor = r.ButtonTextColor ?? "#ffffff",
+                    CustomCss = r.CustomCss ?? string.Empty
+                });
+
+                // Save localization text values into the database strings table
+                await SaveLocalizationKeyAsync(r.TitleKey, r.TitleEn, r.TitleBg);
+                await SaveLocalizationKeyAsync(r.SubtitleKey, r.SubtitleEn, r.SubtitleBg);
+                await SaveLocalizationKeyAsync(r.CtaKey, r.CtaEn, r.CtaBg);
+
+                ruleCounter++;
+            }
+
+            var rulesJson = JsonSerializer.Serialize(outputRules, new JsonSerializerOptions { WriteIndented = true });
+            
+            // Save JSON rule configurations in DB localizer
+            await SaveLocalizationKeyAsync("LandingPage_VideoCtaRules", rulesJson, rulesJson);
+
+            statusMessage = "Video CTA copywriting workflow and styles saved successfully!";
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to save rules workflow: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SaveLocalizationKeyAsync(string key, string? enValue, string? bgValue)
+    {
+        var safeEn = (enValue ?? string.Empty).Trim();
+        var safeBg = (bgValue ?? string.Empty).Trim();
+
+        var enInput = new UpdateLocalizationInput { Key = key, Culture = "en", Value = safeEn };
+        var enResult = await ApiClient.UpdateLocalizationString.ExecuteAsync(enInput);
+
+        var bgInput = new UpdateLocalizationInput { Key = key, Culture = "bg", Value = safeBg };
+        var bgResult = await ApiClient.UpdateLocalizationString.ExecuteAsync(bgInput);
+
+        if (enResult.Errors.Count > 0 || bgResult.Errors.Count > 0)
+        {
+            var msg = $"Error updating key '{key}'.";
+            if (enResult.Errors.Count > 0) msg += $" [EN]: {enResult.Errors[0].Message}";
+            if (bgResult.Errors.Count > 0) msg += $" [BG]: {bgResult.Errors[0].Message}";
+            throw new Exception(msg);
+        }
+
+        // Set locally in Singleton cache immediately
+        CacheService.Set(key, "en", safeEn);
+        CacheService.Set(key, "bg", safeBg);
+    }
+
+    private string GetFallbackDefaultRulesJson()
+    {
+        return @"[
+  {
+    ""Condition"": ""isGuest"",
+    ""TitleKey"": ""VideoCta_Title_Guest"",
+    ""SubtitleKey"": ""VideoCta_Subtitle_Guest"",
+    ""CtaKey"": ""VideoCta_Cta_Guest"",
+    ""CtaAction"": ""/create-account?ReturnUrl=/job-wizard"",
+    ""BackgroundImageUrl"": """",
+    ""BackgroundColor"": ""#0f172a"",
+    ""TitleColor"": ""#ffffff"",
+    ""SubtitleColor"": ""#9ca3af"",
+    ""ButtonColor"": ""#3b82f6"",
+    ""ButtonTextColor"": ""#ffffff"",
+    ""CustomCss"": """"
+  },
+  {
+    ""Condition"": ""!isGuest && !hasProjects"",
+    ""TitleKey"": ""VideoCta_Title_Guest"",
+    ""SubtitleKey"": ""VideoCta_Subtitle_Guest"",
+    ""CtaKey"": ""VideoCta_Cta"",
+    ""CtaAction"": ""/job-wizard"",
+    ""BackgroundImageUrl"": """",
+    ""BackgroundColor"": ""#0f172a"",
+    ""TitleColor"": ""#ffffff"",
+    ""SubtitleColor"": ""#9ca3af"",
+    ""ButtonColor"": ""#10b981"",
+    ""ButtonTextColor"": ""#ffffff"",
+    ""CustomCss"": """"
+  },
+  {
+    ""Condition"": ""hasDraftProject"",
+    ""TitleKey"": ""VideoCta_Title_Draft"",
+    ""SubtitleKey"": ""VideoCta_Subtitle_Draft"",
+    ""CtaKey"": ""VideoCta_Cta_Draft"",
+    ""CtaAction"": ""/job-wizard?ProjectId={DraftProjectId}"",
+    ""BackgroundImageUrl"": """",
+    ""BackgroundColor"": ""#0f172a"",
+    ""TitleColor"": ""#ffffff"",
+    ""SubtitleColor"": ""#9ca3af"",
+    ""ButtonColor"": ""#3b82f6"",
+    ""ButtonTextColor"": ""#ffffff"",
+    ""CustomCss"": """"
+  },
+  {
+    ""Condition"": ""hasActiveProject"",
+    ""TitleKey"": ""VideoCta_Title_NoConsultation"",
+    ""SubtitleKey"": ""VideoCta_Subtitle_NoConsultation"",
+    ""CtaKey"": ""VideoCta_Cta_NoConsultation"",
+    ""CtaAction"": ""/request-consultation?projectId={ActiveProjectId}"",
+    ""BackgroundImageUrl"": """",
+    ""BackgroundColor"": ""#0f172a"",
+    ""TitleColor"": ""#ffffff"",
+    ""SubtitleColor"": ""#9ca3af"",
+    ""ButtonColor"": ""#10b981"",
+    ""ButtonTextColor"": ""#ffffff"",
+    ""CustomCss"": """"
+  },
+  {
+    ""Condition"": ""hasProjects"",
+    ""TitleKey"": ""VideoCta_Title_HasProjects"",
+    ""SubtitleKey"": ""VideoCta_Subtitle_HasProjects"",
+    ""CtaKey"": ""VideoCta_Cta_HasProjects"",
+    ""CtaAction"": ""/my-projects"",
+    ""BackgroundImageUrl"": """",
+    ""BackgroundColor"": ""#0f172a"",
+    ""TitleColor"": ""#ffffff"",
+    ""SubtitleColor"": ""#9ca3af"",
+    ""ButtonColor"": ""#3b82f6"",
+    ""ButtonTextColor"": ""#ffffff"",
+    ""CustomCss"": """"
+  }
+]";
+    }
+
+    private class RuleEditorModel
+    {
+        public string ConditionType { get; set; } = "Custom";
+        public string CustomCondition { get; set; } = string.Empty;
+        public string ResolvedCondition { get; set; } = string.Empty;
+        
+        public string TitleKey { get; set; } = string.Empty;
+        public string SubtitleKey { get; set; } = string.Empty;
+        public string CtaKey { get; set; } = string.Empty;
+
+        public string TitleEn { get; set; } = string.Empty;
+        public string TitleBg { get; set; } = string.Empty;
+        public string SubtitleEn { get; set; } = string.Empty;
+        public string SubtitleBg { get; set; } = string.Empty;
+        public string CtaEn { get; set; } = string.Empty;
+        public string CtaBg { get; set; } = string.Empty;
+
+        public string CtaAction { get; set; } = string.Empty;
+
+        public string BackgroundImageUrl { get; set; } = string.Empty;
+        public string BackgroundColor { get; set; } = "#0f172a";
+        public string TitleColor { get; set; } = "#ffffff";
+        public string SubtitleColor { get; set; } = "#9ca3af";
+        public string ButtonColor { get; set; } = "#3b82f6";
+        public string ButtonTextColor { get; set; } = "#ffffff";
+        public string CustomCss { get; set; } = string.Empty;
+    }
+
+    private class VideoCtaRuleDto
+    {
+        public string Condition { get; set; } = string.Empty;
+        public string TitleKey { get; set; } = string.Empty;
+        public string SubtitleKey { get; set; } = string.Empty;
+        public string CtaKey { get; set; } = string.Empty;
+        public string CtaAction { get; set; } = string.Empty;
+        public string BackgroundImageUrl { get; set; } = string.Empty;
+        public string BackgroundColor { get; set; } = string.Empty;
+        public string TitleColor { get; set; } = string.Empty;
+        public string SubtitleColor { get; set; } = string.Empty;
+        public string ButtonColor { get; set; } = string.Empty;
+        public string ButtonTextColor { get; set; } = string.Empty;
+        public string CustomCss { get; set; } = string.Empty;
+    }
+
+    private class LocalizationResourceDto
+    {
+        public string Key { get; set; } = string.Empty;
+        public string Culture { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+    }
+}

@@ -1102,4 +1102,117 @@
   }
 ]</value>
   </data>
+  <data name="VideoCta_Title_Guest" xml:space="preserve">
+    <value>Calculate your renovation cost now, for FREE</value>
+  </data>
+  <data name="VideoCta_Subtitle_Guest" xml:space="preserve">
+    <value>Learn how much it would cost to have your dream home instantly in the next 5 minutes with our current prices</value>
+  </data>
+  <data name="VideoCta_Cta_Guest" xml:space="preserve">
+    <value>Register or Log In</value>
+  </data>
+  <data name="VideoCta_Cta" xml:space="preserve">
+    <value>Calculate Cost</value>
+  </data>
+  <data name="VideoCta_Title_Draft" xml:space="preserve">
+    <value>Complete your project {0}</value>
+  </data>
+  <data name="VideoCta_Subtitle_Draft" xml:space="preserve">
+    <value>You have an incomplete draft of project {0}. Complete it now to get accurate price calculations.</value>
+  </data>
+  <data name="VideoCta_Cta_Draft" xml:space="preserve">
+    <value>Complete Draft</value>
+  </data>
+  <data name="VideoCta_Title_NoConsultation" xml:space="preserve">
+    <value>Request a consultation for {0}</value>
+  </data>
+  <data name="VideoCta_Subtitle_NoConsultation" xml:space="preserve">
+    <value>Request a free consultation with our expert to finalize your bids.</value>
+  </data>
+  <data name="VideoCta_Cta_NoConsultation" xml:space="preserve">
+    <value>Request Consultation</value>
+  </data>
+  <data name="VideoCta_Title_HasProjects" xml:space="preserve">
+    <value>Track your active projects</value>
+  </data>
+  <data name="VideoCta_Subtitle_HasProjects" xml:space="preserve">
+    <value>Review live photos and videos from your ongoing builds.</value>
+  </data>
+  <data name="VideoCta_Cta_HasProjects" xml:space="preserve">
+    <value>View My Projects</value>
+  </data>
+  <data name="LandingPage_VideoCtaRules" xml:space="preserve">
+    <value>[
+  {
+    "Condition": "isGuest",
+    "TitleKey": "VideoCta_Title_Guest",
+    "SubtitleKey": "VideoCta_Subtitle_Guest",
+    "CtaKey": "VideoCta_Cta_Guest",
+    "CtaAction": "/create-account?ReturnUrl=/job-wizard",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#3b82f6",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "!isGuest &amp;&amp; !hasProjects",
+    "TitleKey": "VideoCta_Title_Guest",
+    "SubtitleKey": "VideoCta_Subtitle_Guest",
+    "CtaKey": "VideoCta_Cta",
+    "CtaAction": "/job-wizard",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#10b981",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "hasDraftProject",
+    "TitleKey": "VideoCta_Title_Draft",
+    "SubtitleKey": "VideoCta_Subtitle_Draft",
+    "CtaKey": "VideoCta_Cta_Draft",
+    "CtaAction": "/job-wizard?ProjectId={DraftProjectId}",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#3b82f6",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "hasActiveProject",
+    "TitleKey": "VideoCta_Title_NoConsultation",
+    "SubtitleKey": "VideoCta_Subtitle_NoConsultation",
+    "CtaKey": "VideoCta_Cta_NoConsultation",
+    "CtaAction": "/request-consultation?projectId={ActiveProjectId}",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#10b981",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "hasProjects",
+    "TitleKey": "VideoCta_Title_HasProjects",
+    "SubtitleKey": "VideoCta_Subtitle_HasProjects",
+    "CtaKey": "VideoCta_Cta_HasProjects",
+    "CtaAction": "/my-projects",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#3b82f6",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  }
+]</value>
+  </data>
 </root>

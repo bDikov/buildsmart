@@ -8,6 +8,7 @@ public interface IFileService
     Task<string?> UploadPortfolioEntryAsync(string title, string? description, Stream fileStream, string fileName);
     Task<string?> UploadCertificationAsync(string title, string? description, DateTime issuedAt, DateTime? expiresAt, Stream fileStream, string fileName);
     Task<string?> UpdateVideoIntroductionAsync(Stream fileStream, string fileName);
+    Task<string?> UploadAdminImageAsync(Stream fileStream, string fileName);
 }
 
 public class FileService : IFileService
@@ -19,6 +20,32 @@ public class FileService : IFileService
     {
         _httpClient = httpClient;
         _authService = authService;
+    }
+
+    public async Task<string?> UploadAdminImageAsync(Stream fileStream, string fileName)
+    {
+        var content = new MultipartFormDataContent();
+        var streamContent = new StreamContent(fileStream);
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
+        content.Add(streamContent, "file", fileName);
+
+        await AddAuthHeader();
+        var response = await _httpClient.PostAsync($"{ApiConfig.GetBaseUrl()}/api/upload/admin-image", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("url", out var prop))
+            {
+                return prop.GetString();
+            }
+            if (doc.RootElement.TryGetProperty("Url", out var propUpper))
+            {
+                return propUpper.GetString();
+            }
+        }
+        return null;
     }
 
     public async Task<string?> UploadPortfolioEntryAsync(string title, string? description, Stream fileStream, string fileName)

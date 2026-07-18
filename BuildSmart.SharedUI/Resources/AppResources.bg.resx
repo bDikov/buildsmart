@@ -1105,4 +1105,117 @@
   }
 ]</value>
   </data>
+  <data name="VideoCta_Title_Guest" xml:space="preserve">
+    <value>Пресметнете цената на мечтания дом веднага, БЕЗПЛАТНО</value>
+  </data>
+  <data name="VideoCta_Subtitle_Guest" xml:space="preserve">
+    <value>Научете колко би струвало да имате своя мечтан дом веднага в следващите 5 минути с нашите актуални цени</value>
+  </data>
+  <data name="VideoCta_Cta_Guest" xml:space="preserve">
+    <value>Регистрирайте се или влезте</value>
+  </data>
+  <data name="VideoCta_Cta" xml:space="preserve">
+    <value>Изчислете цената</value>
+  </data>
+  <data name="VideoCta_Title_Draft" xml:space="preserve">
+    <value>Довършете вашия проект {0}</value>
+  </data>
+  <data name="VideoCta_Subtitle_Draft" xml:space="preserve">
+    <value>Имате незавършена чернова за проекта {0}. Довършете я сега, за да получите ценови оферти.</value>
+  </data>
+  <data name="VideoCta_Cta_Draft" xml:space="preserve">
+    <value>Довършете черновата</value>
+  </data>
+  <data name="VideoCta_Title_NoConsultation" xml:space="preserve">
+    <value>Заявете консултация за {0}</value>
+  </data>
+  <data name="VideoCta_Subtitle_NoConsultation" xml:space="preserve">
+    <value>Заявете безплатна консултация с наш архитект/експерт, за да финализираме офертите ви.</value>
+  </data>
+  <data name="VideoCta_Cta_NoConsultation" xml:space="preserve">
+    <value>Заявете консултация</value>
+  </data>
+  <data name="VideoCta_Title_HasProjects" xml:space="preserve">
+    <value>Следете прогреса на вашите проекти</value>
+  </data>
+  <data name="VideoCta_Subtitle_HasProjects" xml:space="preserve">
+    <value>Преглеждайте снимки и видеоклипове от вашите обекти в реално време.</value>
+  </data>
+  <data name="VideoCta_Cta_HasProjects" xml:space="preserve">
+    <value>Преглед на моите проекти</value>
+  </data>
+  <data name="LandingPage_VideoCtaRules" xml:space="preserve">
+    <value>[
+  {
+    "Condition": "isGuest",
+    "TitleKey": "VideoCta_Title_Guest",
+    "SubtitleKey": "VideoCta_Subtitle_Guest",
+    "CtaKey": "VideoCta_Cta_Guest",
+    "CtaAction": "/create-account?ReturnUrl=/job-wizard",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#3b82f6",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "!isGuest &amp;&amp; !hasProjects",
+    "TitleKey": "VideoCta_Title_Guest",
+    "SubtitleKey": "VideoCta_Subtitle_Guest",
+    "CtaKey": "VideoCta_Cta",
+    "CtaAction": "/job-wizard",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#10b981",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "hasDraftProject",
+    "TitleKey": "VideoCta_Title_Draft",
+    "SubtitleKey": "VideoCta_Subtitle_Draft",
+    "CtaKey": "VideoCta_Cta_Draft",
+    "CtaAction": "/job-wizard?ProjectId={DraftProjectId}",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#3b82f6",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "hasActiveProject",
+    "TitleKey": "VideoCta_Title_NoConsultation",
+    "SubtitleKey": "VideoCta_Subtitle_NoConsultation",
+    "CtaKey": "VideoCta_Cta_NoConsultation",
+    "CtaAction": "/request-consultation?projectId={ActiveProjectId}",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#10b981",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  },
+  {
+    "Condition": "hasProjects",
+    "TitleKey": "VideoCta_Title_HasProjects",
+    "SubtitleKey": "VideoCta_Subtitle_HasProjects",
+    "CtaKey": "VideoCta_Cta_HasProjects",
+    "CtaAction": "/my-projects",
+    "BackgroundImageUrl": "",
+    "BackgroundColor": "#0f172a",
+    "TitleColor": "#ffffff",
+    "SubtitleColor": "#9ca3af",
+    "ButtonColor": "#3b82f6",
+    "ButtonTextColor": "#ffffff",
+    "CustomCss": ""
+  }
+]</value>
+  </data>
 </root>

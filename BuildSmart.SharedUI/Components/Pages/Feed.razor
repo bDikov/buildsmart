@@ -268,25 +268,28 @@
 										}
 										
 										<!-- Always render the CTA card at the bottom of the feed -->
-										<div class="bs-reel-item bs-cta-reel-card d-flex flex-column align-items-center justify-content-center text-center p-4">
-											<div class="cta-icon-wrapper mb-4">
-												<div class="pulse-circle">
-													<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-														<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-													</svg>
+										<div class="bs-reel-item bs-cta-reel-card d-flex flex-column align-items-center justify-content-center text-center p-4" style="@GetVideoCtaCardStyle()">
+											@if (_activeVideoCtaRule == null || string.IsNullOrEmpty(_activeVideoCtaRule.BackgroundImageUrl))
+											{
+												<div class="cta-icon-wrapper mb-4">
+													<div class="pulse-circle">
+														<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+															<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+														</svg>
+													</div>
 												</div>
-											</div>
+											}
 											
-											<h3 class="mb-3" style="color: var(--text-primary); font: var(--font-h5); margin: 0;">
-												@GetHeroTitle()
+											<h3 class="mb-3" style="@GetVideoCtaTitleStyle()">
+												@GetVideoCtaTitle()
 											</h3>
 											
-											<p class="mb-4" style="color: var(--text-secondary); font: var(--font-body-1); max-width: 280px; margin: 0;">
-												@GetHeroSubtitle()
+											<p class="mb-4" style="@GetVideoCtaSubtitleStyle()">
+												@GetVideoCtaSubtitle()
 											</p>
 											
-											<button class="bs-btn-primary py-3 px-5 mt-2" style="border-radius: 50px; font: var(--font-body-1); width: auto;" @onclick="HandleHeroCtaClick">
-												@GetHeroCtaText()
+											<button class="bs-btn-primary py-3 px-5 mt-2" style="@GetVideoCtaButtonStyle()" @onclick="HandleVideoCtaClick">
+												@GetVideoCtaText()
 											</button>
 										</div>
 									</div>
@@ -1735,5 +1738,193 @@
 			catch { /* Ignore if JS interop is disconnected */ }
 		}
 		_objRef?.Dispose();
+	}
+
+	private VideoCtaRule? _activeVideoCtaRule;
+
+	private void ResolveActiveVideoCtaRule()
+	{
+		_activeVideoCtaRule = null;
+		try
+		{
+			var json = Loc["LandingPage_VideoCtaRules"];
+			if (string.IsNullOrEmpty(json) || json.Value == "LandingPage_VideoCtaRules")
+			{
+				return;
+			}
+			
+			var rules = System.Text.Json.JsonSerializer.Deserialize<List<VideoCtaRule>>(json.Value, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			if (rules == null) return;
+			
+			bool hasProjectsVal = ViewModel.HasProjects == true;
+			bool hasDraftVal = ViewModel.LatestDraftProjectId.HasValue;
+			bool hasActiveVal = ViewModel.LatestActiveProjectId.HasValue;
+			
+			foreach (var rule in rules)
+			{
+				if (LandingPageRuleEvaluator.EvaluateCondition(
+					rule.Condition, 
+					_isGuest, 
+					hasProjectsVal, 
+					ViewModel.IsTradesman, 
+					ViewModel.IsHomeowner,
+					hasDraftVal,
+					hasActiveVal))
+				{
+					_activeVideoCtaRule = rule;
+					break;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"[Feed.razor] ResolveActiveVideoCtaRule Error: {ex.Message}");
+		}
+	}
+
+	private string GetVideoCtaTitle()
+	{
+		ResolveActiveVideoCtaRule();
+		if (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.TitleKey))
+		{
+			return FormatVideoCtaText(Loc[_activeVideoCtaRule.TitleKey].Value);
+		}
+		return Loc["VideoCta_Title_Guest"];
+	}
+
+	private string GetVideoCtaSubtitle()
+	{
+		ResolveActiveVideoCtaRule();
+		if (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.SubtitleKey))
+		{
+			return FormatVideoCtaText(Loc[_activeVideoCtaRule.SubtitleKey].Value);
+		}
+		return Loc["VideoCta_Subtitle_Guest"];
+	}
+
+	private string GetVideoCtaText()
+	{
+		ResolveActiveVideoCtaRule();
+		if (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.CtaKey))
+		{
+			return Loc[_activeVideoCtaRule.CtaKey];
+		}
+		return Loc["VideoCta_Cta_Guest"];
+	}
+
+	private string FormatVideoCtaText(string rawText)
+	{
+		if (string.IsNullOrEmpty(rawText)) return string.Empty;
+		if (!rawText.Contains("{0}")) return rawText;
+
+		if (_activeVideoCtaRule != null)
+		{
+			if (string.Equals(_activeVideoCtaRule.Condition, "hasDraftProject", StringComparison.OrdinalIgnoreCase))
+			{
+				return string.Format(rawText, ViewModel.LatestDraftProjectTitle ?? string.Empty);
+			}
+			if (string.Equals(_activeVideoCtaRule.Condition, "hasActiveProject", StringComparison.OrdinalIgnoreCase))
+			{
+				return string.Format(rawText, ViewModel.LatestActiveProjectTitle ?? string.Empty);
+			}
+		}
+		
+		var city = BuildSmart.SharedUI.ApiConfig.LandingPage_CityName;
+		return string.Format(rawText, city);
+	}
+
+	private void HandleVideoCtaClick()
+	{
+		ResolveActiveVideoCtaRule();
+		if (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.CtaAction))
+		{
+			var route = _activeVideoCtaRule.CtaAction;
+			if (route.Contains("{DraftProjectId}"))
+			{
+				route = route.Replace("{DraftProjectId}", ViewModel.LatestDraftProjectId?.ToString() ?? string.Empty);
+			}
+			if (route.Contains("{ActiveProjectId}"))
+			{
+				route = route.Replace("{ActiveProjectId}", ViewModel.LatestActiveProjectId?.ToString() ?? string.Empty);
+			}
+			NavManager.NavigateTo(route);
+		}
+		else
+		{
+			HandleCreateProjectClick();
+		}
+	}
+
+	private string GetVideoCtaCardStyle()
+	{
+		ResolveActiveVideoCtaRule();
+		if (_activeVideoCtaRule == null)
+		{
+			return "border-radius: 20px; text-decoration: none;";
+		}
+
+		var style = "border-radius: 20px; text-decoration: none;";
+		if (!string.IsNullOrEmpty(_activeVideoCtaRule.BackgroundColor))
+		{
+			style += $" background-color: {_activeVideoCtaRule.BackgroundColor} !important;";
+		}
+		if (!string.IsNullOrEmpty(_activeVideoCtaRule.BackgroundImageUrl))
+		{
+			var absoluteUrl = _activeVideoCtaRule.BackgroundImageUrl.StartsWith("http") 
+				? _activeVideoCtaRule.BackgroundImageUrl 
+				: $"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}{_activeVideoCtaRule.BackgroundImageUrl}";
+			style += $" background-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('{absoluteUrl}') !important; background-size: cover !important; background-position: center !important;";
+		}
+		if (!string.IsNullOrEmpty(_activeVideoCtaRule.CustomCss))
+		{
+			style += $" {_activeVideoCtaRule.CustomCss}";
+		}
+		return style;
+	}
+
+	private string GetVideoCtaTitleStyle()
+	{
+		ResolveActiveVideoCtaRule();
+		var color = (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.TitleColor)) 
+			? _activeVideoCtaRule.TitleColor 
+			: "#ffffff";
+		return $"color: {color} !important; font: var(--font-h5); margin: 0;";
+	}
+
+	private string GetVideoCtaSubtitleStyle()
+	{
+		ResolveActiveVideoCtaRule();
+		var color = (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.SubtitleColor)) 
+			? _activeVideoCtaRule.SubtitleColor 
+			: "#9ca3af";
+		return $"color: {color} !important; font: var(--font-body-1); max-width: 280px; margin: 0;";
+	}
+
+	private string GetVideoCtaButtonStyle()
+	{
+		ResolveActiveVideoCtaRule();
+		var bg = (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.ButtonColor)) 
+			? _activeVideoCtaRule.ButtonColor 
+			: "var(--color-primary)";
+		var text = (_activeVideoCtaRule != null && !string.IsNullOrEmpty(_activeVideoCtaRule.ButtonTextColor)) 
+			? _activeVideoCtaRule.ButtonTextColor 
+			: "#ffffff";
+		return $"background-color: {bg} !important; color: {text} !important; border-radius: 50px; font: var(--font-body-1); width: auto; border: none;";
+	}
+
+	private class VideoCtaRule
+	{
+		public string Condition { get; set; } = string.Empty;
+		public string TitleKey { get; set; } = string.Empty;
+		public string SubtitleKey { get; set; } = string.Empty;
+		public string CtaKey { get; set; } = string.Empty;
+		public string CtaAction { get; set; } = string.Empty;
+		public string BackgroundImageUrl { get; set; } = string.Empty;
+		public string BackgroundColor { get; set; } = string.Empty;
+		public string TitleColor { get; set; } = string.Empty;
+		public string SubtitleColor { get; set; } = string.Empty;
+		public string ButtonColor { get; set; } = string.Empty;
+		public string ButtonTextColor { get; set; } = string.Empty;
+		public string CustomCss { get; set; } = string.Empty;
 	}
 }

@@ -95,6 +95,18 @@ public class UploadController : ControllerBase
         return Ok(new { VideoUrl = url });
     }
 
+    [HttpPost("admin-image")]
+    [Authorize(Roles = "Admin, ADMIN, admin")]
+    public async Task<IActionResult> UploadAdminImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        using var stream = file.OpenReadStream();
+        var url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+        return Ok(new { Url = url });
+    }
+
     private Guid GetUserId()
     {
         var claim = User.FindFirst(ClaimTypes.NameIdentifier);
