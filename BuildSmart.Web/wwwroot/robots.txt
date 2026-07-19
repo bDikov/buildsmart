@@ -5,8 +5,10 @@ Allow: /faq
 Allow: /terms
 Allow: /privacy
 Allow: /request-consultation
+Allow: /login
+Allow: /create-account
 
-# Disallow internal pages requiring authentication
+# Disallow internal pages requiring authentication (private dashboards and wizards)
 Disallow: /admin/
 Disallow: /admin-job-review
 Disallow: /project-detail
@@ -16,5 +18,7 @@ Disallow: /user-profile
 Disallow: /notifications
 Disallow: /active-jobs
 Disallow: /auction-hub
+Disallow: /job-wizard
+Disallow: /my-projects
 
 Sitemap: https://buildsmart.bg/sitemap.xml
