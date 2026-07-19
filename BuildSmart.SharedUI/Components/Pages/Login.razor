@@ -501,6 +501,83 @@
         {
             isBusy = true;
             await ViewModel.LoginCommand.ExecuteAsync(null);
+
+            // Track successful login
+            if (await AuthService.GetTokenAsync() is string actualToken && !string.IsNullOrEmpty(actualToken))
+            {
+                try
+                {
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(actualToken);
+                    var userId = jwtToken.Claims.FirstOrDefault(c => 
+                        c.Type == "sub" || 
+                        c.Type == "id" || 
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        var email = jwtToken.Claims.FirstOrDefault(c => 
+                            c.Type == "email" || 
+                            c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                        var name = jwtToken.Claims.FirstOrDefault(c => 
+                            c.Type == "name" || 
+                            c.Type == "unique_name" || 
+                            c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+                        var properties = new Dictionary<string, object>();
+                        if (!string.IsNullOrEmpty(email)) properties["email"] = email;
+                        if (!string.IsNullOrEmpty(name)) properties["name"] = name;
+
+                        if (properties.Count > 0)
+                        {
+                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId, properties);
+                        }
+                        else
+                        {
+                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
+                        }
+
+                        // Fire standard login events with UTM parameters
+                        var utms = new Dictionary<string, string>();
+                        try
+                        {
+                            utms = await JSRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+                        }
+                        catch { }
+
+                        string? utmSource = utms.TryGetValue("utm_source", out var s) ? s : null;
+                        string? utmMedium = utms.TryGetValue("utm_medium", out var m) ? m : null;
+                        string? utmCampaign = utms.TryGetValue("utm_campaign", out var c) ? c : null;
+                        string? utmContent = utms.TryGetValue("utm_content", out var co) ? co : null;
+                        string? utmTerm = utms.TryGetValue("utm_term", out var t) ? t : null;
+
+                        await JSRuntime.InvokeVoidAsync("pushToDataLayer", "login_success", new { 
+                            userId = userId,
+                            utm_source = utmSource,
+                            utm_medium = utmMedium,
+                            utm_campaign = utmCampaign,
+                            utm_content = utmContent,
+                            utm_term = utmTerm
+                        });
+
+                        try
+                        {
+                            await JSRuntime.InvokeVoidAsync("posthog.capture", "Success Login", new { 
+                                userId = userId,
+                                utm_source = utmSource,
+                                utm_medium = utmMedium,
+                                utm_campaign = utmCampaign,
+                                utm_content = utmContent,
+                                utm_term = utmTerm
+                            });
+                        }
+                        catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Login] Tracking error: {ex.Message}");
+                }
+            }
         }
         finally
         {
