@@ -268,7 +268,7 @@
 										}
 										
 										<!-- Always render the CTA card at the bottom of the feed -->
-										<div class="bs-reel-item bs-cta-reel-card d-flex flex-column align-items-center justify-content-center text-center p-4" style="@GetVideoCtaCardStyle()">
+										<div class="bs-reel-item bs-cta-reel-card d-flex flex-column align-items-center justify-content-center text-center p-4" style="@GetVideoCtaCardStyle()" @onclick="HandleVideoCardClick">
 											@if (_activeVideoCtaRule == null || string.IsNullOrEmpty(_activeVideoCtaRule.BackgroundImageUrl))
 											{
 												<div class="cta-icon-wrapper mb-4">
@@ -284,11 +284,23 @@
 												@GetVideoCtaTitle()
 											</h3>
 											
+											@{
+												var fullSubtitle = GetVideoCtaSubtitle();
+												var isLongText = fullSubtitle.Length > 150;
+												var subtitleToShow = isLongText ? fullSubtitle.Substring(0, 140) + "..." : fullSubtitle;
+											}
 											<p class="mb-4" style="@GetVideoCtaSubtitleStyle()">
-												@GetVideoCtaSubtitle()
+												@subtitleToShow
+												@if (isLongText)
+												{
+													<span style="display: block; font-size: 0.8rem; font-weight: 600; text-decoration: underline; cursor: pointer; margin-top: 8px; opacity: 0.95;"
+														  @onclick="ShowVideoCtaModal" @onclick:stopPropagation="true">
+														@Loc["Feed_ReadMore"]
+													</span>
+												}
 											</p>
 											
-											<button class="bs-btn-primary py-3 px-5 mt-2" style="@GetVideoCtaButtonStyle()" @onclick="HandleVideoCtaClick">
+											<button class="bs-btn-primary py-3 px-5 mt-2" style="@GetVideoCtaButtonStyle()" @onclick="HandleVideoCtaClick" @onclick:stopPropagation="true">
 												@GetVideoCtaText()
 											</button>
 										</div>
@@ -451,6 +463,34 @@
 			<button class="bs-btn-primary w-100 py-3 px-4" @onclick="HandleBenefitCtaClick">
 				@Loc["Feed_HeroCta"]
 			</button>
+		</div>
+	</div>
+}
+
+@if (_showVideoCtaModal)
+{
+	<div class="bs-modal-overlay" @onclick="() => _showVideoCtaModal = false">
+		<div class="bs-modal-card bs-card" @onclick:stopPropagation="true" style="max-width: 480px; @GetVideoCtaModalStyle()">
+			<button class="bs-modal-close-btn" @onclick="() => _showVideoCtaModal = false" aria-label="Close">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
+				</svg>
+			</button>
+
+			<div style="padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+				<h3 style="font: var(--font-h5); font-weight: 700; margin-bottom: 16px; color: @(_activeVideoCtaRule?.TitleColor ?? "#ffffff")">
+					@GetVideoCtaTitle()
+				</h3>
+
+				<p style="font: var(--font-body-1); line-height: 1.5; margin-bottom: 24px; color: @(_activeVideoCtaRule?.SubtitleColor ?? "#9ca3af")">
+					@GetVideoCtaSubtitle()
+				</p>
+
+				<button class="bs-btn-primary w-100 py-3 px-4" style="@GetVideoCtaButtonStyle()" @onclick="HandleVideoCtaModalButtonClick">
+					@GetVideoCtaText()
+				</button>
+			</div>
 		</div>
 	</div>
 }
@@ -1910,6 +1950,49 @@
 			? _activeVideoCtaRule.ButtonTextColor 
 			: "#ffffff";
 		return $"background-color: {bg} !important; color: {text} !important; border-radius: 50px; font: var(--font-body-1); width: auto; border: none;";
+	}
+
+	private bool _showVideoCtaModal = false;
+
+	private void HandleVideoCardClick()
+	{
+		var fullSubtitle = GetVideoCtaSubtitle();
+		if (fullSubtitle.Length > 150)
+		{
+			ShowVideoCtaModal();
+		}
+		else
+		{
+			HandleVideoCtaClick();
+		}
+	}
+
+	private void ShowVideoCtaModal()
+	{
+		_showVideoCtaModal = true;
+		StateHasChanged();
+	}
+
+	private void HandleVideoCtaModalButtonClick()
+	{
+		_showVideoCtaModal = false;
+		HandleVideoCtaClick();
+	}
+
+	private string GetVideoCtaModalStyle()
+	{
+		ResolveActiveVideoCtaRule();
+		if (_activeVideoCtaRule == null) return string.Empty;
+		var style = string.Empty;
+		if (!string.IsNullOrEmpty(_activeVideoCtaRule.BackgroundColor))
+		{
+			style += $" background-color: {_activeVideoCtaRule.BackgroundColor} !important;";
+		}
+		if (!string.IsNullOrEmpty(_activeVideoCtaRule.CustomCss))
+		{
+			style += $" {_activeVideoCtaRule.CustomCss}";
+		}
+		return style;
 	}
 
 	private class VideoCtaRule

@@ -1218,4 +1218,7 @@
   }
 ]</value>
   </data>
+  <data name="Feed_ReadMore" xml:space="preserve">
+    <value>Прочети още...</value>
+  </data>
 </root>

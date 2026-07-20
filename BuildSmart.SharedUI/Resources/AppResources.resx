@@ -1215,4 +1215,7 @@
   }
 ]</value>
   </data>
+  <data name="Feed_ReadMore" xml:space="preserve">
+    <value>Read more...</value>
+  </data>
 </root>
