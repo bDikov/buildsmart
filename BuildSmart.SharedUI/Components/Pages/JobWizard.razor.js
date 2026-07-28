@@ -163,3 +163,12 @@ export function scrollToFirstError(container) {
         scrollToElement(container);
     }
 }
+
+export function scrollActiveStepIntoView(container) {
+    if (!container) return;
+    const activeItem = container.querySelector('.bs-horizontal-step-item.active');
+    if (activeItem) {
+        activeItem.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+}
+

@@ -8,12 +8,24 @@
         {
             @foreach (var cat in Categories)
             {
-                <label class="category-item">
-                    <input class="category-checkbox" type="checkbox" @bind="cat.IsSelected">
-                    <span class="category-label">
-                        @(LanguageCode.StartsWith("bg", StringComparison.OrdinalIgnoreCase) ? (string.IsNullOrEmpty(cat.Category?.Name) ? cat.Category?.EnglishName : cat.Category?.Name) : (!string.IsNullOrEmpty(cat.Category?.EnglishName) ? cat.Category.EnglishName : cat.Category?.Name))
-                    </span>
-                </label>
+                var catName = LanguageCode.StartsWith("bg", StringComparison.OrdinalIgnoreCase) 
+                    ? (string.IsNullOrEmpty(cat.Category?.Name) ? cat.Category?.EnglishName : cat.Category?.Name) 
+                    : (!string.IsNullOrEmpty(cat.Category?.EnglishName) ? cat.Category.EnglishName : cat.Category?.Name);
+
+                <div class="bs-category-item-card @(cat.IsSelected ? "selected" : "")" @onclick="@(() => cat.IsSelected = !cat.IsSelected)">
+                    <div class="bs-category-icon-box">
+                        <BuildSmart.SharedUI.Components.BsIcon TextFallback="@catName" Size="24" />
+                    </div>
+                    <span class="bs-category-title">@catName</span>
+                    <div class="bs-category-badge">
+                        @if (cat.IsSelected)
+                        {
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        }
+                    </div>
+                </div>
             }
         }
     </div>
@@ -40,52 +52,78 @@
     .category-list {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
     }
     
-    .category-item {
+    .bs-category-item-card {
         display: flex;
         align-items: center;
-        gap: 15px;
-        cursor: pointer;
-    }
-    
-    .category-checkbox {
-        appearance: none;
-        -webkit-appearance: none;
-        width: 19px;
-        height: 19px;
+        gap: 16px;
+        padding: 14px 20px;
         background-color: var(--bg-card-alt);
-        border: 2px solid var(--border-color);
-        border-radius: 3px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
         cursor: pointer;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        margin: 0;
-        transition: border-color 0.2s ease;
+        transition: all 0.2s ease;
+        user-select: none;
     }
 
-    .category-checkbox:checked {
+    .bs-category-item-card:hover {
         border-color: var(--color-primary);
     }
     
-    .category-checkbox:checked::after {
-        content: '';
-        width: 11px;
-        height: 11px;
+    .bs-category-item-card.selected {
+        background-color: rgba(110, 63, 243, 0.08);
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 12px rgba(110, 63, 243, 0.15);
+    }
+
+    .bs-category-icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-primary);
+        flex-shrink: 0;
+    }
+
+    .bs-category-item-card.selected .bs-category-icon-box {
         background-color: var(--color-primary);
-        border-radius: 2px;
+        border-color: var(--color-primary);
+        color: #ffffff;
     }
     
-    .category-label {
+    .bs-category-title {
         font-family: var(--font-primary);
         font-size: 16px;
-        font-weight: 400;
+        font-weight: 600;
         margin: 0;
         color: var(--text-primary);
+        flex: 1;
+    }
+
+    .bs-category-badge {
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        background-color: transparent;
+        color: transparent;
+        flex-shrink: 0;
+    }
+
+    .bs-category-item-card.selected .bs-category-badge {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: #ffffff;
     }
 </style>
 

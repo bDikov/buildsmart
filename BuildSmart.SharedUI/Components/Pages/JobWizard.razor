@@ -24,6 +24,15 @@
         margin-top: 20px;
         margin-bottom: 25px;
         padding: 0 5px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .bs-wizard-horizontal-steps::-webkit-scrollbar {
+        display: none; /* Chrome/Safari/Blink */
     }
 
     .bs-horizontal-step-line {
@@ -51,6 +60,8 @@
         justify-content: space-between;
         align-items: flex-start;
         z-index: 2;
+        min-width: max-content;
+        gap: 12px;
     }
 
     .bs-horizontal-step-item {
@@ -58,7 +69,8 @@
         flex-direction: column;
         align-items: center;
         gap: 8px;
-        flex: 1;
+        flex: 0 0 auto;
+        min-width: 75px;
         text-align: center;
     }
 
@@ -204,7 +216,170 @@
         font-size: 15px;
         font-weight: 500;
     }
+
+    /* Number Stepper Counter Control */
+    .bs-stepper-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 6px 12px;
+        width: 100%;
+        max-width: 220px;
+        justify-content: space-between;
+    }
+
+    .bs-stepper-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .bs-stepper-btn:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    .bs-stepper-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        min-width: 30px;
+        text-align: center;
+    }
+
+    /* Visual Option Cards Grid (Rooms & Services) */
+    .bs-option-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 12px;
+        width: 100%;
+    }
+
+    .bs-option-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 10px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        min-height: 100px;
+        user-select: none;
+    }
+
+    .bs-option-card:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    .bs-option-card.selected {
+        background-color: rgba(110, 63, 243, 0.08);
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 14px rgba(110, 63, 243, 0.2);
+    }
+
+    .bs-option-card-icon {
+        color: var(--text-secondary);
+        transition: color 0.2s ease;
+    }
+
+    .bs-option-card.selected .bs-option-card-icon {
+        color: var(--color-primary);
+    }
+
+    .bs-option-card-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .bs-option-card-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: transparent;
+        transition: all 0.2s ease;
+    }
+
+    .bs-option-card.selected .bs-option-card-badge {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: #ffffff;
+    }
+
+    /* Color Swatch Cards Grid */
+    .bs-color-swatch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+        width: 100%;
+    }
+
+    .bs-color-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 10px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        min-height: 110px;
+        user-select: none;
+    }
+
+    .bs-color-card:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    .bs-color-card.selected {
+        background-color: rgba(110, 63, 243, 0.08);
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 14px rgba(110, 63, 243, 0.2);
+    }
+
+    .bs-color-swatch-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
 </style>
+
 
 
 <ErrorBoundary>
@@ -255,7 +430,7 @@
                 <!-- Dynamic Horizontal Step Progress Bar -->
                 @if (ViewModel.WizardSteps != null && ViewModel.WizardSteps.Count > 1)
                 {
-                    <div class="bs-wizard-horizontal-steps mb-4">
+                    <div @ref="_horizontalStepperContainer" class="bs-wizard-horizontal-steps mb-4">
                         <div class="bs-horizontal-step-line">
                             <div class="bs-horizontal-step-line-fill" style="width: @(GetStepProgressPercentage())%;"></div>
                         </div>
@@ -340,11 +515,40 @@
                                                 }
                                                 else if (q.IsNumber)
                                                 {
-                                                    <input type="number" min="0" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="0" @bind="q.Answer" />
+                                                    <div class="bs-stepper-control mt-2">
+                                                        <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, -1))">—</button>
+                                                        <span class="bs-stepper-value">@(int.TryParse(q.Answer, out var nVal) ? nVal : 0)</span>
+                                                        <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, 1))">+</button>
+                                                    </div>
                                                 }
                                                 else if (q.IsChoice && q.Options != null)
                                                 {
-                                                    @if (q.Options.Count <= 3)
+                                                    @if (IsColorQuestion(q))
+                                                    {
+                                                        <div class="bs-color-swatch-grid mt-2">
+                                                            @for (int idx = 0; idx < q.Options.Count; idx++)
+                                                            {
+                                                                var index = idx;
+                                                                var optValue = q.RawOptions.Count > index ? q.RawOptions[index] : q.Options[index];
+                                                                var optText = q.Options[index];
+                                                                var isSelected = q.Answer == optValue;
+                                                                var swatchStyle = GetColorSwatchStyle(optText, index);
+                                                                <div class="bs-color-card @(isSelected ? "selected" : "")" @onclick="@(() => q.Answer = optValue)">
+                                                                    <div class="bs-option-card-badge">
+                                                                        @if (isSelected)
+                                                                        {
+                                                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                                                            </svg>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="bs-color-swatch-circle" style="@swatchStyle"></div>
+                                                                    <span class="bs-option-card-title">@optText</span>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else if (q.Options.Count <= 3)
                                                     {
                                                         <div class="bs-segmented-control mt-2">
                                                             @for (int idx = 0; idx < q.Options.Count; idx++)
@@ -370,22 +574,25 @@
                                                 }
                                                 else if (q.IsMultiSelect && q.Options != null)
                                                 {
-                                                    <div class="bs-checkbox-container mt-2">
+                                                    <div class="bs-option-cards-grid mt-2">
                                                         @for (int idx = 0; idx < q.Options.Count; idx++)
                                                          {
                                                              var index = idx;
                                                              var opt = q.Options[index];
                                                              var isChecked = q.IsOptionSelected(index);
-                                                             <div class="bs-checkbox-row @(isChecked ? "checked" : "")" @onclick="@(() => q.ToggleMultiSelectOption(index, !isChecked))">
-                                                                 <div class="bs-custom-checkbox">
+                                                             <div class="bs-option-card @(isChecked ? "selected" : "")" @onclick="@(() => q.ToggleMultiSelectOption(index, !isChecked))">
+                                                                 <div class="bs-option-card-badge">
                                                                      @if (isChecked)
                                                                      {
-                                                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                                                              <polyline points="20 6 9 17 4 12"></polyline>
                                                                          </svg>
                                                                      }
                                                                  </div>
-                                                                 <span class="bs-checkbox-label">@opt</span>
+                                                                 <div class="bs-option-card-icon">
+                                                                     <BuildSmart.SharedUI.Components.BsIcon TextFallback="@opt" Size="26" />
+                                                                 </div>
+                                                                 <span class="bs-option-card-title">@opt</span>
                                                              </div>
                                                          }
                                                     </div>
@@ -453,11 +660,40 @@
                                                 }
                                                 else if (q.IsNumber)
                                                 {
-                                                    <input type="number" min="0" class="bs-input @(q.HasError ? "border border-danger" : "")" placeholder="0" @bind="q.Answer" />
+                                                    <div class="bs-stepper-control mt-2">
+                                                        <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, -1))">—</button>
+                                                        <span class="bs-stepper-value">@(int.TryParse(q.Answer, out var nVal) ? nVal : 0)</span>
+                                                        <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, 1))">+</button>
+                                                    </div>
                                                 }
                                                 else if (q.IsChoice && q.Options != null)
                                                 {
-                                                    @if (q.Options.Count <= 3)
+                                                    @if (IsColorQuestion(q))
+                                                    {
+                                                        <div class="bs-color-swatch-grid mt-2">
+                                                            @for (int idx = 0; idx < q.Options.Count; idx++)
+                                                            {
+                                                                var index = idx;
+                                                                var optValue = q.RawOptions.Count > index ? q.RawOptions[index] : q.Options[index];
+                                                                var optText = q.Options[index];
+                                                                var isSelected = q.Answer == optValue;
+                                                                var swatchStyle = GetColorSwatchStyle(optText, index);
+                                                                <div class="bs-color-card @(isSelected ? "selected" : "")" @onclick="@(() => q.Answer = optValue)">
+                                                                    <div class="bs-option-card-badge">
+                                                                        @if (isSelected)
+                                                                        {
+                                                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                                                            </svg>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="bs-color-swatch-circle" style="@swatchStyle"></div>
+                                                                    <span class="bs-option-card-title">@optText</span>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else if (q.Options.Count <= 3)
                                                     {
                                                         <div class="bs-segmented-control mt-2">
                                                             @for (int idx = 0; idx < q.Options.Count; idx++)
@@ -483,22 +719,25 @@
                                                 }
                                                 else if (q.IsMultiSelect && q.Options != null)
                                                 {
-                                                    <div class="bs-checkbox-container mt-2">
+                                                    <div class="bs-option-cards-grid mt-2">
                                                         @for (int idx = 0; idx < q.Options.Count; idx++)
                                                          {
                                                              var index = idx;
                                                              var opt = q.Options[index];
                                                              var isChecked = q.IsOptionSelected(index);
-                                                             <div class="bs-checkbox-row @(isChecked ? "checked" : "")" @onclick="@(() => q.ToggleMultiSelectOption(index, !isChecked))">
-                                                                 <div class="bs-custom-checkbox">
+                                                             <div class="bs-option-card @(isChecked ? "selected" : "")" @onclick="@(() => q.ToggleMultiSelectOption(index, !isChecked))">
+                                                                 <div class="bs-option-card-badge">
                                                                      @if (isChecked)
                                                                      {
-                                                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                                                              <polyline points="20 6 9 17 4 12"></polyline>
                                                                          </svg>
                                                                      }
                                                                  </div>
-                                                                 <span class="bs-checkbox-label">@opt</span>
+                                                                 <div class="bs-option-card-icon">
+                                                                     <BuildSmart.SharedUI.Components.BsIcon TextFallback="@opt" Size="26" />
+                                                                 </div>
+                                                                 <span class="bs-option-card-title">@opt</span>
                                                              </div>
                                                          }
                                                     </div>
@@ -657,6 +896,8 @@
     private IJSObjectReference? _module;
     private DotNetObjectReference<JobWizard>? _objRef;
     private ElementReference _swipeCardContainer;
+    private ElementReference _horizontalStepperContainer;
+
 
     private string GetSwipeStyle()
     {
@@ -1004,11 +1245,12 @@
 
     private async Task ScrollToElement()
     {
-
         try
         {
             if (_module != null)
             {
+                await _module.InvokeVoidAsync("scrollActiveStepIntoView", _horizontalStepperContainer);
+
                 bool hasErrors = ViewModel.Questions?.Any(q => q.IsVisible && q.HasError) == true;
                 if (hasErrors)
                 {
@@ -1025,4 +1267,38 @@
             Console.WriteLine($"Error scrolling to element: {ex.Message}");
         }
     }
-}
+
+    private void ChangeNumberAnswer(WizardQuestionViewModel q, int delta)
+    {
+        if (q == null) return;
+        int current = int.TryParse(q.Answer, out var val) ? val : 0;
+        int next = Math.Max(0, current + delta);
+        q.Answer = next.ToString();
+    }
+
+    private bool IsColorQuestion(WizardQuestionViewModel q)
+    {
+        if (q == null || string.IsNullOrEmpty(q.Text)) return false;
+        var text = q.Text.ToLowerInvariant();
+        return text.Contains("цвят") || text.Contains("цветове") || text.Contains("color");
+    }
+
+    private string GetColorSwatchStyle(string optText, int index)
+    {
+        var text = (optText ?? "").ToLowerInvariant();
+        if (text.Contains("бяло") || text.Contains("white"))
+            return "background-color: #ffffff; border: 1px solid var(--border-color);";
+        if (text.Contains("светли") || text.Contains("light") || text.Contains("beige"))
+            return "background-color: #f5efe6; border: 1px solid var(--border-color);";
+        if (text.Contains("цветни") || text.Contains("color") || text.Contains("accent"))
+            return "background: conic-gradient(from 180deg at 50% 50%, #f87171 0deg, #60a5fa 120deg, #34d399 240deg, #f87171 360deg);";
+        
+        // Fallback by index
+        switch (index % 3)
+        {
+            case 0: return "background-color: #ffffff; border: 1px solid var(--border-color);";
+            case 1: return "background-color: #f5efe6; border: 1px solid var(--border-color);";
+            default: return "background: conic-gradient(from 180deg at 50% 50%, #f87171 0deg, #60a5fa 120deg, #34d399 240deg, #f87171 360deg);";
+        }
+    }
+}
