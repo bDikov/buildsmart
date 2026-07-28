@@ -16,7 +16,196 @@
         overflow-x: clip !important;
         overflow-y: visible !important;
     }
+
+    /* Dynamic Horizontal Step Progress Bar */
+    .bs-wizard-horizontal-steps {
+        position: relative;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 25px;
+        padding: 0 5px;
+    }
+
+    .bs-horizontal-step-line {
+        position: absolute;
+        top: 18px;
+        left: 30px;
+        right: 30px;
+        height: 3px;
+        background-color: var(--border-color);
+        z-index: 1;
+        border-radius: 2px;
+    }
+
+    .bs-horizontal-step-line-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover, #703fed));
+        border-radius: 2px;
+        transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 0 10px rgba(110, 63, 243, 0.4);
+    }
+
+    .bs-horizontal-step-items {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        z-index: 2;
+    }
+
+    .bs-horizontal-step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .bs-step-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background-color: var(--bg-card);
+        border: 2px solid var(--border-color);
+        color: var(--text-muted);
+    }
+
+    .bs-horizontal-step-item.completed .bs-step-circle {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: #ffffff;
+        box-shadow: 0 0 10px rgba(110, 63, 243, 0.3);
+    }
+
+    .bs-horizontal-step-item.active .bs-step-circle {
+        background-color: var(--bg-card);
+        border-color: var(--color-primary);
+        color: var(--text-primary);
+        box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.2), 0 0 14px rgba(110, 63, 243, 0.4);
+        transform: scale(1.06);
+    }
+
+    .bs-step-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        max-width: 90px;
+        line-height: 1.2;
+        transition: color 0.3s ease;
+        word-wrap: break-word;
+    }
+
+    .bs-horizontal-step-item.active .bs-step-label {
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    .bs-horizontal-step-item.completed .bs-step-label {
+        color: var(--text-secondary);
+    }
+
+    /* Segmented Control Buttons */
+    .bs-segmented-control {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .bs-segmented-btn {
+        flex: 1;
+        min-width: 80px;
+        padding: 12px 16px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .bs-segmented-btn:hover {
+        border-color: var(--color-primary);
+        background-color: var(--border-color);
+    }
+
+    .bs-segmented-btn.active {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(110, 63, 243, 0.35);
+    }
+
+    /* Custom Checkbox Card Rows */
+    .bs-checkbox-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bs-checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .bs-checkbox-row:hover {
+        border-color: var(--color-primary);
+    }
+
+    .bs-checkbox-row.checked {
+        background-color: rgba(110, 63, 243, 0.08);
+        border-color: var(--color-primary);
+    }
+
+    .bs-custom-checkbox {
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        background-color: transparent;
+        color: transparent;
+        flex-shrink: 0;
+    }
+
+    .bs-checkbox-row.checked .bs-custom-checkbox {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(110, 63, 243, 0.4);
+    }
+
+    .bs-checkbox-label {
+        color: var(--text-primary);
+        font-size: 15px;
+        font-weight: 500;
+    }
 </style>
+
 
 <ErrorBoundary>
     <ChildContent>
@@ -62,6 +251,42 @@
                     ProgressPercentage="@ViewModel.ProgressPercentage" 
                     StepText="@string.Format(Loc["JobWizard_StepText"], ViewModel.CurrentStepNumber, ViewModel.TotalSteps)" 
                     SubtitleText="@GetSubtitleText()" />
+
+                <!-- Dynamic Horizontal Step Progress Bar -->
+                @if (ViewModel.WizardSteps != null && ViewModel.WizardSteps.Count > 1)
+                {
+                    <div class="bs-wizard-horizontal-steps mb-4">
+                        <div class="bs-horizontal-step-line">
+                            <div class="bs-horizontal-step-line-fill" style="width: @(GetStepProgressPercentage())%;"></div>
+                        </div>
+                        <div class="bs-horizontal-step-items">
+                            @for (int i = 0; i < ViewModel.WizardSteps.Count; i++)
+                            {
+                                var stepIdx = i;
+                                var step = ViewModel.WizardSteps[stepIdx];
+                                var isCompleted = stepIdx < ViewModel.CurrentStep;
+                                var isActive = stepIdx == ViewModel.CurrentStep;
+                                
+                                <div class="bs-horizontal-step-item @(isActive ? "active" : (isCompleted ? "completed" : "pending"))">
+                                    <div class="bs-step-circle">
+                                        @if (isCompleted)
+                                        {
+                                            <svg class="bs-check-icon" viewBox="0 0 24 24" width="16" height="16">
+                                                <path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5" />
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <span>@(stepIdx + 1)</span>
+                                        }
+                                    </div>
+                                    <span class="bs-step-label">@step.Title</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
 
                 <!-- Swipe Hint Lottie -->
                 @if (!_hasUserSwiped && ViewModel.CurrentStepNumber == 1 && !ViewModel.HasProjects)
@@ -119,35 +344,61 @@
                                                 }
                                                 else if (q.IsChoice && q.Options != null)
                                                 {
-                                                    <BuildSmart.SharedUI.Components.BsDropdown 
-                                                         TValue="string" 
-                                                         Options="q.RawOptions" 
-                                                         DisplayOptions="q.Options" 
-                                                         TranslateOptions="false" @bind-Value="q.Answer" 
-                                                         Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                                    @if (q.Options.Count <= 3)
+                                                    {
+                                                        <div class="bs-segmented-control mt-2">
+                                                            @for (int idx = 0; idx < q.Options.Count; idx++)
+                                                            {
+                                                                var index = idx;
+                                                                var optValue = q.RawOptions.Count > index ? q.RawOptions[index] : q.Options[index];
+                                                                var optText = q.Options[index];
+                                                                <button type="button" class="bs-segmented-btn @(q.Answer == optValue ? "active" : "")" @onclick="@(() => q.Answer = optValue)">
+                                                                    @optText
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <BuildSmart.SharedUI.Components.BsDropdown 
+                                                             TValue="string" 
+                                                             Options="q.RawOptions" 
+                                                             DisplayOptions="q.Options" 
+                                                             TranslateOptions="false" @bind-Value="q.Answer" 
+                                                             Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                                    }
                                                 }
                                                 else if (q.IsMultiSelect && q.Options != null)
                                                 {
-                                                    <div class="d-flex flex-column gap-2">
+                                                    <div class="bs-checkbox-container mt-2">
                                                         @for (int idx = 0; idx < q.Options.Count; idx++)
                                                          {
                                                              var index = idx;
                                                              var opt = q.Options[index];
-                                                             <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                                 <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{index}")" 
-                                                                        checked="@(q.IsOptionSelected(index))"
-                                                                        @onchange="@(e => q.ToggleMultiSelectOption(index, (bool)(e.Value ?? false)))" 
-                                                                        style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                                 <label class="form-check-label text-secondary" for="@($"check_{q.Id}_{index}")" style="cursor: pointer; padding-top: 2px;">@opt</label>
+                                                             var isChecked = q.IsOptionSelected(index);
+                                                             <div class="bs-checkbox-row @(isChecked ? "checked" : "")" @onclick="@(() => q.ToggleMultiSelectOption(index, !isChecked))">
+                                                                 <div class="bs-custom-checkbox">
+                                                                     @if (isChecked)
+                                                                     {
+                                                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                                             <polyline points="20 6 9 17 4 12"></polyline>
+                                                                         </svg>
+                                                                     }
+                                                                 </div>
+                                                                 <span class="bs-checkbox-label">@opt</span>
                                                              </div>
                                                          }
                                                     </div>
                                                 }
                                                 else if (q.IsBoolean)
                                                 {
-                                                    <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                        <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                        <label class="form-check-label text-secondary" for="@($"check_{q.Id}")" style="cursor: pointer; padding-top: 2px;">@Loc["JobWizard_Yes"]</label>
+                                                    <div class="bs-segmented-control mt-2">
+                                                        <button type="button" class="bs-segmented-btn @(q.BoolAnswer == true ? "active" : "")" @onclick="@(() => q.BoolAnswer = true)">
+                                                            @Loc["JobWizard_Yes"]
+                                                        </button>
+                                                        <button type="button" class="bs-segmented-btn @(q.BoolAnswer == false ? "active" : "")" @onclick="@(() => q.BoolAnswer = false)">
+                                                            @Loc["JobWizard_No"]
+                                                        </button>
                                                     </div>
                                                 }
                                             </div>
@@ -206,35 +457,61 @@
                                                 }
                                                 else if (q.IsChoice && q.Options != null)
                                                 {
-                                                    <BuildSmart.SharedUI.Components.BsDropdown 
-                                                         TValue="string" 
-                                                         Options="q.RawOptions" 
-                                                         DisplayOptions="q.Options" 
-                                                         TranslateOptions="false" @bind-Value="q.Answer" 
-                                                         Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                                    @if (q.Options.Count <= 3)
+                                                    {
+                                                        <div class="bs-segmented-control mt-2">
+                                                            @for (int idx = 0; idx < q.Options.Count; idx++)
+                                                            {
+                                                                var index = idx;
+                                                                var optValue = q.RawOptions.Count > index ? q.RawOptions[index] : q.Options[index];
+                                                                var optText = q.Options[index];
+                                                                <button type="button" class="bs-segmented-btn @(q.Answer == optValue ? "active" : "")" @onclick="@(() => q.Answer = optValue)">
+                                                                    @optText
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <BuildSmart.SharedUI.Components.BsDropdown 
+                                                             TValue="string" 
+                                                             Options="q.RawOptions" 
+                                                             DisplayOptions="q.Options" 
+                                                             TranslateOptions="false" @bind-Value="q.Answer" 
+                                                             Placeholder="@Loc["JobWizard_SelectOption"]" />
+                                                    }
                                                 }
                                                 else if (q.IsMultiSelect && q.Options != null)
                                                 {
-                                                    <div class="d-flex flex-column gap-2">
+                                                    <div class="bs-checkbox-container mt-2">
                                                         @for (int idx = 0; idx < q.Options.Count; idx++)
                                                          {
                                                              var index = idx;
                                                              var opt = q.Options[index];
-                                                             <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                                 <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}_{index}")" 
-                                                                        checked="@(q.IsOptionSelected(index))"
-                                                                        @onchange="@(e => q.ToggleMultiSelectOption(index, (bool)(e.Value ?? false)))" 
-                                                                        style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                                 <label class="form-check-label text-secondary" for="@($"check_{q.Id}_{index}")" style="cursor: pointer; padding-top: 2px;">@opt</label>
+                                                             var isChecked = q.IsOptionSelected(index);
+                                                             <div class="bs-checkbox-row @(isChecked ? "checked" : "")" @onclick="@(() => q.ToggleMultiSelectOption(index, !isChecked))">
+                                                                 <div class="bs-custom-checkbox">
+                                                                     @if (isChecked)
+                                                                     {
+                                                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                                             <polyline points="20 6 9 17 4 12"></polyline>
+                                                                         </svg>
+                                                                     }
+                                                                 </div>
+                                                                 <span class="bs-checkbox-label">@opt</span>
                                                              </div>
                                                          }
                                                     </div>
                                                 }
                                                 else if (q.IsBoolean)
                                                 {
-                                                    <div class="form-check" style="display: flex; align-items: center; gap: 10px;">
-                                                        <input class="form-check-input" type="checkbox" id="@($"check_{q.Id}")" @bind="q.BoolAnswer" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary);" />
-                                                        <label class="form-check-label text-secondary" for="@($"check_{q.Id}")" style="cursor: pointer; padding-top: 2px;">@Loc["JobWizard_Yes"]</label>
+                                                    <div class="bs-segmented-control mt-2">
+                                                        <button type="button" class="bs-segmented-btn @(q.BoolAnswer == true ? "active" : "")" @onclick="@(() => q.BoolAnswer = true)">
+                                                            @Loc["JobWizard_Yes"]
+                                                        </button>
+                                                        <button type="button" class="bs-segmented-btn @(q.BoolAnswer == false ? "active" : "")" @onclick="@(() => q.BoolAnswer = false)">
+                                                            @Loc["JobWizard_No"]
+                                                        </button>
                                                     </div>
                                                 }
                                             </div>
@@ -718,8 +995,16 @@
         return ViewModel.CurrentStepTitle;
     }
 
+    private double GetStepProgressPercentage()
+    {
+        if (ViewModel == null || ViewModel.TotalSteps <= 1) return 0;
+        double progress = ((double)ViewModel.CurrentStep / (ViewModel.TotalSteps - 1)) * 100.0;
+        return Math.Max(0, Math.Min(100, progress));
+    }
+
     private async Task ScrollToElement()
     {
+
         try
         {
             if (_module != null)
