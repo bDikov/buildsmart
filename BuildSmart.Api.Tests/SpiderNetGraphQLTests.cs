@@ -325,4 +325,66 @@ public class SpiderNetGraphQLTests : IClassFixture<TestApplicationFactory>
         mockSkuRepo.Verify(r => r.Delete(testSku), Times.Once);
         mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task SaveCategory_WithCustomIcon_PersistsIconInTemplateStructure()
+    {
+        // Arrange
+        var adminId = Guid.NewGuid();
+        var adminToken = TestTokenHelper.GenerateJwtToken(adminId, "admin@example.com", "Admin", _configuration);
+
+        ServiceCategory? savedCat = null;
+        var mockCatRepo = new Mock<IServiceCategoryRepository>();
+        mockCatRepo.Setup(r => r.AddAsync(It.IsAny<ServiceCategory>()))
+            .Callback<ServiceCategory>(c => savedCat = c)
+            .Returns(Task.CompletedTask);
+
+        var mockUnitOfWork = new Mock<IUnitOfWork>();
+        mockUnitOfWork.Setup(u => u.ServiceCategories).Returns(mockCatRepo.Object);
+        mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var client = CreateClient(services =>
+        {
+            services.RemoveAll(typeof(IUnitOfWork));
+            services.AddSingleton(mockUnitOfWork.Object);
+        }, adminToken);
+
+        var customTemplateWithIcon = "{\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"questions\": []\n}";
+
+        var requestBody = new
+        {
+            query = @"
+                mutation SaveCat($name: String!, $isGlobal: Boolean!, $templateStructure: String!) {
+                  saveCategory(name: $name, isGlobal: $isGlobal, templateStructure: $templateStructure) {
+                    id
+                    name
+                    templateStructure
+                  }
+                }",
+            variables = new
+            {
+                name = "Test Icon Category",
+                isGlobal = false,
+                templateStructure = customTemplateWithIcon
+            }
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+        {
+            Content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json")
+        };
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        var content = await response.Content.ReadAsStringAsync();
+        _output.WriteLine(content);
+        response.EnsureSuccessStatusCode();
+
+        var jsonResponse = JsonConvert.DeserializeObject<dynamic>(content);
+        Assert.Null(jsonResponse.errors);
+        string returnedTemplate = jsonResponse.data.saveCategory.templateStructure;
+        Assert.Contains("data:image/png;base64", returnedTemplate);
+    }
 }

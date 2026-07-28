@@ -1021,6 +1021,51 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		return list;
 	}
 
+	private (List<string> display, List<string> raw, List<string> icons, List<string> swatches) GetParsedOptions(JsonNode? node, string lang)
+	{
+		var display = new List<string>();
+		var raw = new List<string>();
+		var icons = new List<string>();
+		var swatches = new List<string>();
+
+		if (node == null) return (display, raw, icons, swatches);
+
+		JsonArray? arr = node as JsonArray;
+		if (node is JsonObject obj)
+		{
+			arr = obj[lang] as JsonArray ?? obj["bg"] as JsonArray;
+		}
+
+		if (arr != null)
+		{
+			foreach (var item in arr)
+			{
+				if (item is JsonObject optObj)
+				{
+					var textVal = GetLocalizedValue(optObj["text"], lang);
+					var rawVal = GetLocalizedValue(optObj["text"], "bg");
+					var iconVal = optObj["icon"]?.GetValue<string>() ?? "";
+					var swatchVal = optObj["swatch"]?.GetValue<string>() ?? "";
+
+					display.Add(textVal);
+					raw.Add(rawVal);
+					icons.Add(iconVal);
+					swatches.Add(swatchVal);
+				}
+				else if (item != null)
+				{
+					var val = item.GetValue<string>() ?? "";
+					display.Add(val);
+					raw.Add(val);
+					icons.Add("");
+					swatches.Add("");
+				}
+			}
+		}
+
+		return (display, raw, icons, swatches);
+	}
+
 	private List<WizardQuestionViewModel> ExtractQuestions(List<SelectableCategoryViewModel> categories)
 	{
 		var list = new List<WizardQuestionViewModel>();
@@ -1052,8 +1097,7 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 								var qText = GetLocalizedValue(qObj["text"], currentLang);
 								var qId = qObj["id"]?.GetValue<string>() ?? "";
 								
-								var qOptions = GetLocalizedOptions(qObj["options"], currentLang);
-								var qRawOptions = GetLocalizedOptions(qObj["options"], "bg");
+								var (qOptions, qRawOptions, qOptionIcons, qOptionSwatches) = GetParsedOptions(qObj["options"], currentLang);
 
 								if (_localizer != null && qOptions != null)
 								{
@@ -1071,6 +1115,8 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 									IsRequired = qObj["required"]?.GetValue<bool>() ?? false,
 									Options = qOptions,
 									RawOptions = qRawOptions,
+									OptionIcons = qOptionIcons,
+									OptionSwatches = qOptionSwatches,
 									Answer = qType == "boolean" ? "False" : "",
 									DependsOn = qObj["dependsOn"]?.GetValue<string>() ?? "",
 									DependsOnValue = GetLocalizedValue(qObj["dependsOnValue"], currentLang)

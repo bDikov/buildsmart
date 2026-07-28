@@ -27,6 +27,30 @@ public partial class WizardQuestionViewModel : ObservableObject
     
     public List<string> Options { get; set; } = new();
     public List<string> RawOptions { get; set; } = new();
+    public List<string> OptionIcons { get; set; } = new();
+    public List<string> OptionSwatches { get; set; } = new();
+
+    public string GetOptionIcon(int index)
+    {
+        if (index >= 0 && index < OptionIcons.Count && !string.IsNullOrWhiteSpace(OptionIcons[index]))
+        {
+            return OptionIcons[index];
+        }
+        if (index >= 0 && index < Options.Count)
+        {
+            return Options[index];
+        }
+        return string.Empty;
+    }
+
+    public string GetOptionSwatch(int index)
+    {
+        if (index >= 0 && index < OptionSwatches.Count && !string.IsNullOrWhiteSpace(OptionSwatches[index]))
+        {
+            return OptionSwatches[index];
+        }
+        return string.Empty;
+    }
 
     public bool IsText => Type != "choice" && Type != "boolean" && Type != "number" && Type != "multiselect";
     public bool IsChoice => Type == "choice";

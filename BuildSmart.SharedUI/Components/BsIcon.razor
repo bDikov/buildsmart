@@ -1,6 +1,11 @@
 @namespace BuildSmart.SharedUI.Components
+@using BuildSmart.SharedUI.Services
 
-@if (!string.IsNullOrEmpty(ResolvedIconKey))
+@if (IsImageUrl(ResolvedIconKey))
+{
+    <img src="@ResolveImageUrl(ResolvedIconKey)" class="bs-icon-img @Class" style="width: @(Size)px; height: @(Size)px; object-fit: contain; @Style" alt="icon" />
+}
+else if (!string.IsNullOrEmpty(ResolvedIconKey))
 {
     <span class="bs-icon-wrapper @Class" style="@Style">
         @switch (ResolvedIconKey)
@@ -93,6 +98,211 @@
                 </svg>
                 break;
 
+            case "wrench":
+            case "tools":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+                break;
+
+            case "drill":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 4h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4V6a2 2 0 0 0-2-2z" />
+                </svg>
+                break;
+
+            case "truck":
+            case "transport":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                </svg>
+                break;
+
+            case "window":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <line x1="12" y1="3" x2="12" y2="21" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                </svg>
+                break;
+
+            case "roof":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h20" />
+                    <path d="M4 20l8-14 8 14" />
+                    <path d="M9 12h6" />
+                </svg>
+                break;
+
+            case "fence":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 3l2 2v16H4V5l2-2" />
+                    <path d="M10 3l2 2v16h-2V5l2-2" />
+                    <path d="M16 3l2 2v16h-2V5l2-2" />
+                    <line x1="2" y1="8" x2="22" y2="8" />
+                    <line x1="2" y1="16" x2="22" y2="16" />
+                </svg>
+                break;
+
+            case "kitchen":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <circle cx="8" cy="7" r="1" fill="currentColor" />
+                    <circle cx="16" cy="7" r="1" fill="currentColor" />
+                </svg>
+                break;
+
+            case "bath":
+            case "bathroom":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1z" />
+                    <path d="M6 12V5a2 2 0 0 1 2-2h3" />
+                </svg>
+                break;
+
+            case "lock":
+            case "security":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                break;
+
+            case "sun-solar":
+            case "solar":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                </svg>
+                break;
+
+            case "tree-garden":
+            case "garden":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 19v3" />
+                    <path d="M12 19a7 7 0 1 0-7-7c0 2 1 3.5 2.5 4.5" />
+                    <path d="M12 19a7 7 0 1 1 7-7c0 2-1 3.5-2.5 4.5" />
+                </svg>
+                break;
+
+            case "flame-hvac":
+            case "hvac":
+            case "heating":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z" />
+                </svg>
+                break;
+
+            case "ruler-measure":
+            case "measure":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z" />
+                    <line x1="14.5" y1="12.5" x2="17.5" y2="15.5" />
+                    <line x1="11.5" y1="9.5" x2="14.5" y2="12.5" />
+                    <line x1="8.5" y1="6.5" x2="11.5" y2="9.5" />
+                    <line x1="5.5" y1="3.5" x2="8.5" y2="6.5" />
+                </svg>
+                break;
+
+            case "saw":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 4l-4 4-2-2-4 4-2-2-4 4v4h16V4z" />
+                </svg>
+                break;
+
+            case "ladder":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 2v20M16 2v20M8 6h8M8 11h8M8 16h8" />
+                </svg>
+                break;
+
+            case "bucket":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 9h16l-2 11H6L4 9z" />
+                    <path d="M12 2a5 5 0 0 0-5 5h10a5 5 0 0 0-5-5z" />
+                </svg>
+                break;
+
+            case "brush":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2l4 4L7 17H3v-4L14 2z" />
+                    <path d="M18 13v5a2 2 0 0 1-2 2H8" />
+                </svg>
+                break;
+
+            case "plug":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22v-5M9 8V2M15 8V2M6 8h12v5a6 6 0 0 1-12 0V8z" />
+                </svg>
+                break;
+
+            case "bulb":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+                </svg>
+                break;
+
+            case "shield":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                break;
+
+            case "fan":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 9A3 3 0 0 0 9 6H6a3 3 0 0 0 3 3v3" />
+                    <path d="M12 15a3 3 0 0 0 3 3h3a3 3 0 0 0-3-3v-3" />
+                    <path d="M9 12a3 3 0 0 0-3 3v3a3 3 0 0 0 3-3h3" />
+                    <path d="M15 12a3 3 0 0 0 3-3V6a3 3 0 0 0-3 3h-3" />
+                </svg>
+                break;
+
+            case "trash":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                break;
+
+            case "clipboard":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                </svg>
+                break;
+
+            case "box":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                break;
+
+            case "layers":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                    <polyline points="2 17 12 22 22 17" />
+                    <polyline points="2 12 12 17 22 12" />
+                </svg>
+                break;
+
+            case "sparkles":
+                <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                break;
+
             default:
                 <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="9" />
@@ -120,6 +330,43 @@
     [Parameter]
     public string Style { get; set; } = string.Empty;
 
+    private static bool IsImageUrl(string val)
+    {
+        if (string.IsNullOrWhiteSpace(val)) return false;
+        var v = val.Trim().ToLowerInvariant();
+        return v.StartsWith("http://") || 
+               v.StartsWith("https://") || 
+               v.StartsWith("data:image/") || 
+               v.StartsWith("/") || 
+               v.StartsWith("uploads/") || 
+               v.StartsWith("images/") || 
+               v.EndsWith(".png") || 
+               v.EndsWith(".svg") || 
+               v.EndsWith(".jpg") || 
+               v.EndsWith(".jpeg") || 
+               v.EndsWith(".webp") ||
+               v.EndsWith(".gif");
+    }
+
+    private static string ResolveImageUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return url;
+        var trimmed = url.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return trimmed;
+        }
+
+        var baseUrl = ApiConfig.GetBaseUrl().TrimEnd('/');
+        if (trimmed.StartsWith("/"))
+        {
+            return $"{baseUrl}{trimmed}";
+        }
+        return $"{baseUrl}/{trimmed}";
+    }
+
     private string ResolvedIconKey
     {
         get
@@ -132,6 +379,8 @@
 
     private static string NormalizeKey(string key)
     {
+        if (IsImageUrl(key)) return key.Trim();
+
         var k = key.ToLowerInvariant().Trim();
         if (k.Contains("paint") || k.Contains("боя") || k.Contains("шпакл")) return "paint-roller";
         if (k.Contains("plumb") || k.Contains("вик") || k.Contains("вода")) return "water-drop";
@@ -143,11 +392,26 @@
         if (k.Contains("bed") || k.Contains("спалн")) return "bed";
         if (k.Contains("door") || k.Contains("коридор") || k.Contains("антре") || k.Contains("врати")) return "door";
         if (k.Contains("house") || k.Contains("всички")) return "house";
+        if (k.Contains("drill") || k.Contains("бормаши")) return "drill";
+        if (k.Contains("wrench") || k.Contains("инструмент")) return "wrench";
+        if (k.Contains("truck") || k.Contains("транспорт") || k.Contains("извоз")) return "truck";
+        if (k.Contains("window") || k.Contains("прозор")) return "window";
+        if (k.Contains("roof") || k.Contains("покрив")) return "roof";
+        if (k.Contains("fence") || k.Contains("ограда")) return "fence";
+        if (k.Contains("kitchen") || k.Contains("кухн")) return "kitchen";
+        if (k.Contains("bath") || k.Contains("баня")) return "bath";
+        if (k.Contains("lock") || k.Contains("заключ")) return "lock";
+        if (k.Contains("solar") || k.Contains("слънч")) return "sun-solar";
+        if (k.Contains("garden") || k.Contains("градин") || k.Contains("двор")) return "tree-garden";
+        if (k.Contains("hvac") || k.Contains("отопл") || k.Contains("климат")) return "flame-hvac";
+        if (k.Contains("measure") || k.Contains("мер")) return "ruler-measure";
         return k;
     }
 
     private static string ResolveFromText(string text)
     {
+        if (IsImageUrl(text)) return text.Trim();
+
         var t = text.ToLowerInvariant();
         if (t.Contains("всички") || t.Contains("all rooms")) return "house";
         if (t.Contains("хол") || t.Contains("всекидневна") || t.Contains("living")) return "sofa";
@@ -159,6 +423,10 @@
         if (t.Contains("плоч") || t.Contains("настилк") || t.Contains("tile")) return "tile";
         if (t.Contains("кърт") || t.Contains("извоз") || t.Contains("demol")) return "hammer";
         if (t.Contains("сухо") || t.Contains("картон") || t.Contains("drywall")) return "wall";
+        if (t.Contains("покрив") || t.Contains("roof")) return "roof";
+        if (t.Contains("прозор") || t.Contains("window")) return "window";
+        if (t.Contains("баня") || t.Contains("bath")) return "bath";
+        if (t.Contains("кухн") || t.Contains("kitchen")) return "kitchen";
         return "house";
     }
 }

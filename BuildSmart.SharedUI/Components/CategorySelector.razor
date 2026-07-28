@@ -14,7 +14,7 @@
 
                 <div class="bs-category-item-card @(cat.IsSelected ? "selected" : "")" @onclick="@(() => cat.IsSelected = !cat.IsSelected)">
                     <div class="bs-category-icon-box">
-                        <BuildSmart.SharedUI.Components.BsIcon TextFallback="@catName" Size="24" />
+                        <BuildSmart.SharedUI.Components.BsIcon Name="@cat.Icon" TextFallback="@catName" Size="24" />
                     </div>
                     <span class="bs-category-title">@catName</span>
                     <div class="bs-category-badge">

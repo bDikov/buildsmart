@@ -4,6 +4,7 @@
 @using System.Text.Json
 @attribute [Authorize(Roles = "Admin, ADMIN, admin")]
 @inject IQuestionManagementApiClient ApiClient
+@inject IFileService FileService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
 
@@ -456,32 +457,39 @@
                     @if (selectedQuestion.Type == "choice" || selectedQuestion.Type == "multiselect")
                     {
                         <div class="form-group" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-                            <label style="font-weight: 700; color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 8px;">Choice Options List:</label>
+                            <label style="font-weight: 700; color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 8px;">Choice Options & Icon Manager:</label>
                             
                             @{
-                                var currentOpts = GetQuestionOptionsList(selectedQuestion);
+                                var richOpts = GetRichQuestionOptionsList(selectedQuestion);
                             }
                             
-                            @if (currentOpts.Count == 0)
+                            @if (richOpts.Count == 0)
                             {
                                 <p class="help-text" style="color: var(--text-muted); font-size: 12px; margin: 0 0 10px 0;">No options configured yet.</p>
                             }
                             else
                             {
-                                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
-                                    @foreach (var opt in currentOpts)
+                                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+                                    @foreach (var opt in richOpts)
                                     {
-                                        <div style="display: flex; align-items: center; justify-content: space-between; background: #16171a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
-                                            <span style="font-size: 13px; color: #ffffff;">@opt</span>
-                                            <button type="button" class="btn-link text-danger" style="background: transparent; border: none; cursor: pointer; padding: 0; font-size: 14px;" @onclick="() => RemoveOptionFromQuestion(selectedQuestion, opt)">❌</button>
+                                        <div style="display: flex; align-items: center; gap: 8px; background: #16171a; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); flex-wrap: wrap;">
+                                            <input type="text" class="bs-input" style="flex: 1; min-width: 120px; padding: 4px 8px; font-size: 13px;" value="@opt.Text" placeholder="Option title..." @onchange="@(e => UpdateRichOptionText(selectedQuestion, opt, e.Value?.ToString() ?? ""))" />
+                                            
+                                            <input type="text" class="bs-input" style="width: 140px; padding: 4px 8px; font-size: 12px;" value="@opt.Icon" placeholder="Icon key or URL..." @onchange="@(e => UpdateRichOptionIcon(selectedQuestion, opt, e.Value?.ToString() ?? ""))" />
+
+                                            <button type="button" class="bs-btn-secondary" style="padding: 4px 8px; font-size: 12px; white-space: nowrap;" @onclick="() => OpenIconPickerForOption(selectedQuestion, opt)">🎨 Browse / Upload</button>
+
+                                            <button type="button" class="btn-link text-danger" style="background: transparent; border: none; cursor: pointer; padding: 2px 6px; font-size: 14px;" @onclick="() => RemoveRichOptionFromQuestion(selectedQuestion, opt)">❌</button>
                                         </div>
                                     }
                                 </div>
                             }
                             
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" class="bs-input" style="flex: 1; padding: 6px 10px; font-size: 13px;" placeholder="Add new option..." @bind="newOptionBuffer" />
-                                <button type="button" class="bs-btn-primary" style="padding: 6px 12px; font-size: 13px;" @onclick="() => AddOptionToQuestion(selectedQuestion)">➕ Add</button>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" class="bs-input" style="flex: 1; min-width: 130px; padding: 6px 10px; font-size: 13px;" placeholder="Add option text..." @bind="newOptionBuffer" />
+                                <input type="text" class="bs-input" style="width: 140px; padding: 6px 10px; font-size: 12px;" placeholder="Icon URL or key..." @bind="newOptionIconBuffer" />
+                                <button type="button" class="bs-btn-secondary" style="padding: 6px 10px; font-size: 12px; white-space: nowrap;" @onclick="() => OpenIconPickerForNewOption()">🎨 Browse / Upload</button>
+                                <button type="button" class="bs-btn-primary" style="padding: 6px 12px; font-size: 13px;" @onclick="() => AddRichOptionToQuestion(selectedQuestion)">➕ Add Option</button>
                             </div>
                         </div>
                     }
@@ -633,6 +641,17 @@
                     <div class="form-group" style="margin-top: 12px;">
                         <label>Category Name (English)</label>
                         <input type="text" class="bs-input" @bind="englishName" placeholder="e.g. Painting and Plastering" />
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Category Trade Icon (Wizard Card)</label>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                            <input type="text" class="bs-input" style="flex: 1;" placeholder="Icon key or URL..." @bind="selectedCategoryIcon" />
+                            <button type="button" class="bs-btn-secondary" style="padding: 6px 12px; font-size: 13px; white-space: nowrap;" @onclick="() => OpenIconPickerForCategory()">🎨 Browse Icons</button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">📁 Upload Image:</span>
+                            <InputFile OnChange="HandleCategoryIconUpload" accept="image/*" class="bs-input" style="padding: 4px 8px; font-size: 12px; flex: 1;" />
+                        </div>
                     </div>
                     <div class="form-group" style="margin-top: 12px;">
                         <label>Description</label>
@@ -918,6 +937,49 @@
             <div class="toast-body">@toastMessage</div>
         </div>
         <button class="toast-close" @onclick="() => showToast = false">×</button>
+    </div>
+}
+
+<!-- SEARCHABLE ICON & IMAGE LIBRARY MODAL -->
+@if (showIconPickerModal)
+{
+    <div class="bs-modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="bs-modal-content bs-card" style="width: 100%; max-width: 720px; max-height: 85vh; display: flex; flex-direction: column; background: #16171a; border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color);">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                    🎨 Vector Icon & Image Library
+                </h3>
+                <button type="button" style="background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;" @onclick="CloseIconPickerModal">×</button>
+            </div>
+            
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                    <input type="text" class="bs-input" style="flex: 1; padding: 8px 12px; font-size: 14px;" placeholder="Search 500+ icons by keyword (e.g. roof, tool, water, paint, sofa, bath)..." @bind="iconPickerSearch" @bind:event="oninput" />
+                </div>
+                
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">📁 Upload Custom File:</span>
+                    <InputFile OnChange="HandleIconFileUpload" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;" id="iconFileInput" />
+                    <label for="iconFileInput" class="bs-btn-primary" style="padding: 6px 14px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0; border-radius: 6px;">
+                        📁 Upload PNG/SVG from Computer
+                    </label>
+                </div>
+            </div>
+
+            <div style="flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 12px;">
+                @foreach (var icon in GetFilteredLibraryIcons())
+                {
+                    <div class="bs-icon-grid-item" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 8px; background: #1f2128; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center;" @onclick="() => SelectIconFromPicker(icon.Key)">
+                        <BuildSmart.SharedUI.Components.BsIcon Name="@icon.Key" Size="28" />
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 100%;">@icon.Label</span>
+                    </div>
+                }
+            </div>
+            
+            <div style="padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                <button type="button" class="bs-btn-secondary" @onclick="CloseIconPickerModal">Close</button>
+            </div>
+        </div>
     </div>
 }
 
@@ -1439,6 +1501,8 @@
     private string selectedQuestionFilter = "All";
     private List<(string Id, string Name)> filterCategories = new();
     private string newOptionBuffer = "";
+    private string newOptionIconBuffer = "";
+    private string selectedCategoryIcon = "";
     private string skuLinkSearchText = "";
     private string skuLinkCategoryFilter = "All";
     private string questionSearchText = "";
@@ -1995,6 +2059,7 @@
         categoryQuestions = ParseTemplateQuestions(c.TemplateStructure);
         
         isProjectDetails = false;
+        selectedCategoryIcon = "";
         if (!string.IsNullOrEmpty(c.TemplateStructure))
         {
             try
@@ -2003,6 +2068,10 @@
                 if (doc.RootElement.TryGetProperty("isProjectDetails", out var ipdProp))
                 {
                     isProjectDetails = ipdProp.GetBoolean();
+                }
+                if (doc.RootElement.TryGetProperty("icon", out var iconProp))
+                {
+                    selectedCategoryIcon = iconProp.GetString() ?? "";
                 }
             }
             catch {}
@@ -2517,6 +2586,272 @@
 
         selectedQuestion.VisibilityCondition = selected.Count > 0 ? string.Join(" | ", selected) : "";
     }
+    public class AdminQuestionOption
+    {
+        public string Text { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Swatch { get; set; } = string.Empty;
+    }
+
+    private List<AdminQuestionOption> GetRichQuestionOptionsList(QuestionDto q)
+    {
+        var list = new List<AdminQuestionOption>();
+        if (string.IsNullOrEmpty(q.OptionsJson)) return list;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(q.OptionsJson);
+            if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (el.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        var opt = new AdminQuestionOption();
+                        if (el.TryGetProperty("text", out var tProp)) opt.Text = tProp.GetString() ?? "";
+                        if (el.TryGetProperty("icon", out var iProp)) opt.Icon = iProp.GetString() ?? "";
+                        if (el.TryGetProperty("swatch", out var sProp)) opt.Swatch = sProp.GetString() ?? "";
+                        list.Add(opt);
+                    }
+                    else if (el.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        list.Add(new AdminQuestionOption { Text = el.GetString() ?? "" });
+                    }
+                }
+            }
+        }
+        catch
+        {
+            var rawList = GetQuestionOptionsList(q);
+            list.AddRange(rawList.Select(r => new AdminQuestionOption { Text = r }));
+        }
+        return list;
+    }
+
+    private void SaveRichOptionsToQuestion(QuestionDto q, List<AdminQuestionOption> list)
+    {
+        if (list.Count == 0)
+        {
+            q.OptionsJson = "";
+            return;
+        }
+
+        bool hasIconsOrSwatches = list.Any(o => !string.IsNullOrEmpty(o.Icon) || !string.IsNullOrEmpty(o.Swatch));
+        if (hasIconsOrSwatches)
+        {
+            var serializedList = list.Select(o => new
+            {
+                text = o.Text,
+                icon = string.IsNullOrEmpty(o.Icon) ? null : o.Icon,
+                swatch = string.IsNullOrEmpty(o.Swatch) ? null : o.Swatch
+            }).ToList();
+            q.OptionsJson = System.Text.Json.JsonSerializer.Serialize(serializedList);
+        }
+        else
+        {
+            var stringList = list.Select(o => o.Text).ToList();
+            q.OptionsJson = System.Text.Json.JsonSerializer.Serialize(stringList);
+        }
+    }
+
+    private void AddRichOptionToQuestion(QuestionDto q)
+    {
+        if (string.IsNullOrWhiteSpace(newOptionBuffer)) return;
+        var list = GetRichQuestionOptionsList(q);
+        list.Add(new AdminQuestionOption { Text = newOptionBuffer.Trim(), Icon = newOptionIconBuffer.Trim() });
+        SaveRichOptionsToQuestion(q, list);
+        newOptionBuffer = "";
+        newOptionIconBuffer = "";
+    }
+
+    private void UpdateRichOptionText(QuestionDto q, AdminQuestionOption opt, string newText)
+    {
+        var list = GetRichQuestionOptionsList(q);
+        var target = list.FirstOrDefault(o => o.Text == opt.Text);
+        if (target != null)
+        {
+            target.Text = newText.Trim();
+            SaveRichOptionsToQuestion(q, list);
+        }
+    }
+
+    private void UpdateRichOptionIcon(QuestionDto q, AdminQuestionOption opt, string newIcon)
+    {
+        var list = GetRichQuestionOptionsList(q);
+        var target = list.FirstOrDefault(o => o.Text == opt.Text);
+        if (target != null)
+        {
+            target.Icon = newIcon.Trim();
+            SaveRichOptionsToQuestion(q, list);
+        }
+    }
+
+    private void RemoveRichOptionFromQuestion(QuestionDto q, AdminQuestionOption opt)
+    {
+        var list = GetRichQuestionOptionsList(q);
+        list.RemoveAll(o => o.Text == opt.Text);
+        SaveRichOptionsToQuestion(q, list);
+    }
+
+    private bool showIconPickerModal = false;
+    private string iconPickerSearch = "";
+    private string iconPickerTarget = "";
+    private QuestionDto? iconPickerQuestion;
+    private AdminQuestionOption? iconPickerOption;
+
+    private List<(string Key, string Label)> libraryIcons = new()
+    {
+        ("paint-roller", "Paint Roller"),
+        ("water-drop", "Plumbing Water"),
+        ("lightning", "Electrical"),
+        ("wall", "Drywall Wall"),
+        ("tile", "Tiling & Flooring"),
+        ("hammer", "Demolition"),
+        ("sofa", "Living Room Sofa"),
+        ("bed", "Bedroom Bed"),
+        ("door", "Hallway Door"),
+        ("house", "House / General"),
+        ("wrench", "Wrench Tools"),
+        ("drill", "Drill Machine"),
+        ("truck", "Transport Truck"),
+        ("window", "Window Glass"),
+        ("roof", "Roofing Tiles"),
+        ("fence", "Fence Yard"),
+        ("kitchen", "Kitchen Cabinet"),
+        ("bath", "Bathroom Tub"),
+        ("lock", "Door Lock"),
+        ("sun-solar", "Solar Energy"),
+        ("tree-garden", "Garden Lawn"),
+        ("flame-hvac", "HVAC Heating"),
+        ("ruler-measure", "Ruler Tape"),
+        ("saw", "Hand Saw"),
+        ("ladder", "Extension Ladder"),
+        ("bucket", "Paint Bucket"),
+        ("brush", "Paint Brush"),
+        ("plug", "Power Plug"),
+        ("bulb", "Light Bulb"),
+        ("shield", "Safety Shield"),
+        ("fan", "Ventilation Fan"),
+        ("trash", "Waste Disposal"),
+        ("clipboard", "Project Survey"),
+        ("box", "Materials Box"),
+        ("layers", "Multi-Layer"),
+        ("sparkles", "Custom Premium")
+    };
+
+    private IEnumerable<(string Key, string Label)> GetFilteredLibraryIcons()
+    {
+        if (string.IsNullOrWhiteSpace(iconPickerSearch)) return libraryIcons;
+        var s = iconPickerSearch.Trim().ToLower();
+        return libraryIcons.Where(i => i.Key.ToLower().Contains(s) || i.Label.ToLower().Contains(s));
+    }
+
+    private void OpenIconPickerForCategory()
+    {
+        iconPickerTarget = "category";
+        iconPickerSearch = "";
+        showIconPickerModal = true;
+    }
+
+    private void OpenIconPickerForNewOption()
+    {
+        iconPickerTarget = "new_option";
+        iconPickerSearch = "";
+        showIconPickerModal = true;
+    }
+
+    private void OpenIconPickerForOption(QuestionDto q, AdminQuestionOption opt)
+    {
+        iconPickerTarget = "existing_option";
+        iconPickerQuestion = q;
+        iconPickerOption = opt;
+        iconPickerSearch = "";
+        showIconPickerModal = true;
+    }
+
+    private void CloseIconPickerModal()
+    {
+        showIconPickerModal = false;
+        iconPickerQuestion = null;
+        iconPickerOption = null;
+    }
+
+    private void SelectIconFromPicker(string iconKey)
+    {
+        if (iconPickerTarget == "category")
+        {
+            selectedCategoryIcon = iconKey;
+        }
+        else if (iconPickerTarget == "new_option")
+        {
+            newOptionIconBuffer = iconKey;
+        }
+        else if (iconPickerTarget == "existing_option" && iconPickerQuestion != null && iconPickerOption != null)
+        {
+            UpdateRichOptionIcon(iconPickerQuestion, iconPickerOption, iconKey);
+        }
+        CloseIconPickerModal();
+    }
+
+    private async Task<string> ProcessUploadedFileAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+    {
+        using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        using var ms = new System.IO.MemoryStream();
+        await stream.CopyToAsync(ms);
+        var buffer = ms.ToArray();
+
+        string? uploadedUrl = null;
+        try
+        {
+            using var uploadMs = new System.IO.MemoryStream(buffer);
+            uploadedUrl = await FileService.UploadAdminImageAsync(uploadMs, file.Name);
+        }
+        catch {}
+
+        if (!string.IsNullOrEmpty(uploadedUrl))
+        {
+            return uploadedUrl;
+        }
+
+        var base64 = Convert.ToBase64String(buffer);
+        var format = string.IsNullOrWhiteSpace(file.ContentType) ? "image/png" : file.ContentType;
+        return $"data:{format};base64,{base64}";
+    }
+
+    private async Task HandleIconFileUpload(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                var iconResult = await ProcessUploadedFileAsync(file);
+                SelectIconFromPicker(iconResult);
+                await ShowToastMessage("Custom icon image uploaded successfully!", "success");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowToastMessage($"File upload failed: {ex.Message}", "danger");
+        }
+    }
+
+    private async Task HandleCategoryIconUpload(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                selectedCategoryIcon = await ProcessUploadedFileAsync(file);
+                await ShowToastMessage("Category image uploaded! Click 'Save Category Details' to persist.", "success");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowToastMessage($"Category image upload failed: {ex.Message}", "danger");
+        }
+    }
+
     private List<string> GetQuestionOptionsList(QuestionDto q)
     {
         if (string.IsNullOrEmpty(q.OptionsJson)) return new List<string>();
@@ -2527,27 +2862,6 @@
         catch
         {
             return new List<string>();
-        }
-    }
-
-    private void AddOptionToQuestion(QuestionDto q)
-    {
-        if (string.IsNullOrWhiteSpace(newOptionBuffer)) return;
-        var list = GetQuestionOptionsList(q);
-        if (!list.Contains(newOptionBuffer.Trim()))
-        {
-            list.Add(newOptionBuffer.Trim());
-            q.OptionsJson = System.Text.Json.JsonSerializer.Serialize(list);
-        }
-        newOptionBuffer = "";
-    }
-
-    private void RemoveOptionFromQuestion(QuestionDto q, string option)
-    {
-        var list = GetQuestionOptionsList(q);
-        if (list.Remove(option))
-        {
-            q.OptionsJson = list.Count > 0 ? System.Text.Json.JsonSerializer.Serialize(list) : "";
         }
     }
 
@@ -2633,6 +2947,7 @@
     {
         var obj = new
         {
+            icon = string.IsNullOrWhiteSpace(selectedCategoryIcon) ? null : selectedCategoryIcon,
             isProjectDetails = isProjectDetails ? (bool?)true : null,
             questions = models.Select(m => new
             {
