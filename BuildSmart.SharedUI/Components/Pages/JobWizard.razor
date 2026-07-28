@@ -89,6 +89,19 @@
         color: var(--text-muted);
     }
 
+    .bs-horizontal-step-item.completed {
+        cursor: pointer;
+    }
+
+    .bs-horizontal-step-item.completed:hover .bs-step-circle {
+        transform: scale(1.15);
+        box-shadow: 0 0 16px rgba(110, 63, 243, 0.6);
+    }
+
+    .bs-horizontal-step-item.completed:hover .bs-step-label {
+        color: var(--color-primary);
+    }
+
     .bs-horizontal-step-item.completed .bs-step-circle {
         background-color: var(--color-primary);
         border-color: var(--color-primary);
@@ -252,12 +265,23 @@
         color: var(--color-primary);
     }
 
-    .bs-stepper-value {
+    .bs-stepper-value, .bs-stepper-input {
         font-size: 18px;
         font-weight: 700;
         color: var(--text-primary);
-        min-width: 30px;
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 100%;
+        min-width: 50px;
         text-align: center;
+        -moz-appearance: textfield;
+    }
+
+    .bs-stepper-input::-webkit-outer-spin-button,
+    .bs-stepper-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 
     /* Visual Option Cards Grid (Rooms & Services) */
@@ -275,14 +299,17 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        padding: 16px 10px;
+        padding: 18px 12px;
         background-color: var(--bg-card-alt);
         border: 1px solid var(--border-color);
         border-radius: 14px;
         cursor: pointer;
         transition: all 0.2s ease;
         text-align: center;
-        min-height: 100px;
+        min-height: 110px;
+        height: auto;
+        word-break: break-word;
+        overflow: hidden;
         user-select: none;
     }
 
@@ -418,7 +445,7 @@
         }
         else
         {
-            <div class="container py-4" style="position: relative; min-height: 80vh; user-select: none; -webkit-user-select: none;">
+            <div class="container py-4" style="position: relative; min-height: 80vh; padding-bottom: 120px; user-select: none; -webkit-user-select: none;">
                 
                 <!-- Progress Bar & Trust Badges (Unified Block) -->
                 <BuildSmart.SharedUI.Components.ProgressCard 
@@ -442,7 +469,9 @@
                                 var isCompleted = stepIdx < ViewModel.CurrentStep;
                                 var isActive = stepIdx == ViewModel.CurrentStep;
                                 
-                                <div class="bs-horizontal-step-item @(isActive ? "active" : (isCompleted ? "completed" : "pending"))">
+                                <div class="bs-horizontal-step-item @(isActive ? "active" : (isCompleted ? "completed" : "pending"))"
+                                     style="@(isCompleted ? "cursor: pointer;" : "")"
+                                     @onclick="@(() => HandleStepHeaderClick(stepIdx))">
                                     <div class="bs-step-circle">
                                         @if (isCompleted)
                                         {
@@ -517,7 +546,7 @@
                                                 {
                                                     <div class="bs-stepper-control mt-2">
                                                         <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, -1))">—</button>
-                                                        <span class="bs-stepper-value">@(int.TryParse(q.Answer, out var nVal) ? nVal : 0)</span>
+                                                        <input type="number" class="bs-stepper-input" min="0" max="9999" placeholder="0" @bind="q.Answer" @bind:event="oninput" />
                                                         <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, 1))">+</button>
                                                     </div>
                                                 }
@@ -662,7 +691,7 @@
                                                 {
                                                     <div class="bs-stepper-control mt-2">
                                                         <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, -1))">—</button>
-                                                        <span class="bs-stepper-value">@(int.TryParse(q.Answer, out var nVal) ? nVal : 0)</span>
+                                                        <input type="number" class="bs-stepper-input" min="0" max="9999" placeholder="0" @bind="q.Answer" @bind:event="oninput" />
                                                         <button type="button" class="bs-stepper-btn" @onclick="@(() => ChangeNumberAnswer(q, 1))">+</button>
                                                     </div>
                                                 }
@@ -1156,6 +1185,20 @@
         {
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task HandleStepHeaderClick(int stepIdx)
+    {
+        if (ViewModel == null || stepIdx >= ViewModel.CurrentStep) return;
+
+        _hasUserSwiped = true;
+        _swipeTransition = "transform 0.3s ease";
+        _currentSwipeX = 1200;
+        _currentSwipeRotation = 10;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(200);
+
+        ViewModel.JumpToStepCommand.Execute(stepIdx);
     }
 
     private async Task HandleNextClick()

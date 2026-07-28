@@ -683,6 +683,27 @@ public partial class JobWizardViewModel : ObservableObject, IQueryAttributable
 		}
 	}
 
+	[RelayCommand]
+	public void JumpToStep(int targetStepIndex)
+	{
+		if (targetStepIndex < 0 || targetStepIndex >= _wizardSteps.Count || targetStepIndex == CurrentStep) return;
+
+		if (targetStepIndex <= CurrentStep)
+		{
+			if (CurrentStep < _wizardSteps.Count && _wizardSteps[CurrentStep].Type == WizardStepType.Questions)
+			{
+				foreach (var q in Questions)
+				{
+					if (q.Id != null)
+						_masterAnswerKey[q.Id] = q.Answer ?? "";
+				}
+			}
+
+			CurrentStep = targetStepIndex;
+			LoadStepData(CurrentStep);
+		}
+	}
+
 	private void LoadStepData(int stepIndex)
 	{
 		var step = _wizardSteps[stepIndex];

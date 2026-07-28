@@ -68,8 +68,25 @@ public class DbStringLocalizer : IStringLocalizer
         var isBulgarian = culture.StartsWith("bg", StringComparison.OrdinalIgnoreCase) || 
                           parentCulture.StartsWith("bg", StringComparison.OrdinalIgnoreCase);
 
-        if (!isBulgarian)
+        // Fallback for built-in JobWizard keys if missing in DB cache
+        if (isBulgarian)
         {
+            if (key == "JobWizard_No") return "Не";
+            if (key == "JobWizard_Yes") return "Да";
+            if (key == "JobWizard_SaveAndViewOffer") return "Запази и виж офертата";
+            if (key == "JobWizard_TypeAnswerHere") return "Въведете вашия отговор тук...";
+            if (key == "JobWizard_CategoryLabel") return "Изберете категория услуга";
+            if (key == "JobWizard_SelectOption") return "Изберете опция";
+        }
+        else
+        {
+            if (key == "JobWizard_No") return "No";
+            if (key == "JobWizard_Yes") return "Yes";
+            if (key == "JobWizard_SaveAndViewOffer") return "Save & View Offer";
+            if (key == "JobWizard_TypeAnswerHere") return "Type your answer here...";
+            if (key == "JobWizard_CategoryLabel") return "Select service category";
+            if (key == "JobWizard_SelectOption") return "Select an option";
+
             return _cacheService.Get(key, "en");
         }
 

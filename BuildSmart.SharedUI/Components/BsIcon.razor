@@ -305,9 +305,7 @@ else if (!string.IsNullOrEmpty(ResolvedIconKey))
 
             default:
                 <svg viewBox="0 0 24 24" width="@Size" height="@Size" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
                 break;
         }
@@ -425,8 +423,12 @@ else if (!string.IsNullOrEmpty(ResolvedIconKey))
         if (t.Contains("сухо") || t.Contains("картон") || t.Contains("drywall")) return "wall";
         if (t.Contains("покрив") || t.Contains("roof")) return "roof";
         if (t.Contains("прозор") || t.Contains("window")) return "window";
-        if (t.Contains("баня") || t.Contains("bath")) return "bath";
+        if (t.Contains("баня") || t.Contains("bath") || t.Contains("мивк") || t.Contains("тоалетн")) return "bath";
         if (t.Contains("кухн") || t.Contains("kitchen")) return "kitchen";
-        return "house";
+        if (t.Contains("сушил") || t.Contains("бойлер") || t.Contains("климат")) return "flame-hvac";
+        if (t.Contains("лунич") || t.Contains("осветл") || t.Contains("плафон") || t.Contains("led") || t.Contains("крушк")) return "bulb";
+        if (t.Contains("тухла") || t.Contains("бетон") || t.Contains("панел") || t.Contains("гипсокартон")) return "wall";
+        if (t.Contains("достъп") || t.Contains("асансьор") || t.Contains("паркинг") || t.Contains("транспорт")) return "truck";
+        return "sparkles";
     }
 }
