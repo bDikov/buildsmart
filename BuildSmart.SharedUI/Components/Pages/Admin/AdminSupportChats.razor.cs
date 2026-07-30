@@ -53,6 +53,7 @@ public partial class AdminSupportChats : ComponentBase, IAsyncDisposable
                     ProjectId = c.ProjectId,
                     ProjectTitle = c.ProjectTitle,
                     HomeownerName = c.HomeownerName,
+                    HomeownerEmail = c.HomeownerEmail,
                     HomeownerId = c.HomeownerId,
                     LatestMessageText = c.LatestMessageText,
                     LatestMessageTime = c.LatestMessageTime,
@@ -131,6 +132,7 @@ public partial class AdminSupportChats : ComponentBase, IAsyncDisposable
 
         return _activeChats.Where(c =>
             c.HomeownerName.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+            c.HomeownerEmail.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
             c.ProjectTitle.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
             c.LatestMessageText.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)
         ).ToList();
@@ -289,6 +291,7 @@ public class ActiveChatState
     public Guid ProjectId { get; set; }
     public string ProjectTitle { get; set; } = string.Empty;
     public string HomeownerName { get; set; } = string.Empty;
+    public string HomeownerEmail { get; set; } = string.Empty;
     public Guid HomeownerId { get; set; }
     public string LatestMessageText { get; set; } = string.Empty;
     public DateTimeOffset? LatestMessageTime { get; set; }

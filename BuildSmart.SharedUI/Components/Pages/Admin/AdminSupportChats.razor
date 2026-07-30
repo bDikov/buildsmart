@@ -136,7 +136,13 @@
                         </div>
                         <div class="chat-details">
                             <div class="chat-details-header">
-                                <span class="chat-user-name">@chat.HomeownerName</span>
+                                <span class="chat-user-name">
+                                    @chat.HomeownerName
+                                    @if (!string.IsNullOrEmpty(chat.HomeownerEmail))
+                                    {
+                                        <span class="text-muted ms-1 fw-normal" style="font-size: 0.8em;">(@chat.HomeownerEmail)</span>
+                                    }
+                                </span>
                                 @if (chat.LatestMessageTime.HasValue)
                                 {
                                     <span class="chat-time-stamp">@FormatTime(chat.LatestMessageTime.Value)</span>

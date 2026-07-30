@@ -36,6 +36,7 @@ type ProjectChatSummary {
   projectId: UUID!
   projectTitle: String!
   homeownerName: String!
+  homeownerEmail: String!
   homeownerId: UUID!
   latestMessageText: String!
   latestMessageTime: DateTime

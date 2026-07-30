@@ -397,12 +397,13 @@ public class Query
 	{
 		var activeChats = await context.Projects
 			.Include(p => p.Homeowner)
-			.Where(p => context.ProjectMessages.Any(m => m.ProjectId == p.Id && m.SenderId == p.HomeownerId))
+			.Where(p => context.ProjectMessages.Any(m => m.ProjectId == p.Id))
 			.Select(p => new ProjectChatSummary
 			{
 				ProjectId = p.Id,
 				ProjectTitle = p.Title,
 				HomeownerName = $"{p.Homeowner.FirstName} {p.Homeowner.LastName}",
+				HomeownerEmail = p.Homeowner.Email ?? string.Empty,
 				HomeownerId = p.HomeownerId,
 				LatestMessageText = context.ProjectMessages
 					.Where(m => m.ProjectId == p.Id)
@@ -499,6 +500,7 @@ public class ProjectChatSummary
 	public Guid ProjectId { get; set; }
 	public string ProjectTitle { get; set; } = string.Empty;
 	public string HomeownerName { get; set; } = string.Empty;
+	public string HomeownerEmail { get; set; } = string.Empty;
 	public Guid HomeownerId { get; set; }
 	public string LatestMessageText { get; set; } = string.Empty;
 	public DateTime? LatestMessageTime { get; set; }
