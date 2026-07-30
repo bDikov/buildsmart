@@ -24,7 +24,14 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     private bool _shouldScrollToBottom = false;
     private bool _isGuest = false;
 
-    protected override async Task OnInitializedAsync()
+    private Guid? _activeLoadedProjectId;
+
+    protected override void OnInitialized()
+    {
+        SignalRService.ProjectMessageReceived += OnMessageReceived;
+    }
+
+    protected override async Task OnParametersSetAsync()
     {
         if (!ProjectId.HasValue)
         {
@@ -32,44 +39,60 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
             return;
         }
 
-        try
+        if (_activeLoadedProjectId != ProjectId)
         {
-            var token = await AuthService.GetTokenAsync();
-            if (!string.IsNullOrEmpty(token))
+            if (_activeLoadedProjectId.HasValue)
             {
-                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(token);
-                var email = jwtToken.Claims.FirstOrDefault(c => 
-                    c.Type == "email" || 
-                    c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-                _isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+                try
+                {
+                    await SignalRService.LeaveProjectGroupAsync(_activeLoadedProjectId.Value.ToString());
+                }
+                catch { }
             }
-        }
-        catch { }
 
-        await LoadUserDataAndProjectAsync();
-        await LoadHistoryAsync(0, 20);
+            _activeLoadedProjectId = ProjectId;
+            _messages.Clear();
+            _isLoadingHistory = true;
+            _hasMoreHistory = true;
+            _projectName = null;
 
-        try
-        {
-            await ApiClient.MarkProjectNotificationsAsRead.ExecuteAsync(ProjectId.Value);
-            SignalRService.NotifyNotificationsStateChanged();
-        }
-        catch { }
+            try
+            {
+                var token = await AuthService.GetTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(token);
+                    var email = jwtToken.Claims.FirstOrDefault(c => 
+                        c.Type == "email" || 
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                    _isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch { }
 
-        // SignalR connection
-        try
-        {
-            SignalRService.ProjectMessageReceived += OnMessageReceived;
-            await SignalRService.JoinProjectGroupAsync(ProjectId.Value.ToString());
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ProjectMessages] Failed to join SignalR group: {ex.Message}");
-        }
+            await LoadUserDataAndProjectAsync();
+            await LoadHistoryAsync(0, 20);
 
-        _isLoadingHistory = false;
-        _shouldScrollToBottom = true;
+            try
+            {
+                await ApiClient.MarkProjectNotificationsAsRead.ExecuteAsync(ProjectId.Value);
+                SignalRService.NotifyNotificationsStateChanged();
+            }
+            catch { }
+
+            try
+            {
+                await SignalRService.JoinProjectGroupAsync(ProjectId.Value.ToString());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ProjectMessages] Failed to join SignalR group: {ex.Message}");
+            }
+
+            _isLoadingHistory = false;
+            _shouldScrollToBottom = true;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -200,15 +223,18 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         {
             var message = MapSignalRMessage(payload);
             
-            // Check if message is already in list
-            if (!_messages.Any(m => m.Id == message.Id))
+            // Only append message if it belongs to current active project
+            if (message.ProjectId == Guid.Empty || (ProjectId.HasValue && message.ProjectId == ProjectId.Value))
             {
-                _messages.Add(message);
-                InvokeAsync(async () =>
+                if (!_messages.Any(m => m.Id == message.Id))
                 {
-                    StateHasChanged();
-                    await ScrollToBottomAsync();
-                });
+                    _messages.Add(message);
+                    InvokeAsync(async () =>
+                    {
+                        StateHasChanged();
+                        await ScrollToBottomAsync();
+                    });
+                }
             }
         }
         catch (Exception ex)
@@ -225,9 +251,19 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         var messageText = payload.GetProperty("messageText").GetString() ?? string.Empty;
         var createdAt = payload.GetProperty("createdAt").GetDateTime();
 
+        Guid messageProjectId = Guid.Empty;
+        if (payload.TryGetProperty("projectId", out var pProp) || payload.TryGetProperty("ProjectId", out pProp))
+        {
+            if (pProp.ValueKind == JsonValueKind.String)
+                Guid.TryParse(pProp.GetString(), out messageProjectId);
+            else if (pProp.ValueKind != JsonValueKind.Null)
+                Guid.TryParse(pProp.ToString(), out messageProjectId);
+        }
+
         return new ChatMessageModel
         {
             Id = id,
+            ProjectId = messageProjectId,
             SenderId = senderId,
             SenderName = senderName,
             MessageText = messageText,
@@ -319,7 +355,18 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         NavManager.NavigateTo($"/project-detail?projectId={ProjectId}");
     }
 
-    private string FormatDate(DateTime date)
+    private DateTime FormatToLocalDateTime(DateTimeOffset dt)
+    {
+        if (dt.Offset == TimeSpan.Zero)
+        {
+            return dt.ToLocalTime().DateTime;
+        }
+
+        var utcDate = DateTime.SpecifyKind(dt.DateTime, DateTimeKind.Utc);
+        return utcDate.ToLocalTime();
+    }
+
+    private string FormatDateHeader(DateTime date)
     {
         if (date.Date == DateTime.Today) return "Днес";
         if (date.Date == DateTime.Today.AddDays(-1)) return "Вчера";
@@ -360,6 +407,7 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
 public class ChatMessageModel
 {
     public Guid Id { get; set; }
+    public Guid ProjectId { get; set; }
     public string MessageText { get; set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; set; }
     public Guid SenderId { get; set; }

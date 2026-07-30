@@ -16,6 +16,12 @@ public class ProjectMessageConfiguration : IEntityTypeConfiguration<ProjectMessa
             .IsRequired()
             .HasMaxLength(4000);
 
+        builder.Property(pm => pm.CreatedAt)
+            .IsRequired()
+            .HasConversion(
+                v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
         builder.HasOne(pm => pm.Project)
             .WithMany()
             .HasForeignKey(pm => pm.ProjectId)

@@ -77,13 +77,14 @@
                     DateTime? lastDate = null;
                     @foreach (var msg in _messages)
                     {
-                        var showDateHeader = lastDate == null || lastDate.Value.Date != msg.CreatedAt.LocalDateTime.Date;
-                        lastDate = msg.CreatedAt.LocalDateTime;
+                        var msgLocalDate = FormatToLocalDateTime(msg.CreatedAt);
+                        var showDateHeader = lastDate == null || lastDate.Value.Date != msgLocalDate.Date;
+                        lastDate = msgLocalDate;
 
                         if (showDateHeader)
                         {
                             <div class="chat-date-divider">
-                                <span>@FormatDate(msg.CreatedAt.LocalDateTime)</span>
+                                <span>@FormatDateHeader(msgLocalDate)</span>
                             </div>
                         }
 
@@ -101,7 +102,7 @@
                                 }
                                 <div class="chat-bubble">
                                     <p class="message-text">@FormatMessageText(msg.MessageText)</p>
-                                    <span class="message-time">@msg.CreatedAt.LocalDateTime.ToString("HH:mm")</span>
+                                    <span class="message-time">@msgLocalDate.ToString("HH:mm")</span>
                                 </div>
                             </div>
                         </div>

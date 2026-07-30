@@ -273,9 +273,10 @@ public partial class AdminSupportChats : ComponentBase, IAsyncDisposable
 
     private string FormatTime(DateTimeOffset date)
     {
-        if (date.LocalDateTime.Date == DateTime.Today) return date.LocalDateTime.ToString("HH:mm");
-        if (date.LocalDateTime.Date == DateTime.Today.AddDays(-1)) return "Yesterday";
-        return date.LocalDateTime.ToString("dd.MM.yyyy");
+        var local = date.Offset == TimeSpan.Zero ? date.ToLocalTime() : DateTime.SpecifyKind(date.DateTime, DateTimeKind.Utc).ToLocalTime();
+        if (local.Date == DateTime.Today) return local.ToString("HH:mm");
+        if (local.Date == DateTime.Today.AddDays(-1)) return "Yesterday";
+        return local.ToString("dd.MM.yyyy");
     }
 
     public async ValueTask DisposeAsync()
