@@ -13,6 +13,7 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     public Guid? ProjectId { get; set; }
 
     private ElementReference _messageContainerRef;
+    private ElementReference _textareaRef;
     private List<ChatMessageModel> _messages = new();
     private string _newMessageText = string.Empty;
     private string? _projectName;
@@ -73,6 +74,15 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("chatHelpers.initAutoResize", _textareaRef);
+            }
+            catch { }
+        }
+
         if (_shouldScrollToBottom)
         {
             _shouldScrollToBottom = false;
@@ -235,6 +245,12 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
 
         try
         {
+            await JSRuntime.InvokeVoidAsync("chatHelpers.resetHeight", _textareaRef);
+        }
+        catch { }
+
+        try
+        {
             var result = await ApiClient.SendProjectMessage.ExecuteAsync(ProjectId!.Value, textToSend);
             if (result.Errors.Count == 0 && result.Data?.SendProjectMessage != null)
             {
@@ -308,6 +324,20 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         if (date.Date == DateTime.Today) return "Днес";
         if (date.Date == DateTime.Today.AddDays(-1)) return "Вчера";
         return date.ToString("dd MMMM yyyy");
+    }
+
+    private MarkupString FormatMessageText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return new MarkupString(string.Empty);
+
+        var encoded = System.Net.WebUtility.HtmlEncode(text);
+        var formatted = System.Text.RegularExpressions.Regex.Replace(
+            encoded,
+            @"\*\*(.*?)\*\*",
+            "<strong>$1</strong>"
+        );
+
+        return new MarkupString(formatted);
     }
 
     public async ValueTask DisposeAsync()

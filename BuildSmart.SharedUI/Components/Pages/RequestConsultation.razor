@@ -491,14 +491,14 @@
                 labelTitle = "New Consultation Request";
             }
 
-            var summaryMessage = $"📅 **{labelTitle}**\n" +
+            var summaryMessage = $"📅 **{labelTitle}**\n\n" +
                                  $"• **{labelProject}:** {Project.Title}\n" +
                                  $"• **{labelDate}:** {PreferredDate:dd.MM.yyyy}\n" +
                                  $"• **{labelSlot}:** {slotText}\n" +
                                  $"• **{labelContact}:** {contactText}\n" +
                                  (string.IsNullOrWhiteSpace(PhoneNumber) ? "" : $"• **{labelPhone}:** {PhoneNumber}\n") +
-                                 $"• **{labelAddress}:** {addressText}\n" +
-                                 $"• **{labelNotes}:** {notesText}";
+                                 $"• **{labelAddress}:** {addressText}" +
+                                 (string.IsNullOrWhiteSpace(Notes) || Notes == "-" ? "" : $"\n• **{labelNotes}:** {notesText}");
 
             var chatResult = await ApiClient.SendProjectMessage.ExecuteAsync(ProjectId, summaryMessage);
             if (chatResult.Errors.Count > 0)

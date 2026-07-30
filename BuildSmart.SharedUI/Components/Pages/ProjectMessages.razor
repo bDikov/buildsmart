@@ -100,7 +100,7 @@
                                     <span class="sender-name">@msg.SenderName</span>
                                 }
                                 <div class="chat-bubble">
-                                    <p class="message-text">@msg.MessageText</p>
+                                    <p class="message-text">@FormatMessageText(msg.MessageText)</p>
                                     <span class="message-time">@msg.CreatedAt.LocalDateTime.ToString("HH:mm")</span>
                                 </div>
                             </div>
@@ -114,7 +114,8 @@
     <!-- Input Footer -->
     <div class="chat-footer">
         <div class="input-container">
-            <textarea class="chat-input" 
+            <textarea @ref="_textareaRef"
+                      class="chat-input" 
                       placeholder="@Loc["Chat_Placeholder_WriteMessage"]" 
                       @bind="_newMessageText" 
                       @bind:event="oninput" 
@@ -145,6 +146,27 @@
         getScrollTop: (el) => el ? el.scrollTop : 0,
         setScrollTop: (el, val) => {
             if (el) el.scrollTop = val;
+        },
+        autoResize: (el) => {
+            if (el) {
+                el.style.height = 'auto';
+                if (el.value) {
+                    el.style.height = Math.min(el.scrollHeight, 280) + 'px';
+                }
+            }
+        },
+        resetHeight: (el) => {
+            if (el) {
+                el.value = '';
+                el.style.height = 'auto';
+            }
+        },
+        initAutoResize: (el) => {
+            if (el) {
+                el.addEventListener('input', () => {
+                    window.chatHelpers.autoResize(el);
+                });
+            }
         }
     };
 </script>
