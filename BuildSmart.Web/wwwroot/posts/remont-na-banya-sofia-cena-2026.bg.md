@@ -12,32 +12,42 @@
 
 За стандартна баня (около **4 до 6 кв.м. по пода**), средните разходи се разделят на три ценови нива:
 
-<div class="pricing-graphics-grid">
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-</div>
-<h4 class="pricing-service-title">Лепене на плочки & Хидроизолация</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Икономичен</span>
-<span class="tier-price">€23 - €33 / кв.м.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 40%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Стандартен <span class="tier-badge">Препоръчан</span></span>
-<span class="tier-price">€40 - €60 / кв.м.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 65%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Премиум</span>
-<span class="tier-price">€70 - €110 / кв.м.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
+<div class="cost-spectrum-container">
+  <div class="cost-spectrum-header">
+    <div class="spectrum-header-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <h4>Пазарен Ценови Спектър 2026: Лепене на плочки & Хидроизолация</h4>
+    </div>
+    <span class="spectrum-location-badge">📍 София • Цени на кв.м.</span>
+  </div>
+  <div class="spectrum-bar-wrapper">
+    <div class="spectrum-bar-track">
+      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Икономичен</span></div>
+      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Стандартен (Медиан)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">70% от имотите</span></div></div>
+      <div class="spectrum-zone zone-premium" style="width: 30%;"><span class="zone-label">Премиум</span></div>
+    </div>
+  </div>
+  <div class="spectrum-cards-grid">
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Икономичен клас</div>
+      <div class="card-price-main">€23 - €33 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Стандартен фаянс/теракота (до 40x40 см), 1 ръка хидроизолация, стандартно лепило C1.</div>
+      <div class="card-cta-btn">Сметнете онлайн <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card active-card">
+      <div class="card-badge-popular">⭐ Най-популярен в София</div>
+      <div class="card-tier-tag text-primary">Стандартен клас</div>
+      <div class="card-price-main">€40 - €60 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Гранитогрес (60x60 / 60x120 см), 2 ръце 2K хидроизолация с ленти, лепило C2TE, лентов сифон.</div>
+      <div class="card-cta-btn btn-primary-style">Сметнете вашата баня <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Премиум клас</div>
+      <div class="card-price-main">€70 - €110 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Крупноформатен гранитогрес (120x280 см), епоксидна фуга, 45° лазерно рязане на ъгли, бутилови ленти.</div>
+      <div class="card-cta-btn">Сметнете онлайн <span>→</span></div>
+    </a>
+  </div>
 </div>
 
 ---

@@ -12,32 +12,42 @@ In this guide, we break down exact 2026 bathroom renovation costs in Sofia — f
 
 For a standard bathroom (**4 to 6 sq.m. floor space**), total average costs break down across three quality tiers:
 
-<div class="pricing-graphics-grid">
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-</div>
-<h4 class="pricing-service-title">Tiling & Waterproofing</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€23 - €33 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 40%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€40 - €60 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 65%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€70 - €110 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
+<div class="cost-spectrum-container">
+  <div class="cost-spectrum-header">
+    <div class="spectrum-header-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <h4>Market Cost Spectrum 2026: Tiling & Waterproofing</h4>
+    </div>
+    <span class="spectrum-location-badge">📍 Sofia • Prices per sq.m.</span>
+  </div>
+  <div class="spectrum-bar-wrapper">
+    <div class="spectrum-bar-track">
+      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Economy</span></div>
+      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Standard (Market Median)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">70% of properties</span></div></div>
+      <div class="spectrum-zone zone-premium" style="width: 30%;"><span class="zone-label">Premium</span></div>
+    </div>
+  </div>
+  <div class="spectrum-cards-grid">
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Economy Class</div>
+      <div class="card-price-main">€23 - €33 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Standard ceramic tiles (up to 40x40 cm), 1 coat waterproofing, basic C1 tile adhesive.</div>
+      <div class="card-cta-btn">Calculate Online <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card active-card">
+      <div class="card-badge-popular">⭐ Most Popular in Sofia</div>
+      <div class="card-tier-tag text-primary">Standard Class</div>
+      <div class="card-price-main">€40 - €60 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Porcelain tiles (60x60 / 60x120 cm), 2 coats 2K waterproofing with tape, C2TE adhesive, linear drain.</div>
+      <div class="card-cta-btn btn-primary-style">Calculate Your Bathroom <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Premium Class</div>
+      <div class="card-price-main">€70 - €110 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Large format porcelain slabs (120x280 cm), epoxy grout, 45° laser mitered edges, butyl sealing tapes.</div>
+      <div class="card-cta-btn">Calculate Online <span>→</span></div>
+    </a>
+  </div>
 </div>
 
 ---

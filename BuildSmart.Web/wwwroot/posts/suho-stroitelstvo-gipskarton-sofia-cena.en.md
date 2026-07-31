@@ -10,32 +10,42 @@ Here is a breakdown of 2026 drywall labor and material prices in Sofia.
 
 ## Drywall System Costs in Sofia (2026)
 
-<div class="pricing-graphics-grid">
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-</div>
-<h4 class="pricing-service-title">Drywall Systems</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€13 - €20 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 35%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€23 - €35 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 60%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€40 - €60 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
+<div class="cost-spectrum-container">
+  <div class="cost-spectrum-header">
+    <div class="spectrum-header-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+      <h4>Market Cost Spectrum 2026: Drywall & LED Ceilings</h4>
+    </div>
+    <span class="spectrum-location-badge">📍 Sofia • Prices per sq.m.</span>
+  </div>
+  <div class="spectrum-bar-wrapper">
+    <div class="spectrum-bar-track">
+      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Economy</span></div>
+      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Standard (Market Median)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">72% of properties</span></div></div>
+      <div class="spectrum-zone zone-premium" style="width: 30%;"><span class="zone-label">Premium</span></div>
+    </div>
+  </div>
+  <div class="spectrum-cards-grid">
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Economy Class</div>
+      <div class="card-price-main">€13 - €20 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Single-frame wall lining (9.5/12.5 mm plasterboard) without acoustic insulation.</div>
+      <div class="card-cta-btn">Calculate Online <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card active-card">
+      <div class="card-badge-popular">⭐ Most Popular in Sofia</div>
+      <div class="card-tier-tag text-primary">Standard Class</div>
+      <div class="card-price-main">€23 - €35 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Single-level suspended ceiling + acoustic mineral wool (50 mm), mesh joint taping.</div>
+      <div class="card-cta-btn btn-primary-style">Calculate Your Ceilings <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Premium Class</div>
+      <div class="card-price-main">€40 - €60 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Two-level decorative ceilings with concealed LED coves, curtain pockets, and soundproofing.</div>
+      <div class="card-cta-btn">Calculate Online <span>→</span></div>
+    </a>
+  </div>
 </div>
 
 ---

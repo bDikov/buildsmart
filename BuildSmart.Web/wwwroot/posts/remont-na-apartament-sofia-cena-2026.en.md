@@ -24,163 +24,44 @@ The result? Mid-project "unexpected additions" that make the cheap quote far mor
 
 Here are the real labor and material costs broken down by trade:
 
-<div class="pricing-graphics-grid">
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-</div>
-<h4 class="pricing-service-title">Preparation & Demolition</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€8 - €13 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 30%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€15 - €25 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 60%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€30 - €45 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
-
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-</div>
-<h4 class="pricing-service-title">Electrical & Plumbing</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€10 - €18 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 25%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€25 - €40 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 55%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€50 - €75 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 90%;"></div></div>
-</div>
-</div>
+<div class="cost-spectrum-container">
+  <div class="cost-spectrum-header">
+    <div class="spectrum-header-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <h4>Market Cost Spectrum 2026: Full Turnkey Apartment Renovation</h4>
+    </div>
+    <span class="spectrum-location-badge">📍 Sofia • Prices per sq.m.</span>
+  </div>
+  <div class="spectrum-bar-wrapper">
+    <div class="spectrum-bar-track">
+      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Refresh</span></div>
+      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Full Turnkey (Median)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">68% of properties</span></div></div>
+      <div class="spectrum-zone zone-premium" style="width: 30%;"><span class="zone-label">Designer Luxury</span></div>
+    </div>
+  </div>
+  <div class="spectrum-cards-grid">
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Refresh Class</div>
+      <div class="card-price-main">€120 - €180 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Partial paint, minor touch-ups, replacing outlets/switches, and flooring refresh.</div>
+      <div class="card-cta-btn">Calculate Online <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card active-card">
+      <div class="card-badge-popular">⭐ Most Popular in Sofia</div>
+      <div class="card-tier-tag text-primary">Full Turnkey Renovation</div>
+      <div class="card-price-main">€280 - €450 <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Complete plumbing & electrical, demolition, plastering, bathroom, drywall ceilings, laminate/tiling.</div>
+      <div class="card-cta-btn btn-primary-style">Calculate Free Quote <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Designer Luxury</div>
+      <div class="card-price-main">€550 - €900+ <span class="unit">/ sq.m.</span></div>
+      <div class="card-desc">Architectural blueprint, soundproofing, LED coves, natural oak parquet, large format porcelain slabs.</div>
+      <div class="card-cta-btn">Calculate Online <span>→</span></div>
+    </a>
+  </div>
 </div>
 
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-</div>
-<h4 class="pricing-service-title">Drywall Systems</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€13 - €20 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 35%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€23 - €35 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 60%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€40 - €60 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
-
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
-</div>
-<h4 class="pricing-service-title">Plastering & Painting</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€9 - €15 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 30%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€18 - €28 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 55%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€35 - €55 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 90%;"></div></div>
-</div>
-</div>
-</div>
-
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-</div>
-<h4 class="pricing-service-title">Tiling & Bathroom</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€23 - €33 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 40%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€40 - €60 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 65%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€70 - €110 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
-
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 4v16"></path><path d="M18 4v16"></path></svg>
-</div>
-<h4 class="pricing-service-title">Flooring Installation</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Economy</span>
-<span class="tier-price">€5 - €9 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 20%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Standard <span class="tier-badge">Popular</span></span>
-<span class="tier-price">€13 - €23 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 50%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Premium</span>
-<span class="tier-price">€30 - €50 / sq.m.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 85%;"></div></div>
-</div>
-</div>
-</div>
-</div>
 
 ---
 

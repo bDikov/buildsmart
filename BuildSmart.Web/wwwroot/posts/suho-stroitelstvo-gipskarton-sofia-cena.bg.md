@@ -10,32 +10,42 @@
 
 ## Цени за сухо строителство в София (2026)
 
-<div class="pricing-graphics-grid">
-<div class="pricing-card">
-<div class="pricing-card-header">
-<div class="pricing-icon-box">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-</div>
-<h4 class="pricing-service-title">Сухо строителство (гипскартон)</h4>
-</div>
-<div class="pricing-tiers-row">
-<div class="tier-item">
-<span class="tier-name">Икономичен</span>
-<span class="tier-price">€13 - €20 / кв.м.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 35%;"></div></div>
-</div>
-<div class="tier-item active">
-<span class="tier-name">Стандартен <span class="tier-badge">Препоръчан</span></span>
-<span class="tier-price">€23 - €35 / кв.м.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 60%;"></div></div>
-</div>
-<div class="tier-item">
-<span class="tier-name">Премиум</span>
-<span class="tier-price">€40 - €60 / кв.м.</span>
-<div class="tier-bar-bg"><div class="tier-bar-fill" style="width: 95%;"></div></div>
-</div>
-</div>
-</div>
+<div class="cost-spectrum-container">
+  <div class="cost-spectrum-header">
+    <div class="spectrum-header-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+      <h4>Пазарен Ценови Спектър 2026: Сухо строителство & Гипскартон</h4>
+    </div>
+    <span class="spectrum-location-badge">📍 София • Цени на кв.м.</span>
+  </div>
+  <div class="spectrum-bar-wrapper">
+    <div class="spectrum-bar-track">
+      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Икономичен</span></div>
+      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Стандартен (Медиан)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">72% от имотите</span></div></div>
+      <div class="spectrum-zone zone-premium" style="width: 30%;"><span class="zone-label">Премиум</span></div>
+    </div>
+  </div>
+  <div class="spectrum-cards-grid">
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Икономичен клас</div>
+      <div class="card-price-main">€13 - €20 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Стандартна предстенна обшивка на единична скара (9.5/12.5 мм гипскартон) без вана.</div>
+      <div class="card-cta-btn">Сметнете онлайн <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card active-card">
+      <div class="card-badge-popular">⭐ Най-популярен в София</div>
+      <div class="card-tier-tag text-primary">Стандартен клас</div>
+      <div class="card-price-main">€23 - €35 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Окачен таван на едно ниво + акустична каменна вана (50 мм), шпакловка с мрежа по фуги.</div>
+      <div class="card-cta-btn btn-primary-style">Сметнете вашите тавани <span>→</span></div>
+    </a>
+    <a href="/job-wizard" class="spectrum-card">
+      <div class="card-tier-tag">Премиум клас</div>
+      <div class="card-price-main">€40 - €60 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Двунивови декоративни тавани със скрити LED ниши, куфари за пердета и двойна шумоизолация.</div>
+      <div class="card-cta-btn">Сметнете онлайн <span>→</span></div>
+    </a>
+  </div>
 </div>
 
 ---

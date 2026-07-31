@@ -546,104 +546,432 @@
         font-weight: 700;
     }
 
+    /* Architectural Cost Spectrum Graphic Component */
+    .cost-spectrum-container {
+        background: linear-gradient(145deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border: 1.5px solid rgba(16, 185, 129, 0.25);
+        border-radius: 24px;
+        padding: 28px;
+        margin: 36px 0;
+        box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.1), 0 0 25px rgba(16, 185, 129, 0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cost-spectrum-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .spectrum-header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .spectrum-header-title h4 {
+        font: var(--font-h5);
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.3px;
+    }
+
+    .spectrum-location-badge {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        padding: 6px 14px;
+        border-radius: 50px;
+    }
+
+    /* Distribution Spectrum Bar */
+    .spectrum-bar-wrapper {
+        margin-bottom: 28px;
+        margin-top: 14px;
+    }
+
+    .spectrum-bar-track {
+        display: flex;
+        height: 48px;
+        background: var(--bg-card-alt);
+        border-radius: 16px;
+        overflow: visible;
+        border: 1px solid var(--border-color);
+        padding: 4px;
+        gap: 4px;
+        position: relative;
+    }
+
+    .spectrum-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .zone-economy {
+        background: rgba(100, 116, 139, 0.15);
+        color: var(--text-secondary);
+    }
+
+    .zone-standard {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.35) 100%);
+        color: var(--color-primary);
+        border: 1.5px solid var(--color-primary);
+    }
+
+    .zone-premium {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--text-primary);
+    }
+
+    .median-pin {
+        position: absolute;
+        top: -24px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-primary);
+        color: #ffffff;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .pin-dot {
+        width: 6px;
+        height: 6px;
+        background: #ffffff;
+        border-radius: 50%;
+        animation: pulseRing 1.8s infinite;
+    }
+
+    /* 3 Pillar Cards Grid */
+    .spectrum-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    .spectrum-card {
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none !important;
+        color: inherit !important;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .spectrum-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--color-primary);
+        box-shadow: 0 16px 36px -8px rgba(16, 185, 129, 0.3);
+        background: linear-gradient(180deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.06) 100%);
+    }
+
+    .active-card {
+        border: 2px solid var(--color-primary) !important;
+        background: linear-gradient(180deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.08) 100%) !important;
+        box-shadow: 0 10px 28px -6px rgba(16, 185, 129, 0.25) !important;
+    }
+
+    .card-badge-popular {
+        position: absolute;
+        top: -12px;
+        right: 16px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 3px 12px;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    }
+
+    .card-tier-tag {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .card-price-main {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.4px;
+    }
+
+    .card-price-main .unit {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .card-desc {
+        font-size: 0.83rem;
+        color: var(--text-secondary);
+        line-height: 1.45;
+        margin: 0;
+    }
+
+    .card-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 0.83rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 10px 16px;
+        border-radius: 12px;
+        margin-top: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary-style {
+        background: var(--color-primary) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    .spectrum-card:hover .card-cta-btn {
+        background: var(--color-primary);
+        color: #ffffff;
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .spectrum-card:hover .card-cta-btn span {
+        transform: translateX(4px);
+    }
+
     /* Custom HTML Pricing Graphics Grid & Cards */
+    /* Ultra-Premium Fintech-Style Pricing Graphics Grid */
     .pricing-graphics-grid {
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        margin: 32px 0;
+        gap: 20px;
+        margin: 36px 0;
     }
 
     .pricing-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: var(--elevation-01dp);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        background: linear-gradient(145deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.04) 100%);
+        border: 1.5px solid rgba(16, 185, 129, 0.2);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.08), 0 0 20px rgba(16, 185, 129, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
 
     .pricing-card:hover {
         border-color: var(--color-primary);
-        transform: translateY(-2px);
+        box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.22);
     }
 
     .pricing-card-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .pricing-header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
     }
 
     .pricing-icon-box {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 42px;
-        height: 42px;
-        background: var(--bg-card-alt);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
+        width: 46px;
+        height: 46px;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 14px;
         color: var(--color-primary);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
     }
 
     .pricing-service-title {
-        font: var(--font-h6);
+        font: var(--font-h5);
         font-weight: 700;
         color: var(--text-primary);
         margin: 0;
+        letter-spacing: -0.2px;
+    }
+
+    .pricing-header-pill {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 4px 12px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .pricing-tiers-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
     }
 
     .tier-item {
-        background: var(--bg-card-alt);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 12px 14px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: 16px;
+        padding: 18px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none !important;
+        color: inherit !important;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tier-item:hover {
+        transform: translateY(-5px);
+        border-color: var(--color-primary);
+        box-shadow: 0 16px 32px -8px rgba(16, 185, 129, 0.3);
+        background: linear-gradient(180deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.08) 100%);
     }
 
     .tier-item.active {
-        border-color: var(--color-primary);
-        background: rgba(16, 185, 129, 0.08);
+        border: 2px solid var(--color-primary);
+        background: linear-gradient(180deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.1) 100%);
+        box-shadow: 0 8px 24px -6px rgba(16, 185, 129, 0.25);
     }
 
-    .tier-name {
-        font: var(--font-h3);
-        font-size: 0.85rem;
-        color: var(--text-secondary);
+    .tier-top-meta {
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
 
+    .tier-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tier-item.active .tier-name {
+        color: var(--color-primary);
+    }
+
     .tier-badge {
-        background: var(--color-primary);
-        color: var(--bg-page);
-        font-size: 0.7rem;
-        padding: 2px 8px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        font-size: 0.72rem;
+        padding: 3px 10px;
         border-radius: 50px;
         font-weight: 700;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .tier-price-box {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
     }
 
     .tier-price {
-        font: var(--font-h6);
-        font-size: 1.05rem;
-        font-weight: 700;
+        font-size: 1.35rem;
+        font-weight: 800;
         color: var(--text-primary);
+        letter-spacing: -0.3px;
+    }
+
+    .tier-unit {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .tier-bar-bg {
+        height: 6px;
+        background: var(--bg-card-alt);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 4px;
+        border: 1px solid var(--border-color);
     }
 
     .tier-bar-fill {
         height: 100%;
-        background: var(--color-primary);
+        background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
         border-radius: 10px;
+        transition: width 0.4s ease;
+    }
+
+    .tier-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 8px 14px;
+        border-radius: 10px;
+        margin-top: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .tier-item:hover .tier-action-btn {
+        background: var(--color-primary);
+        color: #ffffff;
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .tier-action-arrow {
+        transition: transform 0.2s ease;
+    }
+
+    .tier-item:hover .tier-action-arrow {
+        transform: translateX(4px);
     }
 
     /* Embedded Video Player Styles - Borderless & Seamless Feed Aesthetic */
