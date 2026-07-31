@@ -538,9 +538,20 @@
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, fileName);
 
-        await using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-        await using var fs = new FileStream(path, FileMode.Create);
-        await stream.CopyToAsync(fs);
+        await using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
+        await using (var fs = new FileStream(path, FileMode.Create))
+        {
+            await stream.CopyToAsync(fs);
+        }
+
+        // Copy to execution output directory so Kestrel serves it immediately
+        try
+        {
+            var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+            Directory.CreateDirectory(binFolder);
+            File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+        }
+        catch { }
 
         _activePost.Image = $"/images/blog/{fileName}";
     }
@@ -555,9 +566,19 @@
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, fileName);
 
-        await using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-        await using var fs = new FileStream(path, FileMode.Create);
-        await stream.CopyToAsync(fs);
+        await using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
+        await using (var fs = new FileStream(path, FileMode.Create))
+        {
+            await stream.CopyToAsync(fs);
+        }
+
+        try
+        {
+            var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+            Directory.CreateDirectory(binFolder);
+            File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+        }
+        catch { }
 
         var markdownImage = $"\n![image](/images/blog/{fileName})\n";
         InsertSnippet(markdownImage, lang);
@@ -573,9 +594,19 @@
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, fileName);
 
-        await using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
-        await using var fs = new FileStream(path, FileMode.Create);
-        await stream.CopyToAsync(fs);
+        await using (var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024))
+        await using (var fs = new FileStream(path, FileMode.Create))
+        {
+            await stream.CopyToAsync(fs);
+        }
+
+        try
+        {
+            var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "videos", "blog");
+            Directory.CreateDirectory(binFolder);
+            File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+        }
+        catch { }
 
         var videoTag = $"\n<div class=\"blog-video-container\">\n  <video controls class=\"blog-video-player\" src=\"/videos/blog/{fileName}\"></video>\n</div>\n";
         InsertSnippet(videoTag, lang);
