@@ -145,7 +145,7 @@
                                 </span>
                                 @if (chat.LatestMessageTime.HasValue)
                                 {
-                                    <span class="chat-time-stamp">@FormatTime(chat.LatestMessageTime.Value)</span>
+                                    <span class="chat-time-stamp" data-utc="@chat.LatestMessageTime?.ToString("o")">@FormatTime(chat.LatestMessageTime.Value)</span>
                                 }
                             </div>
                             <div class="chat-message-preview-row">

@@ -358,4 +358,47 @@ public class ProjectChatServiceTests
             It.IsAny<object>()
         ), Times.Never);
     }
+
+    [Fact]
+    public async Task SendMessageAsync_ShouldIncludeProjectIdInSignalRPayload_ForMultiProjectFiltering()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var senderId = Guid.NewGuid();
+        var messageText = "Testing multi-project signalR scoping";
+        
+        var project = new Project
+        {
+            Id = projectId,
+            HomeownerId = senderId,
+            Title = "Multi Project Test",
+            Description = "Description"
+        };
+
+        var senderUser = new User
+        {
+            Id = senderId,
+            FirstName = "Alice",
+            LastName = "Smith",
+            Role = UserRoleTypes.Homeowner
+        };
+
+        _mockUow.Setup(u => u.Projects.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Users.GetByIdAsync(senderId)).ReturnsAsync(senderUser);
+        _mockUow.Setup(u => u.Users.GetQueryable()).Returns(new List<User>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.ProjectMessages.AddAsync(It.IsAny<ProjectMessage>())).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _service.SendMessageAsync(projectId, senderId, messageText);
+
+        // Assert
+        result.Should().NotBeNull();
+
+        // Verify SignalR group payload contains ProjectId for active project window filtering
+        _mockNotification.Verify(n => n.NotifyProjectGroupAsync(
+            projectId,
+            "ReceiveProjectMessage",
+            It.Is<object>(o => o != null && o.GetType().GetProperty("ProjectId")!.GetValue(o)!.Equals(projectId))
+        ), Times.Once);
+    }
 }

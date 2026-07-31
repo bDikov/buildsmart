@@ -84,7 +84,7 @@
                         if (showDateHeader)
                         {
                             <div class="chat-date-divider">
-                                <span>@FormatDateHeader(msgLocalDate)</span>
+                                <span data-utc="@msg.CreatedAt.ToString("o")">@FormatDateHeader(msgLocalDate)</span>
                             </div>
                         }
 
@@ -102,7 +102,7 @@
                                 }
                                 <div class="chat-bubble">
                                     <p class="message-text">@FormatMessageText(msg.MessageText)</p>
-                                    <span class="message-time">@msgLocalDate.ToString("HH:mm")</span>
+                                    <span class="message-time" data-utc="@msg.CreatedAt.ToString("o")">@msgLocalDate.ToString("HH:mm")</span>
                                 </div>
                             </div>
                         </div>
@@ -116,14 +116,14 @@
     <div class="chat-footer">
         <div class="input-container">
             <textarea @ref="_textareaRef"
-                      class="chat-input" 
-                      placeholder="@Loc["Chat_Placeholder_WriteMessage"]" 
-                      @bind="_newMessageText" 
-                      @bind:event="oninput" 
-                      @onkeydown="OnInputKeyDown" 
+                      class="chat-input"
+                      placeholder="Напишете съобщение..."
+                      @bind="_newMessageText"
+                      @bind:event="oninput"
+                      @onkeydown="OnInputKeyDown"
                       rows="1"></textarea>
-            <button class="send-btn @(string.IsNullOrWhiteSpace(_newMessageText) ? "disabled" : "")" 
-                    @onclick="SendMessageAsync" 
+            <button class="send-btn @(string.IsNullOrWhiteSpace(_newMessageText) ? "disabled" : "")"
+                    @onclick="SendMessageAsync"
                     disabled="@string.IsNullOrWhiteSpace(_newMessageText)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -168,6 +168,57 @@
                     window.chatHelpers.autoResize(el);
                 });
             }
+        },
+        formatLocalTimes: () => {
+            document.querySelectorAll('.message-time[data-utc]').forEach(el => {
+                const utcStr = el.getAttribute('data-utc');
+                if (utcStr) {
+                    const d = new Date(utcStr);
+                    if (!isNaN(d.getTime())) {
+                        const h = String(d.getHours()).padStart(2, '0');
+                        const m = String(d.getMinutes()).padStart(2, '0');
+                        el.textContent = h + ':' + m;
+                    }
+                }
+            });
+            document.querySelectorAll('.chat-date-divider span[data-utc]').forEach(el => {
+                const utcStr = el.getAttribute('data-utc');
+                if (utcStr) {
+                    const d = new Date(utcStr);
+                    if (!isNaN(d.getTime())) {
+                        const today = new Date();
+                        const yesterday = new Date();
+                        yesterday.setDate(today.getDate() - 1);
+                        if (d.toDateString() === today.toDateString()) {
+                            el.textContent = 'Днес';
+                        } else if (d.toDateString() === yesterday.toDateString()) {
+                            el.textContent = 'Вчера';
+                        } else {
+                            el.textContent = d.toLocaleDateString('bg-BG', { day: '2-digit', month: 'long', year: 'numeric' });
+                        }
+                    }
+                }
+            });
+            document.querySelectorAll('.chat-time-stamp[data-utc]').forEach(el => {
+                const utcStr = el.getAttribute('data-utc');
+                if (utcStr) {
+                    const d = new Date(utcStr);
+                    if (!isNaN(d.getTime())) {
+                        const today = new Date();
+                        const yesterday = new Date();
+                        yesterday.setDate(today.getDate() - 1);
+                        if (d.toDateString() === today.toDateString()) {
+                            const h = String(d.getHours()).padStart(2, '0');
+                            const m = String(d.getMinutes()).padStart(2, '0');
+                            el.textContent = h + ':' + m;
+                        } else if (d.toDateString() === yesterday.toDateString()) {
+                            el.textContent = 'Yesterday';
+                        } else {
+                            el.textContent = d.toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        }
+                    }
+                }
+            });
         }
     };
 </script>

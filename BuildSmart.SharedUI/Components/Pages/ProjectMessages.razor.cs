@@ -106,6 +106,12 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
             catch { }
         }
 
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("chatHelpers.formatLocalTimes");
+        }
+        catch { }
+
         if (_shouldScrollToBottom)
         {
             _shouldScrollToBottom = false;

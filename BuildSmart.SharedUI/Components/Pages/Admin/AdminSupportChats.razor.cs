@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace BuildSmart.SharedUI.Components.Pages.Admin;
 
 public partial class AdminSupportChats : ComponentBase, IAsyncDisposable
 {
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
     private List<ActiveChatState> _activeChats = new();
     private List<SearchResultState> _searchResults = new();
     private Dictionary<Guid, List<IGetAllProjects_AllProjects>> _homeownerProjects = new();
@@ -269,6 +272,15 @@ public partial class AdminSupportChats : ComponentBase, IAsyncDisposable
     private void OpenChat(Guid projectId)
     {
         NavManager.NavigateTo($"/project-messages?projectId={projectId}");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("chatHelpers.formatLocalTimes");
+        }
+        catch { }
     }
 
     private string FormatTime(DateTimeOffset date)

@@ -10,12 +10,14 @@ namespace BuildSmart.Maui.Tests;
 public class ScopeReviewViewModelTests
 {
     private readonly Mock<IBuildSmartApiClient> _mockApiClient;
+    private readonly Mock<Microsoft.JSInterop.IJSRuntime> _mockJsRuntime;
     private readonly ScopeReviewViewModel _viewModel;
 
     public ScopeReviewViewModelTests()
     {
         _mockApiClient = new Mock<IBuildSmartApiClient>();
-        _viewModel = new ScopeReviewViewModel(_mockApiClient.Object);
+        _mockJsRuntime = new Mock<Microsoft.JSInterop.IJSRuntime>();
+        _viewModel = new ScopeReviewViewModel(_mockApiClient.Object, _mockJsRuntime.Object);
     }
 
     [Fact]
