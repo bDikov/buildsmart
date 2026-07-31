@@ -81,8 +81,8 @@
 Вижте с очите си какво означава безупречен ремонт на 100 кв.м. жилище в София:
 
 <div class="blog-video-container">
-<video controls playsinline preload="metadata" class="blog-video-player" poster="/images/blog/remont-apartament-cover.jpg">
-  <source src="/videos/blog/remont-apartament-walkthrough.mp4" type="video/mp4" />
+<video controls playsinline preload="metadata" class="blog-video-player">
+  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/How-to-video-d58727d3c13ea2d95db86e811a063d2e-V.mp4" type="video/mp4" />
 </video>
 </div>
 

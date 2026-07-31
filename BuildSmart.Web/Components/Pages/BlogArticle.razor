@@ -974,24 +974,27 @@
         transform: translateX(4px);
     }
 
-    /* Embedded Video Player Styles - Borderless & Seamless Feed Aesthetic */
+    /* Embedded Video Player Styles - Full Aspect Ratio Transparent Styling */
     .blog-video-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
         border-radius: 20px;
         overflow: hidden;
         margin: 28px 0;
-        border: none;
-        box-shadow: var(--shadow-main);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.12);
         background: transparent;
     }
 
     .blog-video-player {
         width: 100%;
-        max-height: 520px;
+        height: 100%;
         display: block;
         border-radius: 20px;
         border: none;
         outline: none;
-        object-fit: cover;
+        object-fit: contain;
         background: transparent;
     }
 </style>
