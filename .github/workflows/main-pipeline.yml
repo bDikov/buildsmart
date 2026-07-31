@@ -118,8 +118,7 @@ jobs:
           file: BuildSmart.Web/Dockerfile
           tags: buildsmart-web:latest
           outputs: type=docker,dest=buildsmart-web.tar
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
 
       - name: Compress Image Tarballs
         run: |
