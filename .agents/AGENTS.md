@@ -73,3 +73,15 @@
 - **Modern CSS Print Standards**: When configuring page breaks for PDF generation (printed via Puppeteer/Chromium), always use modern CSS print properties (`break-after: page`, `break-before: page`, `break-inside: avoid`) in addition to legacy aliases (`page-break-after`, `page-break-before`, `page-break-inside`).
 - **Flexbox Page-Breaking Bug**: Chromium's print engine has known limitations applying page-breaks preceding or containing CSS flexbox layout containers (`display: flex;`). To prevent page break failures (such as the Terms & Conditions page header rendering on the bottom of the previous page), explicitly apply `page-break-before: always;` / `break-before: page;` to the succeeding flex container to force a clean page break.
 - **Embedded Templates Rebuild Requirement**: The HTML template `OfferTemplate.html` is embedded as a resource in the `BuildSmart.Infrastructure` assembly. After making modifications to the template, the solution must be rebuilt (`dotnet build`) for the updated embedded resource to take effect in the compiled binaries.
+
+## 13. Guest Account & Campaign Registration Analytics
+- **Database User Count Queries**: When querying registration metrics, user counts, or campaign lead conversions from the `"Users"` table in PostgreSQL, auto-generated guest accounts (`@buildsmart.guest`) must strictly be excluded (e.g. `WHERE "Email" NOT LIKE '%@buildsmart.guest' AND "FirstName" != 'Guest'`).
+- **Conversion Goal Instrumentation**: Ad campaign conversion goals (Google Ads, GTM, PostHog) must track explicit self-registration events (`registration_success`) triggered only upon completed Google OAuth signups or verified email registrations, and NEVER on guest session creation.
+
+## 14. High-Conversion Blog Copywriting & Storytelling
+- **Framework Compliance**: All marketing articles and blog posts must adhere to the `high-conversion-blog-copywriting` skill ([SKILL.md](file:///C:/Users/bonch/.gemini/antigravity/skills/high_conversion_blog_copywriting/SKILL.md)).
+- **Story-Driven Hooks (PAS Framework)**: Start articles with a dramatic, real-world scenario (e.g. avoiding contractor traps in Sofia, unitemized quotes, 0% deposit protection) rather than passive generic introductions.
+- **Bucket Brigade Intrigue Loops**: Maintain reader momentum with punchy bridge phrases (*"Here's where 90% of homeowners get trapped...", "The dirty little secret..."*).
+- **Rhythm & Structure**: Keep paragraphs short (1-3 lines), use high-contrast formatting, itemized case study graphics, and seamless CTAs directing readers to the AI calculation wizard (`/job-wizard`) and video feed (`/feed`).
+
+

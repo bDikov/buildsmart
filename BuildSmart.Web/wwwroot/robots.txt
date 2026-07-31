@@ -5,6 +5,8 @@ Allow: /faq
 Allow: /terms
 Allow: /privacy
 Allow: /request-consultation
+Allow: /blog
+Allow: /blog/
 Allow: /login
 Allow: /create-account
 

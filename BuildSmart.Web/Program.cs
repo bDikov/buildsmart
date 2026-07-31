@@ -259,6 +259,36 @@ app.MapGet("/sitemap.xml", async (HttpContext context) =>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
+    <url>
+        <loc>https://buildsmart.bg/blog</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://buildsmart.bg/blog/remont-na-apartament-sofia-cena-2026</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://buildsmart.bg/blog/remont-na-banya-sofia-cena-2026</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://buildsmart.bg/blog/suho-stroitelstvo-gipskarton-sofia-cena</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://buildsmart.bg/blog/maistori-red-flags-sofia-dogovor</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://buildsmart.bg/blog/remont-na-3-staen-apartament-realen-kazus</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
 </urlset>";
     
     await context.Response.WriteAsync(sitemapXml);

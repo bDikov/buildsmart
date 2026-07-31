@@ -35,7 +35,7 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     {
         if (!ProjectId.HasValue)
         {
-            NavManager.NavigateTo("/my-projects");
+            await ResolveAndNavigateToActiveChatAsync();
             return;
         }
 
@@ -407,6 +407,54 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
                 Console.WriteLine($"[ProjectMessages] Failed to leave SignalR group: {ex.Message}");
             }
         }
+    }
+
+    private async Task ResolveAndNavigateToActiveChatAsync()
+    {
+        try
+        {
+            // 1. Try to find the target project ID from notifications
+            try
+            {
+                var notesResult = await ApiClient.GetMyNotifications.ExecuteAsync();
+                if (notesResult.Errors.Count == 0 && notesResult.Data?.MyNotifications != null)
+                {
+                    var chatNote = notesResult.Data.MyNotifications
+                        .Where(n => n.RelatedEntityType == "Project" && n.RelatedEntityId.HasValue)
+                        .OrderByDescending(n => !n.IsRead)
+                        .ThenByDescending(n => n.CreatedAt)
+                        .FirstOrDefault();
+
+                    if (chatNote != null && chatNote.RelatedEntityId.HasValue)
+                    {
+                        NavManager.NavigateTo($"/project-messages?projectId={chatNote.RelatedEntityId.Value}", replace: true);
+                        return;
+                    }
+                }
+            }
+            catch { }
+
+            // 2. Check user's active projects
+            var result = await ApiClient.GetMyProjects.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.MyProjects != null)
+            {
+                var actualProjects = result.Data.MyProjects.Where(p => p.Title != "Support Chat").ToList();
+                if (actualProjects.Any())
+                {
+                    var supportChat = actualProjects.FirstOrDefault(p => p.Title.StartsWith("Support - "));
+                    var targetId = supportChat?.Id ?? actualProjects.OrderByDescending(p => p.CreatedAt).First().Id;
+                    NavManager.NavigateTo($"/project-messages?projectId={targetId}", replace: true);
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProjectMessages] Error resolving active chat: {ex.Message}");
+        }
+
+        // 3. Fallback to /my-projects if no projects exist
+        NavManager.NavigateTo("/my-projects", replace: true);
     }
 }
 

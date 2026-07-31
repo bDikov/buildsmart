@@ -1,0 +1,760 @@
+@page "/blog/{slug}"
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@using Markdig
+@using System.Text.Json
+@using System.Globalization
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Localization
+@inject IWebHostEnvironment WebHostEnvironment
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject NavigationManager NavManager
+
+@if (_meta != null)
+{
+    <PageTitle>@GetTitle() - BuildSmart</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@GetDescription()" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="@($"https://buildsmart.bg/blog/{Slug}")" />
+        @if (!string.IsNullOrEmpty(GetKeywords()))
+        {
+            <meta name="keywords" content="@GetKeywords()" />
+        }
+        <meta property="og:title" content="@GetTitle()" />
+        <meta property="og:description" content="@GetDescription()" />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="@($"https://buildsmart.bg/blog/{Slug}")" />
+        @if (!string.IsNullOrEmpty(_meta.Image))
+        {
+            <meta property="og:image" content="@($"https://buildsmart.bg{_meta.Image}")" />
+            <meta name="twitter:image" content="@($"https://buildsmart.bg{_meta.Image}")" />
+        }
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="@GetTitle()" />
+        <meta name="twitter:description" content="@GetDescription()" />
+        
+        <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org",
+          "@@type": "Article",
+          "headline": "@GetTitle().Replace("\"", "\\\"")",
+          "description": "@GetDescription().Replace("\"", "\\\"")",
+          "image": "@($"https://buildsmart.bg{_meta.Image}")",
+          "author": {
+            "@@type": "Organization",
+            "name": "BuildSmart",
+            "url": "https://buildsmart.bg"
+          },
+          "publisher": {
+            "@@type": "Organization",
+            "name": "BuildSmart",
+            "url": "https://buildsmart.bg"
+          },
+          "datePublished": "@_meta.Date"
+        }
+        </script>
+    </HeadContent>
+}
+
+<div class="blog-article-container container py-5">
+    <div class="mb-4">
+        <a href="/blog" class="back-to-blog-btn text-decoration-none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            @Loc["Blog_Back"]
+        </a>
+    </div>
+
+    @if (_meta == null || string.IsNullOrEmpty(_htmlContent))
+    {
+        @if (_isNotFound)
+        {
+            <div class="text-center py-5">
+                <h2 class="text-danger">Article Not Found</h2>
+                <p class="text-secondary">The requested article could not be found. Go back to <a href="/blog">Blog</a>.</p>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex justify-content-center align-items-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="row g-5">
+            <!-- Article Content Column -->
+            <div class="col-lg-8">
+                <article class="blog-article">
+                    <!-- Title and Meta info -->
+                    <div class="article-header mb-4">
+                        <span class="article-category-badge mb-2 d-inline-block">@GetCategory()</span>
+                        <h1 class="article-title mb-3">@GetTitle()</h1>
+                        <div class="article-meta-row d-flex align-items-center gap-3">
+                            <span class="article-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                @_meta.Date
+                            </span>
+                            <span class="article-meta-dot">•</span>
+                            <span class="article-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                @GetReadTime() @Loc["Blog_ReadTime"]
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Featured Image -->
+                    @if (!string.IsNullOrEmpty(_meta.Image))
+                    {
+                        <div class="article-featured-img-wrapper mb-5">
+                            <img src="@_meta.Image" alt="@GetTitle()" class="article-featured-img" />
+                        </div>
+                    }
+
+                    <!-- Parsed HTML Content -->
+                    <div class="blog-article-content">
+                        @((MarkupString)_htmlContent)
+                    </div>
+                </article>
+            </div>
+
+            <!-- Sidebar Column -->
+            <div class="col-lg-4">
+                <aside class="blog-sidebar sticky-top" style="top: 80px; z-index: 10;">
+                    <!-- Interactive High-Conversion Estimator Widget -->
+                    <div class="blog-cta-widget p-4 text-center">
+                        <div class="cta-live-badge mb-3">
+                            <span class="pulse-dot"></span>
+                            <span>0% Капаро • Твърда Оферта</span>
+                        </div>
+                        <div class="cta-widget-icon-wrapper mb-3">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="9" x2="15" y2="9"></line>
+                                <line x1="9" y1="13" x2="15" y2="13"></line>
+                                <line x1="9" y1="17" x2="15" y2="17"></line>
+                            </svg>
+                        </div>
+                        <h4 class="cta-widget-title mb-2">@Loc["Blog_EstimatorCta"]</h4>
+                        <p class="cta-widget-desc mb-4">@Loc["Blog_EstimatorDesc"]</p>
+                        <a href="/job-wizard" class="bs-btn-primary bs-btn-animated w-100 mb-2">
+                            @Loc["Blog_EstimatorCta"]
+                        </a>
+                        <a href="/project-messages" class="bs-btn-outline w-100">
+                            Пишете ни в Чата
+                        </a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .back-to-blog-btn {
+        font: var(--font-h3);
+        color: var(--text-secondary);
+        display: inline-flex;
+        align-items: center;
+        transition: color 0.2s ease;
+    }
+
+    .back-to-blog-btn:hover {
+        color: var(--color-primary);
+    }
+
+    .article-category-badge {
+        background: var(--bg-card-alt);
+        color: var(--color-primary);
+        padding: 4px 12px;
+        border-radius: 50px;
+        font: var(--font-h3);
+        font-weight: 700;
+        border: 1px solid var(--border-color);
+    }
+
+    .article-title {
+        font: var(--font-h1);
+        font-size: 2.5rem;
+        color: var(--text-primary);
+        line-height: 1.25;
+    }
+
+    .article-meta-row {
+        font: var(--font-h3);
+        color: var(--text-muted);
+    }
+
+    .article-meta-item {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .article-meta-item svg {
+        color: var(--text-muted);
+    }
+
+    .article-featured-img-wrapper {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-main);
+    }
+
+    .article-featured-img {
+        width: 100%;
+        max-height: 450px;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* Markdown elements styling */
+    .blog-article-content h1 {
+        display: none; /* Hide H1 in content since we show it in header */
+    }
+
+    .blog-article-content h2 {
+        font: var(--font-h2);
+        font-size: 1.8rem;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+        margin-top: 40px;
+        margin-bottom: 16px;
+    }
+
+    .blog-article-content h3 {
+        font: var(--font-h6);
+        font-size: 1.3rem;
+        color: var(--text-primary);
+        margin-top: 28px;
+        margin-bottom: 12px;
+    }
+
+    .blog-article-content p {
+        font: var(--font-body-1);
+        color: var(--text-secondary);
+        line-height: 1.75;
+        margin-bottom: 20px;
+    }
+
+    .blog-article-content ul, .blog-article-content ol {
+        margin-bottom: 20px;
+        padding-left: 24px;
+    }
+
+    .blog-article-content li {
+        font: var(--font-body-1);
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        line-height: 1.6;
+    }
+
+    .blog-article-content blockquote {
+        border-left: 4px solid var(--color-primary);
+        padding-left: 20px;
+        font-style: italic;
+        color: var(--text-muted);
+        margin: 28px 0;
+    }
+
+    .blog-article-content hr {
+        border: 0;
+        border-top: 1px solid var(--border-color);
+        margin: 36px 0;
+    }
+
+    /* Pricing Table styling */
+    .blog-article-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 32px 0;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--elevation-01dp);
+    }
+
+    .blog-article-content th {
+        background: var(--bg-card-alt);
+        color: var(--text-primary);
+        font: var(--font-h3);
+        font-weight: 700;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .blog-article-content td {
+        padding: 14px 16px;
+        font: var(--font-body-1);
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .blog-article-content tr:nth-child(even) {
+        background: var(--bg-page);
+    }
+
+    .blog-article-content tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Frontend Guidelines Design System Compliance (bs- namespace) */
+    .bs-lead-title {
+        font: var(--font-h5);
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 0;
+        margin-bottom: 8px;
+    }
+
+    .bs-lead-desc {
+        font: var(--font-body-1);
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .bs-lead-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .bs-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        background: var(--color-primary);
+        color: var(--bg-page);
+        font: var(--font-h3);
+        font-weight: 700;
+        border-radius: 12px;
+        border: 1px solid var(--color-primary);
+        text-decoration: none;
+        box-shadow: var(--shadow-main);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .bs-btn-primary:hover {
+        opacity: 0.92;
+        transform: translateY(-2px);
+        color: var(--bg-page);
+    }
+
+    .bs-btn-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        background: transparent;
+        color: var(--text-primary);
+        font: var(--font-h3);
+        font-weight: 600;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .bs-btn-outline:hover {
+        background: var(--bg-card-alt);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    .bs-btn-animated {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bs-btn-animated::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+        animation: bsButtonShine 3s infinite;
+    }
+
+    @@keyframes bsButtonShine {
+        0% { left: -100%; }
+        20% { left: 100%; }
+        100% { left: 100%; }
+    }
+
+    /* Sidebar Callout Widget - Dynamic Glowing & Animated Accent */
+    .blog-cta-widget {
+        background: linear-gradient(145deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border: 1.5px solid rgba(16, 185, 129, 0.3);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 0 20px rgba(16, 185, 129, 0.12);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: widgetFloat 6s ease-in-out infinite;
+    }
+
+    .blog-cta-widget:hover {
+        transform: translateY(-6px);
+        border-color: var(--color-primary);
+        box-shadow: 0 18px 40px -12px rgba(16, 185, 129, 0.3), 0 0 25px rgba(16, 185, 129, 0.2);
+    }
+
+    @@keyframes widgetFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .cta-live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--color-primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 50px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulseRing 1.8s infinite;
+    }
+
+    @@keyframes pulseRing {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    .btn-cta-animated {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cta-animated::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+        animation: buttonShine 3s infinite;
+    }
+
+    @@keyframes buttonShine {
+        0% { left: -100%; }
+        20% { left: 100%; }
+        100% { left: 100%; }
+    }
+
+    /* Inline Lead Gen Card Dynamic Styling */
+    .blog-lead-gen-card {
+        background: linear-gradient(145deg, var(--bg-card-alt) 0%, rgba(16, 185, 129, 0.06) 100%) !important;
+        border: 1.5px solid rgba(16, 185, 129, 0.3) !important;
+        border-radius: 20px !important;
+        padding: 28px 24px !important;
+        box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.08), 0 0 20px rgba(16, 185, 129, 0.15) !important;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .blog-lead-gen-card:hover {
+        transform: translateY(-4px) !important;
+        border-color: var(--color-primary) !important;
+        box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.25) !important;
+    }
+
+    .cta-widget-icon-wrapper {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 64px;
+        height: 64px;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 50%;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .cta-widget-title {
+        font: var(--font-h6);
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .cta-widget-desc {
+        font: var(--font-body-1);
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+    /* Custom Admin Markdown Callouts */
+    .blog-callout {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin: 24px 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+    }
+
+    .blog-callout-info {
+        border-left: 4px solid var(--color-primary);
+    }
+
+    .blog-callout-warning {
+        border-left: 4px solid var(--color-warning);
+    }
+
+    .text-accent {
+        color: var(--color-primary);
+        font-weight: 700;
+    }
+
+    /* Custom HTML Pricing Graphics Grid & Cards */
+    .pricing-graphics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin: 32px 0;
+    }
+
+    .pricing-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: var(--elevation-01dp);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .pricing-card:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    .pricing-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .pricing-icon-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--color-primary);
+    }
+
+    .pricing-service-title {
+        font: var(--font-h6);
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .pricing-tiers-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .tier-item {
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .tier-item.active {
+        border-color: var(--color-primary);
+        background: rgba(16, 185, 129, 0.08);
+    }
+
+    .tier-name {
+        font: var(--font-h3);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tier-badge {
+        background: var(--color-primary);
+        color: var(--bg-page);
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 700;
+    }
+
+    .tier-price {
+        font: var(--font-h6);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .tier-bar-fill {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: 10px;
+    }
+
+    /* Embedded Video Player Styles - Borderless & Seamless Feed Aesthetic */
+    .blog-video-container {
+        border-radius: 20px;
+        overflow: hidden;
+        margin: 28px 0;
+        border: none;
+        box-shadow: var(--shadow-main);
+        background: transparent;
+    }
+
+    .blog-video-player {
+        width: 100%;
+        max-height: 520px;
+        display: block;
+        border-radius: 20px;
+        border: none;
+        outline: none;
+        object-fit: cover;
+        background: transparent;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = default!;
+
+    private BlogPostMetadata? _meta;
+    private string? _htmlContent;
+    private bool _isNotFound;
+    private string _currentLang = "bg";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isNotFound = false;
+        _meta = null;
+        _htmlContent = null;
+        _currentLang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+
+        try
+        {
+            // 1. Fetch metadata from posts.json
+            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+            if (File.Exists(postsFilePath))
+            {
+                var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
+                _meta = posts?.FirstOrDefault(p => p.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // 2. Fetch markdown content and convert (Try {slug}.{lang}.md first, fallback to {slug}.md)
+            var localizedMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.{_currentLang}.md");
+            var defaultMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.md");
+            
+            var targetPath = File.Exists(localizedMdPath) ? localizedMdPath : (File.Exists(defaultMdPath) ? defaultMdPath : null);
+
+            if (targetPath != null)
+            {
+                var mdContent = await File.ReadAllTextAsync(targetPath);
+                var pipeline = new Markdig.MarkdownPipelineBuilder()
+                    .UseAdvancedExtensions()
+                    .Build();
+                _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+            }
+            else
+            {
+                _isNotFound = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading article {Slug}: {ex.Message}");
+            _isNotFound = true;
+        }
+    }
+
+    private string GetTitle() =>
+        _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.TitleEn) ? _meta.TitleEn : _meta.TitleBg ?? _meta.Title ?? "") : (!string.IsNullOrEmpty(_meta.TitleBg) ? _meta.TitleBg : _meta.TitleEn ?? _meta.Title ?? ""));
+
+    private string GetDescription() =>
+        _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.DescriptionEn) ? _meta.DescriptionEn : _meta.DescriptionBg ?? _meta.Description ?? "") : (!string.IsNullOrEmpty(_meta.DescriptionBg) ? _meta.DescriptionBg : _meta.DescriptionEn ?? _meta.Description ?? ""));
+
+    private string GetCategory() =>
+        _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.CategoryEn) ? _meta.CategoryEn : _meta.CategoryBg ?? _meta.Category ?? "") : (!string.IsNullOrEmpty(_meta.CategoryBg) ? _meta.CategoryBg : _meta.CategoryEn ?? _meta.Category ?? ""));
+
+    private string GetReadTime() =>
+        _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.ReadTimeEn) ? _meta.ReadTimeEn : _meta.ReadTimeBg ?? _meta.ReadTime ?? "") : (!string.IsNullOrEmpty(_meta.ReadTimeBg) ? _meta.ReadTimeBg : _meta.ReadTimeEn ?? _meta.ReadTime ?? ""));
+
+    private string GetKeywords() =>
+        _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.SeoKeywordsEn) ? _meta.SeoKeywordsEn : _meta.SeoKeywordsBg ?? _meta.SeoKeywords ?? "") : (!string.IsNullOrEmpty(_meta.SeoKeywordsBg) ? _meta.SeoKeywordsBg : _meta.SeoKeywordsEn ?? _meta.SeoKeywords ?? ""));
+
+    public record BlogPostMetadata(
+        string Slug, 
+        string? TitleBg, 
+        string? TitleEn, 
+        string? DescriptionBg, 
+        string? DescriptionEn, 
+        string Date, 
+        string? CategoryBg, 
+        string? CategoryEn, 
+        string Image, 
+        string? ReadTimeBg, 
+        string? ReadTimeEn, 
+        string? SeoKeywordsBg = null,
+        string? SeoKeywordsEn = null,
+        string? Title = null,
+        string? Description = null,
+        string? Category = null,
+        string? ReadTime = null,
+        string? SeoKeywords = null
+    );
+}

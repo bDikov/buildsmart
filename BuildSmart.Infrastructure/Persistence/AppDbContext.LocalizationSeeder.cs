@@ -68,7 +68,7 @@ public partial class AppDbContext
             if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
             {
                 var lookupKey = (key.ToLowerInvariant(), cultureCode.ToLowerInvariant());
-                if (!existingMap.ContainsKey(lookupKey))
+                if (!existingMap.TryGetValue(lookupKey, out var existingValue))
                 {
                     var resource = new LocalizationResource
                     {
@@ -82,6 +82,17 @@ public partial class AppDbContext
                     await LocalizationResources.AddAsync(resource);
                     existingMap[lookupKey] = value;
                     added = true;
+                }
+                else if (existingValue != value)
+                {
+                    var existingEntity = await LocalizationResources.FirstOrDefaultAsync(r => r.Key == key && r.Culture == cultureCode);
+                    if (existingEntity != null)
+                    {
+                        existingEntity.Value = value;
+                        existingEntity.UpdatedAt = DateTime.UtcNow;
+                        existingMap[lookupKey] = value;
+                        added = true;
+                    }
                 }
             }
         }

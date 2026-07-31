@@ -1,0 +1,240 @@
+@page "/blog"
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@using System.Text.Json
+@using System.Globalization
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Localization
+@inject IWebHostEnvironment WebHostEnvironment
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+
+<PageTitle>@Loc["Blog_Title"] - BuildSmart</PageTitle>
+<HeadContent>
+    <meta name="description" content="@Loc["Blog_Description"]" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://buildsmart.bg/blog" />
+    <meta property="og:title" content="@Loc["Blog_Header"]" />
+    <meta property="og:description" content="@Loc["Blog_Description"]" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://buildsmart.bg/blog" />
+</HeadContent>
+
+<div class="blog-container container py-5">
+    <div class="blog-header mb-5 text-center">
+        <h1 class="blog-main-title">@Loc["Blog_Header"]</h1>
+        <p class="blog-main-desc">@Loc["Blog_Description"]</p>
+    </div>
+
+    @if (_posts == null)
+    {
+        <div class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!_posts.Any())
+    {
+        <div class="text-center py-5">
+            <p>No articles found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var post in _posts)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <a href="/blog/@post.Slug" class="blog-card-link text-decoration-none">
+                        <div class="blog-card">
+                            <div class="blog-card-img-wrapper">
+                                @if (!string.IsNullOrEmpty(post.Image))
+                                {
+                                    <img src="@post.Image" alt="@GetTitle(post)" class="blog-card-img" />
+                                }
+                                else
+                                {
+                                    <div class="blog-card-img-placeholder"></div>
+                                }
+                                <span class="blog-card-category">@GetCategory(post)</span>
+                            </div>
+                            <div class="blog-card-content">
+                                <div class="blog-card-meta">
+                                    <span class="blog-card-date">@post.Date</span>
+                                    <span class="blog-card-dot">•</span>
+                                    <span class="blog-card-readtime">@GetReadTime(post) @Loc["Blog_ReadTime"]</span>
+                                </div>
+                                <h3 class="blog-card-title">@GetTitle(post)</h3>
+                                <p class="blog-card-desc">@GetDescription(post)</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .blog-main-title {
+        font: var(--font-h1);
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+
+    .blog-main-desc {
+        font: var(--font-body-1);
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .blog-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        box-shadow: var(--elevation-01dp);
+    }
+
+    .blog-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--elevation-08dp);
+        border-color: var(--color-primary);
+    }
+
+    .blog-card-img-wrapper {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        background-color: var(--bg-card-alt);
+    }
+
+    .blog-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .blog-card:hover .blog-card-img {
+        transform: scale(1.05);
+    }
+
+    .blog-card-img-placeholder {
+        width: 100%;
+        height: 100%;
+        background: var(--bg-card-alt);
+    }
+
+    .blog-card-category {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: var(--color-primary);
+        color: var(--bg-page);
+        padding: 4px 12px;
+        border-radius: 50px;
+        font: var(--font-h3);
+        font-weight: 700;
+    }
+
+    .blog-card-content {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .blog-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+        font: var(--font-h3);
+        color: var(--text-muted);
+    }
+
+    .blog-card-title {
+        font: var(--font-h6);
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+
+    .blog-card-desc {
+        font: var(--font-body-1);
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-bottom: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+@code {
+    private List<BlogPostMetadata>? _posts;
+    private string _currentLang = "bg";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentLang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+        try
+        {
+            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+            if (File.Exists(postsFilePath))
+            {
+                var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                _posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
+            }
+            else
+            {
+                _posts = new List<BlogPostMetadata>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading posts.json: {ex.Message}");
+            _posts = new List<BlogPostMetadata>();
+        }
+    }
+
+    private string GetTitle(BlogPostMetadata post) =>
+        _currentLang == "en" ? (!string.IsNullOrEmpty(post.TitleEn) ? post.TitleEn : post.TitleBg ?? post.Title ?? "") : (!string.IsNullOrEmpty(post.TitleBg) ? post.TitleBg : post.TitleEn ?? post.Title ?? "");
+
+    private string GetDescription(BlogPostMetadata post) =>
+        _currentLang == "en" ? (!string.IsNullOrEmpty(post.DescriptionEn) ? post.DescriptionEn : post.DescriptionBg ?? post.Description ?? "") : (!string.IsNullOrEmpty(post.DescriptionBg) ? post.DescriptionBg : post.DescriptionEn ?? post.Description ?? "");
+
+    private string GetCategory(BlogPostMetadata post) =>
+        _currentLang == "en" ? (!string.IsNullOrEmpty(post.CategoryEn) ? post.CategoryEn : post.CategoryBg ?? post.Category ?? "") : (!string.IsNullOrEmpty(post.CategoryBg) ? post.CategoryBg : post.CategoryEn ?? post.Category ?? "");
+
+    private string GetReadTime(BlogPostMetadata post) =>
+        _currentLang == "en" ? (!string.IsNullOrEmpty(post.ReadTimeEn) ? post.ReadTimeEn : post.ReadTimeBg ?? post.ReadTime ?? "") : (!string.IsNullOrEmpty(post.ReadTimeBg) ? post.ReadTimeBg : post.ReadTimeEn ?? post.ReadTime ?? "");
+
+    public record BlogPostMetadata(
+        string Slug, 
+        string? TitleBg, 
+        string? TitleEn, 
+        string? DescriptionBg, 
+        string? DescriptionEn, 
+        string Date, 
+        string? CategoryBg, 
+        string? CategoryEn, 
+        string Image, 
+        string? ReadTimeBg, 
+        string? ReadTimeEn,
+        string? Title = null,
+        string? Description = null,
+        string? Category = null,
+        string? ReadTime = null
+    );
+}

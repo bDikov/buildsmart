@@ -1218,4 +1218,85 @@
   <data name="Feed_ReadMore" xml:space="preserve">
     <value>Read more...</value>
   </data>
+  <data name="Blog_Header" xml:space="preserve">
+    <value>Planning a Renovation? Check the Budgets First</value>
+  </data>
+  <data name="Blog_ReadTime" xml:space="preserve">
+    <value>read time</value>
+  </data>
+  <data name="Blog_Back" xml:space="preserve">
+    <value>Back to Blog</value>
+  </data>
+  <data name="Blog_PublishedOn" xml:space="preserve">
+    <value>Published on</value>
+  </data>
+  <data name="Blog_Title" xml:space="preserve">
+    <value>Blog &amp; Price Guides</value>
+  </data>
+  <data name="Blog_Description" xml:space="preserve">
+    <value>Full dissection of renovation budgets: from demolition and plastering to the final tile joint in the bathroom.</value>
+  </data>
+  <data name="Blog_EstimatorCta" xml:space="preserve">
+    <value>Get Your Fixed Contract Quote</value>
+  </data>
+  <data name="Blog_EstimatorDesc" xml:space="preserve">
+    <value>Calculate exact itemized labor and material costs for your flat with 0% advance deposit.</value>
+  </data>
+  <data name="Admin_BlogManager" xml:space="preserve">
+    <value>Blog Manager</value>
+  </data>
+  <data name="Admin_CreatePost" xml:space="preserve">
+    <value>Create New Post</value>
+  </data>
+  <data name="Admin_EditPost" xml:space="preserve">
+    <value>Edit Post</value>
+  </data>
+  <data name="Admin_DeletePost" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Admin_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Admin_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Admin_UploadImage" xml:space="preserve">
+    <value>Upload Image</value>
+  </data>
+  <data name="Admin_InsertImage" xml:space="preserve">
+    <value>Insert Image into Post</value>
+  </data>
+  <data name="Admin_Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Admin_Slug" xml:space="preserve">
+    <value>Slug (URL Address)</value>
+  </data>
+  <data name="Admin_Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Admin_ReadTime" xml:space="preserve">
+    <value>Read Time</value>
+  </data>
+  <data name="Admin_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Admin_CoverImage" xml:space="preserve">
+    <value>Cover Image URL</value>
+  </data>
+  <data name="Admin_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Admin_Content" xml:space="preserve">
+    <value>Content (Markdown)</value>
+  </data>
+  <data name="Admin_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Admin_SeoKeywords" xml:space="preserve">
+    <value>Meta Keywords</value>
+  </data>
+  <data name="Admin_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
 </root>
