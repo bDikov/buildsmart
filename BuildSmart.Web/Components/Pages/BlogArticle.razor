@@ -1155,6 +1155,20 @@
     private string GetKeywords() =>
         _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.SeoKeywordsEn) ? _meta.SeoKeywordsEn : _meta.SeoKeywordsBg ?? _meta.SeoKeywords ?? "") : (!string.IsNullOrEmpty(_meta.SeoKeywordsBg) ? _meta.SeoKeywordsBg : _meta.SeoKeywordsEn ?? _meta.SeoKeywords ?? ""));
 
+    private string GetCoverImage()
+    {
+        if (_meta != null && !string.IsNullOrWhiteSpace(_meta.Image))
+            return _meta.Image;
+
+        var slug = (Slug ?? "").ToLower();
+        if (slug.Contains("banya")) return "/images/blog/bathroom-renovation-cover.jpg";
+        if (slug.Contains("gipskarton")) return "/images/blog/drywall-led-ceiling-cover.jpg";
+        if (slug.Contains("red-flags") || slug.Contains("dogovor")) return "/images/blog/contractor-contract-cover.jpg";
+        if (slug.Contains("3-staen") || slug.Contains("kazus")) return "/images/blog/apartment-case-study-cover.jpg";
+
+        return "/images/blog/remont-apartament-cover.jpg";
+    }
+
     public class BlogPostMetadata
     {
         public string Slug { get; set; } = "";

@@ -51,14 +51,7 @@
                     <a href="/blog/@post.Slug" class="blog-card-link text-decoration-none">
                         <div class="blog-card">
                             <div class="blog-card-img-wrapper">
-                                @if (!string.IsNullOrEmpty(post.Image))
-                                {
-                                    <img src="@post.Image" alt="@GetTitle(post)" class="blog-card-img" />
-                                }
-                                else
-                                {
-                                    <div class="blog-card-img-placeholder"></div>
-                                }
+                                <img src="@GetCoverImage(post)" alt="@GetTitle(post)" class="blog-card-img" />
                                 <span class="blog-card-category">@GetCategory(post)</span>
                             </div>
                             <div class="blog-card-content">
@@ -264,6 +257,20 @@
 
     private string GetReadTime(BlogPostMetadata post) =>
         _currentLang == "en" ? (!string.IsNullOrEmpty(post.ReadTimeEn) ? post.ReadTimeEn : post.ReadTimeBg ?? post.ReadTime ?? "") : (!string.IsNullOrEmpty(post.ReadTimeBg) ? post.ReadTimeBg : post.ReadTimeEn ?? post.ReadTime ?? "");
+
+    private string GetCoverImage(BlogPostMetadata post)
+    {
+        if (!string.IsNullOrWhiteSpace(post.Image))
+            return post.Image;
+
+        var slug = (post.Slug ?? "").ToLower();
+        if (slug.Contains("banya")) return "/images/blog/bathroom-renovation-cover.jpg";
+        if (slug.Contains("gipskarton")) return "/images/blog/drywall-led-ceiling-cover.jpg";
+        if (slug.Contains("red-flags") || slug.Contains("dogovor")) return "/images/blog/contractor-contract-cover.jpg";
+        if (slug.Contains("3-staen") || slug.Contains("kazus")) return "/images/blog/apartment-case-study-cover.jpg";
+
+        return "/images/blog/remont-apartament-cover.jpg";
+    }
 
     public class BlogPostMetadata
     {
