@@ -7,6 +7,7 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
+@using SkiaSharp
 @using BuildSmart.Infrastructure.Persistence
 @using BuildSmart.Core.Domain.Entities
 @using Microsoft.EntityFrameworkCore
@@ -636,6 +637,53 @@
         }
     }
 
+    private async Task<(MemoryStream Stream, string ContentType, string WebpFileName)> OptimizeAndCompressImageAsync(IBrowserFile file, int maxWidth = 1200)
+    {
+        using var rawStream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
+        using var tempMemStream = new MemoryStream();
+        await rawStream.CopyToAsync(tempMemStream);
+        tempMemStream.Position = 0;
+
+        using var originalBitmap = SKBitmap.Decode(tempMemStream);
+        if (originalBitmap == null)
+        {
+            // If bitmap decode fails, fallback to original stream
+            tempMemStream.Position = 0;
+            var fallbackMs = new MemoryStream();
+            await tempMemStream.CopyToAsync(fallbackMs);
+            fallbackMs.Position = 0;
+            return (fallbackMs, file.ContentType, file.Name);
+        }
+
+        SKBitmap targetBitmap = originalBitmap;
+        bool wasResized = false;
+
+        if (originalBitmap.Width > maxWidth)
+        {
+            var newHeight = (int)((double)originalBitmap.Height / originalBitmap.Width * maxWidth);
+            var imageInfo = new SKImageInfo(maxWidth, newHeight, originalBitmap.ColorType, originalBitmap.AlphaType);
+            targetBitmap = originalBitmap.Resize(imageInfo, SKFilterQuality.High);
+            wasResized = true;
+        }
+
+        using var image = SKImage.FromBitmap(targetBitmap ?? originalBitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Webp, 80);
+
+        var outputStream = new MemoryStream();
+        data.SaveTo(outputStream);
+        outputStream.Position = 0;
+
+        if (wasResized && targetBitmap != null)
+        {
+            targetBitmap.Dispose();
+        }
+
+        var nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
+        var webpFileName = $"{nameWithoutExt}.webp";
+
+        return (outputStream, "image/webp", webpFileName);
+    }
+
     private async Task UploadCoverImageAsync(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -643,41 +691,50 @@
 
         try
         {
-            var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
-            if (!string.IsNullOrEmpty(r2AccessKey))
+            var (optStream, contentType, webpName) = await OptimizeAndCompressImageAsync(file, maxWidth: 1200);
+            await using (optStream)
             {
-                var keyName = $"images/blog/{Guid.NewGuid()}_{file.Name}";
-                await using var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
-                var cdnUrl = await MediaService.UploadFileAsync(stream, keyName, file.ContentType);
-                _activePost.Image = cdnUrl;
-                _statusMessage = $"Снимката '{file.Name}' беше качена успешно в Cloudflare R2 CDN! Натиснете 'Запази Статията'.";
+                var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
+                if (!string.IsNullOrEmpty(r2AccessKey))
+                {
+                    var keyName = $"images/blog/{Guid.NewGuid()}_{webpName}";
+                    var cdnUrl = await MediaService.UploadFileAsync(optStream, keyName, contentType);
+                    _activePost.Image = cdnUrl;
+                    _statusMessage = $"Снимката '{file.Name}' беше автоматично преоразмерена и компресирана в WebP ({optStream.Length / 1024} KB) и качена в Cloudflare R2!";
+                }
+                else
+                {
+                    var fileName = $"{Guid.NewGuid()}_{webpName}";
+                    var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
+                    Directory.CreateDirectory(folder);
+                    var path = Path.Combine(folder, fileName);
+
+                    await using (var fs = new FileStream(path, FileMode.Create))
+                    {
+                        await optStream.CopyToAsync(fs);
+                    }
+
+                    try
+                    {
+                        var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+                        Directory.CreateDirectory(binFolder);
+                        File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+                    }
+                    catch { }
+
+                    _activePost.Image = $"/images/blog/{fileName}";
+                    _statusMessage = $"Снимката '{file.Name}' беше автоматично преоразмерена и компресирана в WebP ({optStream.Length / 1024} KB)!";
+                }
+            }
+
+            if (!_isNew && !string.IsNullOrEmpty(_activePost.Slug))
+            {
+                await SavePostAsync();
             }
             else
             {
-                var fileName = $"{Guid.NewGuid()}_{file.Name}";
-                var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
-                Directory.CreateDirectory(folder);
-                var path = Path.Combine(folder, fileName);
-
-                await using (var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024))
-                await using (var fs = new FileStream(path, FileMode.Create))
-                {
-                    await stream.CopyToAsync(fs);
-                }
-
-                try
-                {
-                    var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
-                    Directory.CreateDirectory(binFolder);
-                    File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-                }
-                catch { }
-
-                _activePost.Image = $"/images/blog/{fileName}";
-                _statusMessage = $"Снимката '{file.Name}' беше качена успешно! Натиснете 'Запази Статията' за запис.";
+                StateHasChanged();
             }
-
-            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -709,10 +766,18 @@
         _showImageGalleryModal = false;
     }
 
-    private void SelectImageForCover(string url)
+    private async Task SelectImageForCover(string url)
     {
         _activePost.Image = url;
         _showImageGalleryModal = false;
+        if (!_isNew && !string.IsNullOrEmpty(_activePost.Slug))
+        {
+            await SavePostAsync();
+        }
+        else
+        {
+            StateHasChanged();
+        }
     }
 
     private void ScanBlogImages()
@@ -776,40 +841,42 @@
         try
         {
             string imageUrl = "";
-            var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
-            if (!string.IsNullOrEmpty(r2AccessKey))
+            var (optStream, contentType, webpName) = await OptimizeAndCompressImageAsync(file, maxWidth: 1200);
+            await using (optStream)
             {
-                var keyName = $"images/blog/{Guid.NewGuid()}_{file.Name}";
-                await using var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
-                imageUrl = await MediaService.UploadFileAsync(stream, keyName, file.ContentType);
-            }
-            else
-            {
-                var fileName = $"{Guid.NewGuid()}_{file.Name}";
-                var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
-                Directory.CreateDirectory(folder);
-                var path = Path.Combine(folder, fileName);
-
-                await using (var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024))
-                await using (var fs = new FileStream(path, FileMode.Create))
+                var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
+                if (!string.IsNullOrEmpty(r2AccessKey))
                 {
-                    await stream.CopyToAsync(fs);
+                    var keyName = $"images/blog/{Guid.NewGuid()}_{webpName}";
+                    imageUrl = await MediaService.UploadFileAsync(optStream, keyName, contentType);
                 }
-
-                try
+                else
                 {
-                    var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
-                    Directory.CreateDirectory(binFolder);
-                    File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-                }
-                catch { }
+                    var fileName = $"{Guid.NewGuid()}_{webpName}";
+                    var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
+                    Directory.CreateDirectory(folder);
+                    var path = Path.Combine(folder, fileName);
 
-                imageUrl = $"/images/blog/{fileName}";
+                    await using (var fs = new FileStream(path, FileMode.Create))
+                    {
+                        await optStream.CopyToAsync(fs);
+                    }
+
+                    try
+                    {
+                        var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+                        Directory.CreateDirectory(binFolder);
+                        File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+                    }
+                    catch { }
+
+                    imageUrl = $"/images/blog/{fileName}";
+                }
             }
 
             var markdownImage = $"\n![image]({imageUrl})\n";
             InsertSnippet(markdownImage, lang);
-            _statusMessage = $"Снимката беше качена успешно в маркдаун текста!";
+            _statusMessage = $"Снимката беше автоматично компресирана в WebP и поставена в маркдаун текста!";
             StateHasChanged();
         }
         catch (Exception ex)

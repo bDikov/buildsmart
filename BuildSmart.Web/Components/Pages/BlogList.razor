@@ -7,6 +7,7 @@
 @using BuildSmart.Infrastructure.Persistence
 @using BuildSmart.Core.Domain.Entities
 @using Microsoft.EntityFrameworkCore
+@using BuildSmart.Web.Models
 @inject IDbContextFactory<AppDbContext> DbContextFactory
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
@@ -16,10 +17,18 @@
     <meta name="description" content="@Loc["Blog_Description"]" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://buildsmart.bg/blog" />
+    <link rel="alternate" hreflang="bg" href="https://buildsmart.bg/blog" />
+    <link rel="alternate" hreflang="en" href="https://buildsmart.bg/blog" />
+    <link rel="alternate" hreflang="x-default" href="https://buildsmart.bg/blog" />
     <meta property="og:title" content="@Loc["Blog_Header"]" />
     <meta property="og:description" content="@Loc["Blog_Description"]" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://buildsmart.bg/blog" />
+    
+    <!-- BREADCRUMB LIST SCHEMA -->
+    <script type="application/ld+json">
+    @((MarkupString)GetBreadcrumbSchemaJson())
+    </script>
 </HeadContent>
 
 <div class="blog-container container py-5">
@@ -258,10 +267,38 @@
     private string GetReadTime(BlogPostMetadata post) =>
         _currentLang == "en" ? (!string.IsNullOrEmpty(post.ReadTimeEn) ? post.ReadTimeEn : post.ReadTimeBg ?? post.ReadTime ?? "") : (!string.IsNullOrEmpty(post.ReadTimeBg) ? post.ReadTimeBg : post.ReadTimeEn ?? post.ReadTime ?? "");
 
+    private string NormalizeImageUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return "/images/blog/remont-apartament-cover.jpg";
+
+        var trimmed = url.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            if (trimmed.Contains("localhost", StringComparison.OrdinalIgnoreCase) || trimmed.Contains("127.0.0.1"))
+            {
+                try
+                {
+                    var uri = new Uri(trimmed);
+                    return uri.AbsolutePath;
+                }
+                catch { }
+            }
+            return trimmed;
+        }
+
+        if (!trimmed.StartsWith("/"))
+        {
+            return "/" + trimmed;
+        }
+
+        return trimmed;
+    }
+
     private string GetCoverImage(BlogPostMetadata post)
     {
         if (!string.IsNullOrWhiteSpace(post.Image))
-            return post.Image;
+            return NormalizeImageUrl(post.Image);
 
         var slug = (post.Slug ?? "").ToLower();
         if (slug.Contains("banya")) return "/images/blog/bathroom-renovation-cover.jpg";
@@ -272,24 +309,8 @@
         return "/images/blog/remont-apartament-cover.jpg";
     }
 
-    public class BlogPostMetadata
+    private string GetBreadcrumbSchemaJson()
     {
-        public string Slug { get; set; } = "";
-        public string? TitleBg { get; set; }
-        public string? TitleEn { get; set; }
-        public string? DescriptionBg { get; set; }
-        public string? DescriptionEn { get; set; }
-        public string Date { get; set; } = "";
-        public string? CategoryBg { get; set; }
-        public string? CategoryEn { get; set; }
-        public string Image { get; set; } = "";
-        public string? ReadTimeBg { get; set; }
-        public string? ReadTimeEn { get; set; }
-        public string? SeoKeywordsBg { get; set; }
-        public string? SeoKeywordsEn { get; set; }
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public string? Category { get; set; }
-        public string? ReadTime { get; set; }
+        return "{\"@@context\":\"https://schema.org\",\"@@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@@type\":\"ListItem\",\"position\":1,\"name\":\"Начало\",\"item\":\"https://buildsmart.bg\"},{\"@@type\":\"ListItem\",\"position\":2,\"name\":\"Блог\",\"item\":\"https://buildsmart.bg/blog\"}]}";
     }
 }

@@ -28,10 +28,10 @@
         <meta property="og:description" content="@GetDescription()" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="@($"https://buildsmart.bg/blog/{Slug}")" />
-        @if (!string.IsNullOrEmpty(_meta.Image))
+        @if (!string.IsNullOrEmpty(GetCoverImage()))
         {
-            <meta property="og:image" content="@($"https://buildsmart.bg{_meta.Image}")" />
-            <meta name="twitter:image" content="@($"https://buildsmart.bg{_meta.Image}")" />
+            <meta property="og:image" content="@GetFullCoverImageUrl()" />
+            <meta name="twitter:image" content="@GetFullCoverImageUrl()" />
         }
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="@GetTitle()" />
@@ -1155,10 +1155,38 @@
     private string GetKeywords() =>
         _meta == null ? "" : (_currentLang == "en" ? (!string.IsNullOrEmpty(_meta.SeoKeywordsEn) ? _meta.SeoKeywordsEn : _meta.SeoKeywordsBg ?? _meta.SeoKeywords ?? "") : (!string.IsNullOrEmpty(_meta.SeoKeywordsBg) ? _meta.SeoKeywordsBg : _meta.SeoKeywordsEn ?? _meta.SeoKeywords ?? ""));
 
+    private string NormalizeImageUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return "/images/blog/remont-apartament-cover.jpg";
+
+        var trimmed = url.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            if (trimmed.Contains("localhost", StringComparison.OrdinalIgnoreCase) || trimmed.Contains("127.0.0.1"))
+            {
+                try
+                {
+                    var uri = new Uri(trimmed);
+                    return uri.AbsolutePath;
+                }
+                catch { }
+            }
+            return trimmed;
+        }
+
+        if (!trimmed.StartsWith("/"))
+        {
+            return "/" + trimmed;
+        }
+
+        return trimmed;
+    }
+
     private string GetCoverImage()
     {
         if (_meta != null && !string.IsNullOrWhiteSpace(_meta.Image))
-            return _meta.Image;
+            return NormalizeImageUrl(_meta.Image);
 
         var slug = (Slug ?? "").ToLower();
         if (slug.Contains("banya")) return "/images/blog/bathroom-renovation-cover.jpg";
@@ -1167,6 +1195,15 @@
         if (slug.Contains("3-staen") || slug.Contains("kazus")) return "/images/blog/apartment-case-study-cover.jpg";
 
         return "/images/blog/remont-apartament-cover.jpg";
+    }
+
+    private string GetFullCoverImageUrl()
+    {
+        var img = GetCoverImage();
+        if (img.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || img.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return img;
+
+        return $"https://buildsmart.bg{img}";
     }
 
     public class BlogPostMetadata
