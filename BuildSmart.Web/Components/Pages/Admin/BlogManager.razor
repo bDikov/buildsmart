@@ -21,10 +21,16 @@
         </div>
         @if (!_isEditing)
         {
-            <button class="btn btn-primary" @onclick="CreateNewPost">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                @Loc["Admin_CreatePost"]
-            </button>
+            <div>
+                <button class="btn btn-outline-secondary me-2" @onclick="OpenImageGalleryModal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Управление на Снимки
+                </button>
+                <button class="btn btn-primary" @onclick="CreateNewPost">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    @Loc["Admin_CreatePost"]
+                </button>
+            </div>
         }
     </div>
 
@@ -132,6 +138,9 @@
                         <label class="form-label fw-bold">@Loc["Admin_CoverImage"]</label>
                         <div class="input-group">
                             <input type="text" class="form-control" @bind="_activePost.Image" placeholder="/images/blog/cover.jpg" />
+                            <button class="btn btn-outline-secondary" type="button" @onclick="OpenImageGalleryModal" title="Галерия и Управление на Снимки">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            </button>
                             <label class="btn btn-secondary mb-0">
                                 Upload
                                 <InputFile OnChange="UploadCoverImageAsync" accept="image/*" class="d-none" />
@@ -411,6 +420,73 @@
     }
 </style>
 
+    @if (_showImageGalleryModal)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1060;">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary); border-radius: 20px; border: 1px solid var(--border-color);">
+                    <div class="modal-header border-bottom border-color">
+                        <div class="d-flex align-items-center gap-2">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <h5 class="modal-title fw-bold m-0">Управление на Снимките (Галерия)</h5>
+                        </div>
+                        <button type="button" class="btn-close" @onclick="CloseImageGalleryModal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                            <p class="text-secondary m-0">Всички качени снимки в <code>/images/blog/</code>. Можете да ги преглеждате, избирате или изтривате физически от сървъра.</p>
+                            <label class="btn btn-primary px-3 py-2 mb-0">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Качи Нова Снимка
+                                <InputFile OnChange="UploadGalleryImageAsync" accept="image/*" class="d-none" />
+                            </label>
+                        </div>
+
+                        @if (!_blogImageOptions.Any())
+                        {
+                            <div class="text-center py-5">
+                                <p class="text-muted m-0">Няма намерени снимки в папката.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row g-3">
+                                @foreach (var img in _blogImageOptions)
+                                {
+                                    <div class="col-6 col-md-4 col-lg-3">
+                                        <div class="card h-100 p-2" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 14px;">
+                                            <div class="position-relative overflow-hidden mb-2" style="height: 140px; border-radius: 10px; background: #000;">
+                                                <img src="@img.Url" alt="@img.FileName" style="width: 100%; height: 100%; object-fit: cover;" />
+                                            </div>
+                                            <div class="px-1 mb-2">
+                                                <div class="fw-bold text-truncate small" title="@img.FileName">@img.FileName</div>
+                                                <div class="text-muted small">@img.FileSizeFormatted</div>
+                                            </div>
+                                            <div class="d-flex gap-1 mt-auto">
+                                                @if (_isEditing)
+                                                {
+                                                    <button class="btn btn-sm btn-primary flex-grow-1 py-1" style="font-size: 0.8rem;" @onclick="() => SelectImageForCover(img.Url)">
+                                                        Избери
+                                                    </button>
+                                                }
+                                                <button class="btn btn-sm btn-outline-danger py-1" style="font-size: 0.8rem;" @onclick="() => DeleteImageFileAsync(img)" title="Изтрий файла от сървъра">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer border-top border-color py-2">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseImageGalleryModal">Затвори</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
 @code {
     private List<BlogPostModel>? _posts;
     private BlogPostModel _activePost = new();
@@ -554,6 +630,87 @@
         catch { }
 
         _activePost.Image = $"/images/blog/{fileName}";
+    }
+
+    public class BlogImageOption
+    {
+        public string FileName { get; set; } = "";
+        public string Url { get; set; } = "";
+        public long FileSizeBytes { get; set; }
+        public string FileSizeFormatted => $"{FileSizeBytes / 1024.0:F1} KB";
+    }
+
+    private bool _showImageGalleryModal = false;
+    private List<BlogImageOption> _blogImageOptions = new();
+
+    private void OpenImageGalleryModal()
+    {
+        ScanBlogImages();
+        _showImageGalleryModal = true;
+    }
+
+    private void CloseImageGalleryModal()
+    {
+        _showImageGalleryModal = false;
+    }
+
+    private void SelectImageForCover(string url)
+    {
+        _activePost.Image = url;
+        _showImageGalleryModal = false;
+    }
+
+    private void ScanBlogImages()
+    {
+        _blogImageOptions.Clear();
+        var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
+        if (Directory.Exists(folder))
+        {
+            var files = Directory.GetFiles(folder, "*.*")
+                .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
+                .Select(f => new FileInfo(f))
+                .OrderByDescending(f => f.LastWriteTime)
+                .ToList();
+
+            foreach (var fi in files)
+            {
+                _blogImageOptions.Add(new BlogImageOption
+                {
+                    FileName = fi.Name,
+                    Url = $"/images/blog/{fi.Name}",
+                    FileSizeBytes = fi.Length
+                });
+            }
+        }
+    }
+
+    private async Task UploadGalleryImageAsync(InputFileChangeEventArgs e)
+    {
+        await UploadCoverImageAsync(e);
+        ScanBlogImages();
+    }
+
+    private async Task DeleteImageFileAsync(BlogImageOption img)
+    {
+        try
+        {
+            var webPath = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog", img.FileName);
+            var binPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog", img.FileName);
+
+            if (File.Exists(webPath)) File.Delete(webPath);
+            if (File.Exists(binPath)) File.Delete(binPath);
+
+            _blogImageOptions.Remove(img);
+            _statusMessage = $"Снимката '{img.FileName}' беше изтрита успешно от диска!";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting image file: {ex.Message}");
+        }
     }
 
     private async Task UploadInlineImageAsync(InputFileChangeEventArgs e, string lang)
