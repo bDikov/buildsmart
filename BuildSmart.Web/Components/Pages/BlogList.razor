@@ -200,6 +200,17 @@
                 .OrderByDescending(b => b.PublishedAt)
                 .ToListAsync();
 
+            if (!dbPosts.Any())
+            {
+                // Instant auto-seed if PostgreSQL table has no articles
+                await db.SeedBlogPostsAsync(WebHostEnvironment.WebRootPath);
+                dbPosts = await db.BlogPosts
+                    .AsNoTracking()
+                    .Where(b => b.IsPublished)
+                    .OrderByDescending(b => b.PublishedAt)
+                    .ToListAsync();
+            }
+
             if (dbPosts.Any())
             {
                 _posts = dbPosts.Select(b => new BlogPostMetadata
