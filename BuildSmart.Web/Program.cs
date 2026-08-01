@@ -7,6 +7,7 @@ using BuildSmart.SharedUI.MauiMocks;
 using Microsoft.AspNetCore.Components.Authorization;
 using BuildSmart.SharedUI.ViewModels;
 using BuildSmart.SharedUI.ViewModels.Admin;
+using Microsoft.EntityFrameworkCore;
 using System.IO;
 
 AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
@@ -51,6 +52,18 @@ builder.Services.AddLocalization();
 builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService, BuildSmart.SharedUI.Services.Localization.LocalizationCacheService>();
 builder.Services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, BuildSmart.SharedUI.Services.Localization.DbStringLocalizerFactory>();
 builder.Services.AddScoped<BuildSmart.SharedUI.Services.ILocalizationStateService, BuildSmart.SharedUI.Services.LocalizationStateService>();
+
+var webConnString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(webConnString))
+{
+    builder.Services.AddDbContextFactory<BuildSmart.Infrastructure.Persistence.AppDbContext>(options =>
+        options.UseNpgsql(webConnString));
+}
+else
+{
+    builder.Services.AddDbContextFactory<BuildSmart.Infrastructure.Persistence.AppDbContext>(options =>
+        options.UseInMemoryDatabase($"BuildSmartWeb_{Guid.NewGuid()}"));
+}
 
 // Configure SharedUI API Config based on Web
 var apiUrl = builder.Configuration["ApiConfig:BaseUrlOverride"] ?? builder.Configuration["ApiConfig:BaseUrl"];

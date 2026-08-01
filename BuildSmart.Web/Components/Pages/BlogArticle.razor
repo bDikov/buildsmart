@@ -5,6 +5,10 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Localization
+@using BuildSmart.Infrastructure.Persistence
+@using BuildSmart.Core.Domain.Entities
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbContextFactory
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject NavigationManager NavManager
@@ -1017,33 +1021,68 @@
 
         try
         {
-            // 1. Fetch metadata from posts.json
-            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
-            if (File.Exists(postsFilePath))
-            {
-                var jsonContent = await File.ReadAllTextAsync(postsFilePath);
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
-                _meta = posts?.FirstOrDefault(p => p.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
-            }
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var dbPost = await db.BlogPosts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
 
-            // 2. Fetch markdown content and convert (Try {slug}.{lang}.md first, fallback to {slug}.md)
-            var localizedMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.{_currentLang}.md");
-            var defaultMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.md");
-            
-            var targetPath = File.Exists(localizedMdPath) ? localizedMdPath : (File.Exists(defaultMdPath) ? defaultMdPath : null);
-
-            if (targetPath != null)
+            if (dbPost != null)
             {
-                var mdContent = await File.ReadAllTextAsync(targetPath);
-                var pipeline = new Markdig.MarkdownPipelineBuilder()
-                    .UseAdvancedExtensions()
-                    .Build();
-                _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+                _meta = new BlogPostMetadata
+                {
+                    Slug = dbPost.Slug,
+                    TitleBg = dbPost.TitleBg,
+                    TitleEn = dbPost.TitleEn,
+                    DescriptionBg = dbPost.DescriptionBg,
+                    DescriptionEn = dbPost.DescriptionEn,
+                    Date = dbPost.PublishedAt.ToString("yyyy-MM-dd"),
+                    CategoryBg = dbPost.CategoryBg,
+                    CategoryEn = dbPost.CategoryEn,
+                    Image = dbPost.CoverImageUrl,
+                    ReadTimeBg = dbPost.ReadTimeBg,
+                    ReadTimeEn = dbPost.ReadTimeEn,
+                    SeoKeywordsBg = dbPost.SeoKeywordsBg,
+                    SeoKeywordsEn = dbPost.SeoKeywordsEn
+                };
+
+                var mdContent = _currentLang == "en" ? (!string.IsNullOrEmpty(dbPost.ContentEn) ? dbPost.ContentEn : dbPost.ContentBg) : (!string.IsNullOrEmpty(dbPost.ContentBg) ? dbPost.ContentBg : dbPost.ContentEn);
+
+                if (!string.IsNullOrWhiteSpace(mdContent))
+                {
+                    var pipeline = new Markdig.MarkdownPipelineBuilder()
+                        .UseAdvancedExtensions()
+                        .Build();
+                    _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+                }
             }
             else
             {
-                _isNotFound = true;
+                // Fallback to local files if DB is not populated yet
+                var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+                if (File.Exists(postsFilePath))
+                {
+                    var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
+                    _meta = posts?.FirstOrDefault(p => p.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
+                }
+
+                var localizedMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.{_currentLang}.md");
+                var defaultMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.md");
+                var targetPath = File.Exists(localizedMdPath) ? localizedMdPath : (File.Exists(defaultMdPath) ? defaultMdPath : null);
+
+                if (targetPath != null)
+                {
+                    var mdContent = await File.ReadAllTextAsync(targetPath);
+                    var pipeline = new Markdig.MarkdownPipelineBuilder()
+                        .UseAdvancedExtensions()
+                        .Build();
+                    _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+                }
+                else
+                {
+                    _isNotFound = true;
+                }
             }
         }
         catch (Exception ex)

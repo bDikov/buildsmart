@@ -23,6 +23,19 @@ public class Query
 	[UseProjection]
 	[UseFiltering]
 	[UseSorting]
+	public IQueryable<BlogPost> GetBlogPosts([Service] AppDbContext context)
+	{
+		return context.BlogPosts.Where(b => b.IsPublished).OrderByDescending(b => b.PublishedAt);
+	}
+
+	public async Task<BlogPost?> GetBlogPostBySlug(string slug, [Service] AppDbContext context, CancellationToken cancellationToken)
+	{
+		return await context.BlogPosts.AsNoTracking().FirstOrDefaultAsync(b => b.Slug == slug, cancellationToken);
+	}
+
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
 	public IQueryable<TradesmanProfile> GetTradesmanProfiles([Service] ITradesmanProfileRepository tradesmanProfileRepository)
 	{
 		return tradesmanProfileRepository.GetQueryable();

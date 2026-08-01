@@ -476,6 +476,7 @@ public partial class Program
 					typeof(BuildSmart.SharedUI.Resources.AppResources).Assembly
 				);
 				await context.SeedLocalizationResourcesAsync(resourceManager);
+				await context.SeedBlogPostsAsync(builder.Environment.WebRootPath);
 
 				// Warm up localization cache
 				var cacheService = services.GetRequiredService<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService>();

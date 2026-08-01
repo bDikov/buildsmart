@@ -48,6 +48,7 @@ public partial class AppDbContext : DbContext
 	public DbSet<ProjectMessage> ProjectMessages { get; set; } = null!;
 	public DbSet<LocalizationResource> LocalizationResources { get; set; } = null!;
 	public DbSet<UserCampaignMetadata> UserCampaignMetadata { get; set; } = null!;
+	public DbSet<BlogPost> BlogPosts { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
@@ -58,6 +59,15 @@ public partial class AppDbContext : DbContext
 	{
 		base.OnModelCreating(modelBuilder);
 		
+		modelBuilder.Entity<BlogPost>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.Slug).IsUnique();
+			entity.Property(e => e.Slug).HasMaxLength(200).IsRequired();
+			entity.Property(e => e.TitleBg).HasMaxLength(300).IsRequired();
+			entity.Property(e => e.TitleEn).HasMaxLength(300).IsRequired();
+		});
+
 		modelBuilder.Entity<UserCampaignMetadata>(entity =>
 		{
 			entity.HasOne(d => d.User)

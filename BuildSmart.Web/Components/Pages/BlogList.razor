@@ -4,6 +4,10 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Localization
+@using BuildSmart.Infrastructure.Persistence
+@using BuildSmart.Core.Domain.Entities
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbContextFactory
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 
@@ -189,21 +193,51 @@
         _currentLang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
         try
         {
-            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
-            if (File.Exists(postsFilePath))
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var dbPosts = await db.BlogPosts
+                .AsNoTracking()
+                .Where(b => b.IsPublished)
+                .OrderByDescending(b => b.PublishedAt)
+                .ToListAsync();
+
+            if (dbPosts.Any())
             {
-                var jsonContent = await File.ReadAllTextAsync(postsFilePath);
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                _posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
+                _posts = dbPosts.Select(b => new BlogPostMetadata
+                {
+                    Slug = b.Slug,
+                    TitleBg = b.TitleBg,
+                    TitleEn = b.TitleEn,
+                    DescriptionBg = b.DescriptionBg,
+                    DescriptionEn = b.DescriptionEn,
+                    Date = b.PublishedAt.ToString("yyyy-MM-dd"),
+                    CategoryBg = b.CategoryBg,
+                    CategoryEn = b.CategoryEn,
+                    Image = b.CoverImageUrl,
+                    ReadTimeBg = b.ReadTimeBg,
+                    ReadTimeEn = b.ReadTimeEn,
+                    SeoKeywordsBg = b.SeoKeywordsBg,
+                    SeoKeywordsEn = b.SeoKeywordsEn
+                }).ToList();
             }
             else
             {
-                _posts = new List<BlogPostMetadata>();
+                // Fallback to local posts.json if DB is not yet populated
+                var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+                if (File.Exists(postsFilePath))
+                {
+                    var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    _posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
+                }
+                else
+                {
+                    _posts = new List<BlogPostMetadata>();
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error reading posts.json: {ex.Message}");
+            Console.WriteLine($"Error loading posts from DB: {ex.Message}");
             _posts = new List<BlogPostMetadata>();
         }
     }

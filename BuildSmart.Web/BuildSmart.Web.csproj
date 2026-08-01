@@ -2,6 +2,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BuildSmart.SharedUI\BuildSmart.SharedUI.csproj" />
+    <ProjectReference Include="..\BuildSmart.Infrastructure\BuildSmart.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
   </ItemGroup>
 
   <PropertyGroup>

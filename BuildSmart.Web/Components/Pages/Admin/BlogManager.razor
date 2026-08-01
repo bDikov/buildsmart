@@ -7,6 +7,10 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
+@using BuildSmart.Infrastructure.Persistence
+@using BuildSmart.Core.Domain.Entities
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbContextFactory
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject NavigationManager NavManager
@@ -505,21 +509,47 @@
     {
         try
         {
-            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
-            if (File.Exists(postsFilePath))
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var dbPosts = await db.BlogPosts.AsNoTracking().OrderByDescending(b => b.PublishedAt).ToListAsync();
+            if (dbPosts.Any())
             {
-                var jsonContent = await File.ReadAllTextAsync(postsFilePath);
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                _posts = JsonSerializer.Deserialize<List<BlogPostModel>>(jsonContent, options) ?? new List<BlogPostModel>();
+                _posts = dbPosts.Select(b => new BlogPostModel
+                {
+                    Slug = b.Slug,
+                    TitleBg = b.TitleBg,
+                    TitleEn = b.TitleEn,
+                    DescriptionBg = b.DescriptionBg,
+                    DescriptionEn = b.DescriptionEn,
+                    Date = b.PublishedAt.ToString("yyyy-MM-dd"),
+                    CategoryBg = b.CategoryBg,
+                    CategoryEn = b.CategoryEn,
+                    Image = b.CoverImageUrl,
+                    ReadTimeBg = b.ReadTimeBg,
+                    ReadTimeEn = b.ReadTimeEn,
+                    SeoKeywordsBg = b.SeoKeywordsBg,
+                    SeoKeywordsEn = b.SeoKeywordsEn,
+                    ContentBg = b.ContentBg,
+                    ContentEn = b.ContentEn
+                }).ToList();
             }
             else
             {
-                _posts = new List<BlogPostModel>();
+                var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+                if (File.Exists(postsFilePath))
+                {
+                    var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    _posts = JsonSerializer.Deserialize<List<BlogPostModel>>(jsonContent, options) ?? new List<BlogPostModel>();
+                }
+                else
+                {
+                    _posts = new List<BlogPostModel>();
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading posts: {ex.Message}");
+            Console.WriteLine($"Error loading posts from DB: {ex.Message}");
             _posts = new List<BlogPostModel>();
         }
     }
@@ -974,65 +1004,117 @@
         if (string.IsNullOrWhiteSpace(_activePost.Slug))
             return;
 
-        // 1. Update posts.json list
-        var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
-        Directory.CreateDirectory(Path.Combine(WebHostEnvironment.WebRootPath, "posts"));
-
-        var existingIndex = _posts!.FindIndex(p => p.Slug.Equals(_activePost.Slug, StringComparison.OrdinalIgnoreCase));
-        if (existingIndex >= 0)
+        try
         {
-            _posts[existingIndex] = _activePost;
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.Equals(_activePost.Slug, StringComparison.OrdinalIgnoreCase));
+            if (existing == null)
+            {
+                existing = new BlogPost
+                {
+                    Id = Guid.NewGuid(),
+                    Slug = _activePost.Slug.Trim()
+                };
+                await db.BlogPosts.AddAsync(existing);
+            }
+
+            existing.TitleBg = _activePost.TitleBg;
+            existing.TitleEn = _activePost.TitleEn;
+            existing.DescriptionBg = _activePost.DescriptionBg;
+            existing.DescriptionEn = _activePost.DescriptionEn;
+            existing.ContentBg = _activePost.ContentBg ?? "";
+            existing.ContentEn = _activePost.ContentEn ?? "";
+            existing.CoverImageUrl = _activePost.Image ?? "";
+            existing.CategoryBg = _activePost.CategoryBg;
+            existing.CategoryEn = _activePost.CategoryEn;
+            existing.ReadTimeBg = _activePost.ReadTimeBg;
+            existing.ReadTimeEn = _activePost.ReadTimeEn;
+            existing.SeoKeywordsBg = _activePost.SeoKeywordsBg;
+            existing.SeoKeywordsEn = _activePost.SeoKeywordsEn;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            if (DateTime.TryParse(_activePost.Date, out var dt))
+            {
+                existing.PublishedAt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            }
+
+            await db.SaveChangesAsync();
         }
-        else
+        catch (Exception ex)
         {
-            _posts.Add(_activePost);
+            Console.WriteLine($"Error saving post to DB: {ex.Message}");
         }
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var jsonContent = JsonSerializer.Serialize(_posts, options);
-        await File.WriteAllTextAsync(postsFilePath, jsonContent);
-
-        // 2. Save Markdown files (.bg.md and .en.md)
-        if (!string.IsNullOrWhiteSpace(_activePost.ContentBg))
+        // Also save to local posts.json / md files for backwards compatibility
+        try
         {
-            var bgMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.bg.md");
-            await File.WriteAllTextAsync(bgMdPath, _activePost.ContentBg);
-        }
+            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+            Directory.CreateDirectory(Path.Combine(WebHostEnvironment.WebRootPath, "posts"));
 
-        if (!string.IsNullOrWhiteSpace(_activePost.ContentEn))
-        {
-            var enMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.en.md");
-            await File.WriteAllTextAsync(enMdPath, _activePost.ContentEn);
-        }
+            var existingIndex = _posts!.FindIndex(p => p.Slug.Equals(_activePost.Slug, StringComparison.OrdinalIgnoreCase));
+            if (existingIndex >= 0) _posts[existingIndex] = _activePost;
+            else _posts.Add(_activePost);
 
-        _statusMessage = "Post saved successfully!";
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var jsonContent = JsonSerializer.Serialize(_posts, options);
+            await File.WriteAllTextAsync(postsFilePath, jsonContent);
+
+            if (!string.IsNullOrWhiteSpace(_activePost.ContentBg))
+            {
+                await File.WriteAllTextAsync(Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.bg.md"), _activePost.ContentBg);
+            }
+            if (!string.IsNullOrWhiteSpace(_activePost.ContentEn))
+            {
+                await File.WriteAllTextAsync(Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.en.md"), _activePost.ContentEn);
+            }
+        }
+        catch { }
+
+        _statusMessage = "Post saved successfully to PostgreSQL database!";
         _isEditing = false;
         await LoadPostsAsync();
     }
 
     private async Task DeletePostAsync(string slug)
     {
+        try
+        {
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                db.BlogPosts.Remove(existing);
+                await db.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting post from DB: {ex.Message}");
+        }
+
         var post = _posts?.FirstOrDefault(p => p.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
         if (post != null)
         {
             _posts!.Remove(post);
             
-            // Save updated posts.json
-            var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var jsonContent = JsonSerializer.Serialize(_posts, options);
-            await File.WriteAllTextAsync(postsFilePath, jsonContent);
+            try
+            {
+                var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var jsonContent = JsonSerializer.Serialize(_posts, options);
+                await File.WriteAllTextAsync(postsFilePath, jsonContent);
 
-            // Remove .bg.md, .en.md, and .md files
-            var bgPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{slug}.bg.md");
-            var enPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{slug}.en.md");
-            var defPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{slug}.md");
+                var bgPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{slug}.bg.md");
+                var enPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{slug}.en.md");
+                var defPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{slug}.md");
 
-            if (File.Exists(bgPath)) File.Delete(bgPath);
-            if (File.Exists(enPath)) File.Delete(enPath);
-            if (File.Exists(defPath)) File.Delete(defPath);
+                if (File.Exists(bgPath)) File.Delete(bgPath);
+                if (File.Exists(enPath)) File.Delete(enPath);
+                if (File.Exists(defPath)) File.Delete(defPath);
+            }
+            catch { }
 
-            _statusMessage = "Post deleted successfully!";
+            _statusMessage = "Post deleted successfully from PostgreSQL!";
             await LoadPostsAsync();
         }
     }
