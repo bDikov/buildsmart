@@ -125,8 +125,15 @@ jobs:
           gzip buildsmart-api.tar
           gzip buildsmart-web.tar
 
+      - name: Prepare blog images and posts directories
+        run: |
+          mkdir -p images/blog
+          cp -r BuildSmart.Web/wwwroot/images/blog/* images/blog/
+          mkdir -p posts
+          cp -r BuildSmart.Web/wwwroot/posts/* posts/
+
       - name: Create tarball package of configs and images
-        run: tar -czf buildsmart.tar.gz docker-compose.prod.yml Caddyfile SeedLiveCategories.sql buildsmart-api.tar.gz buildsmart-web.tar.gz
+        run: tar -czf buildsmart.tar.gz docker-compose.prod.yml Caddyfile SeedLiveCategories.sql buildsmart-api.tar.gz buildsmart-web.tar.gz images/blog posts
 
       - name: Copy package to VPS via scp
         uses: appleboy/scp-action@v0.1.7
@@ -150,6 +157,8 @@ jobs:
             set -e
             cd /opt/buildsmart
             
+            mkdir -p images/blog posts
+
             # Extract tarball and clean it up
             tar -xzf buildsmart.tar.gz
             rm buildsmart.tar.gz
