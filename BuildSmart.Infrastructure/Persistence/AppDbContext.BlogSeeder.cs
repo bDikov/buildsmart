@@ -64,6 +64,11 @@ public partial class AppDbContext
                         if (File.Exists(enMdPath)) existing.ContentEn = await File.ReadAllTextAsync(enMdPath);
                         updated = true;
                     }
+                    if (!string.IsNullOrWhiteSpace(dto.Image) && existing.CoverImageUrl != dto.Image)
+                    {
+                        existing.CoverImageUrl = dto.Image;
+                        updated = true;
+                    }
                     if (updated)
                     {
                         existing.UpdatedAt = DateTime.UtcNow;

@@ -47,6 +47,8 @@ services:
       - Smtp__SenderEmail=${SMTP_SENDER_EMAIL:-support@buildsmart.bg}
       - Smtp__SenderName=${SMTP_SENDER_NAME:-BuildSmart}
       - HANGFIRE_DASHBOARD_TOKEN=${HANGFIRE_DASHBOARD_TOKEN}
+    volumes:
+      - blog_images_data:/app/wwwroot/images/blog
     depends_on:
       db:
         condition: service_healthy
