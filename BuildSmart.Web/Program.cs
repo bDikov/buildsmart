@@ -355,6 +355,22 @@ catch (Exception ex)
 
 try
 {
+	// Sync default blog images into wwwroot/images/blog if missing from volume
+	var webImagesDir = Path.Combine(app.Environment.WebRootPath, "images", "blog");
+	Directory.CreateDirectory(webImagesDir);
+	var baseImagesDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+	if (Directory.Exists(baseImagesDir))
+	{
+		foreach (var file in Directory.GetFiles(baseImagesDir))
+		{
+			var destFile = Path.Combine(webImagesDir, Path.GetFileName(file));
+			if (!File.Exists(destFile))
+			{
+				File.Copy(file, destFile, overwrite: false);
+			}
+		}
+	}
+
 	using var scope = app.Services.CreateScope();
 	var dbFactory = scope.ServiceProvider.GetService<IDbContextFactory<BuildSmart.Infrastructure.Persistence.AppDbContext>>();
 	if (dbFactory != null)

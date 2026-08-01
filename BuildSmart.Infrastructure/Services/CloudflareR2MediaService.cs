@@ -39,13 +39,16 @@ public class CloudflareR2MediaService : IMediaService
         
         _serviceUrl = url;
         
-        var s3Config = new AmazonS3Config
+        if (!string.IsNullOrWhiteSpace(_serviceUrl) && !string.IsNullOrWhiteSpace(_accessKey) && !string.IsNullOrWhiteSpace(_secretKey))
         {
-            ServiceURL = _serviceUrl,
-            ForcePathStyle = true // CRITICAL: Cloudflare R2 requires Path-Style URLs
-        };
+            var s3Config = new AmazonS3Config
+            {
+                ServiceURL = _serviceUrl,
+                ForcePathStyle = true // CRITICAL: Cloudflare R2 requires Path-Style URLs
+            };
 
-        _s3Client = new AmazonS3Client(_accessKey, _secretKey, s3Config);
+            _s3Client = new AmazonS3Client(_accessKey, _secretKey, s3Config);
+        }
     }
 
     public string GeneratePreSignedUploadUrl(string fileName, string contentType, TimeSpan expiration)
@@ -65,6 +68,11 @@ public class CloudflareR2MediaService : IMediaService
 
     public async Task<string> UploadFileAsync(Stream stream, string fileName, string contentType)
     {
+        if (_s3Client == null)
+        {
+            throw new InvalidOperationException("Cloudflare R2 is not configured. ServiceUrl, AccessKey, and SecretKey must be set in configuration.");
+        }
+
         var putRequest = new PutObjectRequest
         {
             BucketName = _bucketName,
