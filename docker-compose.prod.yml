@@ -61,6 +61,9 @@ services:
       - ApiConfig__BaseUrlOverride=https://${DOMAIN_WEB:-app.buildsmart.localhost}
       - PostHog__ApiKey=${POSTHOG_API_KEY}
       - PostHog__ApiHost=${POSTHOG_API_HOST:-https://us.i.posthog.com}
+    volumes:
+      - blog_images:/app/wwwroot/images/blog
+      - blog_posts:/app/wwwroot/posts
     depends_on:
       - api
 
@@ -84,3 +87,5 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  blog_images:
+  blog_posts:
