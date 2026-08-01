@@ -15,13 +15,7 @@ public partial class AppDbContext
     {
         try
         {
-            if (await BlogPosts.AnyAsync())
-            {
-                Console.WriteLine("Blog posts already seeded in database.");
-                return;
-            }
-
-            Console.WriteLine("Seeding blog posts into PostgreSQL database...");
+            Console.WriteLine("Checking for missing blog posts in PostgreSQL database...");
             var postsFilePath = Path.Combine(webRootPath, "posts", "posts.json");
             if (!File.Exists(postsFilePath))
             {
@@ -38,9 +32,15 @@ public partial class AppDbContext
                 return;
             }
 
+            bool addedAny = false;
             foreach (var dto in jsonPosts)
             {
                 if (string.IsNullOrWhiteSpace(dto.Slug)) continue;
+
+                if (await BlogPosts.AnyAsync(b => b.Slug == dto.Slug))
+                {
+                    continue;
+                }
 
                 string contentBg = "";
                 string contentEn = "";
