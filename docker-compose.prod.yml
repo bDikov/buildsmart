@@ -62,8 +62,8 @@ services:
       - PostHog__ApiKey=${POSTHOG_API_KEY}
       - PostHog__ApiHost=${POSTHOG_API_HOST:-https://us.i.posthog.com}
     volumes:
-      - ./images/blog:/app/wwwroot/images/blog
-      - ./posts:/app/wwwroot/posts
+      - blog_images_data:/app/wwwroot/images/blog
+      - blog_posts_data:/app/wwwroot/posts
     depends_on:
       - api
 
@@ -87,3 +87,5 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  blog_images_data:
+  blog_posts_data:

@@ -15,6 +15,8 @@
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject NavigationManager NavManager
 @inject BuildSmart.SharedUI.GraphQL.BuildSmartApiClient ApiClient
+@inject BuildSmart.Core.Application.Interfaces.IMediaService MediaService
+@inject IConfiguration Configuration
 
 <PageTitle>@Loc["Admin_BlogManager"] - BuildSmart</PageTitle>
 
@@ -641,28 +643,40 @@
 
         try
         {
-            var fileName = $"{Guid.NewGuid()}_{file.Name}";
-            var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
-            Directory.CreateDirectory(folder);
-            var path = Path.Combine(folder, fileName);
-
-            await using (var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024))
-            await using (var fs = new FileStream(path, FileMode.Create))
+            var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
+            if (!string.IsNullOrEmpty(r2AccessKey))
             {
-                await stream.CopyToAsync(fs);
+                var keyName = $"images/blog/{Guid.NewGuid()}_{file.Name}";
+                await using var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
+                var cdnUrl = await MediaService.UploadFileAsync(stream, keyName, file.ContentType);
+                _activePost.Image = cdnUrl;
+                _statusMessage = $"Снимката '{file.Name}' беше качена успешно в Cloudflare R2 CDN! Натиснете 'Запази Статията'.";
+            }
+            else
+            {
+                var fileName = $"{Guid.NewGuid()}_{file.Name}";
+                var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
+                Directory.CreateDirectory(folder);
+                var path = Path.Combine(folder, fileName);
+
+                await using (var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024))
+                await using (var fs = new FileStream(path, FileMode.Create))
+                {
+                    await stream.CopyToAsync(fs);
+                }
+
+                try
+                {
+                    var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+                    Directory.CreateDirectory(binFolder);
+                    File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+                }
+                catch { }
+
+                _activePost.Image = $"/images/blog/{fileName}";
+                _statusMessage = $"Снимката '{file.Name}' беше качена успешно! Натиснете 'Запази Статията' за запис.";
             }
 
-            // Copy to execution output directory so Kestrel serves it immediately
-            try
-            {
-                var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
-                Directory.CreateDirectory(binFolder);
-                File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-            }
-            catch { }
-
-            _activePost.Image = $"/images/blog/{fileName}";
-            _statusMessage = $"Снимката '{file.Name}' беше качена успешно! Натиснете 'Запази Статията' за запис.";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -759,27 +773,51 @@
         var file = e.File;
         if (file == null) return;
 
-        var fileName = $"{Guid.NewGuid()}_{file.Name}";
-        var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
-        Directory.CreateDirectory(folder);
-        var path = Path.Combine(folder, fileName);
-
-        await using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
-        await using (var fs = new FileStream(path, FileMode.Create))
-        {
-            await stream.CopyToAsync(fs);
-        }
-
         try
         {
-            var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
-            Directory.CreateDirectory(binFolder);
-            File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-        }
-        catch { }
+            string imageUrl = "";
+            var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
+            if (!string.IsNullOrEmpty(r2AccessKey))
+            {
+                var keyName = $"images/blog/{Guid.NewGuid()}_{file.Name}";
+                await using var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
+                imageUrl = await MediaService.UploadFileAsync(stream, keyName, file.ContentType);
+            }
+            else
+            {
+                var fileName = $"{Guid.NewGuid()}_{file.Name}";
+                var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
+                Directory.CreateDirectory(folder);
+                var path = Path.Combine(folder, fileName);
 
-        var markdownImage = $"\n![image](/images/blog/{fileName})\n";
-        InsertSnippet(markdownImage, lang);
+                await using (var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024))
+                await using (var fs = new FileStream(path, FileMode.Create))
+                {
+                    await stream.CopyToAsync(fs);
+                }
+
+                try
+                {
+                    var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+                    Directory.CreateDirectory(binFolder);
+                    File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+                }
+                catch { }
+
+                imageUrl = $"/images/blog/{fileName}";
+            }
+
+            var markdownImage = $"\n![image]({imageUrl})\n";
+            InsertSnippet(markdownImage, lang);
+            _statusMessage = $"Снимката беше качена успешно в маркдаун текста!";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error uploading inline image: {ex.Message}");
+            _statusMessage = $"Грешка при качване на снимката: {ex.Message}";
+            StateHasChanged();
+        }
     }
 
     private async Task UploadInlineVideoAsync(InputFileChangeEventArgs e, string lang)

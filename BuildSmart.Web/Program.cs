@@ -52,6 +52,7 @@ builder.Services.AddLocalization();
 builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService, BuildSmart.SharedUI.Services.Localization.LocalizationCacheService>();
 builder.Services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, BuildSmart.SharedUI.Services.Localization.DbStringLocalizerFactory>();
 builder.Services.AddScoped<BuildSmart.SharedUI.Services.ILocalizationStateService, BuildSmart.SharedUI.Services.LocalizationStateService>();
+builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IMediaService, BuildSmart.Infrastructure.Services.CloudflareR2MediaService>();
 
 var webConnString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (!string.IsNullOrEmpty(webConnString))
