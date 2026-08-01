@@ -352,4 +352,19 @@ catch (Exception ex)
 	Console.WriteLine($"Error initializing localization warm up task: {ex.Message}");
 }
 
+try
+{
+	using var scope = app.Services.CreateScope();
+	var dbFactory = scope.ServiceProvider.GetService<IDbContextFactory<BuildSmart.Infrastructure.Persistence.AppDbContext>>();
+	if (dbFactory != null)
+	{
+		await using var db = await dbFactory.CreateDbContextAsync();
+		await db.SeedBlogPostsAsync(app.Environment.WebRootPath);
+	}
+}
+catch (Exception ex)
+{
+	Console.WriteLine($"Blog seeder note: {ex.Message}");
+}
+
 app.Run();

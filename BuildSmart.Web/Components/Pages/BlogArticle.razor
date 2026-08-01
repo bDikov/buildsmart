@@ -1022,9 +1022,10 @@
         try
         {
             await using var db = await DbContextFactory.CreateDbContextAsync();
+            var targetSlug = (Slug ?? "").ToLower().Trim();
             var dbPost = await db.BlogPosts
                 .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefaultAsync(b => b.Slug.ToLower() == targetSlug);
 
             if (dbPost != null)
             {
@@ -1047,12 +1048,58 @@
 
                 var mdContent = _currentLang == "en" ? (!string.IsNullOrEmpty(dbPost.ContentEn) ? dbPost.ContentEn : dbPost.ContentBg) : (!string.IsNullOrEmpty(dbPost.ContentBg) ? dbPost.ContentBg : dbPost.ContentEn);
 
+                // Fallback to local markdown files if database content is empty
+                if (string.IsNullOrWhiteSpace(mdContent))
+                {
+                    var possibleDirs = new[]
+                    {
+                        Path.Combine(WebHostEnvironment.WebRootPath, "posts"),
+                        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "posts"),
+                        Path.Combine(Directory.GetCurrentDirectory(), "..", "BuildSmart.Web", "wwwroot", "posts"),
+                        Path.Combine(Directory.GetCurrentDirectory(), "BuildSmart.Web", "wwwroot", "posts")
+                    };
+
+                    var postsDir = possibleDirs.FirstOrDefault(Directory.Exists) ?? Path.Combine(WebHostEnvironment.WebRootPath, "posts");
+
+                    var localizedMdPath = Path.Combine(postsDir, $"{Slug}.{_currentLang}.md");
+                    var defaultMdPath = Path.Combine(postsDir, $"{Slug}.md");
+                    var bgMdPath = Path.Combine(postsDir, $"{Slug}.bg.md");
+                    var enMdPath = Path.Combine(postsDir, $"{Slug}.en.md");
+
+                    var targetPath = File.Exists(localizedMdPath) ? localizedMdPath :
+                                    (File.Exists(defaultMdPath) ? defaultMdPath :
+                                    (File.Exists(bgMdPath) ? bgMdPath :
+                                    (File.Exists(enMdPath) ? enMdPath : null)));
+
+                    if (targetPath != null)
+                    {
+                        mdContent = await File.ReadAllTextAsync(targetPath);
+
+                        // Back-fill database with the loaded markdown content
+                        try
+                        {
+                            var trackPost = await db.BlogPosts.FirstOrDefaultAsync(b => b.Id == dbPost.Id);
+                            if (trackPost != null)
+                            {
+                                if (_currentLang == "en") trackPost.ContentEn = mdContent;
+                                else trackPost.ContentBg = mdContent;
+                                await db.SaveChangesAsync();
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
                 if (!string.IsNullOrWhiteSpace(mdContent))
                 {
                     var pipeline = new Markdig.MarkdownPipelineBuilder()
                         .UseAdvancedExtensions()
                         .Build();
                     _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+                }
+                else
+                {
+                    _isNotFound = true;
                 }
             }
             else
@@ -1069,7 +1116,8 @@
 
                 var localizedMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.{_currentLang}.md");
                 var defaultMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.md");
-                var targetPath = File.Exists(localizedMdPath) ? localizedMdPath : (File.Exists(defaultMdPath) ? defaultMdPath : null);
+                var bgMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.bg.md");
+                var targetPath = File.Exists(localizedMdPath) ? localizedMdPath : (File.Exists(defaultMdPath) ? defaultMdPath : (File.Exists(bgMdPath) ? bgMdPath : null));
 
                 if (targetPath != null)
                 {

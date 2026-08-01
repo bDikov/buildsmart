@@ -1007,7 +1007,8 @@
         try
         {
             await using var db = await DbContextFactory.CreateDbContextAsync();
-            var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.Equals(_activePost.Slug, StringComparison.OrdinalIgnoreCase));
+            var targetSlug = _activePost.Slug.Trim().ToLower();
+            var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.ToLower() == targetSlug);
             if (existing == null)
             {
                 existing = new BlogPost
@@ -1080,7 +1081,8 @@
         try
         {
             await using var db = await DbContextFactory.CreateDbContextAsync();
-            var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+            var targetSlug = (slug ?? "").Trim().ToLower();
+            var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.ToLower() == targetSlug);
             if (existing != null)
             {
                 db.BlogPosts.Remove(existing);
