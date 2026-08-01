@@ -16,13 +16,13 @@
 
 Най-голямата грешка при планиране е сравняването на оферти "на око". Когато един майстор ви даде оферта от €15 000, а друг – €25 000, в 9 от 10 случая по-евтината оферта **просто е спестила половината от задължителните дейности** (хидроизолация, извозване на боклук, грундове, качествени кабели и замазки).
 
-Резултатът? Допълнителни сметки "в движение", които накрая правят ремонта по-скъп от най-високата оферта.
+Традиционните дизайнерски студия и независими майстори често изискват между **2 и 4 месеца** само за изготвяне на проект и офериране. Резултатът? Допълнителни сметки "в движение", които накрая правят ремонта по-скъп от най-високата оферта.
 
 ---
 
 ## Реалните цени на кв.м. в София за 2026 г.
 
-Ето как изглеждат истинските цени за труд и материали, разделени по основни дейности:
+Ето как изглеждат истинските цени за труд и материали през 2026 г., разделени по основни класове:
 
 <div class="cost-spectrum-container">
   <div class="cost-spectrum-header">
@@ -30,38 +30,63 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
       <h4>Пазарен Ценови Спектър 2026: Пълен Ремонт на Апартамент До Ключ</h4>
     </div>
-    <span class="spectrum-location-badge">📍 София • Цени на кв.м.</span>
+    <span class="spectrum-location-badge">София • Цени на кв.м.</span>
   </div>
   <div class="spectrum-bar-wrapper">
     <div class="spectrum-bar-track">
-      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Освежителен</span></div>
-      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Основен До Ключ (Медиан)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">68% от имотите</span></div></div>
+      <div class="spectrum-zone zone-economy" style="width: 25%;"><span class="zone-label">Инвестиционен (Наеми)</span></div>
+      <div class="spectrum-zone zone-standard" style="width: 45%;"><span class="zone-label">Жилищен Стандарт (Медиан)</span><div class="median-pin"><span class="pin-dot"></span><span class="pin-text">68% от имотите</span></div></div>
       <div class="spectrum-zone zone-premium" style="width: 30%;"><span class="zone-label">Дизайнерски Лукс</span></div>
     </div>
   </div>
   <div class="spectrum-cards-grid">
     <a href="/job-wizard" class="spectrum-card">
-      <div class="card-tier-tag">Освежителен клас</div>
-      <div class="card-price-main">€120 - €180 <span class="unit">/ кв.м.</span></div>
-      <div class="card-desc">Частична боя, козметични кърпежи, смяна на ключове/контакти и освежаване на настилки.</div>
+      <div class="card-tier-tag">Инвестиционен клас</div>
+      <div class="card-price-main">€525 - €640 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Подходящ за отдаване под наем. Мебели от ПДЧ, устойчив ламинат, осветление и акцентни бои.</div>
       <div class="card-cta-btn">Сметнете вашия имот <span>→</span></div>
     </a>
     <a href="/job-wizard" class="spectrum-card active-card">
-      <div class="card-badge-popular">⭐ Най-търсен в София</div>
-      <div class="card-tier-tag text-primary">Основен ремонт до ключ</div>
-      <div class="card-price-main">€280 - €450 <span class="unit">/ кв.м.</span></div>
-      <div class="card-desc">Пълна подмяна на ВиК и Ел., къртене, шпакловка, баня, гипскартон тавани, ламинат/плочки.</div>
+      <div class="card-badge-popular">Най-търсен в София</div>
+      <div class="card-tier-tag text-primary">Основен семеен ремонт</div>
+      <div class="card-price-main">€600 - €900 <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Пълна подмяна на ВиК и Ел., къртене, шпакловка, баня, гипскартон тавани, МДФ мебели и климатизация.</div>
       <div class="card-cta-btn btn-primary-style">Изчислете безплатно <span>→</span></div>
     </a>
     <a href="/job-wizard" class="spectrum-card">
       <div class="card-tier-tag">Дизайнерски Лукс</div>
-      <div class="card-price-main">€550 - €900+ <span class="unit">/ кв.м.</span></div>
-      <div class="card-desc">Архитектурен проект, шумоизолация, скрити LED ниши, естествен дъбов паркет, крупноформатен гранитогрес.</div>
+      <div class="card-price-main">€900+ <span class="unit">/ кв.м.</span></div>
+      <div class="card-desc">Архитектурен проект, мрамор, Smart Home автоматизация, магнитни шини, естествен дъбов паркет.</div>
       <div class="card-cta-btn">Сметнете вашия имот <span>→</span></div>
     </a>
   </div>
 </div>
 
+---
+
+## 4-те скрити разхода при ремонт в София (които майсторите пропускат)
+
+При планиране на самостоятелен бюджет, собствениците на имоти най-често се сблъскват със следните 4 скрити пера:
+
+1. **Изправяне на стени и прави ъгли (90°):**  
+   Стените в новото строителство в София масово имат отклонения от 1 до 3 см. При монтиране на вградени кухни и гардероби до тавана, всеки милиметър е критичен. Изправянето на ъглите изисква допълнителни мазилки.
+2. **Препрекарване на базовите ВиК и Ел. изводи:**  
+   Строителните изводи на инвеститора редкo съвпадат с разпределението на модерната кухня или баня. Преместването им в хода на работата струва 3 пъти повече, ако не е калкулирано предварително.
+3. **Логистика, паркиране и качване на материали:**  
+   Липсата на свободни паркоместа за камиони, ограниченията за тежкотоварни автомобили в София и ръчното качване на материали без товарен асансьор могат да добавят до 10% към транспортните разходи.
+4. **Резервен фонд за непредвидени разходи (10–15%):**  
+   Винаги предвиждайте буфер за скрити дефекти при къртенето или допълнително укрепване.
+
+---
+
+## Традиционен интериорен проект vs. BuildSmart.bg
+
+| Параметър | Традиционно дизайнерско студио | BuildSmart.bg |
+| :--- | :--- | :--- |
+| **Срок за количествена сметка (КСС)** | 2 до 4 месеца | **3 минути** (чрез дигиталния калкулатор) |
+| **Цена за офериране** | Стотици / хиляди левове | **Безплатно** |
+| **Прозрачност на цените** | Приближения и субективни надценки | **Фиксирани ценови формули за труд и материали** |
+| **Изпълнение** | Търсене на отделни майстори на сляпо | **Сертифицирани строителни екипи и договор** |
 
 ---
 
@@ -81,8 +106,9 @@
 Вижте с очите си какво означава безупречен ремонт на 100 кв.м. жилище в София:
 
 <div class="blog-video-container">
-<video controls playsinline preload="metadata" class="blog-video-player">
-  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/How-to-video-d58727d3c13ea2d95db86e811a063d2e-V.mp4" type="video/mp4" />
+<video controls playsinline preload="metadata" class="blog-video-player" poster="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/poster_88ad6ba3-3833-4846-bc21-ddafba74ab16.jpg">
+  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/mobile_88ad6ba3-3833-4846-bc21-ddafba74ab16_ok%29video.mp4" media="(max-width: 768px)" type="video/mp4" />
+  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/ok%29video.mp4" type="video/mp4" />
 </video>
 </div>
 

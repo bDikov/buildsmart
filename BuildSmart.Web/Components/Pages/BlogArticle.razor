@@ -1001,6 +1001,77 @@
         object-fit: contain;
         background: transparent;
     }
+
+    /* Mobile Responsive Optimizations for Blog Elements */
+    @@media (max-width: 768px) {
+        .cost-spectrum-container {
+            padding: 16px !important;
+            margin: 20px 0 !important;
+            border-radius: 16px !important;
+        }
+
+        .cost-spectrum-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+        }
+
+        .spectrum-bar-wrapper {
+            margin-top: 26px !important;
+            margin-bottom: 20px !important;
+        }
+
+        .spectrum-bar-track {
+            height: 42px !important;
+            padding: 3px !important;
+            gap: 2px !important;
+        }
+
+        .spectrum-zone {
+            font-size: 0.68rem !important;
+            padding: 2px !important;
+            text-align: center !important;
+            line-height: 1.2 !important;
+        }
+
+        .median-pin {
+            top: -24px !important;
+            font-size: 0.62rem !important;
+            padding: 2px 8px !important;
+            white-space: nowrap !important;
+        }
+
+        .spectrum-cards-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+
+        .spectrum-card {
+            padding: 16px !important;
+            border-radius: 14px !important;
+        }
+
+        .card-price-main {
+            font-size: 1.25rem !important;
+        }
+
+        .blog-video-container {
+            aspect-ratio: 9 / 16 !important;
+            max-height: 520px !important;
+            border-radius: 16px !important;
+            margin: 20px 0 !important;
+        }
+
+        .pricing-header-left {
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        .pricing-card {
+            padding: 16px !important;
+            border-radius: 16px !important;
+        }
+    }
 </style>
 
 @code {
