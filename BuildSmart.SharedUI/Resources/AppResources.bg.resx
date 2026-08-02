@@ -1302,4 +1302,46 @@
   <data name="Admin_Preview" xml:space="preserve">
     <value>Преглед</value>
   </data>
+  <data name="WelcomeMessage_Subject" xml:space="preserve">
+    <value>Добре дошли в BuildSmart!</value>
+  </data>
+  <data name="WelcomeMessage_Body" xml:space="preserve">
+    <value>Здравейте, {0}!
+
+Казвам се Бончо от BuildSmart и исках лично да Ви поздравя с добре дошли!
+
+Включвам се съвсем накратко, за да Ви кажа, че ако планирате ремонт и имате нужда от съвет, идеи или просто ориентир за цените — съм насреща да помогна.
+
+Можете да ми пишете директно тук в чата по всяко време, когато Ви е удобно.
+
+Поздрави и приятен ден,
+Бончо | BuildSmart</value>
+  </data>
+  <data name="WelcomeMessage_Teaser" xml:space="preserve">
+    <value>Имате лично съобщение от Бончо от BuildSmart</value>
+  </data>
+  <data name="OfferFeedbackMessage_Subject" xml:space="preserve">
+    <value>Как Ви се стори офертата за {0}?</value>
+  </data>
+  <data name="OfferFeedbackMessage_Body" xml:space="preserve">
+    <value>Здравейте, {0}!
+
+Виждам, че вече създадохте своя проект {1} и офертата Ви е готова!
+
+Ако имате минутка, ще ми бъде изключително полезно да споделите как Ви се стори платформата, офертата и дали всичко Ви беше ясно. Всяко мнение ни помага много да се подобряваме!
+
+Можете да ми пишете директно тук в чата по всяко време.
+
+Поздрави,
+Бончо | BuildSmart</value>
+  </data>
+  <data name="Email_CTA_OpenChat" xml:space="preserve">
+    <value>Отворете съобщението в чата</value>
+  </data>
+  <data name="Email_CTA_ViewOffer" xml:space="preserve">
+    <value>Прегледайте офертата в платформата</value>
+  </data>
+  <data name="Email_CTA_ViewProject" xml:space="preserve">
+    <value>Към моя проект</value>
+  </data>
 </root>
