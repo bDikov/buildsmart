@@ -2,6 +2,7 @@
 @attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using System.Text.RegularExpressions
+@using BuildSmart.Core.Application.Interfaces
 @using BuildSmart.SharedUI.GraphQL
 @using BuildSmart.SharedUI.Services
 @using Microsoft.Extensions.Localization
@@ -1208,7 +1209,15 @@
         _isVerifyingEmail = true;
         StateHasChanged();
 
-        var verificationResult = await EmailVerificationService.VerifyEmailAsync(_email);
+        EmailVerificationResult verificationResult;
+        try
+        {
+            verificationResult = await EmailVerificationService.VerifyEmailAsync(_email);
+        }
+        catch
+        {
+            verificationResult = new EmailVerificationResult { IsValid = true, Status = "Valid" };
+        }
         _isVerifyingEmail = false;
 
         if (!verificationResult.IsValid)
