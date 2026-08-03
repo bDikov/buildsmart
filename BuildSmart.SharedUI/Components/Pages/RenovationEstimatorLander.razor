@@ -1271,8 +1271,18 @@
             System.Diagnostics.Debug.WriteLine($"Error saving CalculatorLead: {ex.Message}");
         }
 
-        // Fire-and-forget Hangfire background job
-        Hangfire.BackgroundJob.Enqueue<BuildSmart.Core.Application.Interfaces.IEmailService>(service => service.SendCalculatorLeadOfferEmailByIdAsync(lead.Id));
+        // Fire-and-forget email offer dispatch
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await EmailService.SendCalculatorLeadOfferEmailAsync(lead);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error sending lead offer email: {ex.Message}");
+            }
+        });
 
         _isLeadModalOpen = false;
 
