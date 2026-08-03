@@ -18,6 +18,17 @@
     color: var(--text-primary, #111111) !important;
 }
 
+/* Strict theme override for Bootstrap's default .text-muted utility class to guarantee high contrast in Dark/Light themes */
+.magazine-theme-wrapper .text-muted,
+.magazine-theme-wrapper label.text-muted,
+.magazine-theme-wrapper span.text-muted,
+.magazine-theme-wrapper div.text-muted,
+.magazine-theme-wrapper p.text-muted,
+.magazine-theme-wrapper small.text-muted,
+.magazine-theme-wrapper .extra-small.text-muted {
+    color: var(--text-secondary, #94a3b8) !important;
+}
+
 .magazine-progress-percent {
     color: var(--text-primary, #111111) !important;
 }
@@ -359,7 +370,7 @@
 
 .price-display {
     font: var(--font-h1);
-    color: var(--color-primary, #111111);
+    color: var(--text-primary) !important;
 }
 
 .price-amount-decimal {
@@ -424,14 +435,26 @@
 }
 
 .magazine-modal-input {
-    color: var(--text-primary, #111111);
-    border: 1px solid var(--border-color);
+    background-color: var(--bg-card-alt) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 10px;
 }
 
+.magazine-modal-input::placeholder {
+    color: var(--text-secondary) !important;
+    opacity: 0.75;
+}
+
 .magazine-modal-input:focus {
-    border-color: var(--color-primary, #111111);
-    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.1);
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
+}
+
+.bs-modal-card .btn-close {
+    filter: var(--btn-close-filter, invert(0.8) grayscale(100%));
 }
 
 /* Option Buttons & Input Card */
