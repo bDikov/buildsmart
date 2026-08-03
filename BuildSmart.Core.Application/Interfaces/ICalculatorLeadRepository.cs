@@ -6,4 +6,5 @@ namespace BuildSmart.Core.Application.Interfaces;
 public interface ICalculatorLeadRepository
 {
     Task AddLeadAsync(CalculatorLead lead);
+    Task<CalculatorLead?> GetByIdAsync(Guid id);
 }

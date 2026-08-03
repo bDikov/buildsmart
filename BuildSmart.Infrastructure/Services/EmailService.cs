@@ -13,12 +13,14 @@ namespace BuildSmart.Infrastructure.Services
 	public class EmailService : IEmailService
 	{
 		private readonly IUnitOfWork _unitOfWork;
+		private readonly ICalculatorLeadRepository _leadRepository;
 		private readonly IConfiguration _config;
 		private readonly ILogger<EmailService> _logger;
 
-		public EmailService(IConfiguration config, ILogger<EmailService> logger, IUnitOfWork? unitOfWork = null)
+		public EmailService(IConfiguration config, ILogger<EmailService> logger, IUnitOfWork? unitOfWork = null, ICalculatorLeadRepository? leadRepository = null)
 		{
 			_unitOfWork = unitOfWork;
+			_leadRepository = leadRepository;
 			_config = config;
 			_logger = logger;
 		}
@@ -479,6 +481,24 @@ namespace BuildSmart.Infrastructure.Services
 
 			await SendGenericEmailAsync(lead.Email, subject, htmlBody);
 			_logger.LogInformation("Successfully sent calculator lead offer email to {Email}", lead.Email);
+		}
+
+		public async Task SendCalculatorLeadOfferEmailByIdAsync(Guid leadId)
+		{
+			if (_leadRepository == null)
+			{
+				_logger.LogWarning("ICalculatorLeadRepository is null in EmailService. Cannot fetch lead by ID {LeadId}.", leadId);
+				return;
+			}
+
+			var lead = await _leadRepository.GetByIdAsync(leadId);
+			if (lead == null)
+			{
+				_logger.LogWarning("CalculatorLead {LeadId} not found in database.", leadId);
+				return;
+			}
+
+			await SendCalculatorLeadOfferEmailAsync(lead);
 		}
 
 		private async Task NotifyAdminsAsync(string title, string message, Guid relatedEntityId, string relatedEntityType)

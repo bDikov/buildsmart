@@ -63,6 +63,13 @@ services:
       - ApiConfig__BaseUrlOverride=https://${DOMAIN_WEB:-app.buildsmart.localhost}
       - PostHog__ApiKey=${POSTHOG_API_KEY}
       - PostHog__ApiHost=${POSTHOG_API_HOST:-https://us.i.posthog.com}
+      # SMTP Mail Server
+      - Smtp__Server=${SMTP_SERVER:-smtp-relay.brevo.com}
+      - Smtp__Port=${SMTP_PORT:-587}
+      - Smtp__Username=${SMTP_USERNAME}
+      - Smtp__Password=${SMTP_PASSWORD}
+      - Smtp__SenderEmail=${SMTP_SENDER_EMAIL:-office@buildsmart.bg}
+      - Smtp__SenderName=${SMTP_SENDER_NAME:-BuildSmart}
     volumes:
       - blog_images_data:/app/wwwroot/images/blog
       - blog_posts_data:/app/wwwroot/posts

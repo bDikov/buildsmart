@@ -11,4 +11,5 @@ public interface IEmailService
 	Task SendChatNotificationEmailAsync(Guid userId, Guid notificationId);
 	Task SendPostOfferFeedbackEmailAsync(Guid projectId);
 	Task SendCalculatorLeadOfferEmailAsync(CalculatorLead lead);
+	Task SendCalculatorLeadOfferEmailByIdAsync(Guid leadId);
 }

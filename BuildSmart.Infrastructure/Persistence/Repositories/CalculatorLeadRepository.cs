@@ -20,4 +20,10 @@ public class CalculatorLeadRepository : ICalculatorLeadRepository
         db.CalculatorLeads.Add(lead);
         await db.SaveChangesAsync();
     }
+
+    public async Task<CalculatorLead?> GetByIdAsync(Guid id)
+    {
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        return await db.CalculatorLeads.FirstOrDefaultAsync(l => l.Id == id);
+    }
 }
