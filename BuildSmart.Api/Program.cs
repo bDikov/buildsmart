@@ -116,7 +116,7 @@ public partial class Program
 		builder.Services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, BuildSmart.SharedUI.Services.Localization.DbStringLocalizerFactory>();
 
 		// Add DbContext and PostgreSQL Connection
-		builder.Services.AddDbContext<AppDbContext>(options =>
+		builder.Services.AddDbContextFactory<AppDbContext>(options =>
 		{
 			options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
 						b =>

@@ -30,10 +30,6 @@ namespace BuildSmart.Api.Tests
                 }
 
                 // Add in-memory database for testing
-                services.AddDbContext<AppDbContext>(options =>
-                {
-                    options.UseInMemoryDatabase(_dbName);
-                });
                 services.AddDbContextFactory<AppDbContext>(options =>
                 {
                     options.UseInMemoryDatabase(_dbName);

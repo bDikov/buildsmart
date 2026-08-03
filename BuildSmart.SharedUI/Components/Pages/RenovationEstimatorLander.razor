@@ -1178,6 +1178,13 @@
                 status = _buildingStatus,
                 tier = _finishQualityTier
             });
+            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "estimator_modal_opened", new
+            {
+                scope = _activeScope,
+                area = _selectedArea,
+                status = _buildingStatus,
+                tier = _finishQualityTier
+            });
         }
         catch { }
     }
@@ -1304,6 +1311,23 @@
             await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "lead_name", _name);
 
             await JSRuntime.InvokeVoidAsync("posthog.capture", "estimator_lead_submitted", new
+            {
+                lead_id = lead.Id,
+                email = _email,
+                phone = _phone,
+                name = _name,
+                scope = _activeScope,
+                area = _selectedArea,
+                building_status = _buildingStatus,
+                finish_tier = _finishQualityTier,
+                price_min_eur = minEur,
+                price_max_eur = maxEur,
+                utm_source = UtmSource,
+                utm_campaign = UtmCampaign,
+                utm_medium = UtmMedium
+            });
+
+            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "estimator_lead_submitted", new
             {
                 lead_id = lead.Id,
                 email = _email,
