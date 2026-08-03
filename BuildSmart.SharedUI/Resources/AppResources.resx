@@ -1341,4 +1341,580 @@ Boncho | BuildSmart</value>
   <data name="Email_CTA_ViewProject" xml:space="preserve">
     <value>Go to My Project</value>
   </data>
+  <data name="Lander_HeroTitle" xml:space="preserve">
+    <value>Turnkey Apartment Renovation &amp; Furniture</value>
+  </data>
+  <data name="Lander_HeroSubtitle" xml:space="preserve">
+    <value>Calculate your budget in 60 seconds with pre-selected packages</value>
+  </data>
+  <data name="Lander_EstimatedBudgetLabel" xml:space="preserve">
+    <value>Estimated Budget Range</value>
+  </data>
+  <data name="Lander_MostPopularBadge" xml:space="preserve">
+    <value>Most Popular</value>
+  </data>
+  <data name="Lander_PresetStudioTitle" xml:space="preserve">
+    <value>Compact 1-Bed / Studio</value>
+  </data>
+  <data name="Lander_PresetStudioDesc" xml:space="preserve">
+    <value>45 m² - Finishing &amp; Kitchen</value>
+  </data>
+  <data name="Lander_Preset2BedTitle" xml:space="preserve">
+    <value>Family 2-Bed Flat</value>
+  </data>
+  <data name="Lander_Preset2BedDesc" xml:space="preserve">
+    <value>75 m² - Complete Renovation &amp; Custom Furniture</value>
+  </data>
+  <data name="Lander_Preset3BedTitle" xml:space="preserve">
+    <value>Large 3-Bed / Penthouse</value>
+  </data>
+  <data name="Lander_Preset3BedDesc" xml:space="preserve">
+    <value>105 m² - Luxury Renovation &amp; Full Furnishing</value>
+  </data>
+  <data name="Lander_ToggleFurniture" xml:space="preserve">
+    <value>Custom Furniture Included</value>
+  </data>
+  <data name="Lander_ToggleOldBuilding" xml:space="preserve">
+    <value>Demolition &amp; Old Piping</value>
+  </data>
+  <data name="Lander_CtaClaimCalculation" xml:space="preserve">
+    <value>Claim My Instant Calculation</value>
+  </data>
+  <data name="Lander_ProcessingStep1" xml:space="preserve">
+    <value>Analyzing floor plan and apartment size...</value>
+  </data>
+  <data name="Lander_ProcessingStep2" xml:space="preserve">
+    <value>Applying live BGN and EUR material rates...</value>
+  </data>
+  <data name="Lander_ProcessingStep3" xml:space="preserve">
+    <value>Customizing kitchen and furniture packages...</value>
+  </data>
+  <data name="Lander_ProcessingComplete" xml:space="preserve">
+    <value>Calculation Complete!</value>
+  </data>
+  <data name="Lander_ModalTitle" xml:space="preserve">
+    <value>Where should we send your official calculation?</value>
+  </data>
+  <data name="Lander_PhonePlaceholder" xml:space="preserve">
+    <value>Phone number</value>
+  </data>
+  <data name="Lander_NamePlaceholder" xml:space="preserve">
+    <value>Your Name</value>
+  </data>
+  <data name="Lander_SubmitViber" xml:space="preserve">
+    <value>Receive Offer via Viber / SMS</value>
+  </data>
+  <data name="Lander_SubmitWizard" xml:space="preserve">
+    <value>View Line-by-Line Breakdown</value>
+  </data>
+  <data name="Lander_SuccessTitle" xml:space="preserve">
+    <value>Thank You!</value>
+  </data>
+  <data name="Lander_SuccessMessage" xml:space="preserve">
+    <value>Our team will contact you shortly with your custom offer.</value>
+  </data>
+  <data name="Lander_ScopeFull" xml:space="preserve">
+    <value>Full Renovation</value>
+  </data>
+  <data name="Lander_ScopeBathroom" xml:space="preserve">
+    <value>Bathroom Only</value>
+  </data>
+  <data name="Lander_ScopeFinishing" xml:space="preserve">
+    <value>Finishing Works Only</value>
+  </data>
+  <data name="Lander_StatusBds" xml:space="preserve">
+    <value>BDS / Act 16 (New)</value>
+  </data>
+  <data name="Lander_StatusRough" xml:space="preserve">
+    <value>Rough Construction (Act 14)</value>
+  </data>
+  <data name="Lander_StatusOld" xml:space="preserve">
+    <value>Old Building (Demolition)</value>
+  </data>
+  <data name="Lander_BathroomCount" xml:space="preserve">
+    <value>Number of Bathrooms</value>
+  </data>
+  <data name="Lander_BathroomTier" xml:space="preserve">
+    <value>Bathroom Finish Tier</value>
+  </data>
+  <data name="Lander_BathroomStandard" xml:space="preserve">
+    <value>Standard (60x60 Tiles)</value>
+  </data>
+  <data name="Lander_BathroomPremium" xml:space="preserve">
+    <value>Premium (Large Format / LED)</value>
+  </data>
+  <data name="Lander_HeroSubtitleBathroom" xml:space="preserve">
+    <value>Calculate the exact cost for your bathroom in 30 seconds (Labor, Waterproofing &amp; Tiling)</value>
+  </data>
+  <data name="Lander_HeroSubtitleFinishing" xml:space="preserve">
+    <value>Calculate turnkey finishing costs (Screeds, Electrics, Plumbing &amp; Paint)</value>
+  </data>
+  <data name="Lander_PriceLocked" xml:space="preserve">
+    <value>🔒 Enter phone to unlock exact calculation</value>
+  </data>
+  <data name="Lander_CtaUnlock" xml:space="preserve">
+    <value>Unlock My Complete Calculation</value>
+  </data>
+  <data name="Lander_EmailPlaceholder" xml:space="preserve">
+    <value>Enter your email address</value>
+  </data>
+  <data name="Lander_EmailError" xml:space="preserve">
+    <value>Please enter a valid email address (name@domain.com)</value>
+  </data>
+  <data name="Lander_PhoneError" xml:space="preserve">
+    <value>Please enter a valid phone number (at least 6 digits)</value>
+  </data>
+  <data name="Lander_ProposalSentNotice" xml:space="preserve">
+    <value>Official PDF Proposal dispatched to {0}</value>
+  </data>
+  <data name="Lander_BreakdownFinishing" xml:space="preserve">
+    <value>Construction &amp; Finishing</value>
+  </data>
+  <data name="Lander_BreakdownFurniture" xml:space="preserve">
+    <value>Custom Furniture &amp; Cabinetry</value>
+  </data>
+  <data name="Lander_BreakdownLogistics" xml:space="preserve">
+    <value>Logistics &amp; Waste Management</value>
+  </data>
+  <data name="Lander_CtaDownloadPdf" xml:space="preserve">
+    <value>Download PDF Copy</value>
+  </data>
+  <data name="Lander_CtaRefineWizard" xml:space="preserve">
+    <value>Refine Line Items in Detailed Calculator</value>
+  </data>
+  <data name="Lander_DeliveryNotice" xml:space="preserve">
+    <value>Official PDF Proposal is being generated and sent to {0}</value>
+  </data>
+  <data name="Lander_DeliverySubtext" xml:space="preserve">
+    <value>Our automated pricing engine is assembling your master PDF contract with guaranteed material rates.</value>
+  </data>
+  <data name="Lander_TimelineDays" xml:space="preserve">
+    <value>{0} Working Days</value>
+  </data>
+  <data name="Lander_TimelineNoteBathroom" xml:space="preserve">
+    <value>(Renovation &amp; tiling installation phase, excl. factory furniture manufacturing lead time)</value>
+  </data>
+  <data name="Lander_TimelineNoteFull" xml:space="preserve">
+    <value>(Main construction &amp; finishing works on site)</value>
+  </data>
+  <data name="Lander_Item_Demolition" xml:space="preserve">
+    <value>Tile &amp; screed demolition, bagging, manual floor lifting &amp; waste container transport</value>
+  </data>
+  <data name="Lander_Item_WallSquaring" xml:space="preserve">
+    <value>Wall plastering, levelling &amp; 90° right-angle alignment for tile laying</value>
+  </data>
+  <data name="Lander_RoomsTitle" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="Lander_CtaContactUs" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="Lander_ContactSubtext" xml:space="preserve">
+    <value>Call us for a free on-site inspection and consultation in Sofia</value>
+  </data>
+  <data name="Lander_PhoneCopiedNotice" xml:space="preserve">
+    <value>Phone Number Copied!</value>
+  </data>
+  <data name="Lander_PhoneCopiedSuccess" xml:space="preserve">
+    <value>Phone +359 888 888 888 copied to clipboard!</value>
+  </data>
+  <data name="Lander_DynamicTitle_Full" xml:space="preserve">
+    <value>Full Apartment Renovation - {0} m²</value>
+  </data>
+  <data name="Lander_DynamicTitle_Bathroom" xml:space="preserve">
+    <value>Bathroom Renovation Proposal - {0} Bathroom(s)</value>
+  </data>
+  <data name="Lander_DynamicTitle_Finishing" xml:space="preserve">
+    <value>Turnkey Finishing Works - {0} m²</value>
+  </data>
+  <data name="Lander_Status_Bds" xml:space="preserve">
+    <value>BDS Act 16 (New)</value>
+  </data>
+  <data name="Lander_Status_Rough" xml:space="preserve">
+    <value>Rough Construction Act 14</value>
+  </data>
+  <data name="Lander_Status_Old" xml:space="preserve">
+    <value>Old Building Demolition</value>
+  </data>
+  <data name="Lander_Trade_Bathroom" xml:space="preserve">
+    <value>Bathroom &amp; Tiling</value>
+  </data>
+  <data name="Lander_Trade_Drywall" xml:space="preserve">
+    <value>Drywall &amp; LED Ceilings</value>
+  </data>
+  <data name="Lander_Trade_Electrical" xml:space="preserve">
+    <value>Electrical &amp; Lighting</value>
+  </data>
+  <data name="Lander_Trade_Furniture" xml:space="preserve">
+    <value>Custom Furniture &amp; Kitchen</value>
+  </data>
+  <data name="Lander_Trade_Logistics" xml:space="preserve">
+    <value>Logistics &amp; Waste Management</value>
+  </data>
+  <data name="Lander_HeroTitleFull" xml:space="preserve">
+    <value>Full Apartment Renovation</value>
+  </data>
+  <data name="Lander_HeroTitleBathroom" xml:space="preserve">
+    <value>Bathroom Renovation Cost Estimator</value>
+  </data>
+  <data name="Lander_HeroTitleFinishing" xml:space="preserve">
+    <value>Turnkey Apartment Finishing Works</value>
+  </data>
+  <data name="Lander_StepProgress" xml:space="preserve">
+    <value>Step 1 of 2: Configure Parameters</value>
+  </data>
+  <data name="Lander_PercentComplete" xml:space="preserve">
+    <value>75% Complete</value>
+  </data>
+  <data name="Lander_BathroomCountLabel" xml:space="preserve">
+    <value>Number of Bathrooms</value>
+  </data>
+  <data name="Lander_1Bathroom" xml:space="preserve">
+    <value>1 Bathroom</value>
+  </data>
+  <data name="Lander_2Bathrooms" xml:space="preserve">
+    <value>2 Bathrooms</value>
+  </data>
+  <data name="Lander_3Bathrooms" xml:space="preserve">
+    <value>3 Bathrooms</value>
+  </data>
+  <data name="Lander_FinishQualityLabel" xml:space="preserve">
+    <value>Material Finish Quality Tier</value>
+  </data>
+  <data name="Lander_FinishStandard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Lander_FinishStandardDesc" xml:space="preserve">
+    <value>60x60 Tiles, 2K Membrane</value>
+  </data>
+  <data name="Lander_FinishPremium" xml:space="preserve">
+    <value>Premium</value>
+  </data>
+  <data name="Lander_FinishPremiumDesc" xml:space="preserve">
+    <value>60x120 Tiles, LED Cove</value>
+  </data>
+  <data name="Lander_FinishLuxury" xml:space="preserve">
+    <value>Luxury</value>
+  </data>
+  <data name="Lander_FinishLuxuryDesc" xml:space="preserve">
+    <value>Calacatta Quartz, Smoked MDF</value>
+  </data>
+  <data name="Lander_UrgencyBadgeText" xml:space="preserve">
+    <value>Over 140+ renovation proposals calculated in Sofia &amp; Plovdiv this month</value>
+  </data>
+  <data name="Lander_CtaCalculate" xml:space="preserve">
+    <value>Calculate My Custom Renovation Offer</value>
+  </data>
+  <data name="Lander_CtaSubtext" xml:space="preserve">
+    <value>Based on BuildSmart's 2026 Sofia Market Pricing Guide &amp; 100m² Case Study</value>
+  </data>
+  <data name="Lander_AreaLabel" xml:space="preserve">
+    <value>Apartment Area (m²)</value>
+  </data>
+  <data name="Lander_ConditionLabel" xml:space="preserve">
+    <value>Property Condition</value>
+  </data>
+  <data name="Lander_ToggleFurniture" xml:space="preserve">
+    <value>Include Custom Furniture</value>
+  </data>
+  <data name="Lander_FurnitureDesc" xml:space="preserve">
+    <value>Kitchen, Wardrobes &amp; Living Cabinetry</value>
+  </data>
+  <data name="GeneratedOffer_StatusEstimateReady" xml:space="preserve">
+    <value>Estimate Ready</value>
+  </data>
+  <data name="GeneratedOffer_TotalValue" xml:space="preserve">
+    <value>Total Estimated Project Budget</value>
+  </data>
+  <data name="ProjectOverview_TimelineLabel" xml:space="preserve">
+    <value>Estimated Timeline</value>
+  </data>
+  <data name="Lander_BathroomIncludedDisclaimer" xml:space="preserve">
+    <value>✓ COMPLETE TURNKEY OFFER: Includes Waterproofing, Tiling, Concealed Cistern, Plumbing, Moisture-resistant LED Ceiling, Walk-in Glass Enclosure, and Vanity/Mixer Installation.</value>
+  </data>
+  <data name="Lander_BathroomFullDisclaimer" xml:space="preserve">
+    <value>✓ COMPLETE TURNKEY OFFER: Includes Waterproofing, Tiling, Concealed Cistern, Plumbing, Moisture-resistant LED Ceiling, Walk-in Glass Enclosure, and Vanity/Mixer Installation.</value>
+  </data>
+  <data name="Lander_Item_Waterproofing" xml:space="preserve">
+    <value>2K Waterproofing Membrane with Sealing Tapes</value>
+  </data>
+  <data name="Lander_Item_TilingStandard" xml:space="preserve">
+    <value>Porcelain Stoneware Tiling (60x60 cm)</value>
+  </data>
+  <data name="Lander_Item_TilingPremium" xml:space="preserve">
+    <value>Large Format Stoneware Tiling (60x120 cm) with 45° Mitred Edges</value>
+  </data>
+  <data name="Lander_Item_Cistern" xml:space="preserve">
+    <value>Concealed Cistern &amp; Wall-hung Toilet Structure</value>
+  </data>
+  <data name="Lander_Item_Plumbing" xml:space="preserve">
+    <value>Plumbing Outlets &amp; Stainless Steel Strip Drain</value>
+  </data>
+  <data name="Lander_Item_CeilingLed" xml:space="preserve">
+    <value>Moisture-resistant Drywall Ceiling &amp; Recessed LED Profiles</value>
+  </data>
+  <data name="Lander_Item_ShowerGlass" xml:space="preserve">
+    <value>Toughened Walk-in Glass Enclosure / Shower Screen</value>
+  </data>
+  <data name="Lander_Item_SanitaryFitout" xml:space="preserve">
+    <value>Vanity Cabinet, Anti-fog LED Mirror &amp; Concealed Mixers</value>
+  </data>
+  <data name="Lander_Item_Ventilation" xml:space="preserve">
+    <value>Silent Extractor Fan with Backdraught Shutter &amp; Ductwork Connection</value>
+  </data>
+  <data name="Lander_BathroomSizeLabel" xml:space="preserve">
+    <value>Bathroom #{0} Size (m²)</value>
+  </data>
+  <data name="Lander_SizeCompact" xml:space="preserve">
+    <value>Compact ({0} m²)</value>
+  </data>
+  <data name="Lander_SizeStandardArea" xml:space="preserve">
+    <value>Standard ({0} m²)</value>
+  </data>
+  <data name="Lander_SizeLargeArea" xml:space="preserve">
+    <value>Large ({0} m²)</value>
+  </data>
+  <data name="Lander_OverallDescBathroom" xml:space="preserve">
+    <value>Calculated for {0} bathroom(s) ({1} finish) in Sofia using official 2026 labor &amp; material formulas. Inspect itemized trade task cards below.</value>
+  </data>
+  <data name="Lander_OverallDescFull" xml:space="preserve">
+    <value>Calculated for {0} m² ({1} finish) in Sofia using official 2026 labor &amp; material formulas. Inspect itemized trade task cards below.</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F1" xml:space="preserve">
+    <value>60x60 cm Porcelain Stoneware &amp; 1K Elastic Waterproofing</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F2" xml:space="preserve">
+    <value>Built-in Tiled Niche / Shelf in Shower Area</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F3" xml:space="preserve">
+    <value>Concealed Cistern Structure &amp; Toughened Glass Shower Screen</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F4" xml:space="preserve">
+    <value>Moisture-resistant Drywall Ceiling &amp; Silent Extractor Fan</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F5" xml:space="preserve">
+    <value>Free Installation of All Client-Purchased Mixers &amp; Accessories</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F1" xml:space="preserve">
+    <value>Includes all Standard features +</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F2" xml:space="preserve">
+    <value>60x120 cm Large Format Tiles with 45° Mitred Edges &amp; 2K Waterproofing</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F3" xml:space="preserve">
+    <value>Built-in Niche with Integrated LED Lighting &amp; Mitred Edges</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F4" xml:space="preserve">
+    <value>Suspended Ceiling with Concealed LED Profile Channel Lighting</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F5" xml:space="preserve">
+    <value>Black-frame Walk-in Glass Screen &amp; Stainless Strip Drain</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F6" xml:space="preserve">
+    <value>Free Installation of Client Concealed Mixers &amp; LED Mirrors</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F1" xml:space="preserve">
+    <value>Includes all Premium features +</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F2" xml:space="preserve">
+    <value>XL Slab Porcelain (120x240 Calacatta Slabs) &amp; 2K Polyurethane</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F3" xml:space="preserve">
+    <value>Dual Designer Built-in Niche with Calacatta Quartz Backing</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F4" xml:space="preserve">
+    <value>Floating Drywall Ceiling with Multi-zone Warm/RGB LED Lighting</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F5" xml:space="preserve">
+    <value>Ceiling Rainfall Shower &amp; Smoked Glass Enclosure</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F6" xml:space="preserve">
+    <value>Free Professional Fitout of All Client Designer Fixtures &amp; Smart Mirrors</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_Desc" xml:space="preserve">
+    <value>Standard plastering, flooring &amp; chipboard furniture</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F1" xml:space="preserve">
+    <value>8 mm Laminate (AC4) &amp; White/Light latex paint</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F2" xml:space="preserve">
+    <value>Armored entry door &amp; standard interior doors</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F3" xml:space="preserve">
+    <value>Schneider switches/sockets wiring &amp; standard lighting</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F4" xml:space="preserve">
+    <value>18 mm Chipboard cabinet furniture (Kitchen &amp; Hallway)</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F5" xml:space="preserve">
+    <value>Standard bathroom sanitaryware fitout included</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_Desc" xml:space="preserve">
+    <value>Engineered parquet, custom MDF kitchen &amp; LED accents</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F1" xml:space="preserve">
+    <value>Includes all Standard features +</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F2" xml:space="preserve">
+    <value>14 mm Engineered parquet or SPC vinyl &amp; designer paint</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F3" xml:space="preserve">
+    <value>Suspended ceilings with concealed LED profile lighting channels</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F4" xml:space="preserve">
+    <value>Interior doors with hidden hinges &amp; magnetic locks</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F5" xml:space="preserve">
+    <value>Custom lacquered MDF kitchen, technical stone countertop &amp; appliances</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F6" xml:space="preserve">
+    <value>Floor-to-ceiling wardrobes with integrated LED &amp; soft-close</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_Desc" xml:space="preserve">
+    <value>Natural marble, Smoked MDF, Calacatta &amp; Smart appliances</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F1" xml:space="preserve">
+    <value>Includes all Premium features +</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F2" xml:space="preserve">
+    <value>Solid oak parquet / Calacatta Quartz slabs &amp; Italian decorative plaster</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F3" xml:space="preserve">
+    <value>Floating ceilings with multi-zone Warm/RGB LED &amp; acoustic wall panels</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F4" xml:space="preserve">
+    <value>Designer ceiling-height flush wall doors (Concealed frame)</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F5" xml:space="preserve">
+    <value>Luxury smoked MDF / veneer with Calacatta Quartz &amp; Blum smart kitchen</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F6" xml:space="preserve">
+    <value>Designer living set, upholstered bed &amp; smart home automation</value>
+  </data>
+  <data name="Lander_BathroomIncludedDisclaimer" xml:space="preserve">
+    <value>✓ BUILDSMART SCOPE: We construct &amp; tile built-in niches, 2K waterproofing, tiling, ceilings, cisterns &amp; drains. All client-purchased mixers, vanities, mirrors &amp; accessories are INSTALLED FOR FREE.</value>
+  </data>
+  <data name="Lander_ModalHeaderTag" xml:space="preserve">
+    <value>BuildSmart Official Offer</value>
+  </data>
+  <data name="Lander_ModalTitle" xml:space="preserve">
+    <value>Where should we send your official offer?</value>
+  </data>
+  <data name="Lander_ModalSubtitle" xml:space="preserve">
+    <value>Enter your email to receive the complete itemized estimate in PDF format by email within a few minutes.</value>
+  </data>
+  <data name="Lander_CtaSendPdf" xml:space="preserve">
+    <value>Send My PDF</value>
+  </data>
+  <data name="Lander_ToggleBathroomEquipment" xml:space="preserve">
+    <value>Include Bathroom Equipment &amp; Fixtures</value>
+  </data>
+  <data name="Lander_BathroomEquipmentDesc" xml:space="preserve">
+    <value>Mixers, Vanities, Mirrors, Ventilation &amp; Shower Enclosures (Turn off for labor, cement, waterproofing &amp; tiling only)</value>
+  </data>
+  <data name="Lander_BadgeVerifiedEstimate" xml:space="preserve">
+    <value>Verified Estimate • Sofia, BG</value>
+  </data>
+  <data name="Lander_MetricLocation" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Lander_MetricArea" xml:space="preserve">
+    <value>Total Area</value>
+  </data>
+  <data name="Lander_MetricCondition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="Lander_MetricTier" xml:space="preserve">
+    <value>Quality Tier</value>
+  </data>
+  <data name="Lander_MetricScopeIncluded" xml:space="preserve">
+    <value>Scope Included</value>
+  </data>
+  <data name="Lander_FullIncludedDisclaimer" xml:space="preserve">
+    <value>✓ TURNKEY &amp; CUSTOM FURNITURE OFFER: Includes all finishing works, flooring, bathroom, plaster, painting, electrical, plumbing, and custom-manufactured MDF furniture.</value>
+  </data>
+  <data name="Lander_FinishingIncludedDisclaimer" xml:space="preserve">
+    <value>✓ TURNKEY FINISHING OFFER: Includes all finishing works, flooring, bathroom, plaster, painting, electrical, and plumbing.</value>
+  </data>
+  <data name="Lander_ItemizedKssSubhead" xml:space="preserve">
+    <value>Itemized КСС Breakdown</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings" xml:space="preserve">
+    <value>Suspended Gypsum Ceilings with Sound Insulation</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels" xml:space="preserve">
+    <value>Integrated LED Profile Light Channels &amp; Plastering</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard" xml:space="preserve">
+    <value>New Distribution Board &amp; Heavy Circuit Wiring</value>
+  </data>
+  <data name="Lander_Full_Item_Switches" xml:space="preserve">
+    <value>Switches, Sockets &amp; Spot Fixture Installation</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen" xml:space="preserve">
+    <value>Custom MDF Kitchen with Synthetic Stone Countertop</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes" xml:space="preserve">
+    <value>Built-in Wardrobes &amp; Hallway Storage Units</value>
+  </data>
+  <data name="Lander_Full_Item_DemolitionLogistics" xml:space="preserve">
+    <value>Tile Demolition, Screed Removal &amp; Waste Containers</value>
+  </data>
+  <data name="Lander_Full_Item_Logistics" xml:space="preserve">
+    <value>Material Transport &amp; Manual Floor Lifting</value>
+  </data>
+  <data name="Lander_Item_Waterproofing2K" xml:space="preserve">
+    <value>2K Elastic Waterproofing Membrane &amp; Sealing Tapes</value>
+  </data>
+  <data name="Lander_Item_WaterproofingPoly" xml:space="preserve">
+    <value>2K Polyurethane Waterproofing &amp; Calacatta Quartz Base</value>
+  </data>
+  <data name="Lander_Item_TilingLuxury" xml:space="preserve">
+    <value>120x240 XL Calacatta Quartz Slabs &amp; 45° Mitred Edges</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings_Standard" xml:space="preserve">
+    <value>Standard Drywall Ceilings with White Latex Paint</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings_Premium" xml:space="preserve">
+    <value>Suspended Gypsum Ceilings with Sound Insulation &amp; Concealed Lighting</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings_Luxury" xml:space="preserve">
+    <value>Floating Acoustic Ceilings with Multi-zone Warm/RGB LED Lighting</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels_Standard" xml:space="preserve">
+    <value>Plaster Skimming, Sanding &amp; Standard White Paint</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels_Premium" xml:space="preserve">
+    <value>Integrated LED Profile Channels &amp; Fine Plaster Skimming</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels_Luxury" xml:space="preserve">
+    <value>Italian Decorative Plaster (San Marco / Oikos) &amp; Architectural LED Profiles</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard_Standard" xml:space="preserve">
+    <value>Standard Electrical Board &amp; Schneider Switches/Sockets</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard_Premium" xml:space="preserve">
+    <value>New Distribution Board, Circuit Breakers &amp; LED Lighting Points</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard_Luxury" xml:space="preserve">
+    <value>Smart Electrical Panel with Home Automation &amp; Architectural Lighting</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen_Standard" xml:space="preserve">
+    <value>18 mm Chipboard Kitchen with Laminate Countertop</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen_Premium" xml:space="preserve">
+    <value>Custom Lacquered MDF Kitchen with Technical Stone Countertop &amp; Appliances</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen_Luxury" xml:space="preserve">
+    <value>Luxury Smoked MDF / Veneer with Calacatta Quartz &amp; Blum Smart Kitchen</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes_Standard" xml:space="preserve">
+    <value>Standard 18 mm Chipboard Wardrobes for Bedroom &amp; Hallway</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes_Premium" xml:space="preserve">
+    <value>Floor-to-ceiling MDF Wardrobes with Integrated LED &amp; Soft-close</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes_Luxury" xml:space="preserve">
+    <value>Designer Smoked MDF Wardrobe with Calacatta Backing &amp; Glass LED Display</value>
+  </data>
 </root>

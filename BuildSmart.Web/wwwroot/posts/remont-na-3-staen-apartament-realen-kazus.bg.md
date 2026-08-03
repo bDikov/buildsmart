@@ -64,7 +64,7 @@
   <h3 class="bs-lead-title">Искате точна оферта за вашия апартамент?</h3>
   <p class="bs-lead-desc">Въведете вашите квадрати онлайн или ни пишете директно в чата:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
       Сметнете оферта за вашия имот (2 мин)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

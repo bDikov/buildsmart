@@ -8,7 +8,7 @@ Six months later, your apartment is covered in dust, the workers disappeared aft
 
 In this guide, we reveal the **unfiltered, itemized turnkey renovation costs in Sofia for 2026** — so you never waste a single Euro.
 
-> Before accepting verbal estimates at face value, check exact itemized figures for your square footage in our [online cost calculator](/job-wizard) — featuring fixed contract pricing and 0% advance deposit.
+> Before accepting verbal estimates at face value, check exact itemized figures for your square footage in our [online cost calculator](/renovation-estimator?scope=full) — featuring fixed contract pricing and 0% advance deposit.
 
 ---
 
@@ -40,20 +40,20 @@ At BuildSmart.bg, we eliminate redundant intermediary fees, keeping prices **at 
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Investment Class</div>
       <div class="card-price-main">€525 - €640 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Ideal for rental properties. Chipboard furniture, durable laminate, lighting, and accent paints.</div>
       <div class="card-cta-btn">Calculate Online <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card active-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card active-card">
       <div class="card-badge-popular">Most Popular in Sofia</div>
       <div class="card-tier-tag text-primary">Full Turnkey Family Home</div>
       <div class="card-price-main">€600 - €900 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Complete plumbing & electrical, demolition, plastering, bathroom, drywall ceilings, MDF furniture, HVAC.</div>
       <div class="card-cta-btn btn-primary-style">Calculate Free Quote <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Designer Luxury</div>
       <div class="card-price-main">€900+ <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Architectural blueprint, natural marble, Smart Home automation, magnetic track lighting, oak parquet.</div>
@@ -114,7 +114,7 @@ See with your own eyes what a flawless 100 sq.m. apartment renovation in Sofia l
   <h3 class="bs-lead-title">Ready to start your project or have questions?</h3>
   <p class="bs-lead-desc">Get a fixed contract estimate with 0% advance deposit or chat with our team directly:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
       Start Your Project Online (2 min)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

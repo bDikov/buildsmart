@@ -93,6 +93,9 @@ builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.Circu
 // Shared Services
 builder.Services.AddScoped<SignalRService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailVerificationService, BuildSmart.Infrastructure.Services.EmailVerificationService>();
+builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailService, BuildSmart.Infrastructure.Services.EmailService>();
+builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<AuthHeaderHandler>();

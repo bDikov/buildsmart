@@ -45,7 +45,7 @@
   <h3 class="bs-lead-title">Защитете ремонта си с твърд договор и 0% капаро</h3>
   <p class="bs-lead-desc">Не поемайте излишни рискове с неясни оферти. Вземете вашата количествено-стойностна сметка онлайн или ни пишете директно в чата:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator" class="bs-btn-primary bs-btn-animated">
       Сметнете оферта по договор (2 мин)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

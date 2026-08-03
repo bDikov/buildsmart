@@ -4,7 +4,7 @@ Drywall systems are essential for modern turnkey apartment renovations. Metal fr
 
 Here is a breakdown of 2026 drywall labor and material prices in Sofia.
 
-> Calculate exact ceiling and wall quantities for your home in our [online cost estimator](/job-wizard).
+> Calculate exact ceiling and wall quantities for your home in our [online cost estimator](/renovation-estimator?scope=full).
 
 ---
 
@@ -26,20 +26,20 @@ Here is a breakdown of 2026 drywall labor and material prices in Sofia.
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Economy Class</div>
       <div class="card-price-main">€13 - €20 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Single-frame wall lining (9.5/12.5 mm plasterboard) without acoustic insulation.</div>
       <div class="card-cta-btn">Calculate Online <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card active-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card active-card">
       <div class="card-badge-popular">⭐ Most Popular in Sofia</div>
       <div class="card-tier-tag text-primary">Standard Class</div>
       <div class="card-price-main">€23 - €35 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Single-level suspended ceiling + acoustic mineral wool (50 mm), mesh joint taping.</div>
       <div class="card-cta-btn btn-primary-style">Calculate Your Ceilings <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Premium Class</div>
       <div class="card-price-main">€40 - €60 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Two-level decorative ceilings with concealed LED coves, curtain pockets, and soundproofing.</div>
@@ -80,7 +80,7 @@ Watch a short video demonstration of an installed suspended ceiling with recesse
   <h3 class="bs-lead-title">Want flawless walls and suspended ceilings?</h3>
   <p class="bs-lead-desc">Calculate an estimate for your exact dimensions or chat with our team directly:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
       Calculate Your Ceilings Online (2 min)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

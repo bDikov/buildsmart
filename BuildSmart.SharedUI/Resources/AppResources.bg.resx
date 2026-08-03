@@ -1344,4 +1344,580 @@
   <data name="Email_CTA_ViewProject" xml:space="preserve">
     <value>Към моя проект</value>
   </data>
+  <data name="Lander_HeroTitle" xml:space="preserve">
+    <value>Цялостен Ремонт и Мебели за Апартамент</value>
+  </data>
+  <data name="Lander_HeroSubtitle" xml:space="preserve">
+    <value>Изчислете цената за цялостен ремонт и мебели за Вашия апартамент за 30 секунди</value>
+  </data>
+  <data name="Lander_EstimatedBudgetLabel" xml:space="preserve">
+    <value>Очакван Бюджет</value>
+  </data>
+  <data name="Lander_MostPopularBadge" xml:space="preserve">
+    <value>Най-популярен</value>
+  </data>
+  <data name="Lander_PresetStudioTitle" xml:space="preserve">
+    <value>Компактен 2-стаен / Студио</value>
+  </data>
+  <data name="Lander_PresetStudioDesc" xml:space="preserve">
+    <value>45 кв.м - Довършителни работи и Кухня</value>
+  </data>
+  <data name="Lander_Preset2BedTitle" xml:space="preserve">
+    <value>Стандартен 3-стаен</value>
+  </data>
+  <data name="Lander_Preset2BedDesc" xml:space="preserve">
+    <value>75 кв.м - Пълен Ремонт и Мебели по Поръчка</value>
+  </data>
+  <data name="Lander_Preset3BedTitle" xml:space="preserve">
+    <value>Голям Апартамент / Пентхаус</value>
+  </data>
+  <data name="Lander_Preset3BedDesc" xml:space="preserve">
+    <value>105 кв.м - Луксозен Ремонт и Цялостно Обзавеждане</value>
+  </data>
+  <data name="Lander_ToggleFurniture" xml:space="preserve">
+    <value>Включени Мебели по Поръчка</value>
+  </data>
+  <data name="Lander_ToggleOldBuilding" xml:space="preserve">
+    <value>Къртене и Стари Инсталации</value>
+  </data>
+  <data name="Lander_CtaClaimCalculation" xml:space="preserve">
+    <value>Вземи Моята Изчислена Оферта</value>
+  </data>
+  <data name="Lander_ProcessingStep1" xml:space="preserve">
+    <value>Анализиране на квадратурата и разпределението...</value>
+  </data>
+  <data name="Lander_ProcessingStep2" xml:space="preserve">
+    <value>Зареждане на актуални цени за материали и труд...</value>
+  </data>
+  <data name="Lander_ProcessingStep3" xml:space="preserve">
+    <value>Калкулиране на мебели по поръчка...</value>
+  </data>
+  <data name="Lander_ProcessingComplete" xml:space="preserve">
+    <value>Изчислението е готово!</value>
+  </data>
+  <data name="Lander_ModalTitle" xml:space="preserve">
+    <value>Къде да изпратим Вашата готова оферта?</value>
+  </data>
+  <data name="Lander_PhonePlaceholder" xml:space="preserve">
+    <value>Телефонен номер</value>
+  </data>
+  <data name="Lander_NamePlaceholder" xml:space="preserve">
+    <value>Вашето Име</value>
+  </data>
+  <data name="Lander_SubmitViber" xml:space="preserve">
+    <value>Получи оферта по Viber / SMS</value>
+  </data>
+  <data name="Lander_SubmitWizard" xml:space="preserve">
+    <value>Прегледай детайлната разбивка</value>
+  </data>
+  <data name="Lander_SuccessTitle" xml:space="preserve">
+    <value>Благодарим Ви!</value>
+  </data>
+  <data name="Lander_SuccessMessage" xml:space="preserve">
+    <value>Нашият екип ще се свърже с Вас за потвърждение на офертата.</value>
+  </data>
+  <data name="Lander_ScopeFull" xml:space="preserve">
+    <value>Пълен Ремонт</value>
+  </data>
+  <data name="Lander_ScopeBathroom" xml:space="preserve">
+    <value>Само Баня</value>
+  </data>
+  <data name="Lander_ScopeFinishing" xml:space="preserve">
+    <value>Само Довършителни Работи</value>
+  </data>
+  <data name="Lander_StatusBds" xml:space="preserve">
+    <value>БДС / Акт 16 (Нова)</value>
+  </data>
+  <data name="Lander_StatusRough" xml:space="preserve">
+    <value>Груб Строеж / Акт 14</value>
+  </data>
+  <data name="Lander_StatusOld" xml:space="preserve">
+    <value>Старо Строителство (Къртене)</value>
+  </data>
+  <data name="Lander_BathroomCount" xml:space="preserve">
+    <value>Брой Бани</value>
+  </data>
+  <data name="Lander_BathroomTier" xml:space="preserve">
+    <value>Категория на Банята</value>
+  </data>
+  <data name="Lander_BathroomStandard" xml:space="preserve">
+    <value>Стандартна (Гранитогрес 60х60)</value>
+  </data>
+  <data name="Lander_BathroomPremium" xml:space="preserve">
+    <value>Премиум (Крупноформатен / LED)</value>
+  </data>
+  <data name="Lander_HeroSubtitleBathroom" xml:space="preserve">
+    <value>Изчислете цената за Вашата баня за 30 секунди (Труд, Хидроизолация и Плочки)</value>
+  </data>
+  <data name="Lander_HeroSubtitleFinishing" xml:space="preserve">
+    <value>Изчислете цената за довършителни работи до ключ (Замазки, Ел., ВиК и Боя)</value>
+  </data>
+  <data name="Lander_PriceLocked" xml:space="preserve">
+    <value>Въведете телефон за отключване на точната оферта</value>
+  </data>
+  <data name="Lander_CtaUnlock" xml:space="preserve">
+    <value>Отключи Моята Готова Оферта</value>
+  </data>
+  <data name="Lander_EmailPlaceholder" xml:space="preserve">
+    <value>Въведете Вашия имейл адрес</value>
+  </data>
+  <data name="Lander_EmailError" xml:space="preserve">
+    <value>Моля въведете валиден имейл адрес (name@domain.com)</value>
+  </data>
+  <data name="Lander_PhoneError" xml:space="preserve">
+    <value>Моля въведете валиден телефонен номер (поне 6 цифри)</value>
+  </data>
+  <data name="Lander_ProposalSentNotice" xml:space="preserve">
+    <value>Официалната PDF оферта е изпратена на {0}</value>
+  </data>
+  <data name="Lander_BreakdownFinishing" xml:space="preserve">
+    <value>Строително-довършителни работи</value>
+  </data>
+  <data name="Lander_BreakdownFurniture" xml:space="preserve">
+    <value>Мебели и Кухня по поръчка</value>
+  </data>
+  <data name="Lander_BreakdownLogistics" xml:space="preserve">
+    <value>Логистика и Извозване на отпадъци</value>
+  </data>
+  <data name="Lander_CtaDownloadPdf" xml:space="preserve">
+    <value>Изтегли Офертата в PDF</value>
+  </data>
+  <data name="Lander_CtaRefineWizard" xml:space="preserve">
+    <value>Прегледай детайлната КСС в калкулатора</value>
+  </data>
+  <data name="Lander_DeliveryNotice" xml:space="preserve">
+    <value>Официалната PDF оферта се генерира и изпраща на {0}</value>
+  </data>
+  <data name="Lander_DeliverySubtext" xml:space="preserve">
+    <value>Автоматичната система подготвя Вашия договор с подпечатани цени на материали и труд.</value>
+  </data>
+  <data name="Lander_TimelineDays" xml:space="preserve">
+    <value>{0} Работни Дни</value>
+  </data>
+  <data name="Lander_TimelineNoteBathroom" xml:space="preserve">
+    <value>(Строително-монтажни дейности и плочки, без изработка на мебел по поръчка)</value>
+  </data>
+  <data name="Lander_TimelineNoteFull" xml:space="preserve">
+    <value>(Основа и довършителни работи на обекта)</value>
+  </data>
+  <data name="Lander_Item_Demolition" xml:space="preserve">
+    <value>Къртене на фаянс/теракота, демонтаж, чували &amp; контейнер за строителен отпадък</value>
+  </data>
+  <data name="Lander_Item_WallSquaring" xml:space="preserve">
+    <value>Изправяне на стени и геометрия 90° с хастарна мазилка за плочки</value>
+  </data>
+  <data name="Lander_RoomsTitle" xml:space="preserve">
+    <value>Стаи</value>
+  </data>
+  <data name="Lander_CtaContactUs" xml:space="preserve">
+    <value>Свържете се с нас</value>
+  </data>
+  <data name="Lander_ContactSubtext" xml:space="preserve">
+    <value>Обадете се за безплатен оглед и консултация на място в София</value>
+  </data>
+  <data name="Lander_PhoneCopiedNotice" xml:space="preserve">
+    <value>Телефонът е копиран!</value>
+  </data>
+  <data name="Lander_PhoneCopiedSuccess" xml:space="preserve">
+    <value>Номерът +359 888 888 888 е копиран в клипборда!</value>
+  </data>
+  <data name="Lander_DynamicTitle_Full" xml:space="preserve">
+    <value>Пълен Ремонт на Апартамент - {0} кв.м.</value>
+  </data>
+  <data name="Lander_DynamicTitle_Bathroom" xml:space="preserve">
+    <value>Ремонт на Баня - {0} бр. Баня</value>
+  </data>
+  <data name="Lander_DynamicTitle_Finishing" xml:space="preserve">
+    <value>Довършителни Работи до Ключ - {0} кв.м.</value>
+  </data>
+  <data name="Lander_Status_Bds" xml:space="preserve">
+    <value>БДС / Акт 16 (Ново строителство)</value>
+  </data>
+  <data name="Lander_Status_Rough" xml:space="preserve">
+    <value>Груб Строеж / Акт 14</value>
+  </data>
+  <data name="Lander_Status_Old" xml:space="preserve">
+    <value>Старо Строителство / Демонтажи</value>
+  </data>
+  <data name="Lander_Trade_Bathroom" xml:space="preserve">
+    <value>Баня и Санитария</value>
+  </data>
+  <data name="Lander_Trade_Drywall" xml:space="preserve">
+    <value>Сухо Строителство и LED Тавани</value>
+  </data>
+  <data name="Lander_Trade_Electrical" xml:space="preserve">
+    <value>Електроинсталация и Осветление</value>
+  </data>
+  <data name="Lander_Trade_Furniture" xml:space="preserve">
+    <value>Мебели по Поръчка и Кухня</value>
+  </data>
+  <data name="Lander_Trade_Logistics" xml:space="preserve">
+    <value>Логистика, Къртене и Депониране</value>
+  </data>
+  <data name="Lander_HeroTitleFull" xml:space="preserve">
+    <value>Цялостен Ремонт на Апартамент</value>
+  </data>
+  <data name="Lander_HeroTitleBathroom" xml:space="preserve">
+    <value>Изчислете Цената за Ремонт на Баня</value>
+  </data>
+  <data name="Lander_HeroTitleFinishing" xml:space="preserve">
+    <value>Довършителни Работи до Ключ за Апартамент</value>
+  </data>
+  <data name="Lander_StepProgress" xml:space="preserve">
+    <value>Стъпка 1 от 2: Конфигурирайте параметрите</value>
+  </data>
+  <data name="Lander_PercentComplete" xml:space="preserve">
+    <value>75% Завършено</value>
+  </data>
+  <data name="Lander_BathroomCountLabel" xml:space="preserve">
+    <value>Брой Бани</value>
+  </data>
+  <data name="Lander_1Bathroom" xml:space="preserve">
+    <value>1 Баня</value>
+  </data>
+  <data name="Lander_2Bathrooms" xml:space="preserve">
+    <value>2 Бани</value>
+  </data>
+  <data name="Lander_3Bathrooms" xml:space="preserve">
+    <value>3 Бани</value>
+  </data>
+  <data name="Lander_FinishQualityLabel" xml:space="preserve">
+    <value>Ниво на материалите и довършването</value>
+  </data>
+  <data name="Lander_FinishStandard" xml:space="preserve">
+    <value>Стандарт</value>
+  </data>
+  <data name="Lander_FinishStandardDesc" xml:space="preserve">
+    <value>60x60 Плочки, 2K Хидроизолация</value>
+  </data>
+  <data name="Lander_FinishPremium" xml:space="preserve">
+    <value>Премиум</value>
+  </data>
+  <data name="Lander_FinishPremiumDesc" xml:space="preserve">
+    <value>60x120 Плочки, LED Ниши</value>
+  </data>
+  <data name="Lander_FinishLuxury" xml:space="preserve">
+    <value>Лукс</value>
+  </data>
+  <data name="Lander_FinishLuxuryDesc" xml:space="preserve">
+    <value>Calacatta Кварц, Пушен МДФ</value>
+  </data>
+  <data name="Lander_UrgencyBadgeText" xml:space="preserve">
+    <value>Над 140+ оферти за ремонт изчислени в София и Пловдив този месец</value>
+  </data>
+  <data name="Lander_CtaCalculate" xml:space="preserve">
+    <value>Изчислете моята оферта за ремонт</value>
+  </data>
+  <data name="Lander_CtaSubtext" xml:space="preserve">
+    <value>Въз основа на пазарните цени в София за 2026 г. и примерни 100м²</value>
+  </data>
+  <data name="Lander_AreaLabel" xml:space="preserve">
+    <value>Площ на Апартамента (кв.м)</value>
+  </data>
+  <data name="Lander_ConditionLabel" xml:space="preserve">
+    <value>Състояние на имота</value>
+  </data>
+  <data name="Lander_ToggleFurniture" xml:space="preserve">
+    <value>Включи Мебели по Поръчка</value>
+  </data>
+  <data name="Lander_FurnitureDesc" xml:space="preserve">
+    <value>Кухня, Гардероби и Мебели за дневна</value>
+  </data>
+  <data name="GeneratedOffer_StatusEstimateReady" xml:space="preserve">
+    <value>Готова Оферта</value>
+  </data>
+  <data name="GeneratedOffer_TotalValue" xml:space="preserve">
+    <value>Обща стойност на офертата</value>
+  </data>
+  <data name="ProjectOverview_TimelineLabel" xml:space="preserve">
+    <value>Срок за изпълнение</value>
+  </data>
+  <data name="Lander_BathroomIncludedDisclaimer" xml:space="preserve">
+    <value>✓ ЦЯЛОСТНА ОФЕРТА „ДО КЛЮЧ“: Включва 2K хидроизолация, плочки, вградено казанче, ВиК и сифон, водоустойчив таван с LED осветление, душ параван/закалено стъкло, шкафове за баня и смесители.</value>
+  </data>
+  <data name="Lander_BathroomFullDisclaimer" xml:space="preserve">
+    <value>✓ ЦЯЛОСТНА ОФЕРТА „ДО КЛЮЧ“: Включва 2K хидроизолация, плочки, вградено казанче, ВиК и сифон, водоустойчив таван с LED осветление, душ параван/закалено стъкло, шкафове за баня и смесители.</value>
+  </data>
+  <data name="Lander_Item_Waterproofing" xml:space="preserve">
+    <value>2K Хидроизолационна мембрана с уплътнителни ленти</value>
+  </data>
+  <data name="Lander_Item_TilingStandard" xml:space="preserve">
+    <value>Полагане на гранитогрес / фаянс (60x60 см)</value>
+  </data>
+  <data name="Lander_Item_TilingPremium" xml:space="preserve">
+    <value>Полагане на едроформатен гранитогрес (60x120 см) с 45° джоли ъгли</value>
+  </data>
+  <data name="Lander_Item_Cistern" xml:space="preserve">
+    <value>Монтаж на вградено казанче и структура за окачена тоалетна</value>
+  </data>
+  <data name="Lander_Item_Plumbing" xml:space="preserve">
+    <value>ВиК изводи и линеен сифон от неръждаема стомана</value>
+  </data>
+  <data name="Lander_Item_CeilingLed" xml:space="preserve">
+    <value>Окачен водоустойчив таван с вградено скрито LED осветление / лунички</value>
+  </data>
+  <data name="Lander_Item_ShowerGlass" xml:space="preserve">
+    <value>Монтаж на закалено душ стъкло / Walk-in параван с черен/хром профил</value>
+  </data>
+  <data name="Lander_Item_SanitaryFitout" xml:space="preserve">
+    <value>Монтаж на мебел за баня, LED огледало и смесители</value>
+  </data>
+  <data name="Lander_Item_Ventilation" xml:space="preserve">
+    <value>Вентилационен канал &amp; безшумен влагозащитен вентилатор с клапа</value>
+  </data>
+  <data name="Lander_BathroomSizeLabel" xml:space="preserve">
+    <value>Размер на Баня #{0}</value>
+  </data>
+  <data name="Lander_SizeCompact" xml:space="preserve">
+    <value>Компактна ({0} кв.м)</value>
+  </data>
+  <data name="Lander_SizeStandardArea" xml:space="preserve">
+    <value>Стандартна ({0} кв.м)</value>
+  </data>
+  <data name="Lander_SizeLargeArea" xml:space="preserve">
+    <value>Голяма ({0} кв.м)</value>
+  </data>
+  <data name="Lander_OverallDescBathroom" xml:space="preserve">
+    <value>Изчислено за {0} бр. баня/и (ниво {1}) в София по официалните цени за 2026 г. Прегледайте КСС по-долу.</value>
+  </data>
+  <data name="Lander_OverallDescFull" xml:space="preserve">
+    <value>Изчислено за {0} кв.м. (ниво {1}) в София по официалните цени за 2026 г. Прегледайте КСС по-долу.</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F1" xml:space="preserve">
+    <value>60x60 см Гранитогрес / Фаянс &amp; 1K Еластична хидроизолация</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F2" xml:space="preserve">
+    <value>Изграждане на вградена ниша / рафт в плочките в душ зоната</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F3" xml:space="preserve">
+    <value>Вградено казанче със структура &amp; 8mm Стъклен душ параван</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F4" xml:space="preserve">
+    <value>Водоустойчив таван с LED лунички &amp; Безшумен вентилатор</value>
+  </data>
+  <data name="Lander_SaaS_Standard_F5" xml:space="preserve">
+    <value>БЕЗПЛАТЕН МОНТАЖ на всички закупени от клиента смесители &amp; аксесоари</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F1" xml:space="preserve">
+    <value>Всички характеристики от пакет Стандарт +</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F2" xml:space="preserve">
+    <value>60x120 см Гранитогрес с 45° джоли ъгли &amp; 2K Хидроизолация</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F3" xml:space="preserve">
+    <value>Вградена ниша с LED осветление &amp; 45° джоли ъгли</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F4" xml:space="preserve">
+    <value>Окачен таван със скрито LED профилно осветление</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F5" xml:space="preserve">
+    <value>Walk-in душ параван с черен/хром профил &amp; линеен сифон</value>
+  </data>
+  <data name="Lander_SaaS_Premium_F6" xml:space="preserve">
+    <value>БЕЗПЛАТЕН МОНТАЖ на вградени черни смесители, душ пити &amp; LED огледала</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F1" xml:space="preserve">
+    <value>Всички характеристики от пакет Премиум +</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F2" xml:space="preserve">
+    <value>XL Слаб плочи (120x240 Calacatta Кварц) &amp; 2K Полиуретан</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F3" xml:space="preserve">
+    <value>Двойна дизайнерска вградена ниша с Calacatta гръб</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F4" xml:space="preserve">
+    <value>Плуващ таван с многозоново RGB/Warm LED осветление</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F5" xml:space="preserve">
+    <value>Таванен пита-душ &amp; Бронзе/матиран душ параван до тавана</value>
+  </data>
+  <data name="Lander_SaaS_Luxury_F6" xml:space="preserve">
+    <value>БЕЗПЛАТЕН МОНТАЖ на всички дизайнерски смесители, уреди &amp; смарт огледала</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_Desc" xml:space="preserve">
+    <value>Стандартни мазилки, настилки &amp; ПДЧ обзавеждане</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F1" xml:space="preserve">
+    <value>Ламиниран паркет (8 мм, AC4) &amp; Шпакловка с латекс</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F2" xml:space="preserve">
+    <value>Входна блиндирана врата &amp; стандартни интериорни врати</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F3" xml:space="preserve">
+    <value>Окабеляване за ключове/контакти Schneider &amp; осветление</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F4" xml:space="preserve">
+    <value>Корпусна мебел от ПДЧ 18 мм (Кухня &amp; Антре)</value>
+  </data>
+  <data name="Lander_SaaS_Full_Standard_F5" xml:space="preserve">
+    <value>Включена стандартна санитария за баня</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_Desc" xml:space="preserve">
+    <value>Естествен паркет, МДФ кухня &amp; LED акценти</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F1" xml:space="preserve">
+    <value>Всички характеристики от пакет Стандарт +</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F2" xml:space="preserve">
+    <value>Трислоен естествен паркет (14 мм) или винил SPC &amp; дизайнерски латекс</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F3" xml:space="preserve">
+    <value>Окачени тавани със скрито LED профилно осветление</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F4" xml:space="preserve">
+    <value>Интериорни врати със скрити панти &amp; магнитни брави</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F5" xml:space="preserve">
+    <value>Индивидуална МДФ кухня (лак/мат), плот от технически камък &amp; уреди</value>
+  </data>
+  <data name="Lander_SaaS_Full_Premium_F6" xml:space="preserve">
+    <value>Гардероби до тавана с вградено LED осветление &amp; плавно затваряне</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_Desc" xml:space="preserve">
+    <value>Естествен мрамор, Пушен МДФ, Calacatta &amp; Смарт уреди</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F1" xml:space="preserve">
+    <value>Всички характеристики от пакет Премиум +</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F2" xml:space="preserve">
+    <value>Масивен дъбов паркет / Calacatta Кварц &amp; италианска мазилка (San Marco)</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F3" xml:space="preserve">
+    <value>Плуващи тавани с RGB/Warm LED осветление &amp; акустични панели</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F4" xml:space="preserve">
+    <value>Дизайнерски интериорни врати до тавана (Flush wall doors / Скрит монтаж)</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F5" xml:space="preserve">
+    <value>Луксозен пушен МДФ / Фурнир с Calacatta Quartz плот &amp; смарт кухня Blum</value>
+  </data>
+  <data name="Lander_SaaS_Full_Luxury_F6" xml:space="preserve">
+    <value>Дизайнерска холова гарнитура, тапицирано легло &amp; смарт автоматизация</value>
+  </data>
+  <data name="Lander_BathroomIncludedDisclaimer" xml:space="preserve">
+    <value>✓ СКОУП НА BUILDSMART: Изграждаме и облицоваме вградени ниши, 2K хидроизолация, плочки, тавани, казанчета и сифони. Всички закупени от клиента смесители, шкафове, огледала и аксесоари СЕ МОНТИРАТ БЕЗПЛАТНО.</value>
+  </data>
+  <data name="Lander_ModalHeaderTag" xml:space="preserve">
+    <value>Официална Оферта BuildSmart</value>
+  </data>
+  <data name="Lander_ModalTitle" xml:space="preserve">
+    <value>Къде да изпратим Вашата официална оферта?</value>
+  </data>
+  <data name="Lander_ModalSubtitle" xml:space="preserve">
+    <value>Въведете Вашия имейл, за да получите пълния детайлен разпис в PDF формат по пощата си в рамките на няколко минути.</value>
+  </data>
+  <data name="Lander_CtaSendPdf" xml:space="preserve">
+    <value>Изпрати моята PDF</value>
+  </data>
+  <data name="Lander_ToggleBathroomEquipment" xml:space="preserve">
+    <value>Включено Оборудване &amp; Смесители</value>
+  </data>
+  <data name="Lander_BathroomEquipmentDesc" xml:space="preserve">
+    <value>Смесители, Шкафове, Огледала, Вентилация &amp; Душ Параван (Изключете за труд, замазка, хидроизолация &amp; плочки)</value>
+  </data>
+  <data name="Lander_BadgeVerifiedEstimate" xml:space="preserve">
+    <value>Проверена оферта • София</value>
+  </data>
+  <data name="Lander_MetricLocation" xml:space="preserve">
+    <value>Местоположение</value>
+  </data>
+  <data name="Lander_MetricArea" xml:space="preserve">
+    <value>Обща площ</value>
+  </data>
+  <data name="Lander_MetricCondition" xml:space="preserve">
+    <value>Състояние</value>
+  </data>
+  <data name="Lander_MetricTier" xml:space="preserve">
+    <value>Ниво на изпълнение</value>
+  </data>
+  <data name="Lander_MetricScopeIncluded" xml:space="preserve">
+    <value>Включен обхват</value>
+  </data>
+  <data name="Lander_FullIncludedDisclaimer" xml:space="preserve">
+    <value>✓ ЦЯЛОСТНА ОФЕРТА „ДО КЛЮЧ“ &amp; МЕБЕЛИ: Включва всички довършителни работи, настилки, баня, шпакловка, боядисване, електро, ВиК и изработка и монтаж на индивидуални мебели по поръчка.</value>
+  </data>
+  <data name="Lander_FinishingIncludedDisclaimer" xml:space="preserve">
+    <value>✓ ЦЯЛОСТНА ОФЕРТА „ДО КЛЮЧ“: Включва всички довършителни работи, настилки, баня, шпакловка, боядисване, електро и ВиК.</value>
+  </data>
+  <data name="Lander_ItemizedKssSubhead" xml:space="preserve">
+    <value>Подробна КСС сметка</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings" xml:space="preserve">
+    <value>Окачени гипсокартонени тавани със звукоизолация</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels" xml:space="preserve">
+    <value>Вградени LED профилни канали, шпакловка &amp; боядисване</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard" xml:space="preserve">
+    <value>Ново ел. табло, окабеляване &amp; силови кръгове</value>
+  </data>
+  <data name="Lander_Full_Item_Switches" xml:space="preserve">
+    <value>Монтаж на ключове, контакти Schneider &amp; осветителни тела</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen" xml:space="preserve">
+    <value>Индивидуална МДФ кухня с плот от технически камък</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes" xml:space="preserve">
+    <value>Вградени гардероби до тавана &amp; мебел за антре</value>
+  </data>
+  <data name="Lander_Full_Item_DemolitionLogistics" xml:space="preserve">
+    <value>Къртене на плочки, замазка &amp; контейнери за отпадъци</value>
+  </data>
+  <data name="Lander_Full_Item_Logistics" xml:space="preserve">
+    <value>Доставка на материали, качване на ръце &amp; почистване</value>
+  </data>
+  <data name="Lander_Item_Waterproofing2K" xml:space="preserve">
+    <value>2K Хидроизолационна мембрана &amp; уплътнителни ленти</value>
+  </data>
+  <data name="Lander_Item_WaterproofingPoly" xml:space="preserve">
+    <value>2K Полиуретанова хидроизолация &amp; Calacatta Quartz подложка</value>
+  </data>
+  <data name="Lander_Item_TilingLuxury" xml:space="preserve">
+    <value>120x240 XL Calacatta Кварцови плочи &amp; 45° джоли ъгли</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings_Standard" xml:space="preserve">
+    <value>Стандартен гипсокартонен таван с бял латекс</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings_Premium" xml:space="preserve">
+    <value>Окачени гипсокартонени тавани със звукоизолация &amp; скрито осветление</value>
+  </data>
+  <data name="Lander_Full_Item_Ceilings_Luxury" xml:space="preserve">
+    <value>Плуващ акустичен таван с многозоново RGB/Warm LED осветление</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels_Standard" xml:space="preserve">
+    <value>Шпакловка, шлайфане &amp; бяло боядисване</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels_Premium" xml:space="preserve">
+    <value>Вградени LED профилни канали &amp; фин гипсова шпакловка</value>
+  </data>
+  <data name="Lander_Full_Item_LedChannels_Luxury" xml:space="preserve">
+    <value>Италианска декоративна мазилка (San Marco / Oikos) &amp; LED профили</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard_Standard" xml:space="preserve">
+    <value>Стандартно ел. табло &amp; Schneider ключове/контакти</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard_Premium" xml:space="preserve">
+    <value>Ново ел. табло, автоматични прекъсвачи &amp; LED точки</value>
+  </data>
+  <data name="Lander_Full_Item_ElecBoard_Luxury" xml:space="preserve">
+    <value>Смарт ел. табло с автоматизация &amp; многозоново профилно осветление</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen_Standard" xml:space="preserve">
+    <value>Кухня от ПДЧ 18 мм с термоплот &amp; стандартен обков</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen_Premium" xml:space="preserve">
+    <value>Индивидуална МДФ кухня (лак/мат) с плот от технически камък &amp; уреди</value>
+  </data>
+  <data name="Lander_Full_Item_Kitchen_Luxury" xml:space="preserve">
+    <value>Луксозен пушен МДФ / Фурнир с Calacatta Quartz плот &amp; смарт кухня Blum</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes_Standard" xml:space="preserve">
+    <value>Стандартен гардероб от ПДЧ 18 мм за спалня &amp; антре</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes_Premium" xml:space="preserve">
+    <value>Вградени МДФ гардероби до тавана със скрито LED осветление &amp; плавно затваряне</value>
+  </data>
+  <data name="Lander_Full_Item_Wardrobes_Luxury" xml:space="preserve">
+    <value>Дизайнерски пушен МДФ гардероб до тавана с Calacatta гръб &amp; стъклени LED витрини</value>
+  </data>
 </root>

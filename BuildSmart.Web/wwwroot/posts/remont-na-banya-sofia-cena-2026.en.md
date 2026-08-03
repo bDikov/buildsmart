@@ -4,7 +4,7 @@ A bathroom renovation is **the most complex and expensive area per square meter*
 
 In this guide, we break down exact 2026 bathroom renovation costs in Sofia — from demolition to tile installation and fixture setup.
 
-> Before buying tiles or hiring contractors for site visits, calculate exact quantities and prices for your bathroom in our [online cost estimator](/job-wizard) — featuring fixed contract pricing and 0% advance deposit.
+> Before buying tiles or hiring contractors for site visits, calculate exact quantities and prices for your bathroom in our [online cost estimator](/renovation-estimator?scope=bathroom) — featuring fixed contract pricing and 0% advance deposit.
 
 ---
 
@@ -28,20 +28,20 @@ For a standard bathroom (**4 to 6 sq.m. floor space**), total average costs brea
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=bathroom" class="spectrum-card">
       <div class="card-tier-tag">Economy Class</div>
       <div class="card-price-main">€23 - €33 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Standard ceramic tiles (up to 40x40 cm), 1 coat waterproofing, basic C1 tile adhesive.</div>
       <div class="card-cta-btn">Calculate Online <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card active-card">
+    <a href="/renovation-estimator?scope=bathroom" class="spectrum-card active-card">
       <div class="card-badge-popular">⭐ Most Popular in Sofia</div>
       <div class="card-tier-tag text-primary">Standard Class</div>
       <div class="card-price-main">€40 - €60 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Porcelain tiles (60x60 / 60x120 cm), 2 coats 2K waterproofing with tape, C2TE adhesive, linear drain.</div>
       <div class="card-cta-btn btn-primary-style">Calculate Your Bathroom <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=bathroom" class="spectrum-card">
       <div class="card-tier-tag">Premium Class</div>
       <div class="card-price-main">€70 - €110 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Large format porcelain slabs (120x280 cm), epoxy grout, 45° laser mitered edges, butyl sealing tapes.</div>
@@ -88,7 +88,7 @@ Watch a short walkthrough of a completed bathroom featuring imported porcelain t
   <h3 class="bs-lead-title">Planning a bathroom renovation?</h3>
   <p class="bs-lead-desc">Calculate exact tile quantities and labor or chat with our team directly:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=bathroom" class="bs-btn-primary bs-btn-animated">
       Calculate Your Bathroom (2 min)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

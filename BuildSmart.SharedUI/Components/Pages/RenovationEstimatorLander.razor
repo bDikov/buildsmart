@@ -1,0 +1,1338 @@
+@page "/renovation-estimator"
+@attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.Services
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject IBuildSmartApiClient ApiClient
+@inject BuildSmart.Core.Application.Interfaces.IEmailVerificationService EmailVerificationService
+@inject BuildSmart.Core.Application.Interfaces.IEmailService EmailService
+@inject BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository LeadRepository
+
+<div class="project-detail-container magazine-theme-wrapper">
+    @if (_isProposalReady)
+    {
+        <!-- BuildSmart Modern Proposal Reveal Showcase -->
+        <div class="magazine-proposal-container mb-4">
+            
+            <!-- Hero Header Banner Card -->
+            <div class="proposal-hero-card p-4 p-md-5 mb-4 position-relative overflow-hidden">
+                <div class="proposal-hero-glow"></div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 position-relative z-1">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                            <span class="proposal-chip proposal-chip-verified">
+                                <span class="chip-dot-pulse"></span>
+                                @Loc["Lander_BadgeVerifiedEstimate"]
+                            </span>
+                            <span class="proposal-chip proposal-chip-status">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                @Loc["GeneratedOffer_StatusEstimateReady"]
+                            </span>
+                        </div>
+                        <h2 class="proposal-hero-title mb-0">@GetProjectTitle()</h2>
+                    </div>
+
+                    <div class="proposal-timeline-card d-flex align-items-center gap-3 px-3 py-2 rounded-3">
+                        <div class="proposal-timeline-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div>
+                            <span class="text-muted extra-small d-block text-uppercase fw-semibold">@Loc["ProjectOverview_TimelineLabel"]</span>
+                            <strong class="proposal-timeline-value d-block">@string.Format(Loc["Lander_TimelineDays"], GetEstimatedDays())</strong>
+                            <span class="text-muted extra-small d-block opacity-75">@(_activeScope == "bathroom" ? Loc["Lander_TimelineNoteBathroom"] : Loc["Lander_TimelineNoteFull"])</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modern 4-Metric Grid Bar -->
+                <div class="row g-2 g-md-3 proposal-metrics-grid position-relative z-1">
+                    <div class="col-6 col-md-3">
+                        <div class="proposal-metric-card p-3">
+                            <div class="d-flex align-items-center gap-2 text-muted extra-small mb-1">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                @Loc["Lander_MetricLocation"]
+                            </div>
+                            <div class="fw-bold text-primary">Sofia, BG</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="proposal-metric-card p-3">
+                            <div class="d-flex align-items-center gap-2 text-muted extra-small mb-1">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                @Loc["Lander_MetricArea"]
+                            </div>
+                            <div class="fw-bold text-primary">
+                                @if (_activeScope == "bathroom")
+                                {
+                                    <span>@GetTotalBathroomArea() m² (@_bathroomCount Bathrooms)</span>
+                                }
+                                else
+                                {
+                                    <span>@_selectedArea m²</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="proposal-metric-card p-3">
+                            <div class="d-flex align-items-center gap-2 text-muted extra-small mb-1">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"></path></svg>
+                                @Loc["Lander_MetricCondition"]
+                            </div>
+                            <div class="fw-bold text-primary">@GetStatusLabel()</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="proposal-metric-card p-3">
+                            <div class="d-flex align-items-center gap-2 text-muted extra-small mb-1">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                @Loc["Lander_MetricTier"]
+                            </div>
+                            <div class="fw-bold text-primary">@_finishQualityTier.ToUpper()</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scope Disclaimer & PDF Delivery Banners Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="proposal-scope-card p-3 p-md-4 h-100 d-flex align-items-start gap-3">
+                        <div class="proposal-info-icon text-primary flex-shrink-0">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        </div>
+                        <div>
+                            <span class="proposal-scope-badge d-inline-block mb-1">@Loc["Lander_MetricScopeIncluded"]</span>
+                            <div class="proposal-scope-text small">
+                                @if (_activeScope == "bathroom")
+                                {
+                                    @Loc["Lander_BathroomIncludedDisclaimer"]
+                                }
+                                else if (_activeScope == "full")
+                                {
+                                    @Loc["Lander_FullIncludedDisclaimer"]
+                                }
+                                else
+                                {
+                                    @Loc["Lander_FinishingIncludedDisclaimer"]
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="proposal-delivery-card p-3 p-md-4 h-100 d-flex align-items-start gap-3">
+                        <div class="proposal-delivery-icon flex-shrink-0">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </div>
+                        <div>
+                            <strong class="d-block proposal-delivery-title mb-1">@string.Format(Loc["Lander_DeliveryNotice"], _email)</strong>
+                            <span class="text-muted small">@Loc["Lander_DeliverySubtext"]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Estimate Showcase Card -->
+            <div class="overall-total-card text-center mb-4 p-4 p-md-5 position-relative overflow-hidden">
+                <div class="total-status-badge ready mb-3">
+                    <span class="status-dot"></span>
+                    <span>@Loc["GeneratedOffer_StatusEstimateReady"]</span>
+                </div>
+                <div class="overall-total-label mb-2">@Loc["GeneratedOffer_TotalValue"]</div>
+                <div class="price-display my-2">
+                    <span class="price-currency">€</span>
+                    <span class="price-amount-integer">@GetMinPriceEur().ToString("N0")</span>
+                    <span class="price-amount-decimal"> – €@GetMaxPriceEur().ToString("N0")</span>
+                </div>
+                <div class="proposal-bgn-price mb-3">
+                    (@GetMinPriceBgn().ToString("N0") лв. – @GetMaxPriceBgn().ToString("N0") лв.)
+                </div>
+                <p class="overall-total-desc mb-0 max-w-600 mx-auto text-muted small">
+                    @if (_activeScope == "bathroom")
+                    {
+                        @string.Format(Loc["Lander_OverallDescBathroom"], _bathroomCount, _finishQualityTier.ToUpper())
+                    }
+                    else
+                    {
+                        @string.Format(Loc["Lander_OverallDescFull"], _selectedArea, _finishQualityTier.ToUpper())
+                    }
+                </p>
+            </div>
+
+            <!-- Primary Contact Action CTA Button Bar -->
+            <div class="mb-5 text-center">
+                <button class="bs-btn-primary py-3 px-4 w-100 fw-bold fs-5 d-flex align-items-center justify-content-center gap-2 proposal-cta-btn @(_isPhoneCopied ? "btn-success text-white" : "")" @onclick="CopyPhoneToClipboard">
+                    @if (_isPhoneCopied)
+                    {
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>✓ @Loc["Lander_PhoneCopiedNotice"] (+359 888 888 888)</span>
+                    }
+                    else
+                    {
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>@Loc["Lander_CtaContactUs"]</span>
+                    }
+                </button>
+
+                @if (_isPhoneCopied)
+                {
+                    <div class="mt-2 text-success extra-small fw-bold">
+                        ✓ @Loc["Lander_PhoneCopiedSuccess"]
+                    </div>
+                }
+                else
+                {
+                    <span class="d-block extra-small text-muted mt-2">@Loc["Lander_ContactSubtext"]</span>
+                }
+            </div>
+
+            <!-- Itemized Trade Task Cards Section Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 fw-bold mb-0 text-primary">
+                    @(_activeScope == "bathroom" ? Loc["Lander_RoomsTitle"] : Loc["ProjectDetail_JobsTitle"]) (@GetCategoryCount())
+                </h3>
+                <span class="text-muted extra-small">Itemized КСС Breakdown</span>
+            </div>
+
+            <div class="job-posts-list">
+                @if (_activeScope == "bathroom")
+                {
+                    @for (int i = 1; i <= _bathroomCount; i++)
+                    {
+                        var bIndex = i;
+                        var isExp = _expandedCategories.Contains(bIndex);
+                        var bathArea = _bathroomSizes[bIndex - 1];
+                        var bathCostMin = GetSingleBathroomPriceEur(bIndex - 1, isMax: false);
+                        var bathCostMax = GetSingleBathroomPriceEur(bIndex - 1, isMax: true);
+
+                        <div class="proposal-task-card mb-3">
+                            <div class="proposal-task-header p-3 p-md-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleCategory(bIndex)">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <h4 class="h6 fw-bold mb-0 text-primary">Bathroom #@bIndex (@bathArea m²)</h4>
+                                        <span class="proposal-task-badge">@(_finishQualityTier.ToUpper())</span>
+                                    </div>
+                                    <span class="extra-small text-muted">@(_includeEquipment ? "Fully Outfitted" : "Labor & Rough Materials Only")</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold proposal-task-price">€@bathCostMin.ToString("N0") – €@bathCostMax.ToString("N0")</span>
+                                    <span class="proposal-chevron-icon @(isExp ? "open" : "")">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </span>
+                                </div>
+                            </div>
+
+                            @if (isExp)
+                            {
+                                <div class="proposal-task-body p-3 p-md-4 border-top">
+                                    <div class="d-flex flex-column gap-2">
+                                        @if (_buildingStatus == "old")
+                                        {
+                                            <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                                <div>
+                                                    <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Demolition"]</div>
+                                                    <div class="proposal-rate-pill">1 set • @Loc["Lander_Status_Old"]</div>
+                                                </div>
+                                                <span class="fw-bold proposal-item-cost">€450.00</span>
+                                            </div>
+                                        }
+                                        else if (_buildingStatus == "rough")
+                                        {
+                                            <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                                <div>
+                                                    <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_WallSquaring"]</div>
+                                                    <div class="proposal-rate-pill">1 set • @Loc["Lander_Status_Rough"]</div>
+                                                </div>
+                                                <span class="fw-bold proposal-item-cost">€200.00</span>
+                                            </div>
+                                        }
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Waterproofing"]</div>
+                                                <div class="proposal-rate-pill">@(bathArea * 4) m² × €20.00 / m²</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€@((bathArea * 80).ToString("N0"))</span>
+                                        </div>
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">@(_finishQualityTier == "luxury" || _finishQualityTier == "premium" ? Loc["Lander_Item_TilingPremium"] : Loc["Lander_Item_TilingStandard"])</div>
+                                                <div class="proposal-rate-pill">@(bathArea * 5) m² × @(_finishQualityTier == "luxury" ? "€130.00" : (_finishQualityTier == "premium" ? "€100.00" : "€65.00")) / m²</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€@((bathArea * 5 * (_finishQualityTier == "luxury" ? 130 : (_finishQualityTier == "premium" ? 100 : 65))).ToString("N0"))</span>
+                                        </div>
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Cistern"]</div>
+                                                <div class="proposal-rate-pill">1 set × €850.00</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€850.00</span>
+                                        </div>
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Plumbing"]</div>
+                                                <div class="proposal-rate-pill">1 set × €1,190.00</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€1,190.00</span>
+                                        </div>
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Ventilation"]</div>
+                                                <div class="proposal-rate-pill">1 set × €320.00</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€320.00</span>
+                                        </div>
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_CeilingLed"]</div>
+                                                <div class="proposal-rate-pill">1 set × €650.00</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€650.00</span>
+                                        </div>
+                                        @if (_includeEquipment)
+                                        {
+                                            <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                                <div>
+                                                    <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_ShowerGlass"]</div>
+                                                    <div class="proposal-rate-pill">1 set × €750.00</div>
+                                                </div>
+                                                <span class="fw-bold proposal-item-cost">€750.00</span>
+                                            </div>
+                                            <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                                <div>
+                                                    <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_SanitaryFitout"]</div>
+                                                    <div class="proposal-rate-pill">1 set × €850.00</div>
+                                                </div>
+                                                <span class="fw-bold proposal-item-cost">€850.00</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <!-- 1. Bathroom Category Card -->
+                    <div class="proposal-task-card mb-3">
+                        <div class="proposal-task-header p-3 p-md-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleCategory(1)">
+                            <h4 class="h6 fw-bold mb-0 text-primary">1. @Loc["Lander_Trade_Bathroom"]</h4>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold proposal-task-price">€3,800 – €4,800</span>
+                                <span class="proposal-chevron-icon @(_expandedCategories.Contains(1) ? "open" : "")">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </span>
+                            </div>
+                        </div>
+                        @if (_expandedCategories.Contains(1))
+                        {
+                            <div class="proposal-task-body p-3 p-md-4 border-top">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Waterproofing"]</div>
+                                            <div class="proposal-rate-pill">24 m² × €20.00 / m²</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€480.00</span>
+                                    </div>
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_TilingStandard"]</div>
+                                            <div class="proposal-rate-pill">28 m² × €60.00 / m²</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€1,680.00</span>
+                                    </div>
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Cistern"]</div>
+                                            <div class="proposal-rate-pill">1 set × €850.00</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€850.00</span>
+                                    </div>
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Item_Ventilation"]</div>
+                                            <div class="proposal-rate-pill">1 set × €320.00</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€320.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- 2. Drywall & LED Ceilings Card -->
+                    <div class="proposal-task-card mb-3">
+                        <div class="proposal-task-header p-3 p-md-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleCategory(2)">
+                            <h4 class="h6 fw-bold mb-0 text-primary">2. @Loc["Lander_Trade_Drywall"]</h4>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold proposal-task-price">€@((_selectedArea * 45).ToString("N0")) – €@((_selectedArea * 55).ToString("N0"))</span>
+                                <span class="proposal-chevron-icon @(_expandedCategories.Contains(2) ? "open" : "")">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </span>
+                            </div>
+                        </div>
+                        @if (_expandedCategories.Contains(2))
+                        {
+                            <div class="proposal-task-body p-3 p-md-4 border-top">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">
+                                                @(_finishQualityTier == "luxury" ? Loc["Lander_Full_Item_Ceilings_Luxury"] : (_finishQualityTier == "premium" ? Loc["Lander_Full_Item_Ceilings_Premium"] : Loc["Lander_Full_Item_Ceilings_Standard"]))
+                                            </div>
+                                            <div class="proposal-rate-pill">@_selectedArea m² × €35.00 / m²</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€@((_selectedArea * 35).ToString("N0"))</span>
+                                    </div>
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">
+                                                @(_finishQualityTier == "luxury" ? Loc["Lander_Full_Item_LedChannels_Luxury"] : (_finishQualityTier == "premium" ? Loc["Lander_Full_Item_LedChannels_Premium"] : Loc["Lander_Full_Item_LedChannels_Standard"]))
+                                            </div>
+                                            <div class="proposal-rate-pill">1 set × €1,800.00</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€1,800.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- 3. Electrical & Lighting Card -->
+                    <div class="proposal-task-card mb-3">
+                        <div class="proposal-task-header p-3 p-md-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleCategory(3)">
+                            <h4 class="h6 fw-bold mb-0 text-primary">3. @Loc["Lander_Trade_Electrical"]</h4>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold proposal-task-price">€3,600 – €4,800</span>
+                                <span class="proposal-chevron-icon @(_expandedCategories.Contains(3) ? "open" : "")">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </span>
+                            </div>
+                        </div>
+                        @if (_expandedCategories.Contains(3))
+                        {
+                            <div class="proposal-task-body p-3 p-md-4 border-top">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">
+                                                @(_finishQualityTier == "luxury" ? Loc["Lander_Full_Item_ElecBoard_Luxury"] : (_finishQualityTier == "premium" ? Loc["Lander_Full_Item_ElecBoard_Premium"] : Loc["Lander_Full_Item_ElecBoard_Standard"]))
+                                            </div>
+                                            <div class="proposal-rate-pill">1 set × €1,400.00</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€1,400.00</span>
+                                    </div>
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">@Loc["Lander_Full_Item_Switches"]</div>
+                                            <div class="proposal-rate-pill">1 set × €2,200.00</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€2,200.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (_activeScope == "full" && _includeFurniture)
+                    {
+                        var mult = GetTierMultiplier();
+                        var minFurn = Math.Round(_selectedArea * 230m * mult, 0);
+                        var maxFurn = Math.Round(_selectedArea * 350m * mult, 0);
+                        var kitchenCost = Math.Round(minFurn * 0.70m, 0);
+                        var wardrobeCost = minFurn - kitchenCost;
+
+                        <!-- 4. Custom Furniture Card -->
+                        <div class="proposal-task-card mb-3">
+                            <div class="proposal-task-header p-3 p-md-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleCategory(4)">
+                                <h4 class="h6 fw-bold mb-0 text-primary">4. @Loc["Lander_Trade_Furniture"]</h4>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold proposal-task-price">€@minFurn.ToString("N0") – €@maxFurn.ToString("N0")</span>
+                                    <span class="proposal-chevron-icon @(_expandedCategories.Contains(4) ? "open" : "")">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </span>
+                                </div>
+                            </div>
+                            @if (_expandedCategories.Contains(4))
+                            {
+                                <div class="proposal-task-body p-3 p-md-4 border-top">
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">
+                                                    @(_finishQualityTier == "luxury" ? Loc["Lander_Full_Item_Kitchen_Luxury"] : (_finishQualityTier == "premium" ? Loc["Lander_Full_Item_Kitchen_Premium"] : Loc["Lander_Full_Item_Kitchen_Standard"]))
+                                                </div>
+                                                <div class="proposal-rate-pill">1 set × €@kitchenCost.ToString("N0")</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€@kitchenCost.ToString("N0")</span>
+                                        </div>
+                                        <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                            <div>
+                                                <div class="fw-semibold small text-primary mb-1">
+                                                    @(_finishQualityTier == "luxury" ? Loc["Lander_Full_Item_Wardrobes_Luxury"] : (_finishQualityTier == "premium" ? Loc["Lander_Full_Item_Wardrobes_Premium"] : Loc["Lander_Full_Item_Wardrobes_Standard"]))
+                                                </div>
+                                                <div class="proposal-rate-pill">1 set × €@wardrobeCost.ToString("N0")</div>
+                                            </div>
+                                            <span class="fw-bold proposal-item-cost">€@wardrobeCost.ToString("N0")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- 5. Logistics Card -->
+                    <div class="proposal-task-card mb-3">
+                        <div class="proposal-task-header p-3 p-md-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleCategory(5)">
+                            <h4 class="h6 fw-bold mb-0 text-primary">5. @Loc["Lander_Trade_Logistics"]</h4>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold proposal-task-price">€@(_buildingStatus == "old" ? "5,800" : "2,400") – €@(_buildingStatus == "old" ? "7,200" : "3,200")</span>
+                                <span class="proposal-chevron-icon @(_expandedCategories.Contains(5) ? "open" : "")">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </span>
+                            </div>
+                        </div>
+                        @if (_expandedCategories.Contains(5))
+                        {
+                            <div class="proposal-task-body p-3 p-md-4 border-top">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="proposal-task-item p-3 d-flex justify-content-between align-items-center rounded-3">
+                                        <div>
+                                            <div class="fw-semibold small text-primary mb-1">@(_buildingStatus == "old" ? Loc["Lander_Full_Item_DemolitionLogistics"] : Loc["Lander_Full_Item_Logistics"])</div>
+                                            <div class="proposal-rate-pill">1 set</div>
+                                        </div>
+                                        <span class="fw-bold proposal-item-cost">€@(_buildingStatus == "old" ? "5,800.00" : "2,400.00")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Segmented Category Pill Bar (Figma Magazine Horizontal Scroll UI) -->
+        @if (QueryHideTabs != true && string.IsNullOrWhiteSpace(QueryScope))
+        {
+            <div class="bs-scope-segmented-bar mb-4 mx-auto max-w-700 p-1">
+                <button class="bs-scope-pill @(_activeScope == "full" ? "active" : "")" @onclick='() => SetScope("full")'>
+                    @Loc["Lander_ScopeFull"]
+                </button>
+                <button class="bs-scope-pill @(_activeScope == "bathroom" ? "active" : "")" @onclick='() => SetScope("bathroom")'>
+                    @Loc["Lander_ScopeBathroom"]
+                </button>
+            </div>
+        }
+
+        <!-- Step 1 Macro Parameter Controls Card -->
+        <div class="bs-card p-4 mb-4 mx-auto max-w-700 magazine-input-card">
+            <!-- Step 1 Header & Progress Indicator Inside Card -->
+            <div class="mb-4 pb-3 border-bottom text-center">
+                <!-- Centered Magazine Title & Subtitle -->
+                <h2 class="h4 fw-bold text-primary text-center mb-2">
+                    @if (_activeScope == "bathroom")
+                    {
+                        @Loc["Lander_HeroTitleBathroom"]
+                    }
+                    else if (_activeScope == "finishing")
+                    {
+                        @Loc["Lander_HeroTitleFinishing"]
+                    }
+                    else
+                    {
+                        @Loc["Lander_HeroTitleFull"]
+                    }
+                </h2>
+                <p class="text-muted extra-small text-center mb-3">
+                    @if (_activeScope == "bathroom")
+                    {
+                        @Loc["Lander_HeroSubtitleBathroom"]
+                    }
+                    else if (_activeScope == "finishing")
+                    {
+                        @Loc["Lander_HeroSubtitleFinishing"]
+                    }
+                    else
+                    {
+                        @Loc["Lander_HeroSubtitle"]
+                    }
+                </p>
+
+                <!-- Step Progress Bias Bar -->
+                <div class="magazine-progress-container max-w-500 mx-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="extra-small fw-bold text-uppercase text-muted">@Loc["Lander_StepProgress"]</span>
+                        <span class="extra-small fw-bold magazine-progress-percent">@Loc["Lander_PercentComplete"]</span>
+                    </div>
+                    <div class="magazine-progress-bar">
+                        <div class="magazine-progress-fill" style="width: 75%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            @if (_activeScope == "bathroom")
+            {
+                <h3 class="h6 fw-bold mb-3 text-primary">@Loc["Lander_BathroomCountLabel"]</h3>
+                <div class="row g-2 mb-4">
+                    <div class="col-4">
+                        <button class="bs-option-btn w-100 p-2 @(_bathroomCount == 1 ? "active" : "")" @onclick="() => _bathroomCount = 1">
+                            @Loc["Lander_1Bathroom"]
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="bs-option-btn w-100 p-2 @(_bathroomCount == 2 ? "active" : "")" @onclick="() => _bathroomCount = 2">
+                            @Loc["Lander_2Bathrooms"]
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="bs-option-btn w-100 p-2 @(_bathroomCount == 3 ? "active" : "")" @onclick="() => _bathroomCount = 3">
+                            @Loc["Lander_3Bathrooms"]
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Individual Bathroom Smooth Area Sliders -->
+                <div class="d-flex flex-column gap-3 mb-4">
+                    @for (int b = 1; b <= _bathroomCount; b++)
+                    {
+                        var bNum = b;
+                        var idx = bNum - 1;
+                        <div class="p-3 rounded border" style="background-color: var(--bg-card-alt); border-color: var(--border-color) !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold mb-0 text-primary">@string.Format(Loc["Lander_BathroomSizeLabel"], bNum)</label>
+                                <span class="fw-bold text-primary fs-5 px-3 py-1 rounded" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                                    @_bathroomSizes[idx] m²
+                                </span>
+                            </div>
+                            <input type="range" class="form-range" min="2" max="16" step="1" @bind="_bathroomSizes[idx]" @bind:event="oninput" />
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <!-- Interactive Area Slider -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-bold mb-0 text-primary">@Loc["Lander_AreaLabel"]</label>
+                        <span class="fw-bold text-primary fs-4 px-3 py-1 rounded" style="background-color: var(--bg-card-alt); border: 1px solid var(--border-color);">@_selectedArea m²</span>
+                    </div>
+                    <input type="range" class="form-range" min="30" max="160" step="5" @bind="_selectedArea" @bind:event="oninput" />
+                </div>
+
+                <!-- Property Condition Pills (Rough First, BDS Middle) -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold mb-2 text-primary">@Loc["Lander_ConditionLabel"]</label>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <button class="bs-option-btn w-100 p-2 @(_buildingStatus == "rough" ? "active" : "")" @onclick='() => _buildingStatus = "rough"'>
+                                @Loc["Lander_StatusRough"]
+                            </button>
+                        </div>
+                        <div class="col-4">
+                            <button class="bs-option-btn w-100 p-2 @(_buildingStatus == "bds" ? "active" : "")" @onclick='() => _buildingStatus = "bds"'>
+                                @Loc["Lander_StatusBds"]
+                            </button>
+                        </div>
+                        <div class="col-4">
+                            <button class="bs-option-btn w-100 p-2 @(_buildingStatus == "old" ? "active" : "")" @onclick='() => _buildingStatus = "old"'>
+                                @Loc["Lander_StatusOld"]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- SaaS Subscription Style Material Quality Tier Cards -->
+            <div class="mb-4">
+                <label class="form-label fw-bold mb-3 text-primary fs-5">@Loc["Lander_FinishQualityLabel"]</label>
+                <div class="row g-3">
+                    <!-- 1. Standard Tier Card -->
+                    <div class="col-12 col-md-4">
+                        <div class="magazine-saas-tier-card p-3 @(_finishQualityTier == "standard" ? "active" : "")" @onclick='() => _finishQualityTier = "standard"'>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4 class="h6 fw-bold mb-0 text-primary">@Loc["Lander_FinishStandard"]</h4>
+                                <span class="saas-select-radio">@(_finishQualityTier == "standard" ? "✓" : "")</span>
+                            </div>
+                            <div class="extra-small text-muted mb-3">
+                                @(_activeScope == "bathroom" ? Loc["Lander_FinishStandardDesc"] : Loc["Lander_SaaS_Full_Standard_Desc"])
+                            </div>
+
+                            <hr class="my-2 opacity-25" />
+
+                            <ul class="saas-feature-list list-unstyled mb-0 extra-small">
+                                @if (_activeScope == "bathroom")
+                                {
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Standard_F1"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Standard_F2"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Standard_F3"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Standard_F4"]</li>
+                                    <li class="mb-0"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Standard_F5"]</li>
+                                }
+                                else
+                                {
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Standard_F1"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Standard_F2"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Standard_F3"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Standard_F4"]</li>
+                                    <li class="mb-0"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Standard_F5"]</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 2. Premium Tier Card (Floating Most Popular Badge) -->
+                    <div class="col-12 col-md-4">
+                        <div class="magazine-saas-tier-card p-3 saas-popular-card position-relative @(_finishQualityTier == "premium" ? "active" : "")" @onclick='() => _finishQualityTier = "premium"'>
+                            <div class="saas-popular-floating-badge">★ Най-популярен</div>
+                            <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
+                                <h4 class="h6 fw-bold mb-0 text-primary">@Loc["Lander_FinishPremium"]</h4>
+                                <span class="saas-select-radio">@(_finishQualityTier == "premium" ? "✓" : "")</span>
+                            </div>
+                            <div class="extra-small text-muted mb-3">
+                                @(_activeScope == "bathroom" ? Loc["Lander_FinishPremiumDesc"] : Loc["Lander_SaaS_Full_Premium_Desc"])
+                            </div>
+
+                            <hr class="my-2 opacity-25" />
+
+                            <ul class="saas-feature-list list-unstyled mb-0 extra-small">
+                                @if (_activeScope == "bathroom")
+                                {
+                                    <li class="mb-2 fw-bold saas-cumulative-header">★ @Loc["Lander_SaaS_Premium_F1"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Premium_F2"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Premium_F3"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Premium_F4"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Premium_F5"]</li>
+                                    <li class="mb-0"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Premium_F6"]</li>
+                                }
+                                else
+                                {
+                                    <li class="mb-2 fw-bold saas-cumulative-header">★ @Loc["Lander_SaaS_Full_Premium_F1"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Premium_F2"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Premium_F3"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Premium_F4"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Premium_F5"]</li>
+                                    <li class="mb-0"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Premium_F6"]</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. Luxury Tier Card -->
+                    <div class="col-12 col-md-4">
+                        <div class="magazine-saas-tier-card saas-luxury-card p-3 @(_finishQualityTier == "luxury" ? "active" : "")" @onclick='() => _finishQualityTier = "luxury"'>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4 class="h6 fw-bold mb-0 text-primary">@Loc["Lander_FinishLuxury"]</h4>
+                                <span class="saas-select-radio">@(_finishQualityTier == "luxury" ? "✓" : "")</span>
+                            </div>
+                            <div class="extra-small text-muted mb-3">
+                                @(_activeScope == "bathroom" ? Loc["Lander_FinishLuxuryDesc"] : Loc["Lander_SaaS_Full_Luxury_Desc"])
+                            </div>
+
+                            <hr class="my-2 opacity-25" />
+
+                            <ul class="saas-feature-list list-unstyled mb-0 extra-small">
+                                @if (_activeScope == "bathroom")
+                                {
+                                    <li class="mb-2 fw-bold saas-cumulative-header">★ @Loc["Lander_SaaS_Luxury_F1"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Luxury_F2"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Luxury_F3"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Luxury_F4"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Luxury_F5"]</li>
+                                    <li class="mb-0"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Luxury_F6"]</li>
+                                }
+                                else
+                                {
+                                    <li class="mb-2 fw-bold saas-cumulative-header">★ @Loc["Lander_SaaS_Full_Luxury_F1"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Luxury_F2"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Luxury_F3"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Luxury_F4"]</li>
+                                    <li class="mb-2"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Luxury_F5"]</li>
+                                    <li class="mb-0"><span class="saas-check">✓</span> @Loc["Lander_SaaS_Full_Luxury_F6"]</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (_activeScope == "bathroom")
+            {
+                <!-- Prominent Bathroom Equipment & Fixtures Toggle Box Inside Card -->
+                <div class="magazine-furniture-box p-3 rounded mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                    <div>
+                        <div class="fw-bold text-primary fs-6">@Loc["Lander_ToggleBathroomEquipment"]</div>
+                        <div class="text-muted small">@Loc["Lander_BathroomEquipmentDesc"]</div>
+                    </div>
+                    <div class="form-check form-switch fs-3 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" @bind="_includeEquipment" />
+                    </div>
+                </div>
+            }
+            else if (_activeScope == "full")
+            {
+                <!-- Prominent Furniture Toggle Box Inside Card -->
+                <div class="magazine-furniture-box p-3 rounded mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                    <div>
+                        <div class="fw-bold text-primary fs-6">@Loc["Lander_ToggleFurniture"]</div>
+                        <div class="text-muted small">@Loc["Lander_FurnitureDesc"]</div>
+                    </div>
+                    <div class="form-check form-switch fs-3 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" @bind="_includeFurniture" />
+                    </div>
+                </div>
+            }
+
+            <!-- Primary Action CTA Button Inside Card Directly Below Furniture Toggle -->
+            <button class="bs-btn-primary py-3 px-4 w-100 fs-5 fw-bold magazine-cta-btn" @onclick="OpenLeadModal">
+                @Loc["Lander_CtaCalculate"]
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Background Processing Modal -->
+@if (_isProcessingModalOpen)
+{
+    <div class="bs-modal-overlay">
+        <div class="bs-modal-card p-4 text-center">
+            <div class="spinner-border text-primary my-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h3 class="h5 fw-bold mb-3 text-primary">Generating Custom PDF Offer &amp; Proposal...</h3>
+            <div class="bs-processing-steps text-start mx-auto max-w-400">
+                <div class="bs-proc-step @(_processingStep >= 1 ? "active" : "")">
+                    <span class="bs-step-icon">@(_processingStep > 1 ? "✓" : "1")</span>
+                    <span>@Loc["Lander_ProcessingStep1"]</span>
+                </div>
+                <div class="bs-proc-step @(_processingStep >= 2 ? "active" : "")">
+                    <span class="bs-step-icon">@(_processingStep > 2 ? "✓" : "2")</span>
+                    <span>@Loc["Lander_ProcessingStep2"]</span>
+                </div>
+                <div class="bs-proc-step @(_processingStep >= 3 ? "active" : "")">
+                    <span class="bs-step-icon">@(_processingStep > 3 ? "✓" : "3")</span>
+                    <span>@Loc["Lander_ProcessingStep3"]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Validated Lead Gate Modal with Field-Level Validation -->
+@if (_isLeadModalOpen)
+{
+    <div class="bs-modal-overlay" @onclick="() => _isLeadModalOpen = false">
+        <div class="bs-modal-card p-4 magazine-modal" @onclick:stopPropagation="true">
+            <!-- Modal Header -->
+            <div class="d-flex justify-content-between align-items-start mb-3 pb-3 border-bottom position-relative">
+                <div class="w-100 text-center pe-4">
+                    <h3 class="magazine-modal-title mb-0 fs-5 text-center">@Loc["Lander_ModalSubtitle"]</h3>
+                </div>
+                <button type="button" class="btn-close position-absolute top-0 end-0" @onclick="() => _isLeadModalOpen = false"></button>
+            </div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_EmailPlaceholder"]</label>
+                <input type="email" 
+                       class="form-control form-control-lg magazine-modal-input @((_isSubmitted && _isEmailInvalid) || !string.IsNullOrEmpty(_emailValidationError) ? "is-invalid" : "")" 
+                       placeholder="name@domain.com" 
+                       @bind="_email" 
+                       @bind:event="oninput" />
+                @if (_isSubmitted && _isEmailInvalid)
+                {
+                    <div class="invalid-feedback d-block mt-1">
+                        @Loc["Lander_EmailError"]
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(_emailValidationError))
+                {
+                    <div class="alert alert-danger py-2 px-3 small mt-2 mb-0 border-0 rounded-3 text-start" style="font-size: 0.85rem;">
+                        @_emailValidationError
+                    </div>
+                }
+            </div>
+
+            <!-- Phone Field -->
+            <div class="mb-3">
+                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_PhonePlaceholder"]</label>
+                <input type="tel" 
+                       class="form-control form-control-lg magazine-modal-input @(_isSubmitted && _isPhoneInvalid ? "is-invalid" : "")" 
+                       placeholder="+359 88 123 4567" 
+                       @bind="_phone" 
+                       @bind:event="oninput" />
+                @if (_isSubmitted && _isPhoneInvalid)
+                {
+                    <div class="invalid-feedback d-block mt-1">
+                        @Loc["Lander_PhoneError"]
+                    </div>
+                }
+            </div>
+
+            <!-- Name Field -->
+            <div class="mb-3">
+                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_NamePlaceholder"]</label>
+                <input type="text" class="form-control form-control-lg magazine-modal-input" placeholder="John Doe" @bind="_name" />
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-4">
+                <button class="bs-btn-primary btn-lg w-100 fw-bold py-3 d-flex align-items-center justify-content-center gap-2" 
+                        disabled="@_isVerifyingEmail"
+                        @onclick="SubmitLeadAndGeneratePdf">
+                    @if (_isVerifyingEmail)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span>Проверка...</span>
+                    }
+                    else
+                    {
+                        <span>@Loc["Lander_CtaSendPdf"]</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "scope")]
+    public string? QueryScope { get; set; }
+
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? QueryStatus { get; set; }
+
+    [SupplyParameterFromQuery(Name = "area")]
+    public int? QueryArea { get; set; }
+
+    [SupplyParameterFromQuery(Name = "hideTabs")]
+    public bool? QueryHideTabs { get; set; }
+
+    [SupplyParameterFromQuery(Name = "utm_source")]
+    public string? UtmSource { get; set; }
+
+    [SupplyParameterFromQuery(Name = "utm_medium")]
+    public string? UtmMedium { get; set; }
+
+    [SupplyParameterFromQuery(Name = "utm_campaign")]
+    public string? UtmCampaign { get; set; }
+
+    [SupplyParameterFromQuery(Name = "utm_term")]
+    public string? UtmTerm { get; set; }
+
+    [SupplyParameterFromQuery(Name = "utm_content")]
+    public string? UtmContent { get; set; }
+
+    private string _activeScope = "full"; // full, bathroom, finishing
+    private int _selectedArea = 75;
+    private bool _includeFurniture = true;
+    private bool _includeEquipment = true;
+    private string _buildingStatus = "bds"; // bds, rough, old
+    private string _finishQualityTier = "premium"; // standard, premium, luxury
+
+    // Bathroom Scope Variables
+    private int _bathroomCount = 1;
+    private int[] _bathroomSizes = new int[] { 5, 4, 3 };
+
+    private bool _isProcessingModalOpen = false;
+    private int _processingStep = 1;
+    private bool _isLeadModalOpen = false;
+    private bool _isProposalReady = false;
+    private bool _isPhoneCopied = false;
+
+    private async Task CopyPhoneToClipboard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", "+359 888 888 888");
+        }
+        catch { }
+
+        _isPhoneCopied = true;
+        StateHasChanged();
+
+        await Task.Delay(3500);
+        _isPhoneCopied = false;
+        StateHasChanged();
+    }
+
+    // Field-level validation states
+    private bool _isSubmitted = false;
+    private bool _isEmailInvalid => string.IsNullOrWhiteSpace(_email) || !IsValidEmail(_email);
+    private bool _isPhoneInvalid => !string.IsNullOrWhiteSpace(_phone) && _phone.Trim().Length < 6;
+
+    private string _email = string.Empty;
+    private string _phone = string.Empty;
+    private string _name = string.Empty;
+
+    private HashSet<int> _expandedCategories = new HashSet<int> { 1, 2 };
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(QueryScope))
+        {
+            var s = QueryScope.ToLower();
+            if (s == "bathroom")
+            {
+                _activeScope = "bathroom";
+            }
+            else if (s == "finishing")
+            {
+                _activeScope = "full";
+                _includeFurniture = false;
+            }
+            else
+            {
+                _activeScope = "full";
+                _includeFurniture = true;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(QueryStatus))
+        {
+            var st = QueryStatus.ToLower();
+            if (st == "bds" || st == "rough" || st == "old")
+            {
+                _buildingStatus = st;
+            }
+        }
+
+        if (QueryArea.HasValue && QueryArea.Value >= 20 && QueryArea.Value <= 300)
+        {
+            _selectedArea = QueryArea.Value;
+        }
+    }
+
+    private void ToggleCategory(int catId)
+    {
+        if (_expandedCategories.Contains(catId))
+        {
+            _expandedCategories.Remove(catId);
+        }
+        else
+        {
+            _expandedCategories.Add(catId);
+        }
+    }
+
+    private int GetTotalBathroomArea()
+    {
+        int sum = 0;
+        for (int i = 0; i < _bathroomCount; i++)
+        {
+            sum += _bathroomSizes[i];
+        }
+        return sum;
+    }
+
+    private string GetProjectTitle()
+    {
+        if (_activeScope == "bathroom")
+        {
+            return string.Format(Loc["Lander_DynamicTitle_Bathroom"], _bathroomCount);
+        }
+        return string.Format(Loc["Lander_DynamicTitle_Full"], _selectedArea);
+    }
+
+    private string GetStatusLabel()
+    {
+        if (_buildingStatus == "old") return Loc["Lander_Status_Old"];
+        if (_buildingStatus == "rough") return Loc["Lander_Status_Rough"];
+        return Loc["Lander_Status_Bds"];
+    }
+
+    private int GetCategoryCount()
+    {
+        if (_activeScope == "bathroom") return _bathroomCount;
+        return _includeFurniture ? 5 : 4;
+    }
+
+    private void SetScope(string scope)
+    {
+        if (scope == "finishing")
+        {
+            _activeScope = "full";
+            _includeFurniture = false;
+        }
+        else
+        {
+            _activeScope = scope;
+            if (scope == "full")
+            {
+                _includeFurniture = true;
+            }
+        }
+    }
+
+    private decimal GetTierMultiplier()
+    {
+        return _finishQualityTier == "luxury" ? 1.85m : (_finishQualityTier == "premium" ? 1.25m : 1.0m);
+    }
+
+    private decimal GetSingleBathroomPriceEur(int index, bool isMax)
+    {
+        if (index < 0 || index >= _bathroomSizes.Length) return 0;
+        int area = _bathroomSizes[index];
+
+        decimal multiplier = GetTierMultiplier();
+        decimal baseRate = isMax ? 650m : 420m;
+        decimal statusDemolition = _buildingStatus == "old" ? (isMax ? 650m : 450m) : (_buildingStatus == "rough" ? (isMax ? 300m : 200m) : 0m);
+        decimal fixedEquipment = _includeEquipment ? (isMax ? 2600m : 1800m) : 0m;
+
+        return Math.Round((area * baseRate + fixedEquipment + statusDemolition) * multiplier, 0);
+    }
+
+    private decimal GetMinPriceEur()
+    {
+        decimal tierMultiplier = GetTierMultiplier();
+
+        if (_activeScope == "bathroom")
+        {
+            decimal total = 0;
+            for (int i = 0; i < _bathroomCount; i++)
+            {
+                total += GetSingleBathroomPriceEur(i, isMax: false);
+            }
+            return total;
+        }
+
+        decimal baseRate = 370m;
+        if (_buildingStatus == "rough") baseRate = 400m;
+        else if (_buildingStatus == "old") baseRate = 450m;
+
+        decimal furnitureRate = (_activeScope == "full" && _includeFurniture) ? 230m : 0m;
+        return Math.Round(_selectedArea * (baseRate + furnitureRate) * tierMultiplier, 0);
+    }
+
+    private decimal GetMaxPriceEur()
+    {
+        decimal tierMultiplier = GetTierMultiplier();
+
+        if (_activeScope == "bathroom")
+        {
+            decimal total = 0;
+            for (int i = 0; i < _bathroomCount; i++)
+            {
+                total += GetSingleBathroomPriceEur(i, isMax: true);
+            }
+            return total;
+        }
+
+        decimal baseRateMax = 440m;
+        if (_buildingStatus == "rough") baseRateMax = 470m;
+        else if (_buildingStatus == "old") baseRateMax = 540m;
+
+        decimal furnitureRateMax = (_activeScope == "full" && _includeFurniture) ? 350m : 0m;
+        return Math.Round(_selectedArea * (baseRateMax + furnitureRateMax) * tierMultiplier, 0);
+    }
+
+    private decimal GetMinPriceBgn()
+    {
+        return Math.Round(GetMinPriceEur() * 1.95583m, 0);
+    }
+
+    private decimal GetMaxPriceBgn()
+    {
+        return Math.Round(GetMaxPriceEur() * 1.95583m, 0);
+    }
+
+    private int GetEstimatedDays()
+    {
+        if (_activeScope == "bathroom")
+        {
+            int bathroomStatusDays = _buildingStatus == "old" ? 5 : (_buildingStatus == "rough" ? 2 : 0);
+            return 12 + (_bathroomCount * 5) + (bathroomStatusDays * _bathroomCount);
+        }
+
+        int fullStatusDays = _buildingStatus == "old" ? 20 : (_buildingStatus == "rough" ? 10 : 0);
+        decimal tierTimeMultiplier = _finishQualityTier == "luxury" ? 1.65m : (_finishQualityTier == "premium" ? 1.30m : 1.0m);
+        int baseDays = 40 + (int)Math.Round(_selectedArea / 2.5m, 0);
+
+        return (int)Math.Round(baseDays * tierTimeMultiplier, 0) + fullStatusDays;
+    }
+
+    private string? _emailValidationError;
+    private bool _isVerifyingEmail;
+
+    private async Task OpenLeadModal()
+    {
+        _isSubmitted = false;
+        _emailValidationError = null;
+        _isLeadModalOpen = true;
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("posthog.capture", "estimator_modal_opened", new
+            {
+                scope = _activeScope,
+                area = _selectedArea,
+                status = _buildingStatus,
+                tier = _finishQualityTier
+            });
+        }
+        catch { }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase);
+    }
+
+    private async Task SubmitLeadAndGeneratePdf()
+    {
+        _isSubmitted = true;
+        _emailValidationError = null;
+
+        if (_isEmailInvalid || _isPhoneInvalid)
+        {
+            return;
+        }
+
+        _isVerifyingEmail = true;
+        StateHasChanged();
+
+        var verificationResult = await EmailVerificationService.VerifyEmailAsync(_email);
+        _isVerifyingEmail = false;
+
+        if (!verificationResult.IsValid)
+        {
+            _emailValidationError = verificationResult.ErrorMessage ?? "Моля, въведете реален имейл адрес.";
+            
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("posthog.capture", "estimator_email_verification_failed", new
+                {
+                    email_domain = _email.Contains('@') ? _email.Split('@')[1] : "",
+                    reason = verificationResult.Status
+                });
+            }
+            catch { }
+
+            StateHasChanged();
+            return;
+        }
+
+        // Save CalculatorLead to Database
+        decimal minEur = GetMinPriceEur();
+        decimal maxEur = GetMaxPriceEur();
+        decimal minBgn = Math.Round(minEur * 1.95583m, 0);
+        decimal maxBgn = Math.Round(maxEur * 1.95583m, 0);
+
+        var lead = new BuildSmart.Core.Domain.Entities.CalculatorLead
+        {
+            Email = _email.Trim(),
+            Phone = string.IsNullOrWhiteSpace(_phone) ? null : _phone.Trim(),
+            Name = string.IsNullOrWhiteSpace(_name) ? null : _name.Trim(),
+            Scope = _activeScope,
+            SelectedArea = _selectedArea,
+            BuildingStatus = _buildingStatus,
+            QualityTier = _finishQualityTier,
+            IncludeFurniture = _includeFurniture,
+            IncludeEquipment = _includeEquipment,
+            BathroomCount = _bathroomCount,
+            MinPriceEur = minEur,
+            MaxPriceEur = maxEur,
+            MinPriceBgn = minBgn,
+            MaxPriceBgn = maxBgn,
+            EstimatedDays = GetEstimatedDays(),
+            IsEmailVerified = true,
+            VerificationStatus = "Valid",
+            UtmSource = UtmSource,
+            UtmMedium = UtmMedium,
+            UtmCampaign = UtmCampaign,
+            UtmTerm = UtmTerm,
+            UtmContent = UtmContent,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        try
+        {
+            await LeadRepository.AddLeadAsync(lead);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error saving CalculatorLead: {ex.Message}");
+        }
+
+        // Send Email Offer
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await EmailService.SendCalculatorLeadOfferEmailAsync(lead);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error sending calculator lead offer email: {ex.Message}");
+            }
+        });
+
+        _isLeadModalOpen = false;
+
+        // Start background processing calculation sequence
+        _isProcessingModalOpen = true;
+        _processingStep = 1;
+        StateHasChanged();
+
+        await Task.Delay(600);
+        _processingStep = 2;
+        StateHasChanged();
+
+        await Task.Delay(600);
+        _processingStep = 3;
+        StateHasChanged();
+
+        await Task.Delay(600);
+        _isProcessingModalOpen = false;
+        _isProposalReady = true;
+        StateHasChanged();
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "lead_email", _email);
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "lead_phone", _phone);
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "lead_name", _name);
+
+            await JSRuntime.InvokeVoidAsync("posthog.capture", "estimator_lead_submitted", new
+            {
+                lead_id = lead.Id,
+                email = _email,
+                phone = _phone,
+                name = _name,
+                scope = _activeScope,
+                area = _selectedArea,
+                building_status = _buildingStatus,
+                finish_tier = _finishQualityTier,
+                price_min_eur = minEur,
+                price_max_eur = maxEur,
+                utm_source = UtmSource,
+                utm_campaign = UtmCampaign,
+                utm_medium = UtmMedium
+            });
+        }
+        catch { }
+    }
+
+    private async Task ProceedToWizard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "quick_estimator_scope", _activeScope);
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "quick_estimator_area", _selectedArea.ToString());
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "quick_estimator_status", _buildingStatus);
+        }
+        catch { }
+
+        NavManager.NavigateTo("/job-wizard");
+    }
+}

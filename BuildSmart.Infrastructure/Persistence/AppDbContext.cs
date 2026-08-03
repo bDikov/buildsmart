@@ -49,6 +49,7 @@ public partial class AppDbContext : DbContext
 	public DbSet<LocalizationResource> LocalizationResources { get; set; } = null!;
 	public DbSet<UserCampaignMetadata> UserCampaignMetadata { get; set; } = null!;
 	public DbSet<BlogPost> BlogPosts { get; set; } = null!;
+	public DbSet<CalculatorLead> CalculatorLeads { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)

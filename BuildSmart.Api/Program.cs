@@ -389,6 +389,8 @@ public partial class Program
 
 		// Add other services like CORS, etc.
 		builder.Services.AddHttpContextAccessor();
+		builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+		builder.Services.AddScoped<ICalculatorLeadRepository, CalculatorLeadRepository>();
 
 		var app = builder.Build();
 

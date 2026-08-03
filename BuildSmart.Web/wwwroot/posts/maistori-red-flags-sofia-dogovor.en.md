@@ -45,7 +45,7 @@ Property owners are often tempted by cheap labor quotes, only to learn later tha
   <h3 class="bs-lead-title">Protect your renovation with a fixed contract & 0% deposit</h3>
   <p class="bs-lead-desc">Don't take risks with ambiguous quotes. Get your itemized breakdown online or chat with us directly:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator" class="bs-btn-primary bs-btn-animated">
       Get Fixed Contract Quote (2 min)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

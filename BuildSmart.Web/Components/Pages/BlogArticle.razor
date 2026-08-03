@@ -146,7 +146,7 @@
                         </div>
                         <h4 class="cta-widget-title mb-2">@Loc["Blog_EstimatorCta"]</h4>
                         <p class="cta-widget-desc mb-4">@Loc["Blog_EstimatorDesc"]</p>
-                        <a href="/job-wizard" class="bs-btn-primary bs-btn-animated w-100 mb-2">
+                        <a href="@GetEstimatorUrl()" class="bs-btn-primary bs-btn-animated w-100 mb-2">
                             @Loc["Blog_EstimatorCta"]
                         </a>
                         <a href="/project-messages" class="bs-btn-outline w-100">
@@ -1275,6 +1275,20 @@
             return img;
 
         return $"https://buildsmart.bg{img}";
+    }
+
+    private string GetEstimatorUrl()
+    {
+        var slug = (Slug ?? "").ToLower();
+        if (slug.Contains("banya") || slug.Contains("bathroom"))
+        {
+            return "/renovation-estimator?scope=bathroom";
+        }
+        if (slug.Contains("apartament") || slug.Contains("3-staen") || slug.Contains("gipskarton") || slug.Contains("kazus"))
+        {
+            return "/renovation-estimator?scope=full";
+        }
+        return "/renovation-estimator";
     }
 
     public class BlogPostMetadata

@@ -64,7 +64,7 @@ Watch a short video walkthrough of the completed 100 sq.m. apartment renovation 
   <h3 class="bs-lead-title">Want an exact quote for your property?</h3>
   <p class="bs-lead-desc">Enter your dimensions online or chat with our engineers directly:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
       Calculate Quote for Your Flat (2 min)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

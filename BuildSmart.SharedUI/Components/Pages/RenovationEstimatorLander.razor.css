@@ -1,0 +1,725 @@
+.magazine-theme-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    color: var(--text-primary);
+}
+
+/* Strict theme override for Bootstrap's default blue .text-primary utility class */
+.magazine-theme-wrapper .text-primary,
+.magazine-theme-wrapper label.text-primary,
+.magazine-theme-wrapper span.text-primary,
+.magazine-theme-wrapper div.text-primary,
+.magazine-theme-wrapper h1.text-primary,
+.magazine-theme-wrapper h2.text-primary,
+.magazine-theme-wrapper h3.text-primary,
+.magazine-theme-wrapper h4.text-primary,
+.magazine-theme-wrapper h5.text-primary,
+.magazine-theme-wrapper h6.text-primary {
+    color: var(--text-primary, #111111) !important;
+}
+
+.magazine-progress-percent {
+    color: var(--text-primary, #111111) !important;
+}
+
+.saas-cumulative-header {
+    color: var(--text-secondary, #4b5563) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Prominent Furniture Toggle Box Inside Main Card */
+.magazine-furniture-box {
+    background-color: var(--bg-card-alt);
+    border: 2px solid var(--border-color);
+    box-shadow: var(--elevation-01dp);
+    transition: all 0.25s ease;
+}
+
+.magazine-furniture-box:hover {
+    border-color: var(--color-primary, #111111);
+}
+
+.max-w-400 { max-width: 400px; }
+.max-w-500 { max-width: 500px; }
+.max-w-700 { max-width: 700px; }
+.max-w-800 { max-width: 800px; }
+.max-w-900 { max-width: 900px; }
+
+.extra-small { font-size: 0.78rem; }
+.cursor-pointer { cursor: pointer; }
+
+/* Custom Form Switch Toggle (Black accent instead of Bootstrap blue) */
+.magazine-theme-wrapper .form-check-input:checked {
+    background-color: var(--color-primary, #111111) !important;
+    border-color: var(--color-primary, #111111) !important;
+}
+
+/* Custom Monochrome Range Slider styling (Black thumb instead of default blue) */
+.magazine-theme-wrapper .form-range {
+    accent-color: var(--color-primary, #111111) !important;
+}
+
+.magazine-theme-wrapper .form-range::-webkit-slider-thumb {
+    background-color: var(--color-primary, #111111) !important;
+    border: 2px solid var(--color-primary, #111111) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+}
+
+.magazine-theme-wrapper .form-range::-moz-range-thumb {
+    background-color: var(--color-primary, #111111) !important;
+    border: 2px solid var(--color-primary, #111111) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+}
+
+.magazine-theme-wrapper .form-range::-webkit-slider-runnable-track {
+    background-color: var(--border-color, #e0e0e0);
+    height: 8px;
+    border-radius: 4px;
+}
+
+.magazine-theme-wrapper .form-range::-moz-range-track {
+    background-color: var(--border-color, #e0e0e0);
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Figma Magazine Mobile Header Bar */
+.magazine-header-bar {
+    border-color: var(--border-color) !important;
+}
+
+.magazine-issue-badge {
+    background: var(--color-primary, #111111);
+    color: #ffffff !important;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.magazine-date-tag {
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Magazine Thin Step Progress Bar */
+.magazine-progress-container {
+    background: transparent;
+}
+
+.magazine-progress-bar {
+    height: 4px;
+    background: var(--bg-card-alt);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.magazine-progress-fill {
+    height: 100%;
+    background: var(--color-primary, #111111);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+/* SaaS Subscription Style Material Quality Tier Cards */
+.magazine-saas-tier-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.magazine-saas-tier-card:hover {
+    border-color: var(--color-primary, #111111);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.magazine-saas-tier-card.active {
+    border: 2px solid var(--color-primary, #111111);
+    background: var(--bg-card-alt);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Premium Card Floating Badge & High-Contrast Active Dark Transformation */
+.saas-popular-card {
+    border-color: var(--border-color);
+}
+
+.saas-popular-floating-badge {
+    position: absolute;
+    top: -11px;
+    left: 14px;
+    background: var(--color-primary, #111111);
+    color: #ffffff !important;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    transition: all 0.3s ease;
+}
+
+/* WHEN PREMIUM IS SELECTED: Inverted Emerald Luxury Dark Card Transformation */
+.saas-popular-card.active {
+    background: #111111 !important;
+    border: 2px solid #111111 !important;
+    color: #ffffff !important;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+}
+
+.saas-popular-card.active .saas-popular-floating-badge {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.saas-popular-card.active .text-primary,
+.saas-popular-card.active h4.text-primary,
+.saas-popular-card.active div.text-primary,
+.saas-popular-card.active span.text-primary,
+.saas-popular-card.active .saas-cumulative-header {
+    color: #ffffff !important;
+}
+
+.saas-popular-card.active .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.saas-popular-card.active hr {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.saas-popular-card.active .saas-check {
+    color: #34d399 !important;
+}
+
+.saas-popular-card.active .saas-select-radio {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
+
+/* WHEN LUXURY IS SELECTED: Inverted Obsidian Gold Luxury Dark Card Transformation */
+.saas-luxury-card.active {
+    background: linear-gradient(145deg, #18181b 0%, #27272a 100%) !important;
+    border: 2px solid #f59e0b !important;
+    color: #ffffff !important;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(245, 158, 11, 0.22);
+}
+
+.saas-luxury-card.active .text-primary,
+.saas-luxury-card.active h4.text-primary,
+.saas-luxury-card.active div.text-primary,
+.saas-luxury-card.active span.text-primary,
+.saas-luxury-card.active .saas-cumulative-header {
+    color: #ffffff !important;
+}
+
+.saas-luxury-card.active .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.saas-luxury-card.active hr {
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.saas-luxury-card.active .saas-check {
+    color: #fbbf24 !important;
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+}
+
+.saas-luxury-card.active .saas-select-radio {
+    background: #f59e0b !important;
+    border-color: #f59e0b !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.saas-select-radio {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.magazine-saas-tier-card.active .saas-select-radio {
+    background: var(--color-primary, #111111);
+    border-color: var(--color-primary, #111111);
+}
+
+.saas-check {
+    color: var(--color-success, #10b981);
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.saas-feature-list li {
+    line-height: 1.4;
+}
+
+/* Social Proof Urgency Badge */
+.magazine-urgency-badge {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary, #111111);
+}
+
+/* Scope Segmented Bar */
+.bs-scope-segmented-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    display: flex;
+    gap: 4px;
+}
+
+.bs-scope-pill {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.bs-scope-pill:hover {
+    color: var(--text-primary);
+}
+
+.bs-scope-pill.active {
+    background: var(--color-primary, #111111);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Authentic Project Detail Overall Total Card */
+.overall-total-card {
+    background: var(--bg-card);
+    border: 2px solid var(--color-primary, #111111);
+    border-radius: 16px;
+    box-shadow: var(--elevation-04dp);
+}
+
+.total-status-badge.ready {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+    display: inline-block;
+}
+
+.overall-total-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.price-display {
+    font: var(--font-h1);
+    color: var(--color-primary, #111111);
+}
+
+.price-amount-decimal {
+    font-size: 1.8rem;
+    opacity: 0.9;
+}
+
+/* Modal Overlay & Modal Card Styling */
+.bs-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    padding: 20px;
+}
+
+.bs-modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--elevation-16dp);
+    animation: modalFadeIn 0.25s ease-out;
+}
+
+.magazine-modal {
+    border-top: 4px solid var(--color-primary, #111111);
+}
+
+.magazine-modal-tag {
+    background: var(--color-primary, #111111);
+    color: #ffffff !important;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: inline-block;
+    width: auto;
+}
+
+.magazine-modal-title {
+    color: var(--text-primary, #111111) !important;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.35;
+}
+
+.magazine-modal-label {
+    color: var(--text-primary, #111111) !important;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.magazine-modal-input {
+    color: var(--text-primary, #111111);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+
+.magazine-modal-input:focus {
+    border-color: var(--color-primary, #111111);
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.1);
+}
+
+/* Option Buttons & Input Card */
+.bs-option-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary, #111111);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bs-option-btn:hover {
+    border-color: var(--color-primary, #111111);
+    background: var(--bg-card-alt);
+}
+
+.bs-option-btn.active {
+    background: var(--color-primary, #111111);
+    color: #ffffff !important;
+    border-color: var(--color-primary, #111111);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Authentic BuildSmart Proposal Reveal Showcase Styling */
+.magazine-proposal-container {
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Glassmorphic Hero Header Card */
+.proposal-hero-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.proposal-hero-glow {
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.14) 0%, rgba(16, 185, 129, 0) 70%);
+    pointer-events: none;
+}
+
+.proposal-hero-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary, #111111) !important;
+    letter-spacing: -0.5px;
+    line-height: 1.25;
+}
+
+/* Proposal Micro Chips */
+.proposal-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.proposal-chip-verified {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary, #111111) !important;
+}
+
+.chip-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-success, #10b981);
+    box-shadow: 0 0 8px var(--color-success, #10b981);
+    animation: chipPulse 2s infinite;
+}
+
+@keyframes chipPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.proposal-chip-status {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success, #10b981) !important;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.proposal-timeline-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+}
+
+.proposal-timeline-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary, #111111);
+    border: 1px solid var(--border-color);
+}
+
+.proposal-timeline-value {
+    color: var(--color-success, #10b981);
+    font-size: 1.05rem;
+}
+
+/* 4-Metric Grid */
+.proposal-metric-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.proposal-metric-card:hover {
+    border-color: var(--color-primary, #111111);
+}
+
+/* Scope & Delivery Banners */
+.proposal-scope-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--color-primary, #111111);
+    border-radius: 16px;
+}
+
+.proposal-scope-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+}
+
+.proposal-scope-text {
+    color: var(--text-primary, #111111);
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.proposal-delivery-card {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 16px;
+}
+
+.proposal-delivery-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-success, #10b981);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.proposal-delivery-title {
+    color: var(--color-success, #10b981) !important;
+    font-size: 0.95rem;
+}
+
+/* Overall Financial Estimate Showcase Card */
+.overall-total-card {
+    background: var(--bg-card);
+    border: 2px solid var(--color-primary, #111111);
+    border-radius: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+}
+
+.proposal-bgn-price {
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.max-w-600 {
+    max-width: 600px;
+}
+
+/* Primary CTA Button Glow & Hover */
+.proposal-cta-btn {
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.proposal-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+/* Proposal Task Cards Accordion */
+.proposal-task-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+
+.proposal-task-card:hover {
+    border-color: var(--color-primary, #111111);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.proposal-task-badge {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary, #111111);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+
+.proposal-task-price {
+    color: var(--color-success, #10b981) !important;
+    font-size: 1.05rem;
+}
+
+.proposal-chevron-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.proposal-chevron-icon.open {
+    transform: rotate(180deg);
+    color: var(--color-primary, #111111);
+}
+
+.proposal-task-body {
+    background: var(--bg-card);
+    border-color: var(--border-color) !important;
+}
+
+.proposal-task-item {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.proposal-task-item:hover {
+    background: var(--bg-card);
+    border-color: var(--color-primary, #111111);
+}
+
+.proposal-rate-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.proposal-item-cost {
+    color: var(--color-success, #10b981) !important;
+    font-size: 0.92rem;
+}

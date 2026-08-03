@@ -4,7 +4,7 @@
 
 В тази статия разглеждаме цените за труд и материали при сухо строителство в София през 2026 г.
 
-> За да пресметнете квадратурата и цената за вашите тавани и стени, използвайте [онлайн ценоразписа за гипскартон](/job-wizard).
+> За да пресметнете квадратурата и цената за вашите тавани и стени, използвайте [онлайн ценоразписа за гипскартон](/renovation-estimator?scope=full).
 
 ---
 
@@ -26,20 +26,20 @@
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Икономичен клас</div>
       <div class="card-price-main">€13 - €20 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Стандартна предстенна обшивка на единична скара (9.5/12.5 мм гипскартон) без вана.</div>
       <div class="card-cta-btn">Сметнете онлайн <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card active-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card active-card">
       <div class="card-badge-popular">⭐ Най-популярен в София</div>
       <div class="card-tier-tag text-primary">Стандартен клас</div>
       <div class="card-price-main">€23 - €35 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Окачен таван на едно ниво + акустична каменна вана (50 мм), шпакловка с мрежа по фуги.</div>
       <div class="card-cta-btn btn-primary-style">Сметнете вашите тавани <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Премиум клас</div>
       <div class="card-price-main">€40 - €60 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Двунивови декоративни тавани със скрити LED ниши, куфари за пердета и двойна шумоизолация.</div>
@@ -80,7 +80,7 @@
   <h3 class="bs-lead-title">Искате перфектни стени и окачени тавани?</h3>
   <p class="bs-lead-desc">Пресметнете оферта по точни размери за вашето жилище или ни пишете директно в чата:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
       Сметнете вашите тавани онлайн (2 мин)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

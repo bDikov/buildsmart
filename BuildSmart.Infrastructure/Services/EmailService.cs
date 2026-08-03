@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using BuildSmart.Core.Application.Interfaces;
+using BuildSmart.Core.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +16,7 @@ namespace BuildSmart.Infrastructure.Services
 		private readonly IConfiguration _config;
 		private readonly ILogger<EmailService> _logger;
 
-		public EmailService(IUnitOfWork unitOfWork, IConfiguration config, ILogger<EmailService> logger)
+		public EmailService(IConfiguration config, ILogger<EmailService> logger, IUnitOfWork? unitOfWork = null)
 		{
 			_unitOfWork = unitOfWork;
 			_config = config;
@@ -152,6 +153,12 @@ namespace BuildSmart.Infrastructure.Services
 
 		public async Task SendGenericEmailAsync(string toEmail, string subject, string body)
 		{
+			if (_config["Smtp:Disabled"] == "true")
+			{
+				_logger.LogInformation("SMTP is disabled via configuration. Skipping send to {Email}", toEmail);
+				return;
+			}
+
 			var smtpServer = _config["Smtp:Server"] ?? throw new InvalidOperationException("SMTP Server configuration is missing (Smtp:Server).");
 			var smtpPortStr = _config["Smtp:Port"] ?? throw new InvalidOperationException("SMTP Port configuration is missing (Smtp:Port).");
 			var smtpUsername = _config["Smtp:Username"] ?? throw new InvalidOperationException("SMTP Username configuration is missing (Smtp:Username).");
@@ -364,6 +371,114 @@ namespace BuildSmart.Infrastructure.Services
 				projectId,
 				"Project"
 			);
+		}
+
+		public async Task SendCalculatorLeadOfferEmailAsync(CalculatorLead lead)
+		{
+			if (lead == null || string.IsNullOrWhiteSpace(lead.Email))
+			{
+				_logger.LogWarning("Cannot send calculator lead email: lead or email is empty.");
+				return;
+			}
+
+			_logger.LogInformation("Sending automated offer email for CalculatorLead {LeadId} to {Email}", lead.Id, lead.Email);
+
+			string scopeText = lead.Scope == "bathroom" ? "Ремонт на Баня" : "Пълен Ремонт на Апартамент";
+			string statusText = lead.BuildingStatus switch
+			{
+				"rough" => "Груб строеж",
+				"old" => "Старо строителство (Къртене)",
+				_ => "БДС / Акт 16 (Ново строителство)"
+			};
+
+			string tierText = lead.QualityTier switch
+			{
+				"luxury" => "ЛУКС",
+				"premium" => "ПРЕМИУМ",
+				_ => "СТАНДАРТ"
+			};
+
+			string subject = $"Готова Оферта BuildSmart: {scopeText} ({lead.SelectedArea} кв.м.)";
+			string recipientName = !string.IsNullOrWhiteSpace(lead.Name) ? lead.Name : "Уважаеми Клиент";
+
+			string htmlBody = $@"
+				<html>
+				<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; padding: 24px;'>
+					<div style='max-width: 600px; margin: 0 auto; background: #ffffff; padding: 32px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);'>
+						<div style='text-align: center; padding-bottom: 24px; border-bottom: 2px solid #2563eb;'>
+							<h1 style='color: #1e293b; margin: 0; font-size: 24px;'>BuildSmart.bg</h1>
+							<p style='color: #2563eb; font-weight: 600; margin: 4px 0 0 0;'>Проверена Оферта за Ремонт</p>
+						</div>
+
+						<div style='padding: 24px 0;'>
+							<h2 style='color: #0f172a; margin-top: 0;'>Здравейте, {recipientName}!</h2>
+							<p>Благодарим Ви, че използвахте дигиталния калкулатор за ремонти на <strong>BuildSmart.bg</strong>.</p>
+							<p>Вашата оферта по фиксирани цени с <strong>0% авансово плащане</strong> е подготвена:</p>
+
+							<div style='background: #f1f5f9; padding: 20px; border-radius: 10px; margin: 20px 0;'>
+								<table style='width: 100%; border-collapse: collapse; font-size: 15px;'>
+									<tr>
+										<td style='padding: 6px 0; color: #64748b;'>Обхват:</td>
+										<td style='padding: 6px 0; font-weight: bold; text-align: right; color: #0f172a;'>{scopeText}</td>
+									</tr>
+									<tr>
+										<td style='padding: 6px 0; color: #64748b;'>Площ:</td>
+										<td style='padding: 6px 0; font-weight: bold; text-align: right; color: #0f172a;'>{lead.SelectedArea} кв.м.</td>
+									</tr>
+									<tr>
+										<td style='padding: 6px 0; color: #64748b;'>Състояние:</td>
+										<td style='padding: 6px 0; font-weight: bold; text-align: right; color: #0f172a;'>{statusText}</td>
+									</tr>
+									<tr>
+										<td style='padding: 6px 0; color: #64748b;'>Пакет покритие:</td>
+										<td style='padding: 6px 0; font-weight: bold; text-align: right; color: #2563eb;'>{tierText}</td>
+									</tr>
+									<tr>
+										<td style='padding: 6px 0; color: #64748b;'>Срок за изпълнение:</td>
+										<td style='padding: 6px 0; font-weight: bold; text-align: right; color: #0f172a;'>{lead.EstimatedDays} Работни Дни</td>
+									</tr>
+									<tr style='border-top: 1px solid #cbd5e1;'>
+										<td style='padding: 12px 0 6px 0; color: #0f172a; font-weight: bold;'>Бюджет (EUR):</td>
+										<td style='padding: 12px 0 6px 0; font-weight: bold; font-size: 18px; text-align: right; color: #16a34a;'>€{lead.MinPriceEur:N0} - €{lead.MaxPriceEur:N0}</td>
+									</tr>
+									<tr>
+										<td style='padding: 0 0 6px 0; color: #64748b; font-size: 13px;'>Бюджет (BGN):</td>
+										<td style='padding: 0 0 6px 0; font-size: 13px; text-align: right; color: #64748b;'>{lead.MinPriceBgn:N0} - {lead.MaxPriceBgn:N0} лв.</td>
+									</tr>
+								</table>
+							</div>
+
+							<div style='margin: 24px 0; padding: 20px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;'>
+								<h3 style='margin: 0 0 12px 0; color: #1e3a8a; font-size: 16px;'>Защо да изберете BuildSmart.bg?</h3>
+								<ul style='margin: 0; padding-left: 20px; color: #1e293b; font-size: 14px;'>
+									<li style='margin-bottom: 8px;'><strong>0% Авансово плащане (Капаро):</strong> Плащате на етапи – едва след като съответният етап е завършен и приет от вас.</li>
+									<li style='margin-bottom: 8px;'><strong>Твърда оферта по договор:</strong> Цените по договор са фиксирани и гарантирани без &quot;непредвидени&quot; надценки.</li>
+									<li style='margin-bottom: 8px;'><strong>ИИ Количествено-стойностна сметка:</strong> Количествата и цените са базирани на реални актуални формули за София.</li>
+									<li><strong>Сертифициран строителен контрол:</strong> Пълна писмена гаранция за ВиК, Ел., хидроизолация и довършителни дейности.</li>
+								</ul>
+							</div>
+
+							<div style='margin: 24px 0; padding: 16px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px; color: #475569;'>
+								<h4 style='margin: 0 0 8px 0; color: #334155; font-size: 14px;'>📌 Общи условия и валидност</h4>
+								<p style='margin: 0 0 6px 0;'>• Офертата е валидна <strong>30 календарни дни</strong> от датата на генериране.</p>
+								<p style='margin: 0 0 6px 0;'>• Посочените цени са изчислени за София и включват труд, чернови и чистови материали по избрания пакет.</p>
+								<p style='margin: 0;'>• При заявяване от Ваша страна, BuildSmart извършва безплатен наземен оглед за подписване на официален договор.</p>
+							</div>
+
+							<div style='margin: 32px 0; text-align: center;'>
+								<a href='https://buildsmart.bg/renovation-estimator' target='_blank' style='background-color: #2563eb; color: #ffffff; display: inline-block; font-family: Arial, sans-serif; font-size: 15px; font-weight: 600; line-height: 48px; text-align: center; text-decoration: none; padding: 0 32px; border-radius: 8px;'>
+									📞 Прегледайте Офертата & Заявете Оглед
+								</a>
+							</div>
+
+							<p style='color: #64748b; font-size: 14px;'>С уважение,<br/><strong>Екипът на BuildSmart.bg</strong><br/>София, България</p>
+						</div>
+					</div>
+				</body>
+				</html>";
+
+			await SendGenericEmailAsync(lead.Email, subject, htmlBody);
+			_logger.LogInformation("Successfully sent calculator lead offer email to {Email}", lead.Email);
 		}
 
 		private async Task NotifyAdminsAsync(string title, string message, Guid relatedEntityId, string relatedEntityType)

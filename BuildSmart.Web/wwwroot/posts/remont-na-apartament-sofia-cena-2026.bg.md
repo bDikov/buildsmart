@@ -8,7 +8,7 @@
 
 В тази статия събрахме **безкомпромисните, реални цени за ремонт до ключ в София** – за да не дадете нито един излишен лев на вятъра.
 
-> Преди да приемате устни оферти на око, вижте точната сума за вашите квадрати в нашия [онлайн ценоразпис за ремонти](/job-wizard) – с твърди цени по договор и без авансово плащане.
+> Преди да приемате устни оферти на око, вижте точната сума за вашите квадрати в нашия [онлайн ценоразпис за ремонти](/renovation-estimator?scope=full) – с твърди цени по договор и без авансово плащане.
 
 ---
 
@@ -40,20 +40,20 @@
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Инвестиционен клас</div>
       <div class="card-price-main">€525 - €640 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Подходящ за отдаване под наем. Мебели от ПДЧ, устойчив ламинат, осветление и акцентни бои.</div>
       <div class="card-cta-btn">Сметнете вашия имот <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card active-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card active-card">
       <div class="card-badge-popular">Най-търсен в София</div>
       <div class="card-tier-tag text-primary">Основен семеен ремонт</div>
       <div class="card-price-main">€600 - €900 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Пълна подмяна на ВиК и Ел., къртене, шпакловка, баня, гипскартон тавани, МДФ мебели и климатизация.</div>
       <div class="card-cta-btn btn-primary-style">Изчислете безплатно <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=full" class="spectrum-card">
       <div class="card-tier-tag">Дизайнерски Лукс</div>
       <div class="card-price-main">€900+ <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Архитектурен проект, мрамор, Smart Home автоматизация, магнитни шини, естествен дъбов паркет.</div>
@@ -116,7 +116,7 @@
   <h3 class="bs-lead-title">Готови ли сте да започнем вашия ремонт?</h3>
   <p class="bs-lead-desc">Не губете време в чудене. Вземете твърда оферта по договор с 0% капаро или ни пишете директно в чата:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
       Попълнете проект онлайн (2 мин)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

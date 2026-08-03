@@ -34,6 +34,13 @@ namespace BuildSmart.Api.Tests
                 {
                     options.UseInMemoryDatabase(_dbName);
                 });
+                services.AddDbContextFactory<AppDbContext>(options =>
+                {
+                    options.UseInMemoryDatabase(_dbName);
+                });
+
+                services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailVerificationService, BuildSmart.Infrastructure.Services.EmailVerificationService>();
+                services.AddScoped<BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
 
                 // We want to override the default authentication scheme with our test scheme.
                 services.AddAuthentication(options => 

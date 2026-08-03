@@ -4,7 +4,7 @@
 
 В тази статия разглеждаме точно колко струва пълният ремонт на баня в София през 2026 г. – от къртенето до монтажа на структурата за вграждане и душ кабината.
 
-> Преди да купувате плочки или да викате майстори за оглед, пресметнете точните количества и цени за вашата баня в [онлайн ценоразписа](/job-wizard) – с твърди цени по договор и без авансово плащане.
+> Преди да купувате плочки или да викате майстори за оглед, пресметнете точните количества и цени за вашата баня в [онлайн ценоразписа](/renovation-estimator?scope=bathroom) – с твърди цени по договор и без авансово плащане.
 
 ---
 
@@ -28,20 +28,20 @@
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=bathroom" class="spectrum-card">
       <div class="card-tier-tag">Икономичен клас</div>
       <div class="card-price-main">€23 - €33 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Стандартен фаянс/теракота (до 40x40 см), 1 ръка хидроизолация, стандартно лепило C1.</div>
       <div class="card-cta-btn">Сметнете онлайн <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card active-card">
+    <a href="/renovation-estimator?scope=bathroom" class="spectrum-card active-card">
       <div class="card-badge-popular">⭐ Най-популярен в София</div>
       <div class="card-tier-tag text-primary">Стандартен клас</div>
       <div class="card-price-main">€40 - €60 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Гранитогрес (60x60 / 60x120 см), 2 ръце 2K хидроизолация с ленти, лепило C2TE, лентов сифон.</div>
       <div class="card-cta-btn btn-primary-style">Сметнете вашата баня <span>→</span></div>
     </a>
-    <a href="/job-wizard" class="spectrum-card">
+    <a href="/renovation-estimator?scope=bathroom" class="spectrum-card">
       <div class="card-tier-tag">Премиум клас</div>
       <div class="card-price-main">€70 - €110 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Крупноформатен гранитогрес (120x280 см), епоксидна фуга, 45° лазерно рязане на ъгли, бутилови ленти.</div>
@@ -88,7 +88,7 @@
   <h3 class="bs-lead-title">Планирате ремонт на баня?</h3>
   <p class="bs-lead-desc">Пресметнете точното количество плочки и труд или ни пишете директно в чата:</p>
   <div class="bs-lead-actions">
-    <a href="/job-wizard" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator?scope=bathroom" class="bs-btn-primary bs-btn-animated">
       Сметнете вашата баня онлайн (2 мин)
     </a>
     <a href="/project-messages" class="bs-btn-outline">
