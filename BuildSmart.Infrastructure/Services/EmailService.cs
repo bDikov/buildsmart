@@ -74,7 +74,7 @@ namespace BuildSmart.Infrastructure.Services
 				: $"Proposal for your project: {project.Title}";
 
 			string baseUrl = _config["AppBaseUrl"]?.TrimEnd('/') ?? "https://buildsmart.bg";
-			string targetUrl = $"{baseUrl}/projects/{projectId}";
+			string targetUrl = $"{baseUrl}/project-detail?projectId={projectId}";
 			string ctaText = lang == "bg" ? "Прегледайте офертата в платформата" : "View Proposal in Platform";
 
 			string body = lang == "bg"
@@ -233,14 +233,10 @@ namespace BuildSmart.Infrastructure.Services
 			string ctaText = lang == "bg" ? "Отворете съобщението в чата" : "Open Message in Chat";
 
 			string baseUrl = _config["AppBaseUrl"]?.TrimEnd('/') ?? "https://buildsmart.bg";
-			string targetUrl = $"{baseUrl}/chat";
-			if (notification.RelatedEntityType == "Chat" && notification.RelatedEntityId.HasValue)
+			string targetUrl = $"{baseUrl}/project-messages";
+			if ((notification.RelatedEntityType == "Chat" || notification.RelatedEntityType == "Project") && notification.RelatedEntityId.HasValue)
 			{
-				targetUrl = $"{baseUrl}/chat/{notification.RelatedEntityId.Value}";
-			}
-			else if (notification.RelatedEntityType == "Project" && notification.RelatedEntityId.HasValue)
-			{
-				targetUrl = $"{baseUrl}/projects/{notification.RelatedEntityId.Value}";
+				targetUrl = $"{baseUrl}/project-messages?projectId={notification.RelatedEntityId.Value}";
 			}
 
 			string emailBody = $@"
@@ -323,7 +319,7 @@ namespace BuildSmart.Infrastructure.Services
 			string ctaText = lang == "bg" ? "Отворете съобщението в чата" : "Open Message in Chat";
 
 			string baseUrl = _config["AppBaseUrl"]?.TrimEnd('/') ?? "https://buildsmart.bg";
-			string chatUrl = $"{baseUrl}/chat";
+			string chatUrl = $"{baseUrl}/project-messages?projectId={project.Id}";
 
 			string emailBody = lang == "bg"
 				? $@"

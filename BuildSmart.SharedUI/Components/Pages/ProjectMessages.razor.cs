@@ -12,6 +12,9 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     [SupplyParameterFromQuery]
     public Guid? ProjectId { get; set; }
 
+    [Parameter]
+    public Guid? ProjectIdParam { get; set; }
+
     private ElementReference _messageContainerRef;
     private ElementReference _textareaRef;
     private List<ChatMessageModel> _messages = new();
@@ -33,6 +36,11 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!ProjectId.HasValue && ProjectIdParam.HasValue)
+        {
+            ProjectId = ProjectIdParam;
+        }
+
         if (!ProjectId.HasValue)
         {
             await ResolveAndNavigateToActiveChatAsync();

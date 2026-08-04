@@ -1,4 +1,5 @@
 @page "/project-detail"
+@page "/projects/{ProjectIdParam:guid}"
 @using BuildSmart.SharedUI.ViewModels
 @using BuildSmart.SharedUI.GraphQL
 @using System.ComponentModel
@@ -164,6 +165,9 @@
     [SupplyParameterFromQuery]
     public Guid? ProjectId { get; set; }
     
+    [Parameter]
+    public Guid? ProjectIdParam { get; set; }
+
     [SupplyParameterFromQuery]
     public Guid? JobId { get; set; }
 
@@ -228,6 +232,11 @@
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         SignalRService.NotificationReceived += OnNotificationReceived;
         
+        if (!ProjectId.HasValue && ProjectIdParam.HasValue)
+        {
+            ProjectId = ProjectIdParam.Value;
+        }
+
         var query = new Dictionary<string, object>();
         if (ProjectId.HasValue) query["ProjectId"] = ProjectId.Value;
         if (JobId.HasValue) query["JobId"] = JobId.Value;
