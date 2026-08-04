@@ -37,6 +37,48 @@ namespace BuildSmart.Maui.Services
 			await Task.CompletedTask;
 		}
 
+		public async Task<string?> RenewTokenAsync(string? currentToken = null)
+		{
+			var tokenToRenew = currentToken ?? _cachedToken ?? await GetTokenAsync();
+			if (string.IsNullOrEmpty(tokenToRenew)) return null;
+
+			try
+			{
+				using var handler = new System.Net.Http.HttpClientHandler
+				{
+					ServerCertificateCustomValidationCallback = System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+				};
+				using var client = new System.Net.Http.HttpClient(handler);
+
+				var requestUrl = $"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/token/renew";
+				var content = new System.Net.Http.StringContent(
+					System.Text.Json.JsonSerializer.Serialize(new { token = tokenToRenew }),
+					System.Text.Encoding.UTF8,
+					"application/json");
+
+				var response = await client.PostAsync(requestUrl, content);
+				if (response.IsSuccessStatusCode)
+				{
+					var json = await response.Content.ReadAsStringAsync();
+					using var doc = System.Text.Json.JsonDocument.Parse(json);
+					if (doc.RootElement.TryGetProperty("token", out var newTokenProp))
+					{
+						var newToken = newTokenProp.GetString();
+						if (!string.IsNullOrEmpty(newToken))
+						{
+							await SaveTokenAsync(newToken);
+							return newToken;
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"[AuthService] Token renewal error: {ex.Message}");
+			}
+			return null;
+		}
+
 		public string? GetUserRoleFromToken(string? token)
 		{
 			if (string.IsNullOrEmpty(token))

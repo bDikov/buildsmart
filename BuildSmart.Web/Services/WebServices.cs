@@ -127,6 +127,48 @@ public class WebAuthService : IAuthService
         catch { /* Ignore prerendering errors */ }
     }
 
+    public async Task<string?> RenewTokenAsync(string? currentToken = null)
+    {
+        var tokenToRenew = currentToken ?? _cachedToken ?? await GetTokenAsync();
+        if (string.IsNullOrEmpty(tokenToRenew)) return null;
+
+        try
+        {
+            using var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            using var client = new HttpClient(handler);
+
+            var requestUrl = $"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/token/renew";
+            var content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(new { token = tokenToRenew }),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            var response = await client.PostAsync(requestUrl, content);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("token", out var newTokenProp))
+                {
+                    var newToken = newTokenProp.GetString();
+                    if (!string.IsNullOrEmpty(newToken))
+                    {
+                        await SaveTokenAsync(newToken);
+                        return newToken;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WebAuthService] Token renewal error: {ex.Message}");
+        }
+        return null;
+    }
+
     public string? GetUserRoleFromToken(string? token)
     {
         if (string.IsNullOrEmpty(token)) return null;

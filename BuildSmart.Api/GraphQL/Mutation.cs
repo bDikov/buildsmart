@@ -237,6 +237,70 @@ public class Mutation
 		return tokenHandler.WriteToken(token);
 	}
 
+	public async Task<string> RenewToken(
+		string token,
+		[Service] IConfiguration configuration,
+		[Service] IUnitOfWork unitOfWork)
+	{
+		if (string.IsNullOrEmpty(token))
+		{
+			throw new GraphQLException(new Error("Token is required", "AUTH_TOKEN_REQUIRED"));
+		}
+
+		try
+		{
+			var tokenHandler = new JwtSecurityTokenHandler();
+			var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]!);
+
+			var validationParameters = new TokenValidationParameters
+			{
+				ValidateIssuerSigningKey = true,
+				IssuerSigningKey = new SymmetricSecurityKey(key),
+				ValidateIssuer = true,
+				ValidIssuer = configuration["Jwt:Issuer"],
+				ValidateAudience = true,
+				ValidAudience = configuration["Jwt:Audience"],
+				ValidateLifetime = false,
+				ClockSkew = TimeSpan.Zero
+			};
+
+			var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+			var userIdStr = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (!Guid.TryParse(userIdStr, out var userId))
+			{
+				throw new GraphQLException(new Error("Invalid token claims", "AUTH_INVALID_TOKEN"));
+			}
+
+			var user = await unitOfWork.Users.GetByIdAsync(userId);
+			if (user == null)
+			{
+				throw new GraphQLException(new Error("User no longer exists", "AUTH_USER_NOT_FOUND"));
+			}
+
+			var newTokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = new ClaimsIdentity(new[]
+				{
+					new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+					new Claim(ClaimTypes.Email, user.Email),
+					new Claim(ClaimTypes.Role, user.Role.ToString())
+				}),
+				Expires = DateTime.UtcNow.AddMinutes(30),
+				Issuer = configuration["Jwt:Issuer"],
+				Audience = configuration["Jwt:Audience"],
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+			};
+
+			var newToken = tokenHandler.CreateToken(newTokenDescriptor);
+			return tokenHandler.WriteToken(newToken);
+		}
+		catch (Exception ex)
+		{
+			throw new GraphQLException(new Error($"Token renewal failed: {ex.Message}", "AUTH_RENEWAL_FAILED"));
+		}
+	}
+
 	public async Task<bool> VerifyEmail(
 		string email,
 		string code,

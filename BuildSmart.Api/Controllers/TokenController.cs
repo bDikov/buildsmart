@@ -55,4 +55,68 @@ public class TokenController : ControllerBase
 
 		return Ok(jwtToken);
 	}
+
+	[HttpPost("renew")]
+	public async Task<IActionResult> RenewToken([FromBody] RenewTokenRequest request)
+	{
+		if (string.IsNullOrEmpty(request.Token))
+		{
+			return BadRequest(new { message = "Token is required" });
+		}
+
+		try
+		{
+			var tokenHandler = new JwtSecurityTokenHandler();
+			var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!);
+
+			var validationParameters = new TokenValidationParameters
+			{
+				ValidateIssuerSigningKey = true,
+				IssuerSigningKey = new SymmetricSecurityKey(key),
+				ValidateIssuer = true,
+				ValidIssuer = _configuration["Jwt:Issuer"],
+				ValidateAudience = true,
+				ValidAudience = _configuration["Jwt:Audience"],
+				ValidateLifetime = false, // Allow token renewal within sliding grace window
+				ClockSkew = TimeSpan.Zero
+			};
+
+			var principal = tokenHandler.ValidateToken(request.Token, validationParameters, out var validatedToken);
+
+			var userIdStr = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (!Guid.TryParse(userIdStr, out var userId))
+			{
+				return Unauthorized(new { message = "Invalid token claims" });
+			}
+
+			var user = await _unitOfWork.Users.GetByIdAsync(userId);
+			if (user == null)
+			{
+				return Unauthorized(new { message = "User no longer exists" });
+			}
+
+			var newTokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = new ClaimsIdentity(new[]
+				{
+					new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+					new Claim(ClaimTypes.Email, user.Email),
+					new Claim(ClaimTypes.Role, user.Role.ToString())
+				}),
+				Expires = DateTime.UtcNow.AddMinutes(30),
+				Issuer = _configuration["Jwt:Issuer"],
+				Audience = _configuration["Jwt:Audience"],
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+			};
+
+			var newToken = tokenHandler.CreateToken(newTokenDescriptor);
+			var jwtToken = tokenHandler.WriteToken(newToken);
+
+			return Ok(new { token = jwtToken });
+		}
+		catch (Exception ex)
+		{
+			return Unauthorized(new { message = $"Token renewal failed: {ex.Message}" });
+		}
+	}
 }

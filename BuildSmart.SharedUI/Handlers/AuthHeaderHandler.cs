@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace BuildSmart.SharedUI.Handlers;
 
@@ -18,6 +19,12 @@ public class AuthHeaderHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        // Avoid intercepting requests to the renew endpoint itself to prevent recursion
+        if (request.RequestUri != null && request.RequestUri.AbsolutePath.EndsWith("/api/token/renew", StringComparison.OrdinalIgnoreCase))
+        {
+            return await base.SendAsync(request, cancellationToken);
+        }
+
         IAuthService currentAuthService = _authService;
 
         // In Blazor Server, HttpClientFactory creates handlers in the root scope, which isolates them from the user's circuit.
@@ -58,8 +65,32 @@ public class AuthHeaderHandler : DelegatingHandler
             }
         }
 
+        // Proactive Renewal: If user interacts and token is expiring in < 5 mins (or expired), auto-renew for another 30 mins
         if (!string.IsNullOrEmpty(token))
         {
+            try
+            {
+                var jwtHandler = new JwtSecurityTokenHandler();
+                if (jwtHandler.CanReadToken(token))
+                {
+                    var jwtToken = jwtHandler.ReadJwtToken(token);
+                    if (jwtToken.ValidTo <= DateTime.UtcNow.AddMinutes(5))
+                    {
+                        Console.WriteLine("[AuthHeaderHandler] Active user interaction detected & token expiring soon. Auto-renewing...");
+                        var renewedToken = await currentAuthService.RenewTokenAsync(token);
+                        if (!string.IsNullOrEmpty(renewedToken))
+                        {
+                            token = renewedToken;
+                            Console.WriteLine("[AuthHeaderHandler] Token successfully auto-renewed for another 30 minutes!");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AuthHeaderHandler] Exception during token check: {ex.Message}");
+            }
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
         else
@@ -83,6 +114,19 @@ public class AuthHeaderHandler : DelegatingHandler
         }
 
         var response = await base.SendAsync(request, cancellationToken);
+
+        // Reactive Renewal: If request returned 401 Unauthorized, attempt token renewal
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && !string.IsNullOrEmpty(token))
+        {
+            Console.WriteLine("[AuthHeaderHandler] HTTP 401 Unauthorized received. Attempting reactive token renewal...");
+            var renewedToken = await currentAuthService.RenewTokenAsync(token);
+            if (!string.IsNullOrEmpty(renewedToken))
+            {
+                Console.WriteLine("[AuthHeaderHandler] Reactive token renewal succeeded.");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", renewedToken);
+            }
+        }
+
         if (!response.IsSuccessStatusCode)
         {
             Console.WriteLine($"[AuthHeaderHandler] HTTP Request failed with status code: {response.StatusCode}");
