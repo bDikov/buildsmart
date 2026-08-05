@@ -292,17 +292,22 @@ public class ProjectManagementService : IProjectManagementService
 
             _context.JobPosts.Add(jobPost);
 
-            if (categoryTradesmanMap != null)
+            if (categoryTradesmanMap != null && categoryTradesmanMap.Any())
             {
                 Guid tradesmanId = Guid.Empty;
                 if (phase.CategoryId.HasValue && categoryTradesmanMap.TryGetValue(phase.CategoryId.Value, out var tId))
                 {
                     tradesmanId = tId;
                 }
-                else if (categoryTradesmanMap.Any())
+                else if (categoryTradesmanMap.TryGetValue(categoryId, out var cId))
                 {
-                    tradesmanId = categoryTradesmanMap.Values.First();
+                    tradesmanId = cId;
                 }
+                else
+                {
+                    tradesmanId = categoryTradesmanMap.Values.FirstOrDefault(v => v != Guid.Empty);
+                }
+
 
                 if (tradesmanId != Guid.Empty)
                 {

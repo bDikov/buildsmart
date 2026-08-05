@@ -58,6 +58,7 @@ services:
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Database=${POSTGRES_DB:-buildsmart_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres_password}
       - ASPNETCORE_URLS=http://+:8080
       # Inform the Web UI where the GraphQL endpoint lives, using the Caddy domain
       - ApiConfig__BaseUrlOverride=https://${DOMAIN_WEB:-app.buildsmart.localhost}

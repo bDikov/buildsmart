@@ -446,7 +446,7 @@
     private decimal AdminMarkupPercentage { get; set; } = 20.0m;
     private List<Guid> SelectedCategoryIds { get; set; } = new();
     private Dictionary<Guid, Guid> CategoryTradesmanAssignments { get; set; } = new();
-    private bool SetAsActiveDirectly { get; set; } = true;
+    private bool SetAsActiveDirectly { get; set; } = false;
 
     private List<CustomOfferPhaseDto> CurrentOfferPhases { get; set; } = new();
 
@@ -458,8 +458,29 @@
             Tradesmen = await ProjectService.GetTradesmenLookupAsync();
             AvailableCategories = await ProjectService.GetTradeCategoriesAsync();
 
+            var matchedHomeowner = Homeowners.FirstOrDefault(h => h.Email != null && h.Email.Equals("h.hristovv00@gmail.com", StringComparison.OrdinalIgnoreCase));
+            if (matchedHomeowner != null)
+            {
+                SelectedHomeownerId = matchedHomeowner.UserId;
+            }
+            else if (Homeowners.Any())
+            {
+                SelectedHomeownerId = Homeowners.First().UserId;
+            }
+
+            var matchedTradesman = Tradesmen.FirstOrDefault(t => t.Email != null && t.Email.Equals("buildcapitalpro@gmail.com", StringComparison.OrdinalIgnoreCase));
+            if (matchedTradesman != null)
+            {
+                PresetTradesmanId = matchedTradesman.UserId;
+            }
+            else if (Tradesmen.Any())
+            {
+                PresetTradesmanId = Tradesmen.First().UserId;
+            }
+
             LoadPresetData("lyulin");
         }
+
         catch (Exception ex)
         {
             await AlertService.DisplayAlert("Error Loading Data", ex.Message, "OK");
@@ -566,11 +587,13 @@
                 var tradesmanMap = new Dictionary<Guid, Guid>();
                 if (PresetTradesmanId != Guid.Empty)
                 {
+                    tradesmanMap[Guid.Empty] = PresetTradesmanId;
                     foreach (var cat in AvailableCategories)
                     {
                         tradesmanMap[cat.Id] = PresetTradesmanId;
                     }
                 }
+
 
                 projectId = await ProjectService.CreateProjectFromOfferTemplateAsync(
                     SelectedHomeownerId,
