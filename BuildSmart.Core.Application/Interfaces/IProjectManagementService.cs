@@ -21,4 +21,6 @@ public interface IProjectManagementService
     Task<Guid> CreateTaskAsync(Guid jobPostId, string title, string description, decimal estimatedPrice, Guid adminUserId);
     Task UpdateTaskDetailsAndSkusAsync(Guid taskId, string title, string description, decimal estimatedPrice, List<TaskSkuEditDto> skus, Guid adminUserId);
     Task UpdateProjectMarkupPercentageAsync(Guid projectId, decimal markupPercentage, Guid adminUserId);
+    Task<Guid> CreateProjectFromOfferTemplateAsync(Guid homeownerUserId, string title, string description, string? location, Dictionary<Guid, Guid>? categoryTradesmanMap, decimal adminMarkupPercentage, List<CustomOfferPhaseDto> phases);
 }
+

@@ -20,7 +20,18 @@
     }
     else
     {
+        <!-- Mode Selection Tabs -->
+        <div class="mode-tabs">
+            <button class="mode-tab-btn @(CreationMode == "Catalog" ? "active" : "")" @onclick='() => SetMode("Catalog")'>
+                Standard Category Catalog
+            </button>
+            <button class="mode-tab-btn @(CreationMode == "TradesmanOffer" ? "active" : "")" @onclick='() => SetMode("TradesmanOffer")'>
+                Import Tradesman Offer Preset
+            </button>
+        </div>
+
         <div class="form-card">
+            <!-- Homeowner Context -->
             <div class="form-group">
                 <label class="form-label">Select Homeowner Context *</label>
                 <select class="form-input" @bind="SelectedHomeownerId">
@@ -31,6 +42,30 @@
                     }
                 </select>
             </div>
+
+            @if (CreationMode == "TradesmanOffer")
+            {
+                <!-- Offer Preset Selection -->
+                <div class="form-group">
+                    <label class="form-label">Select Tradesman Offer Preset *</label>
+                    <select class="form-input" value="@SelectedOfferPresetKey" @onchange="OnOfferPresetChanged">
+                        <option value="lyulin">Ремонт и боядисване — с. Люлин (Оферта #1, €23,397.62 EUR)</option>
+                    </select>
+
+                </div>
+
+                <!-- Assigned Tradesman for Offer -->
+                <div class="form-group">
+                    <label class="form-label">Assign Tradesman to Project *</label>
+                    <select class="form-input" @bind="PresetTradesmanId">
+                        <option value="@Guid.Empty">-- Select Tradesman --</option>
+                        @foreach (var t in Tradesmen)
+                        {
+                            <option value="@t.UserId">@t.FullName (@t.Email)</option>
+                        }
+                    </select>
+                </div>
+            }
 
             <div class="form-group">
                 <label class="form-label">Project Title *</label>
@@ -55,35 +90,75 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Select Trade Categories & Assign Tradesmen *</label>
-                <div class="category-grid">
-                    @foreach (var cat in AvailableCategories)
-                    {
-                        bool isSelected = SelectedCategoryIds.Contains(cat.Id);
-                        <div class="category-card-item @(isSelected ? "selected-card" : "")">
-                            <div class="category-checkbox-card @(isSelected ? "selected" : "")" @onclick="() => ToggleCategory(cat.Id)">
-                                <input type="checkbox" checked="@isSelected" @onclick:stopPropagation="true" @onchange="() => ToggleCategory(cat.Id)" />
-                                <span class="category-name">@cat.Name</span>
-                            </div>
-
-                            @if (isSelected)
-                            {
-                                <div class="tradesman-select-box mt-2">
-                                    <label class="form-sublabel">Assign Tradesman (Optional):</label>
-                                    <select class="form-input form-input-sm" value="@GetCategoryTradesman(cat.Id)" @onchange="(e) => SetCategoryTradesman(cat.Id, e.Value?.ToString())">
-                                        <option value="@Guid.Empty">-- Select Tradesman --</option>
-                                        @foreach (var t in Tradesmen)
-                                        {
-                                            <option value="@t.UserId">@t.FullName (@t.Email)</option>
-                                        }
-                                    </select>
+            @if (CreationMode == "Catalog")
+            {
+                <div class="form-group">
+                    <label class="form-label">Select Trade Categories & Assign Tradesmen *</label>
+                    <div class="category-grid">
+                        @foreach (var cat in AvailableCategories)
+                        {
+                            bool isSelected = SelectedCategoryIds.Contains(cat.Id);
+                            <div class="category-card-item @(isSelected ? "selected-card" : "")">
+                                <div class="category-checkbox-card @(isSelected ? "selected" : "")" @onclick="() => ToggleCategory(cat.Id)">
+                                    <input type="checkbox" checked="@isSelected" @onclick:stopPropagation="true" @onchange="() => ToggleCategory(cat.Id)" />
+                                    <span class="category-name">@cat.Name</span>
                                 </div>
-                            }
-                        </div>
-                    }
+
+                                @if (isSelected)
+                                {
+                                    <div class="tradesman-select-box mt-2">
+                                        <label class="form-sublabel">Assign Tradesman (Optional):</label>
+                                        <select class="form-input form-input-sm" value="@GetCategoryTradesman(cat.Id)" @onchange="(e) => SetCategoryTradesman(cat.Id, e.Value?.ToString())">
+                                            <option value="@Guid.Empty">-- Select Tradesman --</option>
+                                            @foreach (var t in Tradesmen)
+                                            {
+                                                <option value="@t.UserId">@t.FullName (@t.Email)</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <!-- Offer Breakdown Preview -->
+                <div class="offer-preview-card">
+                    <div class="offer-preview-header">
+                        <span class="offer-title">Offer Summary Breakdown</span>
+                        <span class="offer-total">Total: €@(GetOfferPresetTotal().ToString("N2")) EUR</span>
+                    </div>
+                    <div class="offer-phases-list">
+                        @foreach (var phase in CurrentOfferPhases)
+                        {
+                            <div class="phase-preview-group">
+                                <div class="phase-title-bar">
+                                    <span class="phase-name">@phase.PhaseTitle</span>
+                                    <span class="phase-subtotal">€@phase.Items.Sum(i => i.TotalEur).ToString("N2") EUR</span>
+                                </div>
+                                <div class="phase-items-table">
+                                    @foreach (var item in phase.Items)
+                                    {
+                                        <div class="item-row">
+                                            <div class="item-info">
+                                                <span class="item-title">@item.Title</span>
+                                                <span class="item-desc">@item.Description</span>
+                                            </div>
+                                            <div class="item-pricing">
+                                                <span class="item-qty">@item.Quantity @item.Unit x €@item.UnitPriceEur.ToString("N2")</span>
+                                                <span class="item-sum">€@item.TotalEur.ToString("N2")</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            }
 
             <div class="form-group">
                 <label class="form-label">Initial Project Status</label>
@@ -101,7 +176,7 @@
 
             <div class="form-actions">
                 <button class="btn-submit-project" @onclick="CreateProject" disabled="@IsSubmitting">
-                    @(IsSubmitting ? "Creating Project..." : "Create Project")
+                    @(IsSubmitting ? "Creating Project..." : (CreationMode == "TradesmanOffer" ? "Import & Create Project" : "Create Project"))
                 </button>
             </div>
         </div>
@@ -126,6 +201,27 @@
         color: var(--text-muted);
         font-size: 0.95rem;
         margin-top: 0.25rem;
+    }
+    .mode-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .mode-tab-btn {
+        background-color: var(--bg-card-alt);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        padding: 0.65rem 1.25rem;
+        border-radius: 8px 8px 0 0;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .mode-tab-btn.active {
+        background-color: var(--bg-card);
+        color: var(--color-primary);
+        border-bottom-color: var(--bg-card);
     }
     .form-card {
         background-color: var(--bg-card);
@@ -215,6 +311,78 @@
         font-weight: 600;
         font-size: 0.95rem;
     }
+    .offer-preview-card {
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-top: 0.5rem;
+    }
+    .offer-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .offer-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--text-primary);
+    }
+    .offer-total {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--color-primary);
+    }
+    .phase-preview-group {
+        margin-bottom: 1rem;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+    }
+    .phase-title-bar {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0;
+        border-top: 1px dashed var(--border-color);
+        font-size: 0.85rem;
+    }
+    .item-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .item-title {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    .item-desc {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
+    .item-pricing {
+        display: flex;
+        gap: 1.25rem;
+        align-items: center;
+    }
+    .item-qty {
+        color: var(--text-muted);
+    }
+    .item-sum {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
     .status-options {
         display: flex;
         flex-wrap: wrap;
@@ -262,19 +430,25 @@
 @code {
     private bool IsLoading { get; set; } = true;
     private bool IsSubmitting { get; set; } = false;
+    private string CreationMode { get; set; } = "TradesmanOffer";
 
     private List<UserLookupDto> Homeowners { get; set; } = new();
     private List<UserLookupDto> Tradesmen { get; set; } = new();
     private List<ServiceCategory> AvailableCategories { get; set; } = new();
 
     private Guid SelectedHomeownerId { get; set; } = Guid.Empty;
+    private string SelectedOfferPresetKey { get; set; } = "lyulin";
+    private Guid PresetTradesmanId { get; set; } = Guid.Empty;
+
     private string ProjectTitle { get; set; } = string.Empty;
-    private string ProjectLocation { get; set; } = "Sofia";
+    private string ProjectLocation { get; set; } = "с. Люлин, София";
     private string ProjectDescription { get; set; } = string.Empty;
     private decimal AdminMarkupPercentage { get; set; } = 20.0m;
     private List<Guid> SelectedCategoryIds { get; set; } = new();
     private Dictionary<Guid, Guid> CategoryTradesmanAssignments { get; set; } = new();
     private bool SetAsActiveDirectly { get; set; } = true;
+
+    private List<CustomOfferPhaseDto> CurrentOfferPhases { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -283,6 +457,8 @@
             Homeowners = await ProjectService.GetHomeownersLookupAsync();
             Tradesmen = await ProjectService.GetTradesmenLookupAsync();
             AvailableCategories = await ProjectService.GetTradeCategoriesAsync();
+
+            LoadPresetData("lyulin");
         }
         catch (Exception ex)
         {
@@ -293,6 +469,38 @@
             IsLoading = false;
         }
     }
+
+    private void SetMode(string mode)
+    {
+        CreationMode = mode;
+        if (mode == "TradesmanOffer" && string.IsNullOrWhiteSpace(ProjectTitle))
+        {
+            LoadPresetData(SelectedOfferPresetKey);
+        }
+    }
+
+    private void OnOfferPresetChanged(ChangeEventArgs e)
+    {
+        SelectedOfferPresetKey = e.Value?.ToString() ?? "lyulin";
+        LoadPresetData(SelectedOfferPresetKey);
+    }
+
+    private void LoadPresetData(string key)
+    {
+        if (key == "lyulin")
+        {
+            ProjectTitle = "Ремонт и боядисване на апартамент - с. Люлин";
+            ProjectLocation = "с. Люлин, София";
+            ProjectDescription = "Цялостен ремонт на шпакловка, ремонт на пукнатини и интериорно боядисване по оферта BUILD CAPITAL (Оферта #1).";
+            CurrentOfferPhases = GetLyulinOfferPreset();
+        }
+    }
+
+    private decimal GetOfferPresetTotal()
+    {
+        return CurrentOfferPhases.SelectMany(p => p.Items).Sum(i => i.TotalEur);
+    }
+
 
     private string GetCategoryTradesman(Guid categoryId)
     {
@@ -342,7 +550,7 @@
             return;
         }
 
-        if (!SelectedCategoryIds.Any())
+        if (CreationMode == "Catalog" && !SelectedCategoryIds.Any())
         {
             await AlertService.DisplayAlert("Validation Error", "Please select at least one trade category.", "OK");
             return;
@@ -351,14 +559,39 @@
         IsSubmitting = true;
         try
         {
-            var projectId = await ProjectService.CreateProjectForUserAsync(
-                SelectedHomeownerId,
-                ProjectTitle,
-                ProjectDescription,
-                SelectedCategoryIds,
-                ProjectLocation,
-                CategoryTradesmanAssignments,
-                AdminMarkupPercentage);
+            Guid projectId;
+
+            if (CreationMode == "TradesmanOffer")
+            {
+                var tradesmanMap = new Dictionary<Guid, Guid>();
+                if (PresetTradesmanId != Guid.Empty)
+                {
+                    foreach (var cat in AvailableCategories)
+                    {
+                        tradesmanMap[cat.Id] = PresetTradesmanId;
+                    }
+                }
+
+                projectId = await ProjectService.CreateProjectFromOfferTemplateAsync(
+                    SelectedHomeownerId,
+                    ProjectTitle,
+                    ProjectDescription,
+                    ProjectLocation,
+                    tradesmanMap,
+                    AdminMarkupPercentage,
+                    CurrentOfferPhases);
+            }
+            else
+            {
+                projectId = await ProjectService.CreateProjectForUserAsync(
+                    SelectedHomeownerId,
+                    ProjectTitle,
+                    ProjectDescription,
+                    SelectedCategoryIds,
+                    ProjectLocation,
+                    CategoryTradesmanAssignments,
+                    AdminMarkupPercentage);
+            }
 
             if (SetAsActiveDirectly)
             {
@@ -377,4 +610,83 @@
             IsSubmitting = false;
         }
     }
+
+    private List<CustomOfferPhaseDto> GetLyulinOfferPreset()
+    {
+        return new List<CustomOfferPhaseDto>
+        {
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "1. Предпазни и подготвителни работи",
+                CategoryName = "Подготвителни работи",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "PROT-01", Title = "Обръщане прозорци с найлон", Description = "Покриване и защита на прозорци със защитен найлон и хартиено тиксо", Unit = "услуга", Quantity = 1, UnitPriceEur = 150.00m },
+                    new CustomOfferItemDto { SkuCode = "PROT-02", Title = "Полагане покривен найлон по под", Description = "Полагане на тежкозащитен найлон по подови настилки", Unit = "м²", Quantity = 238.36m, UnitPriceEur = 2.00m },
+                    new CustomOfferItemDto { SkuCode = "PREP-01", Title = "Обезпрашяване", Description = "Сухо и мокро обезпрашяване на повърхностите преди грундиране", Unit = "м²", Quantity = 515, UnitPriceEur = 1.20m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "2. Демонтажни работи и премахване на тапети",
+                CategoryName = "Демонтаж",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "DEM-01", Title = "Частично демонтиране на стара шпакловка", Description = "Частично демонтиране и изстъргване на компрометирана шпакловка", Unit = "м²", Quantity = 150, UnitPriceEur = 2.50m },
+                    new CustomOfferItemDto { SkuCode = "DEM-02", Title = "Сваляне на стари тапети", Description = "Сваляне на стари тапети и почистване на лепилен слой", Unit = "м²", Quantity = 45, UnitPriceEur = 5.00m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "3. Ремонт на пукнатини и укрепване",
+                CategoryName = "Ремонт пукнатини",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "REP-01", Title = "Импрегниране пукнатини", Description = "Дълбочинно импрегниране на пукнатини с дълбокопроникващ грунд", Unit = "м²", Quantity = 120, UnitPriceEur = 1.50m },
+                    new CustomOfferItemDto { SkuCode = "REP-02", Title = "Полагане мрежа на пукнатини по стени и тавани", Description = "Полагане на стъклофибърна армираща мрежа против пукнатини", Unit = "м²", Quantity = 120, UnitPriceEur = 1.00m },
+                    new CustomOfferItemDto { SkuCode = "REP-03", Title = "Шпакловка на пукнатини", Description = "Местно шпакловане и запълване на армирани пукнатини", Unit = "м²", Quantity = 120, UnitPriceEur = 2.50m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "4. Шпакловане, грундиране и шлайфане",
+                CategoryName = "Шпакловка",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "PLAST-01", Title = "Грундиране по стени и тавани", Description = "Нанасяне на дълбокопроникващ грунд за шпакловка", Unit = "м²", Quantity = 515, UnitPriceEur = 2.50m },
+                    new CustomOfferItemDto { SkuCode = "PLAST-02", Title = "Направа шпакловка по стени и тавани", Description = "Фино шпакловане на стени и тавани (1-ва и 2-ра ръка)", Unit = "м²", Quantity = 515, UnitPriceEur = 15.50m },
+                    new CustomOfferItemDto { SkuCode = "PLAST-03", Title = "Шлайфане", Description = "Безпрахово шлайфане на шпакловка с жираф и контролна светлина", Unit = "м²", Quantity = 515, UnitPriceEur = 3.00m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "5. Обръщане на прозорци и врати",
+                CategoryName = "Обръщания",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "EDGE-01", Title = "Направа шпакловка и боя около прозорци, врати и лм", Description = "Оформяне, шпакловане, ъглозащитни профили и боядисване около прозорци и врати", Unit = "лм", Quantity = 126.8m, UnitPriceEur = 28.00m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "6. Интериорно боядисване",
+                CategoryName = "Боядисване",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "PAINT-01", Title = "Боядисване на стени и тавани", Description = "Двукратно боядисване с премиум интериорен латекс", Unit = "м²", Quantity = 515, UnitPriceEur = 12.50m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "7. Почистване и предаване на обекта",
+                CategoryName = "Почистване",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "CLEAN-01", Title = "Почистване", Description = "Финално почистване след приключване на СМР и изнасяне на отпадъци", Unit = "услуга", Quantity = 1, UnitPriceEur = 150.00m }
+                }
+            }
+        };
+    }
+
 }
+

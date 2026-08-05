@@ -226,8 +226,167 @@ public class ProjectManagementService : IProjectManagementService
         return project.Id;
     }
 
+    public async Task<Guid> CreateProjectFromOfferTemplateAsync(
+        Guid homeownerUserId,
+        string title,
+        string description,
+        string? location,
+        Dictionary<Guid, Guid>? categoryTradesmanMap,
+        decimal adminMarkupPercentage,
+        List<CustomOfferPhaseDto> phases)
+    {
+        var homeowner = await _context.Users
+            .Include(u => u.HomeownerProfile)
+            .FirstOrDefaultAsync(u => u.Id == homeownerUserId);
+
+        if (homeowner == null)
+            throw new ArgumentException("Specified Homeowner user does not exist.");
+
+        if (homeowner.HomeownerProfile == null)
+        {
+            homeowner.HomeownerProfile = new HomeownerProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = homeowner.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+        }
+
+        var project = new Project
+        {
+            Id = Guid.NewGuid(),
+            HomeownerId = homeowner.Id,
+            Homeowner = homeowner,
+            Title = string.IsNullOrWhiteSpace(title) ? "Tradesman Offer Project" : title,
+            Description = description ?? string.Empty,
+            GeneralSummary = description,
+            AdminMarkupPercentage = adminMarkupPercentage < 0 ? 0 : adminMarkupPercentage,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Projects.Add(project);
+
+        var defaultCategory = await _context.ServiceCategories.FirstOrDefaultAsync();
+        decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
+        int phaseIndex = 0;
+
+        foreach (var phase in phases)
+        {
+            phaseIndex++;
+            var categoryId = phase.CategoryId ?? defaultCategory?.Id ?? Guid.NewGuid();
+
+            var jobPost = new JobPost
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                HomeownerProfileId = homeowner.HomeownerProfile.Id,
+                ServiceCategoryId = categoryId,
+                Title = phase.PhaseTitle,
+                Description = $"Detailed work phase: {phase.PhaseTitle}",
+                Location = location ?? "Sofia",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.JobPosts.Add(jobPost);
+
+            if (categoryTradesmanMap != null)
+            {
+                Guid tradesmanId = Guid.Empty;
+                if (phase.CategoryId.HasValue && categoryTradesmanMap.TryGetValue(phase.CategoryId.Value, out var tId))
+                {
+                    tradesmanId = tId;
+                }
+                else if (categoryTradesmanMap.Any())
+                {
+                    tradesmanId = categoryTradesmanMap.Values.First();
+                }
+
+                if (tradesmanId != Guid.Empty)
+                {
+                    jobPost.AssignedTradesmanId = tradesmanId;
+                    _context.CategoryTradesmanAssignments.Add(new CategoryTradesmanAssignment
+                    {
+                        Id = Guid.NewGuid(),
+                        ProjectId = project.Id,
+                        JobPostId = jobPost.Id,
+                        ServiceCategoryId = categoryId,
+                        TradesmanId = tradesmanId,
+                        AssignedByAdminId = homeownerUserId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            jobPost.Publish();
+
+            int taskSeq = 0;
+            foreach (var item in phase.Items)
+            {
+                taskSeq++;
+                decimal tradesmanTotalEur = item.TotalEur;
+                decimal homeownerTotalEur = Math.Round(tradesmanTotalEur * markupFactor, 2);
+
+
+                var task = new JobTask
+                {
+                    Id = Guid.NewGuid(),
+                    JobPostId = jobPost.Id,
+                    Title = item.Title,
+                    Description = string.IsNullOrWhiteSpace(item.Description) ? item.Title : item.Description,
+                    SequenceOrder = taskSeq,
+                    TradesmanPrice = tradesmanTotalEur,
+                    EstimatedPrice = homeownerTotalEur,
+                    Status = TaskStatus.ToDo,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                // Match existing SKU by SkuCode if present
+                var matchingSku = await _context.ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == item.SkuCode);
+
+                var skuItem = new TaskSkuItem
+                {
+                    Id = Guid.NewGuid(),
+                    JobTaskId = task.Id,
+                    ServiceSkuId = matchingSku?.Id ?? Guid.Empty,
+                    Quantity = item.Quantity,
+                    EstimatedPrice = tradesmanTotalEur,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                if (matchingSku != null)
+                {
+                    task.SkuItems.Add(skuItem);
+                    _context.TaskSkuItems.Add(skuItem);
+                }
+
+                var criteria = new TaskAcceptanceCriteria
+                {
+                    Id = Guid.NewGuid(),
+                    JobTaskId = task.Id,
+                    Description = $"Quality verification for {item.Title} according to Bulgarian Construction Standards (BDS).",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                task.AcceptanceCriteria.Add(criteria);
+
+                jobPost.JobTasks.Add(task);
+                _context.JobTasks.Add(task);
+                _context.TaskAcceptanceCriteria.Add(criteria);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return project.Id;
+    }
+
     public async Task AssignTradesmanToCategoryAsync(Guid projectId, Guid jobPostId, Guid tradesmanUserId, Guid adminUserId)
     {
+
         var jobPost = await _context.JobPosts
             .Include(j => j.Project)
             .FirstOrDefaultAsync(j => j.Id == jobPostId && j.ProjectId == projectId);

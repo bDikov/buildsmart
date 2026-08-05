@@ -120,3 +120,24 @@ public class TaskSkuEditDto
     public string Unit { get; set; } = string.Empty;
     public decimal BasePriceBgn { get; set; }
 }
+
+public class CustomOfferPhaseDto
+{
+    public string PhaseTitle { get; set; } = string.Empty;
+    public string CategoryName { get; set; } = string.Empty;
+    public Guid? CategoryId { get; set; }
+    public List<CustomOfferItemDto> Items { get; set; } = new();
+}
+
+public class CustomOfferItemDto
+{
+    public string SkuCode { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Unit { get; set; } = "м²";
+    public decimal Quantity { get; set; }
+    public decimal UnitPriceEur { get; set; }
+    public decimal TotalEur => Math.Round(Quantity * UnitPriceEur, 2);
+}
+
+
