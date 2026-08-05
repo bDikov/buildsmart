@@ -42,22 +42,25 @@ public class ProjectChatService : IProjectChatService
         if (user.Role == UserRoleTypes.Admin) return true;
         if (project.HomeownerId == user.Id) return true;
 
-        var jobPosts = await _unitOfWork.JobPosts.GetJobsByProjectIdAsync(project.Id);
-        if (jobPosts.Any(j => j.AssignedTradesmanId == user.Id))
+        if (_unitOfWork.JobPosts != null)
         {
-            return true;
-        }
-
-        if (user.Role == UserRoleTypes.Tradesman)
-        {
-            var tradesmanProfile = await _unitOfWork.TradesmanProfiles.GetByUserIdAsync(user.Id);
-            if (tradesmanProfile != null)
+            var jobPosts = await _unitOfWork.JobPosts.GetJobsByProjectIdAsync(project.Id);
+            if (jobPosts != null && jobPosts.Any(j => j.AssignedTradesmanId == user.Id))
             {
-                var bids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfile.Id);
-                var jobPostIds = jobPosts.Select(j => j.Id).ToHashSet();
-                if (bids.Any(b => jobPostIds.Contains(b.JobPostId)))
+                return true;
+            }
+
+            if (user.Role == UserRoleTypes.Tradesman && _unitOfWork.TradesmanProfiles != null)
+            {
+                var tradesmanProfile = await _unitOfWork.TradesmanProfiles.GetByUserIdAsync(user.Id);
+                if (tradesmanProfile != null && _unitOfWork.Bids != null)
                 {
-                    return true;
+                    var bids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfile.Id);
+                    var jobPostIds = jobPosts?.Select(j => j.Id).ToHashSet() ?? new HashSet<Guid>();
+                    if (bids != null && bids.Any(b => jobPostIds.Contains(b.JobPostId)))
+                    {
+                        return true;
+                    }
                 }
             }
         }
