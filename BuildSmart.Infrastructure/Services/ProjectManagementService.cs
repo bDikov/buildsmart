@@ -105,6 +105,7 @@ public class ProjectManagementService : IProjectManagementService
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+            _context.HomeownerProfiles.Add(homeowner.HomeownerProfile);
         }
 
         var project = new Project
@@ -251,6 +252,7 @@ public class ProjectManagementService : IProjectManagementService
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+            _context.HomeownerProfiles.Add(homeowner.HomeownerProfile);
         }
 
         var project = new Project
@@ -268,14 +270,40 @@ public class ProjectManagementService : IProjectManagementService
 
         _context.Projects.Add(project);
 
-        var defaultCategory = await _context.ServiceCategories.FirstOrDefaultAsync();
+        var allCategories = await _context.ServiceCategories.ToListAsync();
+        var defaultCategory = allCategories.FirstOrDefault();
+        var allSkus = await _context.ServiceSkus.ToListAsync();
+
         decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
         int phaseIndex = 0;
 
         foreach (var phase in phases)
         {
             phaseIndex++;
-            var categoryId = phase.CategoryId ?? defaultCategory?.Id ?? Guid.NewGuid();
+
+            Guid categoryId = phase.CategoryId ?? Guid.Empty;
+            if (categoryId == Guid.Empty && !string.IsNullOrWhiteSpace(phase.CategoryName))
+            {
+                var matchedCat = allCategories.FirstOrDefault(c =>
+                    c.Name.Equals(phase.CategoryName, StringComparison.OrdinalIgnoreCase) ||
+                    c.Name.Contains(phase.CategoryName, StringComparison.OrdinalIgnoreCase));
+                if (matchedCat != null)
+                {
+                    categoryId = matchedCat.Id;
+                }
+            }
+
+            if (categoryId == Guid.Empty)
+            {
+                if (defaultCategory != null)
+                {
+                    categoryId = defaultCategory.Id;
+                }
+                else
+                {
+                    throw new InvalidOperationException("No ServiceCategory available in database for project phase.");
+                }
+            }
 
             var jobPost = new JobPost
             {
@@ -308,7 +336,6 @@ public class ProjectManagementService : IProjectManagementService
                     tradesmanId = categoryTradesmanMap.Values.FirstOrDefault(v => v != Guid.Empty);
                 }
 
-
                 if (tradesmanId != Guid.Empty)
                 {
                     jobPost.AssignedTradesmanId = tradesmanId;
@@ -335,7 +362,6 @@ public class ProjectManagementService : IProjectManagementService
                 decimal tradesmanTotalEur = item.TotalEur;
                 decimal homeownerTotalEur = Math.Round(tradesmanTotalEur * markupFactor, 2);
 
-
                 var task = new JobTask
                 {
                     Id = Guid.NewGuid(),
@@ -350,21 +376,23 @@ public class ProjectManagementService : IProjectManagementService
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                // Match existing SKU by SkuCode if present
-                var matchingSku = await _context.ServiceSkus.FirstOrDefaultAsync(s => s.SkuCode == item.SkuCode);
+                // Match existing SKU by SkuCode if present, or category SKU, or any existing SKU fallback
+                var matchingSku = allSkus.FirstOrDefault(s => s.SkuCode == item.SkuCode)
+                               ?? allSkus.FirstOrDefault(s => s.ServiceCategoryId == categoryId)
+                               ?? allSkus.FirstOrDefault();
 
-                var skuItem = new TaskSkuItem
-                {
-                    Id = Guid.NewGuid(),
-                    JobTaskId = task.Id,
-                    ServiceSkuId = matchingSku?.Id ?? Guid.Empty,
-                    Quantity = item.Quantity,
-                    EstimatedPrice = tradesmanTotalEur,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
                 if (matchingSku != null)
                 {
+                    var skuItem = new TaskSkuItem
+                    {
+                        Id = Guid.NewGuid(),
+                        JobTaskId = task.Id,
+                        ServiceSkuId = matchingSku.Id,
+                        Quantity = item.Quantity,
+                        EstimatedPrice = tradesmanTotalEur,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
                     task.SkuItems.Add(skuItem);
                     _context.TaskSkuItems.Add(skuItem);
                 }
@@ -391,7 +419,6 @@ public class ProjectManagementService : IProjectManagementService
 
     public async Task AssignTradesmanToCategoryAsync(Guid projectId, Guid jobPostId, Guid tradesmanUserId, Guid adminUserId)
     {
-
         var jobPost = await _context.JobPosts
             .Include(j => j.Project)
             .FirstOrDefaultAsync(j => j.Id == jobPostId && j.ProjectId == projectId);
@@ -409,10 +436,14 @@ public class ProjectManagementService : IProjectManagementService
         var existingAssignment = await _context.CategoryTradesmanAssignments
             .FirstOrDefaultAsync(a => a.ProjectId == projectId && a.JobPostId == jobPostId);
 
+        Guid assignerId = (adminUserId != Guid.Empty && await _context.Users.AnyAsync(u => u.Id == adminUserId))
+            ? adminUserId
+            : (jobPost.Project?.HomeownerId ?? tradesman.Id);
+
         if (existingAssignment != null)
         {
             existingAssignment.TradesmanId = tradesman.Id;
-            existingAssignment.AssignedByAdminId = adminUserId;
+            existingAssignment.AssignedByAdminId = assignerId;
             existingAssignment.UpdatedAt = DateTime.UtcNow;
         }
         else
@@ -424,7 +455,7 @@ public class ProjectManagementService : IProjectManagementService
                 JobPostId = jobPostId,
                 ServiceCategoryId = jobPost.ServiceCategoryId,
                 TradesmanId = tradesman.Id,
-                AssignedByAdminId = adminUserId,
+                AssignedByAdminId = assignerId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });
@@ -458,6 +489,10 @@ public class ProjectManagementService : IProjectManagementService
         if (newStatus == ProjectStatus.Active)
         {
             project.Publish();
+        }
+        else if (newStatus == ProjectStatus.Draft)
+        {
+            project.ResetToDraft();
         }
         else if (newStatus == ProjectStatus.Completed)
         {

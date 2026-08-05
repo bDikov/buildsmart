@@ -49,8 +49,9 @@
                 <div class="form-group">
                     <label class="form-label">Select Tradesman Offer Preset *</label>
                     <select class="form-input" value="@SelectedOfferPresetKey" @onchange="OnOfferPresetChanged">
-                        <option value="lyulin">Ремонт и боядисване — с. Люлин (Оферта #1, €23,397.62 EUR)</option>
+                        <option value="lyulin">Ремонт, Електро и Извозване — с. Люлин (Пълен пакет, €25,347.62 EUR)</option>
                     </select>
+
 
                 </div>
 
@@ -640,7 +641,17 @@
         {
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "1. Предпазни и подготвителни работи",
+                PhaseTitle = "1. Хамалски услуги и извозване на отпадъци",
+                CategoryName = "Извозване и Хамали",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "WASTE-TRUCK", Title = "Извозване на строителни отпадъци с камиончета", Description = "Изхвърляне и транспорт на боклуци с камиончета (3 курса)", Unit = "курс", Quantity = 3, UnitPriceEur = 150.00m },
+                    new CustomOfferItemDto { SkuCode = "WASTE-CONT", Title = "Наемане и товарене на строителни контейнери", Description = "Контейнери за отпадъци с включено товарене (2 контейнера)", Unit = "контейнер", Quantity = 2, UnitPriceEur = 150.00m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "2. Предпазни и подготвителни работи",
                 CategoryName = "Подготвителни работи",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -651,7 +662,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "2. Демонтажни работи и премахване на тапети",
+                PhaseTitle = "3. Демонтажни работи и премахване на тапети",
                 CategoryName = "Демонтаж",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -661,7 +672,18 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "3. Ремонт на пукнатини и укрепване",
+                PhaseTitle = "4. Частични електроуслуги (труд без материали)",
+                CategoryName = "Електроуслуги",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "ELEC-OUTLET", Title = "Местене и монтаж на нови контакти", Description = "Местене и добавяне на 2-3 нови контакта (труд без кабели и клеми)", Unit = "бр", Quantity = 3, UnitPriceEur = 100.00m },
+                    new CustomOfferItemDto { SkuCode = "ELEC-LED", Title = "Монтаж на LED лайсна под мивка (8 метра)", Description = "Окабеляване и монтаж на индиректно LED осветление/лайсна под мивка", Unit = "лм", Quantity = 8, UnitPriceEur = 50.00m },
+                    new CustomOfferItemDto { SkuCode = "ELEC-ROUTING", Title = "Частична ревизия и прокаране на нови трасета", Description = "Прокаране на захранващи трасета и връзки (труд)", Unit = "услуга", Quantity = 1, UnitPriceEur = 500.00m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "5. Ремонт на пукнатини и укрепване",
                 CategoryName = "Ремонт пукнатини",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -672,7 +694,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "4. Шпакловане, грундиране и шлайфане",
+                PhaseTitle = "6. Шпакловане, грундиране и шлайфане",
                 CategoryName = "Шпакловка",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -683,7 +705,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "5. Обръщане на прозорци и врати",
+                PhaseTitle = "7. Обръщане на прозорци и врати",
                 CategoryName = "Обръщания",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -692,7 +714,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "6. Интериорно боядисване",
+                PhaseTitle = "8. Интериорно боядисване",
                 CategoryName = "Боядисване",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -701,7 +723,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "7. Почистване и предаване на обекта",
+                PhaseTitle = "9. Почистване и предаване на обекта",
                 CategoryName = "Почистване",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -710,6 +732,7 @@
             }
         };
     }
+
 
 }
 

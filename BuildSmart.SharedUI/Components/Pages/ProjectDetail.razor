@@ -12,6 +12,7 @@
 @inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
 @inject IJSRuntime JSRuntime
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
 
 <ErrorBoundary>
     <ChildContent>
@@ -37,13 +38,28 @@
                     </button>
                     <div class="header-content">
                         <h2 class="page-title">@ViewModel.Project.Title</h2>
-                        <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@GetProjectDisplayStatus()</span>
-                        @if (ShouldShowConsultationBadge())
-                        {
-                            <span class="status-badge status-underreview ms-2" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
-                                @(IsBulgarian() ? "Заявена Консултация" : "Consultation Requested")
-                            </span>
-                        }
+                        <div class="d-flex align-items-center gap-2 flex-wrap mt-1">
+                            <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@GetProjectDisplayStatus()</span>
+                            @if (ShouldShowConsultationBadge())
+                            {
+                                <span class="status-badge status-underreview" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
+                                    @(IsBulgarian() ? "Заявена Консултация" : "Consultation Requested")
+                                </span>
+                            }
+                            @if (_isAdmin)
+                            {
+                                <div class="admin-status-changer d-inline-flex align-items-center gap-1 ms-2" style="background: var(--bg-card-alt); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                                    <span class="text-muted" style="font-size: 0.75rem; font-weight: 600;">Status (Admin):</span>
+                                    <select class="bs-select py-1 px-2" style="font-size: 0.8rem; width: auto; font-weight: 600;" value="@ViewModel.Project.Status.ToString()" @onchange="OnAdminChangeProjectStatus">
+                                        <option value="Draft">Draft</option>
+                                        <option value="UnderReview">Under Review</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Archived">Archived</option>
+                                    </select>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
 
@@ -428,6 +444,26 @@
         else
         {
             SubmitProjectToAdmin();
+        }
+    }
+
+    private async Task OnAdminChangeProjectStatus(ChangeEventArgs e)
+    {
+        if (e.Value == null || ViewModel.Project == null) return;
+        if (Enum.TryParse<BuildSmart.Core.Domain.Enums.ProjectStatus>(e.Value.ToString(), out var newStatus))
+        {
+            try
+            {
+                var token = await AuthService.GetTokenAsync();
+                var adminUserId = AuthService.GetUserIdFromToken(token) ?? Guid.Empty;
+                await ProjectService.SetProjectStatusAsync(ViewModel.Project.Id, newStatus, adminUserId);
+                await ViewModel.LoadProjectAsync(ViewModel.Project.Id);
+                await JSRuntime.InvokeVoidAsync("alert", $"Project status updated to {newStatus} successfully!");
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Failed to update project status: {ex.Message}");
+            }
         }
     }
 

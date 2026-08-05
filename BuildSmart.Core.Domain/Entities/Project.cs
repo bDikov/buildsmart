@@ -60,6 +60,12 @@ public class Project : BaseEntity
         Status = ProjectStatus.Completed;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void ResetToDraft()
+    {
+        Status = ProjectStatus.Draft;
+        UpdatedAt = DateTime.UtcNow;
+    }
     
     public void Archive()
     {
