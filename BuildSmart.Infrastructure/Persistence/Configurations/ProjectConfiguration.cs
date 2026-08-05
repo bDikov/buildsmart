@@ -25,6 +25,10 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.Property(p => p.AdminMarkupPercentage)
+            .HasPrecision(18, 2)
+            .HasDefaultValue(20.0m);
+
         builder.HasOne(p => p.Homeowner)
             .WithMany()
             .HasForeignKey(p => p.HomeownerId)

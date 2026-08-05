@@ -18,6 +18,43 @@
         <h3 id="next-steps-section" class="section-title mt-4">@Loc["ProjectDetail_NextSteps_Title"]</h3>
         
         <div class="next-steps-grid">
+            @if (Project.Status == ProjectStatus.Active || Project.Status == ProjectStatus.Completed)
+            {
+                <!-- Work Board (Kanban) Card -->
+                <div class="bs-card next-step-card highlighted-cta" style="border-left: 4px solid var(--color-success);">
+                    <div class="d-flex flex-column align-items-center text-center h-100">
+                        <h4 class="fw-bold mb-2 cta-title-featured" style="color: var(--text-primary); font-size: 1.3rem;">
+                            📋 Active Work Board
+                        </h4>
+                        <p class="mb-4" style="color: var(--text-secondary); font-size: 0.98rem; line-height: 1.5;">
+                            Track task execution, monitor assigned tradesmen, and approve completed work items.
+                        </p>
+                        <div class="mt-auto w-100">
+                            <button class="highlighted-cta-btn w-100 py-2" @onclick='() => NavManager.NavigateTo($"/projects/{Project.Id}/kanban")'>
+                                Open Work Board (Kanban)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Board Card -->
+                <div class="bs-card next-step-card" style="border-left: 4px solid var(--color-primary);">
+                    <div class="d-flex flex-column align-items-center text-center h-100">
+                        <h4 class="fw-bold mb-2" style="color: var(--text-primary); font-size: 1.25rem;">
+                            💶 Payments & Financials
+                        </h4>
+                        <p class="mb-4" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+                            View upcoming task costs, awaiting payment approvals, and completed milestones.
+                        </p>
+                        <div class="mt-auto w-100">
+                            <button class="bs-btn-primary w-100 py-2" @onclick='() => NavManager.NavigateTo($"/projects/{Project.Id}/payments")'>
+                                View Financial Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
             @if (isMasterOfferReady)
             {
                 <!-- Download Offer Card -->

@@ -28,18 +28,53 @@ public class ProjectChatService : IProjectChatService
         if (project == null) throw new ArgumentException("Project not found");
 
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (project.HomeownerId != userId && user?.Role != Core.Domain.Enums.UserRoleTypes.Admin)
+        if (!await IsUserAuthorizedForProjectAsync(project, user))
         {
-            throw new UnauthorizedAccessException("Not authorized to view project messages.");
+                throw new UnauthorizedAccessException("Not authorized to view project messages.");
         }
 
         return await _unitOfWork.ProjectMessages.GetMessagesPaginatedAsync(projectId, offset, limit);
+    }
+
+    private async Task<bool> IsUserAuthorizedForProjectAsync(Project project, User? user)
+    {
+        if (user == null) return false;
+        if (user.Role == UserRoleTypes.Admin) return true;
+        if (project.HomeownerId == user.Id) return true;
+
+        var jobPosts = await _unitOfWork.JobPosts.GetJobsByProjectIdAsync(project.Id);
+        if (jobPosts.Any(j => j.AssignedTradesmanId == user.Id))
+        {
+            return true;
+        }
+
+        if (user.Role == UserRoleTypes.Tradesman)
+        {
+            var tradesmanProfile = await _unitOfWork.TradesmanProfiles.GetByUserIdAsync(user.Id);
+            if (tradesmanProfile != null)
+            {
+                var bids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfile.Id);
+                var jobPostIds = jobPosts.Select(j => j.Id).ToHashSet();
+                if (bids.Any(b => jobPostIds.Contains(b.JobPostId)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public async Task<ProjectMessage> SendMessageAsync(Guid projectId, Guid senderId, string messageText)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(projectId);
         if (project == null) throw new ArgumentException("Project not found");
+
+        var sender = await _unitOfWork.Users.GetByIdAsync(senderId);
+        if (!await IsUserAuthorizedForProjectAsync(project, sender))
+        {
+            throw new UnauthorizedAccessException("Not authorized to send project messages.");
+        }
 
         var message = new ProjectMessage
         {
@@ -52,7 +87,6 @@ public class ProjectChatService : IProjectChatService
         await _unitOfWork.ProjectMessages.AddAsync(message);
         await _unitOfWork.SaveChangesAsync();
 
-        var sender = await _unitOfWork.Users.GetByIdAsync(senderId);
         message.Sender = sender!;
 
         await _notificationService.NotifyProjectGroupAsync(projectId, "ReceiveProjectMessage", new

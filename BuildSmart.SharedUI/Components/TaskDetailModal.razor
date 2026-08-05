@@ -1,0 +1,793 @@
+@namespace BuildSmart.SharedUI.Components
+@using BuildSmart.Core.Application.DTOs
+@using BuildSmart.Core.Domain.Enums
+@using TaskStatus = BuildSmart.Core.Domain.Enums.TaskStatus
+@inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
+@inject BuildSmart.SharedUI.Services.IAlertService AlertService
+
+@if (IsOpen && Task != null)
+{
+    <div class="modal-backdrop-custom" @onclick="Close">
+        <div class="modal-card-custom" @onclick:stopPropagation="true">
+            <div class="modal-header-custom">
+                <div class="header-left">
+                    <span class="category-pill">@Task.CategoryName</span>
+                    @if (IsEditing)
+                    {
+                        <input type="text" class="form-control-title-edit" @bind="EditTitle" placeholder="Task Title..." />
+                    }
+                    else
+                    {
+                        <h3 class="task-title">@Task.Title</h3>
+                    }
+                </div>
+                <div class="header-right-actions">
+                    @if (UserRole == UserRoleTypes.Admin && !IsEditing)
+                    {
+                        <button class="btn-edit-admin" title="Edit Task & SKUs (Admin)" @onclick="EnableEditMode">
+                            ✏️ Edit Task (Admin)
+                        </button>
+                    }
+                    <button class="close-btn" @onclick="Close" aria-label="Close modal">&times;</button>
+                </div>
+            </div>
+
+            <div class="modal-body-custom">
+                @if (IsEditing)
+                {
+                    <div class="edit-task-form">
+                        <div class="form-group">
+                            <label class="form-label-bold">Task Title</label>
+                            <input type="text" class="form-control" @bind="EditTitle" placeholder="e.g. Install Electrical Panels" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label-bold">Description & Scope</label>
+                            <textarea class="form-control" rows="3" @bind="EditDescription" placeholder="Scope details..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label-bold">Total Estimated Value (€)</label>
+                            <div class="input-with-calc">
+                                <input type="number" step="0.01" class="form-control" @bind="EditEstimatedPrice" />
+                                <button class="btn-recalc-sm" type="button" @onclick="RecalculateTotals" title="Recalculate total sum from SKUs">
+                                    Auto-Calculate from SKUs
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Editable SKU Item Breakdown Table -->
+                        <div class="section-container">
+                            <div class="sku-header-row">
+                                <h4 class="section-title">SKU Line Items & Quantities</h4>
+                                <button class="btn-add-sku-sm" type="button" @onclick="AddNewSkuRow">
+                                    + Add SKU Line Item
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="sku-edit-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 110px;">Code</th>
+                                            <th>Item Name</th>
+                                            <th style="width: 100px;">Quantity</th>
+                                            <th style="width: 80px;">Unit</th>
+                                            <th style="width: 120px;">Price (BGN)</th>
+                                            <th style="width: 110px;">Subtotal (EUR)</th>
+                                            <th style="width: 40px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!EditableSkus.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="7" class="empty-sku-msg">No SKU items. Click "+ Add SKU Line Item" above to add materials/labor.</td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var sku in EditableSkus)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <input type="text" class="edit-cell-input" @bind="sku.SkuCode" placeholder="Code" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="edit-cell-input" @bind="sku.SkuTitle" placeholder="Item Name" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" step="0.1" class="edit-cell-input" @bind="sku.Quantity" @oninput="RecalculateTotals" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="edit-cell-input" @bind="sku.Unit" placeholder="m², pcs" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" step="0.01" class="edit-cell-input" @bind="sku.BasePriceBgn" @oninput="RecalculateTotals" />
+                                                    </td>
+                                                    <td class="price-cell">
+                                                        €@(((sku.BasePriceBgn / 1.95583m) * sku.Quantity).ToString("F2"))
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn-remove-sku" type="button" title="Remove SKU" @onclick="() => RemoveSkuRow(sku)">&times;</button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="status-summary-bar">
+                        <div class="summary-item">
+                            <span class="summary-label">Status</span>
+                            <span class="status-badge status-@Task.Status.ToString().ToLower()">@GetStatusText(Task.Status)</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Assigned Tradesman</span>
+                            <span class="summary-value">@(Task.AssignedTradesmanName ?? "Unassigned")</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">
+                                @(UserRole == UserRoleTypes.Tradesman ? "Negotiated Payout" : (UserRole == UserRoleTypes.Admin ? "Client Price (Tradesman Payout)" : "Estimated Value"))
+                            </span>
+                            <span class="summary-value price-highlight">
+                                @if (UserRole == UserRoleTypes.Admin)
+                                {
+                                    <span>€@Task.EstimatedPrice.ToString("F2") <small style="font-size: 0.8rem; font-weight: normal;">(Payout: €@Task.TradesmanPrice.ToString("F2"))</small></span>
+                                }
+                                else if (UserRole == UserRoleTypes.Tradesman)
+                                {
+                                    <span>€@Task.TradesmanPrice.ToString("F2")</span>
+                                }
+                                else
+                                {
+                                    <span>€@Task.EstimatedPrice.ToString("F2")</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="section-container">
+                        <h4 class="section-title">Description & Scope</h4>
+                        <p class="description-text">@Task.Description</p>
+                    </div>
+
+                    @if (Task.Skus.Any())
+                    {
+                        <div class="section-container">
+                            <h4 class="section-title">SKU Item Breakdown</h4>
+                            <div class="table-responsive">
+                                <table class="sku-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Item Name</th>
+                                            <th>Quantity</th>
+                                            @if (UserRole != UserRoleTypes.Homeowner)
+                                            {
+                                                <th>Base (BGN)</th>
+                                            }
+                                            <th>Subtotal (EUR)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var sku in Task.Skus)
+                                        {
+                                            <tr>
+                                                <td class="code-cell">@sku.SkuCode</td>
+                                                <td>@sku.SkuTitle</td>
+                                                <td>@sku.Quantity @sku.Unit</td>
+                                                @if (UserRole != UserRoleTypes.Homeowner)
+                                                {
+                                                    <td>@sku.BasePriceBgn.ToString("F2") BGN</td>
+                                                }
+                                                <td class="price-cell">€@sku.SubtotalEur.ToString("F2")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Task.AcceptanceCriteria.Any())
+                    {
+                        <div class="section-container">
+                            <h4 class="section-title">Acceptance Criteria</h4>
+                            <ul class="criteria-list">
+                                @foreach (var item in Task.AcceptanceCriteria)
+                                {
+                                    <li>
+                                        <span class="check-icon">&#10003;</span>
+                                        <span>@item.Description</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    @if (Task.PaymentInfo != null)
+                    {
+                        <div class="section-container payment-box">
+                            <h4 class="section-title">Payment Details</h4>
+                            <div class="payment-grid">
+                                <div>
+                                    <span class="summary-label">Payment Status</span>
+                                    <span class="payment-badge payment-@Task.PaymentInfo.Status.ToString().ToLower()">@Task.PaymentInfo.Status</span>
+                                </div>
+                                <div>
+                                    <span class="summary-label">Final Amount</span>
+                                    <span class="summary-value price-highlight">€@Task.PaymentInfo.FinalAmount.ToString("F2")</span>
+                                </div>
+                                @if (Task.PaymentInfo.PaidAt.HasValue)
+                                {
+                                    <div>
+                                        <span class="summary-label">Paid Date & Time</span>
+                                        <span class="summary-value">@Task.PaymentInfo.PaidAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</span>
+                                    </div>
+                                    <div>
+                                        <span class="summary-label">Verified By Admin</span>
+                                        <span class="summary-value">@(Task.PaymentInfo.PaidByAdminName ?? "System Admin")</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Comments & Discussion Stream -->
+                    <div class="section-container">
+                        <h4 class="section-title">Comments & Discussion (@Task.Comments.Count)</h4>
+                        <div class="comments-stream">
+                            @if (!Task.Comments.Any())
+                            {
+                                <p class="empty-comments-text">No comments yet. Start the conversation below.</p>
+                            }
+                            else
+                            {
+                                @foreach (var comment in Task.Comments)
+                                {
+                                    <div class="comment-card @(comment.IsSystemNote ? "system-rejection-note" : "")">
+                                        <div class="comment-header">
+                                            <span class="comment-author">@comment.AuthorName</span>
+                                            <span class="role-tag">@comment.AuthorRole</span>
+                                            <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                                        </div>
+                                        <div class="comment-body">
+                                            @comment.Content
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <div class="add-comment-box">
+                            <textarea class="comment-input" rows="3" placeholder="Write a comment or project update..." @bind="NewCommentText"></textarea>
+                            <div class="comment-actions">
+                                <button class="btn-primary-sm" @onclick="PostComment" disabled="@string.IsNullOrWhiteSpace(NewCommentText)">Post Comment</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rejection Reason Input Modal Overlay -->
+                    @if (IsRejecting)
+                    {
+                        <div class="rejection-box">
+                            <h4 class="section-title text-danger">Rejection Reason Required</h4>
+                            <textarea class="comment-input" rows="2" placeholder="Explain why the task completion was rejected..." @bind="RejectionReason"></textarea>
+                            <div class="rejection-actions">
+                                <button class="btn-danger-sm" @onclick="ConfirmRejection" disabled="@string.IsNullOrWhiteSpace(RejectionReason)">Confirm Rejection</button>
+                                <button class="btn-secondary-sm" @onclick="() => IsRejecting = false">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="modal-footer-custom">
+                @if (IsEditing)
+                {
+                    <button class="btn-action btn-approve" disabled="@IsSubmitting" @onclick="SaveTaskChanges">
+                        @(IsSubmitting ? "Saving..." : "Save Task & SKU Changes")
+                    </button>
+                    <button class="btn-secondary" @onclick="CancelEdit">Cancel Edit</button>
+                }
+                else
+                {
+                    @if (UserRole == UserRoleTypes.Tradesman && Task.AssignedTradesmanId == CurrentUserId)
+                    {
+                        if (Task.Status == TaskStatus.ToDo)
+                        {
+                            <button class="btn-action btn-start" @onclick="() => ChangeStatus(TaskStatus.InProgress)">Start Work</button>
+                        }
+                        else if (Task.Status == TaskStatus.InProgress)
+                        {
+                            <button class="btn-action btn-submit" @onclick="() => ChangeStatus(TaskStatus.AwaitingApproval)">Submit for Completion Approval</button>
+                        }
+                    }
+
+                    @if (UserRole == UserRoleTypes.Homeowner || UserRole == UserRoleTypes.Admin)
+                    {
+                        if (Task.Status == TaskStatus.AwaitingApproval)
+                        {
+                            <button class="btn-action btn-approve" @onclick="() => ChangeStatus(TaskStatus.Done)">Approve Completion (Mark Done)</button>
+                            <button class="btn-action btn-reject" @onclick="PromptRejection">Reject Completion</button>
+                        }
+                        else if (UserRole == UserRoleTypes.Admin && Task.Status != TaskStatus.Done)
+                        {
+                            <button class="btn-action btn-approve" @onclick="() => ChangeStatus(TaskStatus.Done)">Admin Direct Approve</button>
+                        }
+                    }
+
+                    <button class="btn-secondary" @onclick="Close">Close</button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .modal-backdrop-custom {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 1rem;
+    }
+
+    .modal-card-custom {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 850px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.25));
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .modal-header-custom {
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-left { display: flex; flex-direction: column; gap: 0.25rem; }
+    .header-right-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+    .category-pill {
+        font-size: var(--font-size-xs, 0.75rem);
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--color-primary);
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        width: fit-content;
+    }
+
+    .task-title {
+        font: var(--font-h4, 600 1.25rem/1.4 'Inter', sans-serif);
+        margin: 0.25rem 0 0 0;
+        color: var(--text-primary);
+    }
+
+    .btn-edit-admin {
+        background-color: var(--bg-card-alt);
+        color: var(--color-primary);
+        border: 1px solid var(--color-primary);
+        border-radius: 6px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s;
+    }
+    .btn-edit-admin:hover {
+        background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    .form-control-title-edit {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 0.3rem;
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.75rem;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.15s;
+    }
+    .close-btn:hover {
+        color: var(--text-primary);
+    }
+
+    .modal-body-custom {
+        padding: 1.5rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .edit-task-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-label-bold {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: block;
+    }
+    .form-control {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+    .form-control:focus { border-color: var(--color-primary); }
+
+    .input-with-calc { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-recalc-sm {
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .btn-recalc-sm:hover { color: var(--text-primary); border-color: var(--color-primary); }
+
+    .sku-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .btn-add-sku-sm {
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .sku-edit-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+    .sku-edit-table th {
+        background-color: var(--bg-card-alt);
+        color: var(--text-secondary);
+        padding: 0.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+    }
+    .sku-edit-table td {
+        padding: 0.4rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+    .edit-cell-input {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 0.3rem 0.4rem;
+        font-size: 0.85rem;
+        width: 100%;
+        outline: none;
+    }
+    .edit-cell-input:focus { border-color: var(--color-primary); }
+    .btn-remove-sku {
+        background: transparent;
+        border: none;
+        color: #ef4444;
+        font-weight: 700;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0 0.4rem;
+    }
+    .empty-sku-msg { text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.85rem; }
+
+    .status-summary-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        background-color: var(--bg-card-alt);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .summary-item { display: flex; flex-direction: column; gap: 0.25rem; }
+    .summary-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .summary-value { font-weight: 600; color: var(--text-primary); }
+    .price-highlight { color: var(--color-success, #059669); }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-todo { background: rgba(156, 163, 175, 0.15); color: #9ca3af; }
+    .status-inprogress { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .status-awaitingapproval { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .status-done { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+    .section-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .section-title { font: var(--font-h6, 600 0.95rem/1.3 'Inter', sans-serif); margin: 0; color: var(--text-primary); }
+    .description-text { font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin: 0; }
+
+    .table-responsive { overflow-x: auto; }
+    .sku-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .sku-table th { background-color: var(--bg-card-alt); color: var(--text-muted); text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border-color); font-weight: 600; }
+    .sku-table td { padding: 0.5rem; border-bottom: 1px solid var(--border-color); }
+    .code-cell { font-family: monospace; color: var(--color-primary); }
+    .price-cell { font-weight: 600; color: var(--text-primary); }
+
+    .criteria-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+    .criteria-list li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary); }
+    .check-icon { color: var(--color-success, #10b981); font-weight: bold; }
+
+    .payment-box { background-color: var(--bg-card-alt); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); }
+    .payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+    .payment-badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .payment-awaitingpayment { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .payment-paid { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+    .comments-stream { display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem; }
+    .empty-comments-text { font-size: 0.85rem; color: var(--text-muted); margin: 0; font-style: italic; }
+    .comment-card { background-color: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; }
+    .system-rejection-note { border-left: 3px solid #ef4444; background-color: rgba(239, 68, 68, 0.05); }
+    .comment-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
+    .comment-author { font-weight: 600; color: var(--text-primary); }
+    .role-tag { background: rgba(99, 102, 241, 0.1); color: var(--color-primary); padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
+    .comment-date { color: var(--text-muted); margin-left: auto; }
+    .comment-body { font-size: 0.85rem; color: var(--text-primary); line-height: 1.4; white-space: pre-wrap; }
+
+    .add-comment-box { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    .comment-input { background-color: var(--bg-card-alt); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; font-size: 0.85rem; width: 100%; outline: none; }
+    .comment-input:focus { border-color: var(--color-primary); }
+    .comment-actions { display: flex; justify-content: flex-end; }
+
+    .modal-footer-custom { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem; background-color: var(--bg-card-alt); }
+    .btn-action { padding: 0.5rem 1.25rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+    .btn-action:hover { opacity: 0.9; }
+    .btn-start { background-color: var(--color-primary); color: white; }
+    .btn-submit { background-color: #f59e0b; color: white; }
+    .btn-approve { background-color: #10b981; color: white; }
+    .btn-reject { background-color: #ef4444; color: white; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.5rem 1.1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+    .btn-secondary:hover { background-color: var(--bg-card); }
+
+    .btn-primary-sm, .btn-danger-sm, .btn-secondary-sm { padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; }
+    .btn-primary-sm { background-color: var(--color-primary); color: white; }
+    .btn-danger-sm { background-color: #ef4444; color: white; }
+    .btn-secondary-sm { background: transparent; color: var(--text-muted); }
+
+    .rejection-box { background-color: rgba(239, 68, 68, 0.08); border: 1px solid #ef4444; padding: 1rem; border-radius: 6px; display: flex; flex-direction: column; gap: 0.5rem; }
+    .rejection-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .text-danger { color: #ef4444; }
+</style>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public KanbanTaskCardDto? Task { get; set; }
+    [Parameter] public Guid CurrentUserId { get; set; }
+    [Parameter] public UserRoleTypes UserRole { get; set; }
+    [Parameter] public EventCallback OnTaskUpdated { get; set; }
+    [Parameter] public EventCallback OnClosed { get; set; }
+
+    private string NewCommentText { get; set; } = string.Empty;
+    private bool IsRejecting { get; set; } = false;
+    private string RejectionReason { get; set; } = string.Empty;
+
+    private bool IsEditing { get; set; } = false;
+    private bool IsSubmitting { get; set; } = false;
+    private string EditTitle { get; set; } = string.Empty;
+    private string EditDescription { get; set; } = string.Empty;
+    private decimal EditEstimatedPrice { get; set; }
+    private List<TaskSkuEditDto> EditableSkus { get; set; } = new();
+
+    private void EnableEditMode()
+    {
+        if (Task == null) return;
+        EditTitle = Task.Title;
+        EditDescription = Task.Description;
+        EditEstimatedPrice = Task.Skus.Any() ? Math.Round(Task.Skus.Sum(s => s.SubtotalEur), 2) : Task.EstimatedPrice;
+        EditableSkus = Task.Skus.Select(s => new TaskSkuEditDto
+        {
+            SkuId = s.SkuId,
+            SkuCode = s.SkuCode,
+            SkuTitle = s.SkuTitle,
+            Quantity = s.Quantity,
+            Unit = s.Unit,
+            BasePriceBgn = s.BasePriceBgn
+        }).ToList();
+        IsEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        IsEditing = false;
+    }
+
+    private void AddNewSkuRow()
+    {
+        EditableSkus.Add(new TaskSkuEditDto
+        {
+            SkuCode = $"SKU-{Guid.NewGuid().ToString()[..4].ToUpper()}",
+            SkuTitle = "New Material / Labor Item",
+            Quantity = 10,
+            Unit = "m²",
+            BasePriceBgn = 20m
+        });
+        RecalculateTotals();
+    }
+
+    private void RemoveSkuRow(TaskSkuEditDto item)
+    {
+        EditableSkus.Remove(item);
+        RecalculateTotals();
+    }
+
+    private void RecalculateTotals()
+    {
+        EditEstimatedPrice = Math.Round(EditableSkus.Sum(s => (s.BasePriceBgn / 1.95583m) * s.Quantity), 2);
+    }
+
+    private async Task SaveTaskChanges()
+    {
+        if (Task == null) return;
+        if (string.IsNullOrWhiteSpace(EditTitle))
+        {
+            await AlertService.DisplayAlert("Validation Error", "Task title cannot be empty.", "OK");
+            return;
+        }
+
+        IsSubmitting = true;
+        try
+        {
+            await ProjectService.UpdateTaskDetailsAndSkusAsync(
+                Task.TaskId,
+                EditTitle,
+                EditDescription,
+                EditEstimatedPrice,
+                EditableSkus,
+                CurrentUserId);
+
+            IsEditing = false;
+            await OnTaskUpdated.InvokeAsync();
+            await AlertService.DisplayAlert("Task Saved", "Task details and SKU breakdown updated successfully.", "OK");
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Save Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private async Task Close()
+    {
+        IsEditing = false;
+        IsRejecting = false;
+        RejectionReason = string.Empty;
+        await OnClosed.InvokeAsync();
+    }
+
+    private string GetStatusText(TaskStatus status)
+    {
+        return status switch
+        {
+            TaskStatus.ToDo => "To Do",
+            TaskStatus.InProgress => "In Progress",
+            TaskStatus.AwaitingApproval => "Awaiting Approval",
+            TaskStatus.Done => "Done",
+            _ => status.ToString()
+        };
+    }
+
+    private async Task ChangeStatus(TaskStatus newStatus)
+    {
+        if (Task == null) return;
+        try
+        {
+            await ProjectService.UpdateTaskStatusAsync(Task.TaskId, newStatus, CurrentUserId, null);
+            await OnTaskUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Status Error", ex.Message, "OK");
+        }
+    }
+
+    private void PromptRejection()
+    {
+        IsRejecting = true;
+    }
+
+    private async Task ConfirmRejection()
+    {
+        if (Task == null || string.IsNullOrWhiteSpace(RejectionReason)) return;
+
+        try
+        {
+            await ProjectService.UpdateTaskStatusAsync(Task.TaskId, TaskStatus.InProgress, CurrentUserId, RejectionReason);
+            IsRejecting = false;
+            RejectionReason = string.Empty;
+            await OnTaskUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Rejection Error", ex.Message, "OK");
+        }
+    }
+
+    private async Task PostComment()
+    {
+        if (Task == null || string.IsNullOrWhiteSpace(NewCommentText)) return;
+
+        try
+        {
+            await ProjectService.AddTaskCommentAsync(Task.TaskId, CurrentUserId, NewCommentText, null);
+            NewCommentText = string.Empty;
+            await OnTaskUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Comment Error", ex.Message, "OK");
+        }
+    }
+}

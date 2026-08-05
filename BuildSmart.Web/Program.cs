@@ -96,6 +96,7 @@ builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailVerificationService, BuildSmart.Infrastructure.Services.EmailVerificationService>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailService, BuildSmart.Infrastructure.Services.EmailService>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
+builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IProjectManagementService, BuildSmart.Infrastructure.Services.ProjectManagementService>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<AuthHeaderHandler>();

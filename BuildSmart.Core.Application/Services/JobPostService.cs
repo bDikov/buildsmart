@@ -301,8 +301,8 @@ public class JobPostService : IJobPostService
 		var jobPost = await _unitOfWork.JobPosts.GetByIdWithTasksAsync(jobPostId)
 			?? throw new ArgumentException("Job post not found");
 
-	jobPost.UpdateTasks(tasks);
-	jobPost.SubmitForScopeGeneration();
+		jobPost.UpdateTasks(tasks);
+		jobPost.SubmitForScopeGeneration();
 
 		_unitOfWork.JobPosts.Update(jobPost);
 
@@ -320,8 +320,8 @@ public class JobPostService : IJobPostService
 
 		await _unitOfWork.SaveChangesAsync();
 
-	// Enqueue the AI pricing background job to run off the main thread
-	await _scopeGenerationQueue.QueuePricingUpdateAsync(jobPostId, CancellationToken.None);
+		// Enqueue the AI pricing background job to run off the main thread
+		await _scopeGenerationQueue.QueuePricingUpdateAsync(jobPostId, CancellationToken.None);
 	}
 
 	public async Task SaveDraftAsync(Guid jobPostId, string jobDetailsJson, string? description, string? location, Amount? estimatedBudget)
@@ -400,7 +400,6 @@ public class JobPostService : IJobPostService
 			jobPost.SubmitForScopeGeneration();
 		}
 
-
 		_unitOfWork.JobPosts.Update(jobPost);
 		await _unitOfWork.SaveChangesAsync();
 
@@ -422,7 +421,7 @@ public class JobPostService : IJobPostService
 			// Queue for background processing
 			var jobId = await _scopeGenerationQueue.QueueBackgroundWorkItemAsync(jobPost.Id, CancellationToken.None);
 			jobPost.MarkScopeGenerationQueued(jobId, jobPost.JobDetails);
-			
+
 			_unitOfWork.JobPosts.Update(jobPost);
 			await _unitOfWork.SaveChangesAsync();
 		}
@@ -465,8 +464,8 @@ public class JobPostService : IJobPostService
 								var qText = "Unknown Question";
 								if (q.TryGetProperty("text", out var textProp))
 								{
-									qText = textProp.ValueKind == System.Text.Json.JsonValueKind.String 
-										? textProp.GetString() 
+									qText = textProp.ValueKind == System.Text.Json.JsonValueKind.String
+										? textProp.GetString()
 										: (textProp.TryGetProperty("bg", out var bgProp) ? bgProp.GetString() : textProp.GetRawText());
 								}
 								throw new InvalidOperationException($"Missing mandatory answer for: {qText}");
@@ -579,8 +578,8 @@ public class JobPostService : IJobPostService
 		{
 			HomeownerId = bid.JobPost.Project.HomeownerId,
 			TradesmanProfileId = bid.TradesmanProfileId,
-            JobPostId = bid.JobPostId,
-            BidId = bid.Id,
+			JobPostId = bid.JobPostId,
+			BidId = bid.Id,
 			AgreedBidAmount = bid.Amount,
 			PlatformFeeHomeowner = feeHomeowner,
 			PlatformFeeTradesman = feeTradesman,
@@ -1050,14 +1049,14 @@ public class JobPostService : IJobPostService
 	public async Task<ILookup<Guid, JobPostQuestion>> GetQuestionsBatchByJobPostIdsAsync(IEnumerable<Guid> jobPostIds)
 	{
 		var questions = await _unitOfWork.JobPostQuestions.GetQueryable()
-			.Where(q => jobPostIds.Contains(q.JobPostId) && q.ParentQuestionId == null) // Top level questions only
-			.OrderBy(q => q.CreatedAt)
-			.Include(q => q.Author)
-			.Include(q => q.TradesmanProfile)
-				.ThenInclude(tp => tp!.User)
-			.Include(q => q.JobPost)
-				.ThenInclude(jp => jp.Project)
-			.ToListAsync();
+		.Where(q => jobPostIds.Contains(q.JobPostId) && q.ParentQuestionId == null) // Top level questions only
+		.OrderBy(q => q.CreatedAt)
+		.Include(q => q.Author)
+		.Include(q => q.TradesmanProfile)
+			.ThenInclude(tp => tp!.User)
+		.Include(q => q.JobPost)
+			.ThenInclude(jp => jp.Project)
+		.ToListAsync();
 		return questions.ToLookup(q => q.JobPostId);
 	}
 
@@ -1113,8 +1112,8 @@ public class JobPostService : IJobPostService
 		var maxRequests = int.TryParse(limitStr, out var limitVal) ? limitVal : 20;
 
 		var now = DateTime.UtcNow;
-		if (user.LastAiRequestDate == null || 
-			user.LastAiRequestDate.Value.Month != now.Month || 
+		if (user.LastAiRequestDate == null ||
+			user.LastAiRequestDate.Value.Month != now.Month ||
 			user.LastAiRequestDate.Value.Year != now.Year)
 		{
 			// Reset the request count for the new month

@@ -296,9 +296,11 @@ public class Query
 		var isAdmin = claimsPrincipal.IsInRole("Admin");
 		if (!isAdmin && project.HomeownerId != userId)
 		{
-			// Allow tradesmen who have placed a bid on this project's job posts to view it
-			var isBidder = await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId);
-			if (!isBidder)
+			var isAssigned = project.JobPosts.Any(j => j.AssignedTradesmanId == userId)
+				|| await context.CategoryTradesmanAssignments.AnyAsync(a => a.ProjectId == projectId && a.TradesmanId == userId)
+				|| await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId);
+
+			if (!isAssigned)
 			{
 				throw new GraphQLException("You are not authorized to view this project.");
 			}

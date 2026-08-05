@@ -1,0 +1,140 @@
+@using BuildSmart.Core.Application.DTOs
+@inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
+@inject BuildSmart.SharedUI.Services.IAlertService AlertService
+
+<div class="assigner-card">
+    <h4 class="assigner-title">Assign Tradesman to Category Packages</h4>
+    
+    @if (IsLoading)
+    {
+        <div class="spinner-border text-primary" role="status"></div>
+    }
+    else
+    {
+        <div class="packages-list">
+            @foreach (var sec in Sections)
+            {
+                <div class="package-row">
+                    <div class="package-info">
+                        <span class="category-name">@sec.CategoryName</span>
+                        <span class="current-assignee">
+                            Current: <strong>@(sec.AssignedTradesmanName ?? "Unassigned")</strong>
+                        </span>
+                    </div>
+                    
+                    <div class="assign-action">
+                        <select class="select-input" @onchange="(e) => AssignTradesman(sec.JobPostId, e.Value?.ToString())">
+                            <option value="">-- Select Tradesman --</option>
+                            @foreach (var t in Tradesmen)
+                            {
+                                <option value="@t.UserId" selected="@(sec.AssignedTradesmanId == t.UserId)">
+                                    @t.FullName (@t.Email)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .assigner-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1.25rem;
+        color: var(--text-primary);
+        box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    }
+    .assigner-title {
+        font: var(--font-h5, 600 1rem/1.4 'Inter', sans-serif);
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    .packages-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .package-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1rem;
+        background-color: var(--bg-card-alt);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+    .package-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    .category-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+    .current-assignee {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    .select-input {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        outline: none;
+    }
+    select.select-input option {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+    }
+</style>
+
+@code {
+    [Parameter] public Guid ProjectId { get; set; }
+    [Parameter] public Guid AdminUserId { get; set; }
+    [Parameter] public List<CategoryKanbanSectionDto> Sections { get; set; } = new();
+    [Parameter] public EventCallback OnAssignmentsChanged { get; set; }
+
+    private List<UserLookupDto> Tradesmen { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Tradesmen = await ProjectService.GetTradesmenLookupAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task AssignTradesman(Guid jobPostId, string? selectedUserIdStr)
+    {
+        if (string.IsNullOrEmpty(selectedUserIdStr) || !Guid.TryParse(selectedUserIdStr, out var tradesmanId))
+            return;
+
+        try
+        {
+            await ProjectService.AssignTradesmanToCategoryAsync(ProjectId, jobPostId, tradesmanId, AdminUserId);
+            await AlertService.DisplayAlert("Success", "Tradesman assigned successfully.", "OK");
+            await OnAssignmentsChanged.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Assignment Error", ex.Message, "OK");
+        }
+    }
+}

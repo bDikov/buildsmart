@@ -14,6 +14,11 @@ public class Project : BaseEntity
     public Guid HomeownerId { get; set; }
     public User Homeowner { get; set; } = null!;
 
+    /// <summary>
+    /// Admin markup percentage added on top of Tradesman base prices (e.g. 20.0 for 20% markup)
+    /// </summary>
+    public decimal AdminMarkupPercentage { get; set; } = 20.0m;
+
     // A project can consist of multiple specific jobs (e.g., "Plumbing", "Electrical")
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
 

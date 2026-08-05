@@ -19,6 +19,10 @@ public class JobTaskConfiguration : IEntityTypeConfiguration<JobTask>
         builder.Property(jt => jt.Description)
             .HasMaxLength(2000);
 
+        builder.Property(jt => jt.TradesmanPrice)
+            .HasPrecision(18, 2)
+            .HasDefaultValue(0m);
+
         builder.HasOne(jt => jt.JobPost)
             .WithMany(jp => jp.JobTasks)
             .HasForeignKey(jt => jt.JobPostId)

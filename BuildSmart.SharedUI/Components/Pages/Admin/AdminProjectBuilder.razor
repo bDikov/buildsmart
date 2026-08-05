@@ -1,0 +1,380 @@
+@page "/admin/projects/create"
+@using BuildSmart.Core.Application.DTOs
+@using BuildSmart.Core.Domain.Entities
+@using BuildSmart.Core.Domain.Enums
+@inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
+@inject BuildSmart.SharedUI.Services.IAlertService AlertService
+@inject NavigationManager NavigationManager
+
+<div class="admin-builder-container">
+    <div class="header-card">
+        <h2 class="page-title">Admin Project Builder</h2>
+        <p class="subtitle">Create and configure renovation projects on behalf of a specific Homeowner user.</p>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="loading-box">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else
+    {
+        <div class="form-card">
+            <div class="form-group">
+                <label class="form-label">Select Homeowner Context *</label>
+                <select class="form-input" @bind="SelectedHomeownerId">
+                    <option value="@Guid.Empty">-- Select Homeowner Account --</option>
+                    @foreach (var user in Homeowners)
+                    {
+                        <option value="@user.UserId">@user.FullName (@user.Email)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Project Title *</label>
+                <input class="form-input" type="text" placeholder="e.g. Full Apartment Modern Renovation" @bind="ProjectTitle" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Project Location</label>
+                <input class="form-input" type="text" placeholder="e.g. Sofia, Center" @bind="ProjectLocation" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">General Description & Requirements</label>
+                <textarea class="form-input" rows="3" placeholder="Describe the scope, client requirements and timeline..." @bind="ProjectDescription"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Homeowner Markup Percentage (%)</label>
+                <div class="d-flex align-items-center gap-2">
+                    <input class="form-input" type="number" min="0" max="200" step="1" style="max-width: 140px; font-weight: 600;" @bind="AdminMarkupPercentage" />
+                    <span class="text-muted" style="font-size: 0.85rem;">% (Homeowner Client Price = Tradesman Base Price + Markup %)</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Trade Categories & Assign Tradesmen *</label>
+                <div class="category-grid">
+                    @foreach (var cat in AvailableCategories)
+                    {
+                        bool isSelected = SelectedCategoryIds.Contains(cat.Id);
+                        <div class="category-card-item @(isSelected ? "selected-card" : "")">
+                            <div class="category-checkbox-card @(isSelected ? "selected" : "")" @onclick="() => ToggleCategory(cat.Id)">
+                                <input type="checkbox" checked="@isSelected" @onclick:stopPropagation="true" @onchange="() => ToggleCategory(cat.Id)" />
+                                <span class="category-name">@cat.Name</span>
+                            </div>
+
+                            @if (isSelected)
+                            {
+                                <div class="tradesman-select-box mt-2">
+                                    <label class="form-sublabel">Assign Tradesman (Optional):</label>
+                                    <select class="form-input form-input-sm" value="@GetCategoryTradesman(cat.Id)" @onchange="(e) => SetCategoryTradesman(cat.Id, e.Value?.ToString())">
+                                        <option value="@Guid.Empty">-- Select Tradesman --</option>
+                                        @foreach (var t in Tradesmen)
+                                        {
+                                            <option value="@t.UserId">@t.FullName (@t.Email)</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Initial Project Status</label>
+                <div class="status-options">
+                    <label class="radio-label">
+                        <input type="radio" name="projectStatus" value="Draft" checked="@(!SetAsActiveDirectly)" @onchange="() => SetAsActiveDirectly = false" />
+                        Preview / Draft
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="projectStatus" value="Active" checked="@SetAsActiveDirectly" @onchange="() => SetAsActiveDirectly = true" />
+                        Active (Enables Work Board immediately)
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn-submit-project" @onclick="CreateProject" disabled="@IsSubmitting">
+                    @(IsSubmitting ? "Creating Project..." : "Create Project")
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .admin-builder-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: var(--text-primary);
+    }
+    .header-card {
+        margin-bottom: 1.5rem;
+    }
+    .page-title {
+        font: var(--font-h2, 700 1.75rem/1.3 'Inter', sans-serif);
+        color: var(--text-primary);
+    }
+    .subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+    .form-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+    .form-input {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .form-input:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    .form-input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.7;
+    }
+    select.form-input option {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+    }
+    .form-sublabel {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+    .form-input-sm {
+        padding: 0.45rem 0.65rem;
+        font-size: 0.85rem;
+    }
+    .category-card-item {
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    .category-card-item.selected-card {
+        border-color: var(--color-primary);
+        background-color: rgba(99, 102, 241, 0.05);
+    }
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 0.75rem;
+    }
+    .category-checkbox-card {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+    }
+    .category-checkbox-card.selected {
+        border-color: var(--color-primary);
+    }
+    .category-name {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .status-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
+    .btn-submit-project {
+        background-color: var(--color-primary);
+        color: #ffffff;
+        font-weight: 600;
+        padding: 0.75rem 1.75rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: opacity 0.2s;
+    }
+    .btn-submit-project:hover {
+        opacity: 0.9;
+    }
+    .btn-submit-project:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .loading-box {
+        display: flex;
+        justify-content: center;
+        padding: 3rem;
+    }
+</style>
+
+@code {
+    private bool IsLoading { get; set; } = true;
+    private bool IsSubmitting { get; set; } = false;
+
+    private List<UserLookupDto> Homeowners { get; set; } = new();
+    private List<UserLookupDto> Tradesmen { get; set; } = new();
+    private List<ServiceCategory> AvailableCategories { get; set; } = new();
+
+    private Guid SelectedHomeownerId { get; set; } = Guid.Empty;
+    private string ProjectTitle { get; set; } = string.Empty;
+    private string ProjectLocation { get; set; } = "Sofia";
+    private string ProjectDescription { get; set; } = string.Empty;
+    private decimal AdminMarkupPercentage { get; set; } = 20.0m;
+    private List<Guid> SelectedCategoryIds { get; set; } = new();
+    private Dictionary<Guid, Guid> CategoryTradesmanAssignments { get; set; } = new();
+    private bool SetAsActiveDirectly { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Homeowners = await ProjectService.GetHomeownersLookupAsync();
+            Tradesmen = await ProjectService.GetTradesmenLookupAsync();
+            AvailableCategories = await ProjectService.GetTradeCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Error Loading Data", ex.Message, "OK");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private string GetCategoryTradesman(Guid categoryId)
+    {
+        if (CategoryTradesmanAssignments.TryGetValue(categoryId, out var tradesmanId))
+        {
+            return tradesmanId.ToString();
+        }
+        return Guid.Empty.ToString();
+    }
+
+    private void SetCategoryTradesman(Guid categoryId, string? tradesmanIdStr)
+    {
+        if (Guid.TryParse(tradesmanIdStr, out var tradesmanId) && tradesmanId != Guid.Empty)
+        {
+            CategoryTradesmanAssignments[categoryId] = tradesmanId;
+        }
+        else
+        {
+            CategoryTradesmanAssignments.Remove(categoryId);
+        }
+    }
+
+    private void ToggleCategory(Guid id)
+    {
+        if (SelectedCategoryIds.Contains(id))
+        {
+            SelectedCategoryIds.Remove(id);
+            CategoryTradesmanAssignments.Remove(id);
+        }
+        else
+        {
+            SelectedCategoryIds.Add(id);
+        }
+    }
+
+    private async Task CreateProject()
+    {
+        if (SelectedHomeownerId == Guid.Empty)
+        {
+            await AlertService.DisplayAlert("Validation Error", "Please select a Homeowner context.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ProjectTitle))
+        {
+            await AlertService.DisplayAlert("Validation Error", "Please enter a project title.", "OK");
+            return;
+        }
+
+        if (!SelectedCategoryIds.Any())
+        {
+            await AlertService.DisplayAlert("Validation Error", "Please select at least one trade category.", "OK");
+            return;
+        }
+
+        IsSubmitting = true;
+        try
+        {
+            var projectId = await ProjectService.CreateProjectForUserAsync(
+                SelectedHomeownerId,
+                ProjectTitle,
+                ProjectDescription,
+                SelectedCategoryIds,
+                ProjectLocation,
+                CategoryTradesmanAssignments,
+                AdminMarkupPercentage);
+
+            if (SetAsActiveDirectly)
+            {
+                await ProjectService.SetProjectStatusAsync(projectId, ProjectStatus.Active, Guid.Empty);
+            }
+
+            await AlertService.DisplayAlert("Success", "Project created successfully with tradesmen assigned!", "OK");
+            NavigationManager.NavigateTo($"/projects/{projectId}/kanban");
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Creation Error", ex.Message, "OK");
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+}

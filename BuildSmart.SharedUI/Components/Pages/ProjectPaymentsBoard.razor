@@ -1,0 +1,497 @@
+@page "/projects/{Id:guid}/payments"
+@using BuildSmart.Core.Application.DTOs
+@using BuildSmart.Core.Domain.Enums
+@inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject BuildSmart.SharedUI.Services.IAlertService AlertService
+@inject NavigationManager NavigationManager
+
+<div class="payments-page-container">
+    @if (IsLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>Loading project payments...</p>
+        </div>
+    }
+    else if (BoardData == null)
+    {
+        <div class="error-state">
+            <h3>Project Financials Not Found</h3>
+            <button class="btn-secondary" @onclick="GoBack">Back to Projects</button>
+        </div>
+    }
+    else
+    {
+        <!-- Page Header & Workspace Nav -->
+        <div class="page-header">
+            <div class="header-main">
+                <span class="project-badge">Financial Management</span>
+                <h1 class="project-title">@BoardData.ProjectTitle</h1>
+            </div>
+
+            <!-- Financial Summary Cards -->
+            <div class="financial-summary-grid">
+                @if (CurrentUserRole == UserRoleTypes.Admin)
+                {
+                    <div class="summary-card">
+                        <span class="summary-label">Client Offer Value (+@BoardData.AdminMarkupPercentage%)</span>
+                        <span class="summary-value">€@BoardData.TotalProjectValue.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card upcoming">
+                        <span class="summary-label">Tradesman Payouts</span>
+                        <span class="summary-value">€@BoardData.TotalTradesmanPayoutValue.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.08);">
+                        <span class="summary-label" style="color: #059669;">Net Admin Margin</span>
+                        <span class="summary-value" style="color: #059669;">€@BoardData.NetAdminMarginValue.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card awaiting">
+                        <span class="summary-label">Awaiting Payment</span>
+                        <span class="summary-value">€@BoardData.TotalAwaitingAmount.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card paid">
+                        <span class="summary-label">Total Paid</span>
+                        <span class="summary-value">€@BoardData.TotalPaidAmount.ToString("F2")</span>
+                    </div>
+                }
+                else if (CurrentUserRole == UserRoleTypes.Tradesman)
+                {
+                    <div class="summary-card">
+                        <span class="summary-label">Total Negotiated Payout</span>
+                        <span class="summary-value">€@BoardData.TotalProjectValue.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card upcoming">
+                        <span class="summary-label">Upcoming Work Payout</span>
+                        <span class="summary-value">€@BoardData.TotalUpcomingAmount.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card awaiting">
+                        <span class="summary-label">Awaiting Disbursement</span>
+                        <span class="summary-value">€@BoardData.TotalAwaitingAmount.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card paid">
+                        <span class="summary-label">Total Disbursed</span>
+                        <span class="summary-value">€@BoardData.TotalPaidAmount.ToString("F2")</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="summary-card">
+                        <span class="summary-label">Total Offer Cost</span>
+                        <span class="summary-value">€@BoardData.TotalProjectValue.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card upcoming">
+                        <span class="summary-label">Upcoming Work</span>
+                        <span class="summary-value">€@BoardData.TotalUpcomingAmount.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card awaiting">
+                        <span class="summary-label">Awaiting Payment</span>
+                        <span class="summary-value">€@BoardData.TotalAwaitingAmount.ToString("F2")</span>
+                    </div>
+                    <div class="summary-card paid">
+                        <span class="summary-label">Total Paid</span>
+                        <span class="summary-value">€@BoardData.TotalPaidAmount.ToString("F2")</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="navigation-tabs">
+            <a class="nav-tab" href="/projects/@Id/kanban">Work Board (Kanban)</a>
+            <a class="nav-tab active" href="/projects/@Id/payments">Payments & Financials</a>
+            <a class="nav-tab" href="/project-detail?projectId=@Id">Scope & PDF Offer</a>
+        </div>
+
+        <!-- 3 Column Payments Grid -->
+        <div class="payments-board-grid">
+            <!-- Column 1: Upcoming Work (Not Done) -->
+            <div class="payments-column column-upcoming">
+                <div class="column-header">
+                    <h3 class="column-title">Upcoming / In Progress</h3>
+                    <span class="count-badge highlight-info">@BoardData.UpcomingTasks.Count</span>
+                </div>
+                <div class="column-body">
+                    @if (!BoardData.UpcomingTasks.Any())
+                    {
+                        <div class="empty-column-msg">All project tasks have been completed!</div>
+                    }
+                    else
+                    {
+                        @foreach (var task in BoardData.UpcomingTasks)
+                        {
+                            <div class="payment-card" @onclick="() => OpenTaskDetails(task)">
+                                <div class="card-header-line">
+                                    <span class="card-category">@task.CategoryName</span>
+                                    <span class="card-amount text-muted-amount">€@task.EstimatedPrice.ToString("F2")</span>
+                                </div>
+                                <h4 class="card-title">@task.Title</h4>
+                                <div class="card-meta">
+                                    <span>Status: <strong class="status-badge-inline status-@task.Status.ToString().ToLower()">@task.Status</strong></span>
+                                    <span>Tradesman: <strong>@(task.AssignedTradesmanName ?? "Unassigned")</strong></span>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Column 2: Awaiting Payment -->
+            <div class="payments-column column-awaiting">
+                <div class="column-header">
+                    <h3 class="column-title">Awaiting Payment</h3>
+                    <span class="count-badge highlight-warning">@BoardData.AwaitingPaymentTasks.Count</span>
+                </div>
+                <div class="column-body">
+                    @if (!BoardData.AwaitingPaymentTasks.Any())
+                    {
+                        <div class="empty-column-msg">No tasks currently awaiting payment.</div>
+                    }
+                    else
+                    {
+                        @foreach (var task in BoardData.AwaitingPaymentTasks)
+                        {
+                            <div class="payment-card">
+                                <div class="card-header-line" @onclick="() => OpenTaskDetails(task)">
+                                    <span class="card-category">@task.CategoryName</span>
+                                    <span class="card-amount">€@(task.PaymentInfo?.FinalAmount.ToString("F2") ?? task.EstimatedPrice.ToString("F2"))</span>
+                                </div>
+                                <h4 class="card-title" @onclick="() => OpenTaskDetails(task)">@task.Title</h4>
+                                <div class="card-meta">
+                                    <span>Tradesman: <strong>@(task.AssignedTradesmanName ?? "Unassigned")</strong></span>
+                                </div>
+
+                                @if (CurrentUserRole == UserRoleTypes.Admin)
+                                {
+                                    <div class="admin-payment-action">
+                                        <div class="input-row">
+                                            <input type="number" step="0.01" class="override-input"
+                                                   placeholder="Final Amount (€)"
+                                                   @bind="GetOverrideAmount(task.TaskId).Amount" />
+                                            <button class="btn-mark-paid" @onclick="() => MarkPaid(task.TaskId)">Mark as Paid</button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Column 3: Paid -->
+            <div class="payments-column column-paid">
+                <div class="column-header">
+                    <h3 class="column-title">Paid</h3>
+                    <span class="count-badge highlight-success">@BoardData.PaidTasks.Count</span>
+                </div>
+                <div class="column-body">
+                    @if (!BoardData.PaidTasks.Any())
+                    {
+                        <div class="empty-column-msg">No paid tasks recorded yet.</div>
+                    }
+                    else
+                    {
+                        @foreach (var task in BoardData.PaidTasks)
+                        {
+                            <div class="payment-card paid-card" @onclick="() => OpenTaskDetails(task)">
+                                <div class="card-header-line">
+                                    <span class="card-category">@task.CategoryName</span>
+                                    <span class="card-amount text-success">€@task.PaymentInfo?.FinalAmount.ToString("F2")</span>
+                                </div>
+                                <h4 class="card-title">@task.Title</h4>
+                                <div class="card-meta">
+                                    <span>Tradesman: <strong>@(task.AssignedTradesmanName ?? "Unassigned")</strong></span>
+                                    @if (task.PaymentInfo?.PaidAt != null)
+                                    {
+                                        <span class="paid-timestamp">Paid on @task.PaymentInfo.PaidAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Detail Modal -->
+        <BuildSmart.SharedUI.Components.TaskDetailModal
+            IsOpen="SelectedTask != null"
+            Task="SelectedTask"
+            CurrentUserId="CurrentUserId"
+            UserRole="CurrentUserRole"
+            OnTaskUpdated="RefreshBoard"
+            OnClosed="() => SelectedTask = null" />
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private bool IsLoading { get; set; } = true;
+    private ProjectPaymentsBoardDto? BoardData { get; set; }
+    private KanbanTaskCardDto? SelectedTask { get; set; }
+
+    private Guid CurrentUserId { get; set; }
+    private UserRoleTypes CurrentUserRole { get; set; } = UserRoleTypes.Homeowner;
+
+    private Dictionary<Guid, OverrideModel> OverrideAmounts { get; set; } = new();
+
+    class OverrideModel { public decimal Amount { get; set; } }
+
+    private OverrideModel GetOverrideAmount(Guid taskId)
+    {
+        if (!OverrideAmounts.ContainsKey(taskId))
+        {
+            var task = BoardData?.AwaitingPaymentTasks.FirstOrDefault(t => t.TaskId == taskId);
+            OverrideAmounts[taskId] = new OverrideModel
+            {
+                Amount = task?.PaymentInfo?.FinalAmount ?? task?.EstimatedPrice ?? 0
+            };
+        }
+        return OverrideAmounts[taskId];
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserAndBoard();
+    }
+
+    private async Task LoadUserAndBoard()
+    {
+        IsLoading = true;
+        try
+        {
+            var token = await AuthService.GetTokenAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                var userId = AuthService.GetUserIdFromToken(token);
+                if (userId.HasValue) CurrentUserId = userId.Value;
+
+                var roleStr = AuthService.GetUserRoleFromToken(token);
+                if (Enum.TryParse<UserRoleTypes>(roleStr, true, out var r))
+                {
+                    CurrentUserRole = r;
+                }
+            }
+
+            BoardData = await ProjectService.GetProjectPaymentsBoardAsync(Id, CurrentUserId, CurrentUserRole);
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Error Loading Payments Board", ex.Message, "OK");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task RefreshBoard()
+    {
+        BoardData = await ProjectService.GetProjectPaymentsBoardAsync(Id, CurrentUserId, CurrentUserRole);
+    }
+
+    private async Task MarkPaid(Guid taskId)
+    {
+        var model = GetOverrideAmount(taskId);
+        try
+        {
+            await ProjectService.MarkTaskPaidAsync(taskId, CurrentUserId, model.Amount, "Admin confirmed payment settlement");
+            await AlertService.DisplayAlert("Payment Disbursed", "Task payment marked as Paid.", "OK");
+            await RefreshBoard();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Payment Error", ex.Message, "OK");
+        }
+    }
+
+    private void OpenTaskDetails(KanbanTaskCardDto task)
+    {
+        SelectedTask = task;
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/projects");
+    }
+}
+
+<style>
+    .payments-page-container {
+        padding: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        color: var(--text-primary, #ffffff);
+    }
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .project-badge {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--color-primary, #6366f1);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+    }
+    .project-title {
+        font: var(--font-h1, 700 2rem/1.2 'Inter', sans-serif);
+        margin: 0.25rem 0 0 0;
+    }
+
+    .financial-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+    }
+    @@media (max-width: 900px) {
+        .financial-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .summary-card {
+        background-color: var(--bg-card, #1e1e2d);
+        border: 1px solid var(--border-color, #2d2d3f);
+        border-radius: 8px;
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .summary-card.upcoming { border-color: #3b82f6; }
+    .summary-card.awaiting { border-color: #f59e0b; }
+    .summary-card.paid { border-color: #10b981; }
+
+    .summary-label { font-size: 0.75rem; color: var(--text-secondary, #9ca3af); text-transform: uppercase; }
+    .summary-value { font-weight: 700; font-size: 1.2rem; color: var(--text-primary, #ffffff); }
+
+    .navigation-tabs {
+        display: flex;
+        gap: 1rem;
+        border-bottom: 1px solid var(--border-color, #2d2d3f);
+        margin-bottom: 1.5rem;
+    }
+    .nav-tab {
+        padding: 0.75rem 1.25rem;
+        color: var(--text-secondary, #9ca3af);
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 2px solid transparent;
+    }
+    .nav-tab.active {
+        color: var(--color-primary, #6366f1);
+        border-bottom-color: var(--color-primary, #6366f1);
+    }
+
+    .payments-board-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+    @@media (max-width: 1024px) {
+        .payments-board-grid { grid-template-columns: 1fr; }
+    }
+
+    .count-badge.highlight-info {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+    .text-muted-amount {
+        color: var(--text-muted, #9ca3af);
+    }
+    .status-badge-inline {
+        font-size: 0.75rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    .status-badge-inline.status-todo { background-color: rgba(156, 163, 175, 0.15); color: #9ca3af; }
+    .status-badge-inline.status-inprogress { background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .status-badge-inline.status-awaitingapproval { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+    .payments-column {
+        background-color: var(--bg-card-alt);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        min-height: 450px;
+    }
+
+    .column-header {
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+    }
+    .column-title { font: var(--font-h5, 600 1rem/1.3 'Inter', sans-serif); margin: 0; color: var(--text-primary); }
+
+    .column-body {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .empty-column-msg {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .payment-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    }
+    .card-header-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    .card-category { font-size: 0.75rem; color: var(--color-primary); font-weight: 600; text-transform: uppercase; }
+    .card-amount { font-weight: 700; font-size: 1.1rem; color: var(--color-warning, #d97706); }
+    .text-success { color: var(--color-success, #059669) !important; }
+
+    .card-title { font: var(--font-h6, 600 0.95rem/1.3 'Inter', sans-serif); margin: 0; cursor: pointer; color: var(--text-primary); }
+    .card-meta { display: flex; flex-direction: column; font-size: 0.8rem; color: var(--text-muted); gap: 0.2rem; }
+
+    .admin-payment-action {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+    .input-row { display: flex; gap: 0.5rem; }
+    .override-input {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+        width: 130px;
+        outline: none;
+    }
+    .btn-mark-paid {
+        background-color: var(--color-success, #10b981);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        cursor: pointer;
+    }
+    .paid-timestamp { font-size: 0.75rem; color: #34d399; }
+</style>

@@ -21,6 +21,11 @@ public class JobPost : BaseEntity
 
 	public ServiceCategory ServiceCategory { get; set; } = null!;
 
+	// --- Assigned Tradesman ---
+	public Guid? AssignedTradesmanId { get; set; }
+
+	public User? AssignedTradesman { get; set; }
+
 	// --- Content ---
 	public string Title { get; set; } = null!;
 
