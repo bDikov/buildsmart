@@ -139,7 +139,7 @@
             </a>
 
             <!-- Role-based Native XAML Bridges & Blazor Pages -->
-            <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Admin, ADMIN, admin">
+            <AuthorizeView Roles="Homeowner, HOMEOWNER, homeowner, Tradesman, TRADESMAN, tradesman, Admin, ADMIN, admin">
                 @if (!_isGuest)
                 {
                     <a class="nav-item-dark @(IsActivePage("/my-projects") ? "active" : "")" href="/my-projects" @onclick="CloseSidebar">

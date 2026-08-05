@@ -63,6 +63,18 @@ public class ProjectChatService : IProjectChatService
                     }
                 }
             }
+
+            if (await _unitOfWork.JobPosts.IsTradesmanAssignedToCategoryAsync(project.Id, user.Id))
+            {
+                return true;
+            }
+        }
+
+        if (_unitOfWork.Bookings != null)
+        {
+            var isBooked = await _unitOfWork.Bookings.GetQueryable()
+                .AnyAsync(b => b.JobPost.ProjectId == project.Id && b.TradesmanProfile.UserId == user.Id);
+            if (isBooked) return true;
         }
 
         return false;

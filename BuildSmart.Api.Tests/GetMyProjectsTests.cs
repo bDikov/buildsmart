@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using BuildSmart.Infrastructure.Persistence;
 
 namespace BuildSmart.Api.Tests;
 
@@ -29,15 +30,25 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         _configuration = factory.Services.GetRequiredService<IConfiguration>();
     }
 
-    private HttpClient CreateClient(Action<IServiceCollection>? configureServices = null, string? jwtToken = null)
+    private HttpClient CreateClient(Action<IServiceCollection>? configureServices = null, string? jwtToken = null, Action<AppDbContext>? seedDb = null)
     {
-        var client = _factory.WithWebHostBuilder(builder =>
+        var webHost = _factory.WithWebHostBuilder(builder =>
         {
             if (configureServices != null)
             {
                 builder.ConfigureServices(configureServices);
             }
-        }).CreateClient();
+        });
+
+        if (seedDb != null)
+        {
+            using var scope = webHost.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            seedDb(db);
+            db.SaveChanges();
+        }
+
+        var client = webHost.CreateClient();
 
         if (!string.IsNullOrEmpty(jwtToken))
         {
@@ -54,18 +65,30 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         var userId = Guid.NewGuid();
         var homeownerToken = TestTokenHelper.GenerateJwtToken(userId, "homeowner@example.com", "Homeowner", _configuration);
 
+        var homeownerUser = new User
+        {
+            Id = userId,
+            FirstName = "Homeowner",
+            LastName = "User",
+            Email = "homeowner@example.com"
+        };
+
         var mockProjectRepository = new Mock<IProjectRepository>();
         var project = new Project
         {
             Id = Guid.NewGuid(),
             Title = "Kitchen Renovation",
+            Description = "Sample Description",
             HomeownerId = userId,
+            Homeowner = homeownerUser,
             JobPosts = new List<JobPost>
             {
                 new JobPost
                 {
                     Id = Guid.NewGuid(),
                     Title = "Electrical Work",
+                    Description = "Sample Description",
+                    Location = "Sofia",
                     ServiceCategory = new ServiceCategory { Name = "Electrical" }
                 }
             }
@@ -77,7 +100,14 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         var client = CreateClient(services =>
         {
             services.AddSingleton(mockProjectRepository.Object);
-        }, homeownerToken);
+        }, homeownerToken, seedDb: db =>
+        {
+            if (!db.Users.Any(u => u.Id == userId))
+            {
+                db.Users.Add(homeownerUser);
+            }
+            db.Projects.Add(project);
+        });
 
         var graphQLRequest = new
         {
@@ -115,6 +145,85 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
     }
 
     [Fact]
+    public async Task GetMyProjects_TradesmanAssigned_ReturnsProjects()
+    {
+        // Arrange
+        var tradesmanUserId = Guid.NewGuid();
+        var tradesmanToken = TestTokenHelper.GenerateJwtToken(tradesmanUserId, "tradesman@example.com", "Tradesman", _configuration);
+
+        var homeownerId = Guid.NewGuid();
+        var homeownerUser = new User
+        {
+            Id = homeownerId,
+            FirstName = "Homeowner",
+            LastName = "User",
+            Email = "homeowner2@example.com"
+        };
+
+        var project = new Project
+        {
+            Id = Guid.NewGuid(),
+            Title = "Assigned Trade Project",
+            Description = "Sample Description",
+            HomeownerId = homeownerId,
+            Homeowner = homeownerUser,
+            JobPosts = new List<JobPost>
+            {
+                new JobPost
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Plumbing Work",
+                    Description = "Sample Description",
+                    Location = "Sofia",
+                    AssignedTradesmanId = tradesmanUserId,
+                    ServiceCategory = new ServiceCategory { Name = "Plumbing" }
+                }
+            }
+        };
+
+        var client = CreateClient(jwtToken: tradesmanToken, seedDb: db =>
+        {
+            if (!db.Users.Any(u => u.Id == homeownerId))
+            {
+                db.Users.Add(homeownerUser);
+            }
+            db.Projects.Add(project);
+        });
+
+        var graphQLRequest = new
+        {
+            query = "query GetMyProjects { myProjects { id title jobPosts { id title assignedTradesmanId } } }",
+            variables = new { }
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/graphql")
+        {
+            Content = new StringContent(
+                Newtonsoft.Json.JsonConvert.SerializeObject(graphQLRequest),
+                Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        var response = await client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.True(response.IsSuccessStatusCode);
+        var json = JObject.Parse(content);
+        
+        if (json["errors"] != null)
+        {
+            Assert.Fail($"GraphQL Errors: {json["errors"]}");
+        }
+
+        var projects = json["data"]?["myProjects"] as JArray;
+        Assert.NotNull(projects);
+        Assert.Single(projects);
+        Assert.Equal("Assigned Trade Project", projects[0]?["title"]?.ToString());
+    }
+
+    [Fact]
     public async Task GetMyProjects_WithNestedReplies_ReturnsDataSuccessfully()
     {
         // Arrange
@@ -124,19 +233,32 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
 
         var mockProjectRepo = new Mock<IProjectRepository>();
         
+        var homeownerUser = new User
+        {
+            Id = userId,
+            FirstName = "Homeowner3",
+            LastName = "User",
+            Email = "user3@example.com"
+        };
+
         var project = new Project
         {
             Id = Guid.NewGuid(),
             Title = "Main Project",
-            HomeownerId = userId
+            Description = "Sample Description",
+            HomeownerId = userId,
+            Homeowner = homeownerUser
         };
 
         var jobPost = new JobPost
         {
             Id = Guid.NewGuid(),
             Title = "Job 1",
+            Description = "Sample Description",
+            Location = "Sofia",
             ProjectId = project.Id,
-            Project = project 
+            Project = project,
+            ServiceCategory = new ServiceCategory { Id = Guid.NewGuid(), Name = "General" }
         };
         project.JobPosts = new List<JobPost> { jobPost };
 
@@ -186,9 +308,6 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         feedback.Replies = new List<JobPostFeedback> { myFeedbackReply };
         jobPost.Feedbacks = new List<JobPostFeedback> { feedback };
 
-        mockProjectRepo.Setup(r => r.GetProjectsByHomeownerAsync(userId))
-            .ReturnsAsync(new List<Project> { project });
-
         var client = CreateClient(services =>
         {
             services.AddSingleton(mockProjectRepo.Object);
@@ -214,7 +333,14 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
                 .ReturnsAsync(replyCounts);
                 
             services.AddSingleton(mockJobPostService.Object);
-        }, userToken);
+        }, userToken, seedDb: db =>
+        {
+            if (!db.Users.Any(u => u.Id == userId))
+            {
+                db.Users.Add(homeownerUser);
+            }
+            db.Projects.Add(project);
+        });
 
         var query = @"
             query GetMyProjects {
@@ -304,14 +430,24 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
         var userId = Guid.NewGuid();
         var userToken = TestTokenHelper.GenerateJwtToken(userId, "user@example.com", "Homeowner", _configuration);
 
+        var homeownerUser = new User
+        {
+            Id = userId,
+            FirstName = "Homeowner4",
+            LastName = "User",
+            Email = "user4@example.com"
+        };
+
         var mockProjectRepo = new Mock<IProjectRepository>();
         var project = new Project
         {
             Id = Guid.NewGuid(),
             Title = "Project with Bids",
-            HomeownerId = userId
+            Description = "Sample Description",
+            HomeownerId = userId,
+            Homeowner = homeownerUser
         };
-        var jobPost = new JobPost { Id = Guid.NewGuid(), ProjectId = project.Id, Project = project };
+        var jobPost = new JobPost { Id = Guid.NewGuid(), Title = "Job 1", Description = "Sample Description", Location = "Sofia", ProjectId = project.Id, Project = project, ServiceCategory = new ServiceCategory { Id = Guid.NewGuid(), Name = "General" } };
         project.JobPosts = new List<JobPost> { jobPost };
 
         var jobTask = new JobTask 
@@ -341,8 +477,6 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
             }
         };
 
-        mockProjectRepo.Setup(r => r.GetProjectsByHomeownerAsync(userId)).ReturnsAsync(new List<Project> { project });
-
         var client = CreateClient(services =>
         {
             services.AddSingleton(mockProjectRepo.Object);
@@ -365,7 +499,14 @@ public class GetMyProjectsTests : IClassFixture<TestApplicationFactory>
             services.RemoveAll(typeof(IUnitOfWork));
             services.AddSingleton(mockUnitOfWork.Object);
 
-        }, userToken);
+        }, userToken, seedDb: db =>
+        {
+            if (!db.Users.Any(u => u.Id == userId))
+            {
+                db.Users.Add(homeownerUser);
+            }
+            db.Projects.Add(project);
+        });
 
         var query = @"
             query GetMyProjects {

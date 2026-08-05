@@ -32,8 +32,8 @@ public class QueryType : ObjectType<Query>
             .Authorize(roles: new[] { "Admin" });
 
         descriptor.Field(q => q.GetMyProjects(default!, default!))
-            .Description("Gets the projects created by the authenticated homeowner.")
-            .Authorize(roles: new[] { "Homeowner" });
+            .Description("Gets the projects created by or assigned to the authenticated user.")
+            .Authorize(roles: new[] { "Homeowner", "Tradesman", "Admin" });
 
         descriptor.Field(q => q.GetJobPostsForReview(default!))
             .Authorize(roles: new[] { "Admin" });

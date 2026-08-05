@@ -28258,3 +28258,10 @@
    at BuildSmart.SharedUI.GraphQL.GetLocalizationStringsQuery.ExecuteAsync(String culture, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 75927
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[5.08.2026 г. 19:09:10 ч.] InvalidOperationException: Tradesmen are not permitted to mark tasks as Done. Only Homeowner or Admin can approve completion.
+   at BuildSmart.Infrastructure.Services.ProjectManagementService.UpdateTaskStatusAsync(Guid taskId, TaskStatus newStatus, Guid currentUserId, String rejectionReason) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Infrastructure\Services\ProjectManagementService.cs:line 352
+
+[5.08.2026 г. 19:09:10 ч.] InvalidOperationException: Tradesmen are not permitted to mark tasks as Done. Only Homeowner or Admin can approve completion.
+   at BuildSmart.Infrastructure.Services.ProjectManagementService.UpdateTaskStatusAsync(Guid taskId, TaskStatus newStatus, Guid currentUserId, String rejectionReason) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Infrastructure\Services\ProjectManagementService.cs:line 352
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

@@ -8,6 +8,7 @@ public interface IJobPostRepository
     Task<JobPost?> GetByIdAsNoTrackingAsync(Guid id);
     Task<JobPost?> GetByIdWithTasksAsync(Guid id);
     Task<IEnumerable<JobPost>> GetJobsByProjectIdAsync(Guid projectId);
+    Task<bool> IsTradesmanAssignedToCategoryAsync(Guid projectId, Guid tradesmanUserId);
     Task AddAsync(JobPost jobPost);
     void Update(JobPost jobPost);
     void Delete(JobPost jobPost);

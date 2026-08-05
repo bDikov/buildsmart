@@ -131,7 +131,7 @@ public class Query
         return context.AiCalculations.Where(a => a.ProjectId == jobPost.ProjectId && a.ServiceCategoryId == jobPost.ServiceCategoryId);
     }
 
-	[Authorize(Roles = new[] { "Tradesman" })]
+	[Authorize(Roles = new[] { "Tradesman", "TRADESMAN", "tradesman" })]
 	public async Task<IEnumerable<Auction>> GetAvailableAuctions(
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUnitOfWork unitOfWork,
@@ -176,7 +176,7 @@ public class Query
 		});
 	}
 
-	[Authorize(Roles = new[] { "Tradesman" })]
+	[Authorize(Roles = new[] { "Tradesman", "TRADESMAN", "tradesman" })]
 	public async Task<IEnumerable<Auction>> GetPassedAuctions(
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUnitOfWork unitOfWork,
@@ -213,7 +213,7 @@ public class Query
 		});
 	}
 
-	[Authorize(Roles = new[] { "Tradesman", "Admin", "Homeowner" })]
+	[Authorize(Roles = new[] { "Tradesman", "TRADESMAN", "tradesman", "Admin", "ADMIN", "admin", "Homeowner", "HOMEOWNER", "homeowner" })]
 	public async Task<Auction?> GetAuctionById(
 	Guid jobId,
 	[Service] AppDbContext context)
@@ -246,8 +246,8 @@ public class Query
 
 	[Authorize]
 	public async Task<IEnumerable<Project>> GetMyProjects(
-	ClaimsPrincipal claimsPrincipal,
-	[Service] IProjectRepository projectRepository)
+		ClaimsPrincipal claimsPrincipal,
+		[Service] AppDbContext context)
 	{
 		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -255,7 +255,28 @@ public class Query
 			throw new GraphQLException("Invalid user ID in token.");
 		}
 
-		return await projectRepository.GetProjectsByHomeownerAsync(userId);
+		var isAdmin = claimsPrincipal.IsInRole("Admin");
+		if (isAdmin)
+		{
+			return await context.Projects
+				.Include(p => p.Homeowner)
+				.Include(p => p.JobPosts)
+					.ThenInclude(j => j.ServiceCategory)
+				.OrderByDescending(p => p.CreatedAt)
+				.ToListAsync();
+		}
+
+		return await context.Projects
+			.Include(p => p.Homeowner)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.ServiceCategory)
+			.Where(p => p.HomeownerId == userId 
+				|| p.JobPosts.Any(j => j.AssignedTradesmanId == userId)
+				|| context.CategoryTradesmanAssignments.Any(a => a.ProjectId == p.Id && a.TradesmanId == userId)
+				|| context.Bids.Any(b => b.JobPost.ProjectId == p.Id && b.TradesmanProfile.UserId == userId)
+				|| context.Bookings.Any(b => b.JobPost.ProjectId == p.Id && b.TradesmanProfile.UserId == userId))
+			.OrderByDescending(p => p.CreatedAt)
+			.ToListAsync();
 	}
 
 	[Authorize]
@@ -298,7 +319,8 @@ public class Query
 		{
 			var isAssigned = project.JobPosts.Any(j => j.AssignedTradesmanId == userId)
 				|| await context.CategoryTradesmanAssignments.AnyAsync(a => a.ProjectId == projectId && a.TradesmanId == userId)
-				|| await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId);
+				|| await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId)
+				|| await context.Bookings.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId);
 
 			if (!isAssigned)
 			{

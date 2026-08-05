@@ -19,72 +19,72 @@ public class ProjectManagementService : IProjectManagementService
 
     public async Task<List<UserLookupDto>> GetHomeownersLookupAsync()
     {
-        var homeowners = await _context.Users
+        var users = await _context.Users
             .AsNoTracking()
-            .Where(u => u.Role == UserRoleTypes.Homeowner)
+            .Where(u => u.Role != UserRoleTypes.Tradesman && (u.Email == null || !u.Email.EndsWith("@buildsmart.guest")))
             .OrderBy(u => u.FirstName)
             .ThenBy(u => u.LastName)
-            .Select(u => new UserLookupDto
-            {
-                UserId = u.Id,
-                FullName = string.IsNullOrWhiteSpace($"{u.FirstName} {u.LastName}".Trim()) ? u.Email : $"{u.FirstName} {u.LastName}".Trim(),
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber
-            })
             .ToListAsync();
 
-        if (!homeowners.Any())
+        if (!users.Any())
         {
-            homeowners = await _context.Users
+            users = await _context.Users
                 .AsNoTracking()
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
-                .Select(u => new UserLookupDto
-                {
-                    UserId = u.Id,
-                    FullName = string.IsNullOrWhiteSpace($"{u.FirstName} {u.LastName}".Trim()) ? u.Email : $"{u.FirstName} {u.LastName}".Trim(),
-                    Email = u.Email,
-                    PhoneNumber = u.PhoneNumber
-                })
                 .ToListAsync();
         }
 
-        return homeowners;
+        return users.Select(u => {
+            var name = $"{u.FirstName} {u.LastName}".Trim();
+            var email = string.IsNullOrWhiteSpace(u.Email) ? "No Email" : u.Email.Trim();
+            var displayName = !string.IsNullOrWhiteSpace(name)
+                ? name
+                : (!string.IsNullOrWhiteSpace(u.Email) ? u.Email : $"User ({u.Id.ToString().Substring(0, 8)})");
+
+            return new UserLookupDto
+            {
+                UserId = u.Id,
+                FullName = displayName,
+                Email = email,
+                PhoneNumber = u.PhoneNumber
+            };
+        }).ToList();
     }
 
     public async Task<List<UserLookupDto>> GetTradesmenLookupAsync()
     {
-        var tradesmen = await _context.Users
+        var users = await _context.Users
             .AsNoTracking()
             .Where(u => u.Role == UserRoleTypes.Tradesman)
             .OrderBy(u => u.FirstName)
             .ThenBy(u => u.LastName)
-            .Select(u => new UserLookupDto
-            {
-                UserId = u.Id,
-                FullName = string.IsNullOrWhiteSpace($"{u.FirstName} {u.LastName}".Trim()) ? u.Email : $"{u.FirstName} {u.LastName}".Trim(),
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber
-            })
             .ToListAsync();
 
-        if (!tradesmen.Any())
+        if (!users.Any())
         {
-            tradesmen = await _context.Users
+            users = await _context.Users
                 .AsNoTracking()
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
-                .Select(u => new UserLookupDto
-                {
-                    UserId = u.Id,
-                    FullName = string.IsNullOrWhiteSpace($"{u.FirstName} {u.LastName}".Trim()) ? u.Email : $"{u.FirstName} {u.LastName}".Trim(),
-                    Email = u.Email,
-                    PhoneNumber = u.PhoneNumber
-                })
                 .ToListAsync();
         }
 
-        return tradesmen;
+        return users.Select(u => {
+            var name = $"{u.FirstName} {u.LastName}".Trim();
+            var email = string.IsNullOrWhiteSpace(u.Email) ? "No Email" : u.Email.Trim();
+            var displayName = !string.IsNullOrWhiteSpace(name)
+                ? name
+                : (!string.IsNullOrWhiteSpace(u.Email) ? u.Email : $"Tradesman ({u.Id.ToString().Substring(0, 8)})");
+
+            return new UserLookupDto
+            {
+                UserId = u.Id,
+                FullName = displayName,
+                Email = email,
+                PhoneNumber = u.PhoneNumber
+            };
+        }).ToList();
     }
 
     public async Task<Guid> CreateProjectForUserAsync(Guid homeownerUserId, string title, string description, List<Guid> serviceCategoryIds, string? location, Dictionary<Guid, Guid>? categoryTradesmanMap = null, decimal adminMarkupPercentage = 20.0m)

@@ -51,6 +51,12 @@ public class JobPostRepository : IJobPostRepository
             .ToListAsync();
     }
 
+    public async Task<bool> IsTradesmanAssignedToCategoryAsync(Guid projectId, Guid tradesmanUserId)
+    {
+        return await _context.CategoryTradesmanAssignments
+            .AnyAsync(a => a.ProjectId == projectId && a.TradesmanId == tradesmanUserId);
+    }
+
     public async Task AddAsync(JobPost jobPost)
     {
         await _context.JobPosts.AddAsync(jobPost);
