@@ -131,7 +131,14 @@ public class JobPost : BaseEntity
 		}
 	}
 
+	public void ForceSetStatus(JobPostStatus status)
+	{
+		Status = status;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
 	public void ContractJob()
+
 	{
 		if (Status == JobPostStatus.Open || Status == JobPostStatus.BiddingClosed)
 		{

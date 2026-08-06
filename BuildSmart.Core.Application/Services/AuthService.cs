@@ -167,38 +167,60 @@ public class AuthService : IAuthService
 			// Ensure TradesmanProfile exists
 			if (user.TradesmanProfile == null)
 			{
-				user.TradesmanProfile = new TradesmanProfile
+				var newProfile = new TradesmanProfile
 				{
 					Id = Guid.NewGuid(),
 					UserId = user.Id,
 					CreatedAt = DateTime.UtcNow,
-					UpdatedAt = DateTime.UtcNow
+					UpdatedAt = DateTime.UtcNow,
+					Skills = new List<BuildSmart.Core.Domain.Entities.JoinEntities.TradesmanSkill>()
 				};
+				await _unitOfWork.TradesmanProfiles.AddAsync(newProfile);
+				user.TradesmanProfile = newProfile;
 			}
 
 			// Update Categories if provided
 			if (serviceCategoryIds != null)
 			{
-				// Clear existing skills (or sync them)
-				user.TradesmanProfile.Skills.Clear();
-				foreach (var catId in serviceCategoryIds)
+				var targetCategoryIds = serviceCategoryIds.ToHashSet();
+
+				// 1. Remove skills not in target list
+				var skillsToRemove = user.TradesmanProfile.Skills
+					.Where(s => !targetCategoryIds.Contains(s.ServiceCategoryId))
+					.ToList();
+
+				foreach (var s in skillsToRemove)
 				{
-					user.TradesmanProfile.Skills.Add(new BuildSmart.Core.Domain.Entities.JoinEntities.TradesmanSkill
+					user.TradesmanProfile.Skills.Remove(s);
+				}
+
+				// 2. Add new skills not already in collection
+				var currentCategoryIds = user.TradesmanProfile.Skills
+					.Select(s => s.ServiceCategoryId)
+					.ToHashSet();
+
+				foreach (var catId in targetCategoryIds)
+				{
+					if (!currentCategoryIds.Contains(catId))
 					{
-						ServiceCategoryId = catId,
-						VerificationStatus = SkillVerificationStatus.PortfolioVerified, // Admin promotion
-						CreatedAt = DateTime.UtcNow,
-						UpdatedAt = DateTime.UtcNow
-					});
+						user.TradesmanProfile.Skills.Add(new BuildSmart.Core.Domain.Entities.JoinEntities.TradesmanSkill
+						{
+							Id = Guid.Empty, // Guid.Empty signals EF Core that this is a new child entity to be INSERTED
+							TradesmanProfileId = user.TradesmanProfile.Id,
+							ServiceCategoryId = catId,
+							VerificationStatus = SkillVerificationStatus.PortfolioVerified,
+							CreatedAt = DateTime.UtcNow,
+							UpdatedAt = DateTime.UtcNow
+						});
+					}
 				}
 			}
 		}
 
-		_unitOfWork.Users.Update(user);
 		await _unitOfWork.SaveChangesAsync();
-
 		return user;
 	}
+
 
 	public async Task<bool> VerifyEmailAsync(string email, string code)
 	{

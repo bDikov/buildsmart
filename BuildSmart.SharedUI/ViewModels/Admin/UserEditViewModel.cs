@@ -30,11 +30,17 @@ public partial class UserEditViewModel : ObservableObject, IQueryAttributable
     {
         if (query.TryGetValue("User", out var userObj) && userObj is IGetUsers_Users user)
         {
-            User = user;
-            SelectedRole = user.Role;
-            IsTradesmanFieldsVisible = user.Role == UserRoleTypes.Tradesman;
-            await LoadCategoriesAsync();
+            await InitializeUserAsync(user);
         }
+    }
+
+    public async Task InitializeUserAsync(IGetUsers_Users user)
+    {
+        User = user;
+        SelectedRole = user.Role;
+        IsTradesmanFieldsVisible = user.Role == UserRoleTypes.Tradesman;
+        await LoadCategoriesAsync();
+        UpdateCategoriesSelection();
     }
 
     [ObservableProperty]
@@ -57,29 +63,72 @@ public partial class UserEditViewModel : ObservableObject, IQueryAttributable
     partial void OnSelectedRoleChanged(UserRoleTypes value)
     {
         IsTradesmanFieldsVisible = value == UserRoleTypes.Tradesman;
+        UpdateCategoriesSelection();
     }
 
-    private async Task LoadCategoriesAsync()
+    public async Task LoadCategoriesAsync()
     {
         try
         {
             IsBusy = true;
-            var result = await _apiClient.GetServiceCategories.ExecuteAsync();
-            
             Categories.Clear();
-            if (result.Data?.ServiceCategories != null)
+
+            // Try loading all categories (including admin draft/active)
+            var allResult = await _apiClient.GetAllServiceCategories.ExecuteAsync();
+            if (allResult.Data?.AllServiceCategories != null && allResult.Data.AllServiceCategories.Count > 0)
             {
-                foreach (var cat in result.Data.ServiceCategories)
+                foreach (var cat in allResult.Data.AllServiceCategories)
                 {
+                    if (cat.Type != CategoryType.CategorySpecific || cat.IsGlobal)
+                    {
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(cat.TemplateStructure) && (cat.TemplateStructure.Contains("\"isProjectDetails\": true") || cat.TemplateStructure.Contains("\"isProjectDetails\":true")))
+                    {
+                        continue;
+                    }
+
                     var selection = new CategorySelectionViewModel
                     {
                         Id = cat.Id,
                         Name = cat.Name,
-                        IsSelected = User?.TradesmanProfile?.Skills.Any(s => s.ServiceCategoryId.ToString() == cat.Id.ToString()) ?? false
+                        IsSelected = false
                     };
                     Categories.Add(selection);
                 }
             }
+
+            // Fallback if GetAllServiceCategories is empty or null
+            if (Categories.Count == 0)
+            {
+                var result = await _apiClient.GetServiceCategories.ExecuteAsync();
+                if (result.Data?.ServiceCategories != null)
+                {
+                    foreach (var cat in result.Data.ServiceCategories)
+                    {
+                        if (cat.Type != CategoryType.CategorySpecific || cat.IsGlobal)
+                        {
+                            continue;
+                        }
+
+                        if (!string.IsNullOrEmpty(cat.TemplateStructure) && (cat.TemplateStructure.Contains("\"isProjectDetails\": true") || cat.TemplateStructure.Contains("\"isProjectDetails\":true")))
+                        {
+                            continue;
+                        }
+
+                        var selection = new CategorySelectionViewModel
+                        {
+                            Id = cat.Id,
+                            Name = cat.Name,
+                            IsSelected = false
+                        };
+                        Categories.Add(selection);
+                    }
+                }
+            }
+
+            UpdateCategoriesSelection();
         }
         catch (Exception ex)
         {
@@ -91,10 +140,42 @@ public partial class UserEditViewModel : ObservableObject, IQueryAttributable
         }
     }
 
-    [RelayCommand]
-    private async Task SaveAsync()
+    public void UpdateCategoriesSelection()
     {
-        if (User == null) return;
+        var tradesmanSkillGuids = new HashSet<Guid>();
+
+        if (User?.TradesmanProfile?.Skills != null)
+        {
+            foreach (var skill in User.TradesmanProfile.Skills)
+            {
+                if (string.IsNullOrWhiteSpace(skill.ServiceCategoryId))
+                    continue;
+
+                if (Guid.TryParse(skill.ServiceCategoryId, out var skillGuid))
+                {
+                    tradesmanSkillGuids.Add(skillGuid);
+                }
+                else
+                {
+                    var cleanSkillId = skill.ServiceCategoryId.Replace("-", "");
+                    if (Guid.TryParseExact(cleanSkillId, "N", out var parsedN))
+                    {
+                        tradesmanSkillGuids.Add(parsedN);
+                    }
+                }
+            }
+        }
+
+        foreach (var cat in Categories)
+        {
+            cat.IsSelected = tradesmanSkillGuids.Contains(cat.Id);
+        }
+    }
+
+    [RelayCommand]
+    public async Task<bool> SaveAsync()
+    {
+        if (User == null) return false;
 
         try
         {
@@ -110,18 +191,19 @@ public partial class UserEditViewModel : ObservableObject, IQueryAttributable
                 SelectedRole, 
                 SelectedRole == UserRoleTypes.Tradesman ? selectedCategoryIds : null);
 
-            if (result.Errors.Count > 0)
+            if (result.Errors != null && result.Errors.Count > 0)
             {
                 await AppServiceLocator.Alerts.DisplayAlert("Error", result.Errors[0].Message, "OK");
-                return;
+                return false;
             }
 
             await AppServiceLocator.Alerts.DisplayAlert("Success", "User updated successfully.", "OK");
-            await AppServiceLocator.Navigation.NavigateToAsync("..");
+            return true;
         }
         catch (Exception ex)
         {
             await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+            return false;
         }
         finally
         {

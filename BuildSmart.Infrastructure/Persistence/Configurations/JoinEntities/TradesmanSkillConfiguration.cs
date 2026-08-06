@@ -15,7 +15,9 @@ public class TradesmanSkillConfiguration : IEntityTypeConfiguration<TradesmanSki
         // Relationships
         builder.HasOne(ts => ts.TradesmanProfile)
             .WithMany(tp => tp.Skills)
-            .HasForeignKey(ts => ts.TradesmanProfileId);
+            .HasForeignKey(ts => ts.TradesmanProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
 
         builder.HasOne(ts => ts.ServiceCategory)
             .WithMany() // ServiceCategory currently doesn't have a collection of Skills back to Tradesman (uni-directional here is fine for now)

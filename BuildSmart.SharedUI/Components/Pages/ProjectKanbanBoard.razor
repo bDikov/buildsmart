@@ -77,8 +77,31 @@
             </div>
         }
 
+        <!-- Board View & Sort Controls Bar -->
+        <div class="kanban-controls-bar d-flex align-items-center justify-content-between flex-wrap mb-3 gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="status-label fw-bold">View Layout:</span>
+                <button class="bs-btn-sm @(BoardViewMode == "horizontal" ? "bs-btn-primary" : "bs-btn-secondary")" @onclick='() => BoardViewMode = "horizontal"'>
+                    &#8596; Horizontal Swipe
+                </button>
+                <button class="bs-btn-sm @(BoardViewMode == "vertical" ? "bs-btn-primary" : "bs-btn-secondary")" @onclick='() => BoardViewMode = "vertical"'>
+                    &#8597; Vertical Stack
+                </button>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="status-label fw-bold">Sort Tasks:</span>
+                <select class="status-select py-1 px-2" style="width: auto; font-size: 0.8rem;" value="@TaskSortOption" @onchange="OnSortOptionChanged">
+                    <option value="Sequence">Custom Order (Sequence)</option>
+                    <option value="Category">Trade Category (A-Z)</option>
+                    <option value="PriceDesc">Price (High to Low)</option>
+                    <option value="PriceAsc">Price (Low to High)</option>
+                </select>
+            </div>
+        </div>
+
         <!-- 4 Column Kanban Board -->
-        <div class="kanban-board-grid">
+        <div class="kanban-board-grid layout-@BoardViewMode">
             <!-- Column 1: To Do -->
             <div class="kanban-column column-todo @(IsDragging && DraggedTask?.Status != TaskStatus.ToDo ? "drop-target-active" : "")"
                  ondragover="event.preventDefault(); if(event.dataTransfer) event.dataTransfer.dropEffect = 'move';"
@@ -249,6 +272,94 @@
 
     private KanbanTaskCardDto? DraggedTask { get; set; }
     private bool IsDragging { get; set; } = false;
+    private Guid? DragOverTaskId { get; set; }
+
+    private void HandleTaskDragEnter(KanbanTaskCardDto task)
+    {
+        if (IsDragging && DraggedTask != null && DraggedTask.TaskId != task.TaskId)
+        {
+            DragOverTaskId = task.TaskId;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleTaskDragLeave(KanbanTaskCardDto task)
+    {
+        if (DragOverTaskId == task.TaskId)
+        {
+            DragOverTaskId = null;
+            StateHasChanged();
+        }
+    }
+
+    private string BoardViewMode { get; set; } = "horizontal";
+    private string TaskSortOption { get; set; } = "Sequence";
+
+    private List<KanbanTaskCardDto> GetTasksByStatus(TaskStatus status)
+    {
+        if (BoardData == null) return new List<KanbanTaskCardDto>();
+        var tasks = BoardData.CategorySections
+            .SelectMany(s => s.Tasks)
+            .Where(t => t.Status == status);
+
+        return TaskSortOption switch
+        {
+            "Category" => tasks.OrderBy(t => t.CategoryName).ThenBy(t => t.SequenceOrder).ToList(),
+            "PriceDesc" => tasks.OrderByDescending(t => t.EstimatedPrice).ToList(),
+            "PriceAsc" => tasks.OrderBy(t => t.EstimatedPrice).ToList(),
+            _ => tasks.OrderBy(t => t.SequenceOrder).ToList()
+        };
+    }
+
+    private void OnSortOptionChanged(ChangeEventArgs e)
+    {
+        TaskSortOption = e.Value?.ToString() ?? "Sequence";
+        StateHasChanged();
+    }
+
+    private async Task MoveTaskUp(KanbanTaskCardDto task)
+    {
+        try
+        {
+            await ProjectService.ReorderTaskAsync(task.TaskId, -1, CurrentUserId);
+            await RefreshBoard();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Reorder Error", ex.Message, "OK");
+        }
+    }
+
+    private async Task MoveTaskDown(KanbanTaskCardDto task)
+    {
+        try
+        {
+            await ProjectService.ReorderTaskAsync(task.TaskId, 1, CurrentUserId);
+            await RefreshBoard();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Reorder Error", ex.Message, "OK");
+        }
+    }
+
+    private async Task HandleDropOnTask(KanbanTaskCardDto targetTask)
+    {
+        if (DraggedTask == null || DraggedTask.TaskId == targetTask.TaskId) return;
+        var dragged = DraggedTask;
+        IsDragging = false;
+        DraggedTask = null;
+
+        try
+        {
+            await ProjectService.MoveTaskBeforeTaskAsync(dragged.TaskId, targetTask.TaskId, CurrentUserId);
+            await RefreshBoard();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Reorder Error", ex.Message, "OK");
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -289,16 +400,6 @@
     {
         BoardData = await ProjectService.GetProjectKanbanBoardAsync(Id, CurrentUserId, CurrentUserRole);
         StateHasChanged();
-    }
-
-    private List<KanbanTaskCardDto> GetTasksByStatus(TaskStatus status)
-    {
-        if (BoardData == null) return new List<KanbanTaskCardDto>();
-        return BoardData.CategorySections
-            .SelectMany(s => s.Tasks)
-            .Where(t => t.Status == status)
-            .OrderBy(t => t.SequenceOrder)
-            .ToList();
     }
 
     private void OpenTaskDetails(KanbanTaskCardDto task)
@@ -357,6 +458,7 @@
     {
         DraggedTask = null;
         IsDragging = false;
+        DragOverTaskId = null;
     }
 
     private async Task HandleDropOnColumn(TaskStatus targetStatus)
@@ -433,13 +535,21 @@
     {
         bool isDraggable = CurrentUserRole == UserRoleTypes.Admin || CurrentUserRole == UserRoleTypes.Tradesman;
 
-        <div class="task-card @(isDraggable ? "is-draggable" : "not-draggable")"
+        <div class="task-card @(isDraggable ? "is-draggable" : "not-draggable") @(DragOverTaskId == task.TaskId ? "drop-target-hover" : "")"
              draggable="@isDraggable.ToString().ToLower()"
              @ondragstart="(e) => HandleDragStart(e, task)"
              @ondragend="HandleDragEnd"
              @ondragover:preventDefault="true"
              @ondragenter:preventDefault="true"
+             @ondragenter="() => HandleTaskDragEnter(task)"
+             @ondragleave="() => HandleTaskDragLeave(task)"
+             @ondrop:stopPropagation="true"
+             @ondrop="() => HandleDropOnTask(task)"
              @onclick="() => OpenTaskDetails(task)">
+            @if (DragOverTaskId == task.TaskId)
+            {
+                <div class="drop-insertion-line"></div>
+            }
             <div class="card-top-bar">
                 <span class="card-category">@task.CategoryName</span>
                 @if (CurrentUserRole == UserRoleTypes.Tradesman)
@@ -468,9 +578,14 @@
                         <option value="Done">Done</option>
                     </select>
 
+                    <div class="vertical-reorder-btns d-inline-flex gap-1 ms-1">
+                        <button class="btn-reorder-up" title="Move Up Vertically" @onclick="() => MoveTaskUp(task)">&#9650;</button>
+                        <button class="btn-reorder-down" title="Move Down Vertically" @onclick="() => MoveTaskDown(task)">&#9660;</button>
+                    </div>
+
                     @if (CurrentUserRole == UserRoleTypes.Admin)
                     {
-                        <button class="btn-delete-task" title="Delete Task (Admin)" @onclick="() => PromptDeleteTask(task)">
+                        <button class="btn-delete-task ms-auto" title="Delete Task (Admin)" @onclick="() => PromptDeleteTask(task)">
                             &times;
                         </button>
                     }
@@ -659,6 +774,54 @@
         }
     }
 
+    .kanban-controls-bar {
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+    }
+
+    .kanban-board-grid.layout-vertical {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+        width: 100% !important;
+        overflow-x: visible !important;
+    }
+
+    .kanban-board-grid.layout-vertical .kanban-column {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        width: 100% !important;
+        min-height: auto !important;
+    }
+
+    .vertical-reorder-btns {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .vertical-reorder-btns button {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .vertical-reorder-btns button:hover {
+        background: var(--color-primary);
+        color: #ffffff;
+        border-color: var(--color-primary);
+    }
+
     .kanban-column {
         background-color: var(--bg-card-alt);
         border-radius: 10px;
@@ -771,11 +934,63 @@
         box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
         width: 100%;
         box-sizing: border-box;
+        position: relative;
     }
     .task-card:hover {
         transform: translateY(-2px);
         border-color: var(--color-primary);
         box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+    }
+
+    .task-card * {
+        pointer-events: none;
+    }
+    .task-card button, .task-card select, .task-card input, .task-card a {
+        pointer-events: auto;
+    }
+
+    .task-card.drop-target-hover {
+        border-color: var(--color-primary, #6366f1) !important;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.3) !important;
+    }
+
+    .drop-insertion-line {
+        position: absolute;
+        top: -8px;
+        left: -4px;
+        right: -4px;
+        height: 4px;
+        background: linear-gradient(90deg, #6366f1, #3b82f6, #6366f1);
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.85), 0 0 5px rgba(59, 130, 246, 0.6);
+        z-index: 20;
+        pointer-events: none;
+        animation: pulseInsertionLine 1.2s infinite alternate;
+    }
+
+    .drop-insertion-line::before,
+    .drop-insertion-line::after {
+        content: '';
+        position: absolute;
+        top: -3px;
+        width: 10px;
+        height: 10px;
+        background: #6366f1;
+        border-radius: 50%;
+        box-shadow: 0 0 6px #6366f1;
+    }
+
+    .drop-insertion-line::before {
+        left: -4px;
+    }
+
+    .drop-insertion-line::after {
+        right: -4px;
+    }
+
+    @@keyframes pulseInsertionLine {
+        from { opacity: 0.8; transform: scaleY(1); }
+        to { opacity: 1; transform: scaleY(1.4); }
     }
 
     .card-top-bar {

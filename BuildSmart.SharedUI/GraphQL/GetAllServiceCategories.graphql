@@ -5,6 +5,7 @@ query GetAllServiceCategories {
     description
     status
     isGlobal
+    type
     templateStructure
   }
 }

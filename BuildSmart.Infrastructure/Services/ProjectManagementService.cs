@@ -489,11 +489,29 @@ public class ProjectManagementService : IProjectManagementService
         if (newStatus == ProjectStatus.Active)
         {
             project.Publish();
+
+            var jobPosts = await _context.JobPosts.Where(j => j.ProjectId == projectId).ToListAsync();
+            foreach (var jp in jobPosts)
+            {
+                if (jp.Status == JobPostStatus.Draft || jp.Status == JobPostStatus.WaitingForAdminReview || jp.Status == JobPostStatus.WaitingForUserReview || jp.Status == JobPostStatus.GeneratingScope)
+                {
+                    var targetStatus = jp.AssignedTradesmanId.HasValue ? JobPostStatus.Contracted : JobPostStatus.Open;
+                    jp.ForceSetStatus(targetStatus);
+                }
+            }
         }
         else if (newStatus == ProjectStatus.Draft)
         {
             project.ResetToDraft();
+
+            var jobPosts = await _context.JobPosts.Where(j => j.ProjectId == projectId).ToListAsync();
+            foreach (var jp in jobPosts)
+            {
+                jp.ForceSetStatus(JobPostStatus.Draft);
+            }
         }
+
+
         else if (newStatus == ProjectStatus.Completed)
         {
             project.Complete();
@@ -1141,6 +1159,71 @@ public class ProjectManagementService : IProjectManagementService
             throw new ArgumentException("Project not found.");
 
         project.AdminMarkupPercentage = markupPercentage < 0 ? 0 : markupPercentage;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ReorderTaskAsync(Guid taskId, int direction, Guid currentUserId)
+    {
+        var task = await _context.JobTasks
+            .Include(t => t.JobPost)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+
+        if (task == null) return;
+
+        var siblingTasks = await _context.JobTasks
+            .Where(t => t.JobPostId == task.JobPostId && t.Status == task.Status)
+            .OrderBy(t => t.SequenceOrder)
+            .ToListAsync();
+
+        int currentIndex = siblingTasks.FindIndex(t => t.Id == taskId);
+        if (currentIndex < 0) return;
+
+        int targetIndex = currentIndex + direction;
+        if (targetIndex < 0 || targetIndex >= siblingTasks.Count) return;
+
+        var targetTask = siblingTasks[targetIndex];
+
+        int tempSeq = task.SequenceOrder;
+        task.SequenceOrder = targetTask.SequenceOrder;
+        targetTask.SequenceOrder = tempSeq;
+
+        if (task.SequenceOrder == targetTask.SequenceOrder)
+        {
+            task.SequenceOrder = Math.Max(0, currentIndex + direction + 1);
+            targetTask.SequenceOrder = Math.Max(0, currentIndex + 1);
+        }
+
+        task.UpdatedAt = DateTime.UtcNow;
+        targetTask.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task MoveTaskBeforeTaskAsync(Guid draggedTaskId, Guid targetTaskId, Guid currentUserId)
+    {
+        var draggedTask = await _context.JobTasks.FirstOrDefaultAsync(t => t.Id == draggedTaskId);
+        var targetTask = await _context.JobTasks.FirstOrDefaultAsync(t => t.Id == targetTaskId);
+
+        if (draggedTask == null || targetTask == null || draggedTaskId == targetTaskId) return;
+
+        draggedTask.Status = targetTask.Status;
+        draggedTask.SequenceOrder = Math.Max(0, targetTask.SequenceOrder - 1);
+        draggedTask.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        var allTasks = await _context.JobTasks
+            .Where(t => t.JobPostId == targetTask.JobPostId && t.Status == targetTask.Status)
+            .OrderBy(t => t.SequenceOrder)
+            .ThenBy(t => t.UpdatedAt)
+            .ToListAsync();
+
+        int seq = 1;
+        foreach (var t in allTasks)
+        {
+            t.SequenceOrder = seq++;
+        }
+
         await _context.SaveChangesAsync();
     }
 }

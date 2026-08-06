@@ -1,7 +1,9 @@
 @page "/user-edit"
 @using BuildSmart.SharedUI.ViewModels.Admin
 @using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.Services
 @using Microsoft.AspNetCore.Authorization
+
 @attribute [Authorize(Roles = "Admin, ADMIN, admin")]
 @inject UserEditViewModel ViewModel
 @inject NavigationManager NavManager
@@ -66,14 +68,21 @@
                     <p class="help-text">Select the categories this tradesman is qualified for:</p>
                     
                     <div class="categories-list">
-                        @foreach (var cat in ViewModel.Categories)
+                        @if (ViewModel.Categories.Count == 0)
                         {
-                            <div class="category-checkbox">
-                                <label>
-                                    <input type="checkbox" @bind="cat.IsSelected" />
-                                    @cat.Name
-                                </label>
-                            </div>
+                            <p class="help-text text-muted mb-0">No active service categories available.</p>
+                        }
+                        else
+                        {
+                            @foreach (var cat in ViewModel.Categories)
+                            {
+                                <div class="category-checkbox">
+                                    <label>
+                                        <input type="checkbox" @bind="cat.IsSelected" />
+                                        @cat.Name
+                                    </label>
+                                </div>
+                            }
                         }
                     </div>
                 </div>
@@ -237,25 +246,46 @@
         try
         {
             var result = await ApiClient.GetUsers.ExecuteAsync();
-            var user = result.Data?.Users?.FirstOrDefault(u => u.Id == UserId);
-            
-            if (user != null)
+            if (result.Data?.Users != null)
             {
-                var dict = new Dictionary<string, object> { { "User", user } };
-                ViewModel.ApplyQueryAttributes(dict);
+                IGetUsers_Users? user = null;
+
+                if (Guid.TryParse(UserId, out var searchGuid))
+                {
+                    user = result.Data.Users.FirstOrDefault(u => u.Id != null && Guid.TryParse(u.Id, out var userGuid) && userGuid == searchGuid);
+                }
+
+                if (user == null && UserId != null)
+                {
+                    var cleanSearchId = UserId.Replace("-", "");
+                    user = result.Data.Users.FirstOrDefault(u => u.Id != null && (string.Equals(u.Id, UserId, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(u.Id.Replace("-", ""), cleanSearchId, StringComparison.OrdinalIgnoreCase)));
+                }
+
+                if (user != null)
+                {
+                    await ViewModel.InitializeUserAsync(user);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            await AppServiceLocator.Alerts.DisplayAlert("Error", "Failed to load user: " + ex.Message, "OK");
         }
         finally
         {
             ViewModel.IsBusy = false;
+            StateHasChanged();
         }
     }
 
     private async Task HandleSaveAsync()
     {
-        await ViewModel.SaveCommand.ExecuteAsync(null);
-        // The ViewModel tries to use MAUI Navigation to go back.
-        // We can just explicitly navigate back here to be safe if it doesn't work.
-        NavManager.NavigateTo("/user-management");
+        var success = await ViewModel.SaveAsync();
+        if (success)
+        {
+            NavManager.NavigateTo("/user-management");
+        }
     }
 }
+

@@ -20,6 +20,12 @@ mutation UpdateUserRoleAndCategories($userId: UUID!, $newRole: UserRoleTypes!, $
   updateUserRoleAndCategories(userId: $userId, newRole: $newRole, serviceCategoryIds: $serviceCategoryIds) {
     id
     role
+    tradesmanProfile {
+      id
+      skills {
+        serviceCategoryId
+      }
+    }
   }
 }
 
