@@ -50,7 +50,7 @@
                 <div class="form-group">
                     <label class="form-label">Select Tradesman Offer Preset *</label>
                     <select class="form-input" value="@SelectedOfferPresetKey" @onchange="OnOfferPresetChanged">
-                        <option value="lyulin">Ремонт, Електро и Извозване — с. Люлин (Пълен пакет, €25,347.62 EUR)</option>
+                        <option value="lyulin">Ремонт, Мебели, Електро и Извозване — с. Люлин (Пълен пакет, €27,041.57 EUR base / €32,449.88 client total)</option>
                         <option value="custom">Запазен собствен шаблон / оферта (Custom Preset)</option>
                     </select>
                 </div>
@@ -832,9 +832,9 @@
     {
         if (key == "lyulin")
         {
-            ProjectTitle = "Ремонт и боядисване на апартамент - с. Люлин";
+            ProjectTitle = "Ремонт и боядисване на къща - с. Люлин";
             ProjectLocation = "с. Люлин, София";
-            ProjectDescription = "Цялостен ремонт на шпакловка, ремонт на пукнатини и интериорно боядисване по оферта BUILD CAPITAL (Оферта #1).";
+            ProjectDescription = "Цялостна трансформация с изработка на бутикови интериорни обшивки от масивен дъб (състаряване, байцване и лакиране), подготовка, шпакловка, ремонт на пукнатини, частични електроуслуги и интериорно боядисване по оферта BUILD CAPITAL.";
             CurrentOfferPhases = GetLyulinOfferPreset();
         }
     }
@@ -1084,7 +1084,19 @@
         {
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "1. Хамалски услуги и извозване на отпадъци",
+                PhaseTitle = "1. Бутикови мебели и интериорни обшивки",
+                CategoryName = "Монтаж на мебели и интериорни панели",
+                Items = new List<CustomOfferItemDto>
+                {
+                    new CustomOfferItemDto { SkuCode = "FURN-OAK-PANEL", Title = "Изработка и професионален монтаж на дъбова ламперия", Description = "Изработка и професионален монтаж на дъбова ламперия", Unit = "услуга", Quantity = 1, UnitPriceEur = 2150.00m },
+                    new CustomOfferItemDto { SkuCode = "FURN-OAK-AGING", Title = "Специализирана обработка за Състарен дъб", Description = "Специализирана обработка за състаряване и ръчно текстуриране на масивен дъб", Unit = "услуга", Quantity = 1, UnitPriceEur = 683.33m },
+                    new CustomOfferItemDto { SkuCode = "FURN-OAK-STAIN", Title = "Многослойно байцване, грундиране и финишно лакиране", Description = "Многослойно байцване, грундиране и финишно лакиране на обшивки", Unit = "услуга", Quantity = 1, UnitPriceEur = 816.67m },
+                    new CustomOfferItemDto { SkuCode = "FURN-OAK-FRAME", Title = "Носеща подконструкция (скара), крепежи и транспорт", Description = "Изработка на носеща дървена подконструкция (скара), крепежи и транспорт", Unit = "услуга", Quantity = 1, UnitPriceEur = 515.58m }
+                }
+            },
+            new CustomOfferPhaseDto
+            {
+                PhaseTitle = "2. Хамалски услуги и извозване на отпадъци",
                 CategoryName = "Извозване и Хамали",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1094,7 +1106,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "2. Предпазни и подготвителни работи",
+                PhaseTitle = "3. Предпазни и подготвителни работи",
                 CategoryName = "Подготвителни работи",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1105,7 +1117,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "3. Демонтажни работи и премахване на тапети",
+                PhaseTitle = "4. Демонтажни работи и премахване на тапети",
                 CategoryName = "Демонтаж",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1115,7 +1127,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "4. Частични електроуслуги (труд без материали)",
+                PhaseTitle = "5. Частични електроуслуги (труд без материали)",
                 CategoryName = "Електроуслуги",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1126,7 +1138,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "5. Ремонт на пукнатини и укрепване",
+                PhaseTitle = "6. Ремонт на пукнатини и укрепване",
                 CategoryName = "Ремонт пукнатини",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1137,7 +1149,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "6. Шпакловане, грундиране и шлайфане",
+                PhaseTitle = "7. Шпакловане, грундиране и шлайфане",
                 CategoryName = "Шпакловка",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1148,7 +1160,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "7. Обръщане на прозорци и врати",
+                PhaseTitle = "8. Обръщане на прозорци и врати",
                 CategoryName = "Обръщания",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1157,7 +1169,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "8. Интериорно боядисване",
+                PhaseTitle = "9. Интериорно боядисване",
                 CategoryName = "Боядисване",
                 Items = new List<CustomOfferItemDto>
                 {
@@ -1166,7 +1178,7 @@
             },
             new CustomOfferPhaseDto
             {
-                PhaseTitle = "9. Почистване и предаване на обекта",
+                PhaseTitle = "10. Почистване и предаване на обекта",
                 CategoryName = "Почистване",
                 Items = new List<CustomOfferItemDto>
                 {

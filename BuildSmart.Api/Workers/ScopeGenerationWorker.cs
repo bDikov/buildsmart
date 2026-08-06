@@ -695,11 +695,24 @@ public class ScopeGenerationWorker
 				var clientAddress = projectWithUser.JobPosts.FirstOrDefault()?.Location ?? homeowner?.Location ?? "TBD";
 
 				var combinedScope = new StringBuilder();
-				foreach (var jp in projectWithUser.JobPosts.Where(j => !string.IsNullOrWhiteSpace(j.GeneratedScope)))
+				foreach (var jp in activeJobPosts.Where(j => !string.IsNullOrWhiteSpace(j.GeneratedScope)))
 				{
 					combinedScope.AppendLine($"## {jp.Title}");
 					combinedScope.AppendLine(jp.GeneratedScope);
 					combinedScope.AppendLine();
+				}
+
+				if (combinedScope.Length == 0)
+				{
+					foreach (var jp in activeJobPosts)
+					{
+						combinedScope.AppendLine($"## {jp.Title}");
+						foreach (var task in jp.JobTasks ?? Enumerable.Empty<JobTask>())
+						{
+							combinedScope.AppendLine($"- {task.Title}: {task.Description}");
+						}
+						combinedScope.AppendLine();
+					}
 				}
 
 				string finalScopeDescription = projectWithUser.Description;
