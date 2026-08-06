@@ -367,6 +367,10 @@ public class ScopeGenerationWorker
 				};
 				await saveUnitOfWork.AiCalculations.AddAsync(aiCalc);
 
+				var project = await saveUnitOfWork.Projects.GetByIdAsync(freshJobPost.ProjectId);
+				decimal adminMarkupPercentage = project?.AdminMarkupPercentage ?? 20.0m;
+				decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
+
 				decimal grandTotal = 0;
 				var processedSkus = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -385,6 +389,7 @@ public class ScopeGenerationWorker
 						continue;
 					}
 
+					decimal taskBaseTotal = 0;
 					decimal taskTotal = 0;
 					var calcTask = new AiCalculationTask
 					{
@@ -449,7 +454,10 @@ public class ScopeGenerationWorker
 								continue;
 							}
 
-							var skuEstimatedPrice = matchedSku.BasePrice * finalQuantity;
+							var skuBasePrice = Math.Round(matchedSku.BasePrice * finalQuantity, 2);
+							var skuEstimatedPrice = Math.Round(skuBasePrice * markupFactor, 2);
+
+							taskBaseTotal += skuBasePrice;
 							taskTotal += skuEstimatedPrice;
 
 							calcTask.SkuItems.Add(new AiCalculationSkuItem
@@ -470,6 +478,13 @@ public class ScopeGenerationWorker
 					}
 
 					calcTask.EstimatedPrice = taskTotal;
+
+					if (matchedTask != null)
+					{
+						matchedTask.TradesmanPrice = taskBaseTotal;
+						matchedTask.EstimatedPrice = taskTotal;
+						saveUnitOfWork.JobTasks.Update(matchedTask);
+					}
 
 					// Only add the task to the final calculation if it has a non-zero price
 					// This prevents the PDF from being cluttered with €0.00 tasks that were hallucinated by the AI

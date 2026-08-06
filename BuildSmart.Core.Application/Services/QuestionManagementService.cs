@@ -582,7 +582,7 @@ public class QuestionManagementService : IQuestionManagementService
 
     #region Offer Simulation
 
-    public async Task<OfferSimulationResultDto> ExecuteOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson, CancellationToken cancellationToken = default)
+    public async Task<OfferSimulationResultDto> ExecuteOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson, decimal adminMarkupPercentage = 20.0m, CancellationToken cancellationToken = default)
     {
         var result = new OfferSimulationResultDto();
         var questions = await _unitOfWork.Questions.GetAllAsync();
@@ -642,6 +642,7 @@ public class QuestionManagementService : IQuestionManagementService
         }
 
         // 3. Evaluate SKU pricing
+        decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
         var updatedJobDetails = JsonSerializer.Serialize(answers);
         foreach (var sku in skus)
         {
@@ -652,8 +653,8 @@ public class QuestionManagementService : IQuestionManagementService
                 var qty = _pricingEngine.CalculateQuantity(sku.CalculationFormula, updatedJobDetails);
                 if (qty > 0)
                 {
-                    var basePrice = sku.BasePrice;
-                    var totalPrice = basePrice * qty;
+                    var basePrice = Math.Round(sku.BasePrice * markupFactor, 2);
+                    var totalPrice = Math.Round(basePrice * qty, 2);
 
                     var catName = categories.FirstOrDefault(c => c.Id == sku.ServiceCategoryId)?.Name ?? "Unknown";
 

@@ -36,5 +36,5 @@ public interface IQuestionManagementService
     Task ImportSpiderNetAsync(string jsonContent, CancellationToken cancellationToken = default);
 
     // Run Offer Simulation
-    Task<OfferSimulationResultDto> ExecuteOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson, CancellationToken cancellationToken = default);
+    Task<OfferSimulationResultDto> ExecuteOfferSimulationAsync(List<Guid> selectedQuestionIds, string jobDetailsJson, decimal adminMarkupPercentage = 20.0m, CancellationToken cancellationToken = default);
 }

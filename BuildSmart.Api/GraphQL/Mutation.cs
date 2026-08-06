@@ -1676,7 +1676,7 @@ public class Mutation
 		[Service] IQuestionManagementService questionService,
 		CancellationToken cancellationToken)
 	{
-		return await questionService.ExecuteOfferSimulationAsync(selectedQuestionIds, jobDetailsJson, cancellationToken);
+		return await questionService.ExecuteOfferSimulationAsync(selectedQuestionIds, jobDetailsJson, cancellationToken: cancellationToken);
 	}
 
 	[Authorize(Roles = new[] { "Admin" })]
