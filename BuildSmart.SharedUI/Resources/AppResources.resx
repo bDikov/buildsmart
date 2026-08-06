@@ -1917,4 +1917,31 @@ Boncho | BuildSmart</value>
   <data name="Lander_Full_Item_Wardrobes_Luxury" xml:space="preserve">
     <value>Designer Smoked MDF Wardrobe with Calacatta Backing &amp; Glass LED Display</value>
   </data>
+  <data name="Kanban_FilterTitle" xml:space="preserve">
+    <value>Filter Tasks</value>
+  </data>
+  <data name="Kanban_SearchPlaceholder" xml:space="preserve">
+    <value>Search tasks, trades, or tradesmen...</value>
+  </data>
+  <data name="Kanban_AllCategories" xml:space="preserve">
+    <value>All Categories</value>
+  </data>
+  <data name="Kanban_AllAssignees" xml:space="preserve">
+    <value>All Assignees</value>
+  </data>
+  <data name="Kanban_Unassigned" xml:space="preserve">
+    <value>Unassigned</value>
+  </data>
+  <data name="Kanban_ResetFilters" xml:space="preserve">
+    <value>Reset Filters</value>
+  </data>
+  <data name="Kanban_TaskCountFormat" xml:space="preserve">
+    <value>{0} of {1} tasks shown</value>
+  </data>
+  <data name="ProjectDetail_FilterPlaceholder" xml:space="preserve">
+    <value>Search jobs or tasks...</value>
+  </data>
+  <data name="ProjectDetail_AllCategories" xml:space="preserve">
+    <value>All Categories</value>
+  </data>
 </root>

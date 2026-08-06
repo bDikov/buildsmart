@@ -159,6 +159,38 @@
 
                     </div>
                 </div>
+
+                <!-- Additional Trade Categories for Predefined Offer -->
+                <div class="form-group mt-4">
+                    <label class="form-label">Include Additional Trade Categories (Optional)</label>
+                    <p class="subtitle" style="margin-bottom: 0.75rem;">Select extra trade categories to append to this predefined project offer even if they weren't in the initial preset:</p>
+                    <div class="category-grid">
+                        @foreach (var cat in AvailableCategories)
+                        {
+                            bool isSelected = SelectedCategoryIds.Contains(cat.Id);
+                            <div class="category-card-item @(isSelected ? "selected-card" : "")">
+                                <div class="category-checkbox-card @(isSelected ? "selected" : "")" @onclick="() => ToggleCategory(cat.Id)">
+                                    <input type="checkbox" checked="@isSelected" @onclick:stopPropagation="true" @onchange="() => ToggleCategory(cat.Id)" />
+                                    <span class="category-name">@cat.Name</span>
+                                </div>
+
+                                @if (isSelected)
+                                {
+                                    <div class="tradesman-select-box mt-2">
+                                        <label class="form-sublabel">Assign Tradesman (Optional):</label>
+                                        <select class="form-input form-input-sm" value="@GetCategoryTradesman(cat.Id)" @onchange="(e) => SetCategoryTradesman(cat.Id, e.Value?.ToString())">
+                                            <option value="@Guid.Empty">-- Select Tradesman --</option>
+                                            @foreach (var t in Tradesmen)
+                                            {
+                                                <option value="@t.UserId">@t.FullName (@t.Email)</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
             }
 
             <div class="form-group">
@@ -585,16 +617,18 @@
 
             if (CreationMode == "TradesmanOffer")
             {
-                var tradesmanMap = new Dictionary<Guid, Guid>();
+                var tradesmanMap = new Dictionary<Guid, Guid>(CategoryTradesmanAssignments);
                 if (PresetTradesmanId != Guid.Empty)
                 {
                     tradesmanMap[Guid.Empty] = PresetTradesmanId;
                     foreach (var cat in AvailableCategories)
                     {
-                        tradesmanMap[cat.Id] = PresetTradesmanId;
+                        if (!tradesmanMap.ContainsKey(cat.Id))
+                        {
+                            tradesmanMap[cat.Id] = PresetTradesmanId;
+                        }
                     }
                 }
-
 
                 projectId = await ProjectService.CreateProjectFromOfferTemplateAsync(
                     SelectedHomeownerId,
@@ -603,7 +637,8 @@
                     ProjectLocation,
                     tradesmanMap,
                     AdminMarkupPercentage,
-                    CurrentOfferPhases);
+                    CurrentOfferPhases,
+                    SelectedCategoryIds);
             }
             else
             {

@@ -141,7 +141,80 @@
                     OnDownloadMasterOffer="DownloadMasterOffer"
                     OnAskAdmin="AskAdminQuestion" />
 
-                <h3 id="job-posts-section" class="section-title mt-4">@Loc["ProjectDetail_JobsTitle"]</h3>
+                <div class="d-flex align-items-center justify-content-between flex-wrap mt-4 mb-3 gap-2">
+                    <h3 id="job-posts-section" class="section-title mb-0">@Loc["ProjectDetail_JobsTitle"]</h3>
+                    
+                    @if (ViewModel.JobPosts != null && ViewModel.JobPosts.Any())
+                    {
+                        <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-sm-auto">
+                            <!-- Search Input with inline Icon & Clear Button -->
+                            <div class="filter-input-wrapper flex-grow-1 flex-sm-grow-0" style="min-width: 200px;">
+                                <svg class="filter-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" 
+                                       class="bs-input filter-input filter-search-input py-1" 
+                                       style="font-size: 0.85rem; height: 38px;" 
+                                       placeholder="@Loc["ProjectDetail_FilterPlaceholder"]" 
+                                       value="@_filterSearchQuery" 
+                                       @oninput="OnProjectDetailFilterSearchInput" />
+                                @if (!string.IsNullOrEmpty(_filterSearchQuery))
+                                {
+                                    <button type="button" class="filter-clear-btn" @onclick="ClearProjectDetailSearchFilter" title="Clear search">
+                                        &times;
+                                    </button>
+                                }
+                            </div>
+                            
+                            @if (GetAvailableJobCategories().Count() > 1)
+                            {
+                                <div class="filter-select-wrapper flex-grow-1 flex-sm-grow-0" style="min-width: 150px;">
+                                    <select class="bs-input filter-input filter-select py-1" 
+                                            style="font-size: 0.85rem; height: 38px;" 
+                                            value="@_filterCategory" 
+                                            @onchange="OnProjectDetailFilterCategoryChange">
+                                        <option value="ALL">@Loc["ProjectDetail_AllCategories"]</option>
+                                        @foreach (var cat in GetAvailableJobCategories())
+                                        {
+                                            <option value="@cat">@cat</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            @if (HasProjectDetailActiveFilters)
+                            {
+                                <button type="button" class="bs-btn-dark py-1 px-2 filter-reset-btn" style="height: 38px; font-size: 0.75rem;" @onclick="ResetProjectDetailFilters">
+                                    @Loc["Kanban_ResetFilters"]
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (HasProjectDetailActiveFilters)
+                {
+                    <div class="active-filter-tags d-flex align-items-center flex-wrap gap-2 mb-3">
+                        <span class="active-tags-label text-muted" style="font-size: 0.75rem; font-weight: 600;">Active:</span>
+                        
+                        @if (!string.IsNullOrWhiteSpace(_filterSearchQuery))
+                        {
+                            <span class="filter-pill" @onclick="ClearProjectDetailSearchFilter">
+                                Search: "@_filterSearchQuery"
+                                <span class="pill-remove">&times;</span>
+                            </span>
+                        }
+
+                        @if (_filterCategory != "ALL")
+                        {
+                            <span class="filter-pill" @onclick="ClearProjectDetailCategoryFilter">
+                                Category: @_filterCategory
+                                <span class="pill-remove">&times;</span>
+                            </span>
+                        }
+                    </div>
+                }
 
                 <div class="job-posts-list">
                     @if (ViewModel.JobPosts == null || !ViewModel.JobPosts.Any())
@@ -150,19 +223,27 @@
                     }
                     else
                     {
-                        @foreach (var jobVm in ViewModel.JobPosts)
+                        var filteredJobs = GetFilteredJobPosts();
+                        if (!filteredJobs.Any())
                         {
-                            <JobPostCard 
-                                JobVm="jobVm" 
-                                IsAdmin="_isAdmin"
-                                IsExpanded="_expandedJobs.Contains(jobVm.JobPost.Id)" 
-                                OnToggleExpansion="() => ToggleJobExpansion(jobVm.JobPost.Id)" 
-                                OnViewAuctionHub="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(jobVm.JobPost)"
-                                OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")'
-                                OnEditAnswers='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={jobVm.JobPost.Id}&targetCategoryId={jobVm.JobPost.ServiceCategory.Id}")'
-                                OnReviewScope="() => ViewModel.ReviewScopeCommand.ExecuteAsync(jobVm.JobPost)"
-                                OnSubmitToAdmin="SubmitProjectToAdmin"
-                                OnAskAdmin="AskAdminQuestion" />
+                            <p class="text-muted fst-italic">No tasks or jobs match your filter criteria.</p>
+                        }
+                        else
+                        {
+                            @foreach (var jobVm in filteredJobs)
+                            {
+                                <JobPostCard 
+                                    JobVm="jobVm" 
+                                    IsAdmin="_isAdmin"
+                                    IsExpanded="_expandedJobs.Contains(jobVm.JobPost.Id)" 
+                                    OnToggleExpansion="() => ToggleJobExpansion(jobVm.JobPost.Id)" 
+                                    OnViewAuctionHub="() => ViewModel.ViewAuctionHubCommand.ExecuteAsync(jobVm.JobPost)"
+                                    OnViewAIOffer='() => NavManager.NavigateTo($"/GeneratedOfferPage?jobId={jobVm.JobPost.Id}")'
+                                    OnEditAnswers='() => NavManager.NavigateTo($"/job-wizard?projectId={ViewModel.Project.Id}&jobId={jobVm.JobPost.Id}&targetCategoryId={jobVm.JobPost.ServiceCategory.Id}")'
+                                    OnReviewScope="() => ViewModel.ReviewScopeCommand.ExecuteAsync(jobVm.JobPost)"
+                                    OnSubmitToAdmin="SubmitProjectToAdmin"
+                                    OnAskAdmin="AskAdminQuestion" />
+                            }
                         }
                     }
                 </div>
@@ -188,6 +269,77 @@
     public Guid? JobId { get; set; }
 
     private HashSet<Guid> _expandedJobs = new();
+    private string _filterSearchQuery = string.Empty;
+    private string _filterCategory = "ALL";
+
+    private bool HasProjectDetailActiveFilters => !string.IsNullOrWhiteSpace(_filterSearchQuery) || _filterCategory != "ALL";
+
+    private void OnProjectDetailFilterSearchInput(ChangeEventArgs e)
+    {
+        _filterSearchQuery = e.Value?.ToString() ?? string.Empty;
+        StateHasChanged();
+    }
+
+    private void OnProjectDetailFilterCategoryChange(ChangeEventArgs e)
+    {
+        _filterCategory = e.Value?.ToString() ?? "ALL";
+        StateHasChanged();
+    }
+
+    private void ClearProjectDetailSearchFilter()
+    {
+        _filterSearchQuery = string.Empty;
+        StateHasChanged();
+    }
+
+    private void ClearProjectDetailCategoryFilter()
+    {
+        _filterCategory = "ALL";
+        StateHasChanged();
+    }
+
+    private void ResetProjectDetailFilters()
+    {
+        _filterSearchQuery = string.Empty;
+        _filterCategory = "ALL";
+        StateHasChanged();
+    }
+
+    private IEnumerable<BuildSmart.SharedUI.ViewModels.JobPostViewModel> GetFilteredJobPosts()
+    {
+        if (ViewModel.JobPosts == null) return Enumerable.Empty<BuildSmart.SharedUI.ViewModels.JobPostViewModel>();
+        
+        var list = ViewModel.JobPosts.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(_filterSearchQuery))
+        {
+            var kw = _filterSearchQuery.Trim();
+            list = list.Where(j => 
+                (j.JobPost.Title != null && j.JobPost.Title.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (j.JobPost.ServiceCategory?.Name != null && j.JobPost.ServiceCategory.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (j.JobPost.ServiceCategory?.EnglishName != null && j.JobPost.ServiceCategory.EnglishName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (j.Tasks != null && j.Tasks.Any(t => t.Title != null && t.Title.Contains(kw, StringComparison.OrdinalIgnoreCase)))
+            );
+        }
+
+        if (!string.IsNullOrWhiteSpace(_filterCategory) && _filterCategory != "ALL")
+        {
+            list = list.Where(j => string.Equals(j.JobPost.ServiceCategory?.Name, _filterCategory, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return list;
+    }
+
+    private IEnumerable<string> GetAvailableJobCategories()
+    {
+        if (ViewModel.JobPosts == null) return Enumerable.Empty<string>();
+        return ViewModel.JobPosts
+            .Select(j => j.JobPost.ServiceCategory?.Name)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c!)
+            .Distinct()
+            .OrderBy(c => c);
+    }
 
     private void ToggleJobExpansion(Guid jobId)
     {

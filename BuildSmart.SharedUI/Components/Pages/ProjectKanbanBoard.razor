@@ -100,6 +100,122 @@
             </div>
         </div>
 
+        <!-- Task Filters Toolbar -->
+        <div class="kanban-filter-card bs-card mb-4 p-3 p-md-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="filter-icon-badge">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                    </div>
+                    <span class="filter-title fw-bold">@Loc["Kanban_FilterTitle"]</span>
+                </div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <span class="filter-count-badge">
+                        @string.Format(Loc["Kanban_TaskCountFormat"], GetFilteredTaskCount(), GetTotalTaskCount())
+                    </span>
+                    @if (HasActiveFilters)
+                    {
+                        <button type="button" class="bs-btn-dark py-1 px-3 filter-reset-btn" @onclick="ResetFilters">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                            @Loc["Kanban_ResetFilters"]
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="row g-2 g-md-3">
+                <!-- Search Input with inline Icon & Clear Button -->
+                <div class="col-12 col-md-5">
+                    <div class="filter-input-wrapper">
+                        <svg class="filter-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" 
+                               class="bs-input filter-input filter-search-input" 
+                               placeholder="@Loc["Kanban_SearchPlaceholder"]" 
+                               value="@FilterSearchKeyword" 
+                               @oninput="OnFilterSearchInput" />
+                        @if (!string.IsNullOrEmpty(FilterSearchKeyword))
+                        {
+                            <button type="button" class="filter-clear-btn" @onclick="ClearSearchFilter" title="Clear search">
+                                &times;
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Trade Category Filter -->
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="filter-select-wrapper">
+                        <select class="bs-input filter-input filter-select" 
+                                value="@FilterCategory" 
+                                @onchange="OnFilterCategoryChange">
+                            <option value="ALL">@Loc["Kanban_AllCategories"]</option>
+                            @foreach (var cat in GetAvailableCategories())
+                            {
+                                <option value="@cat">@cat</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Assignee Filter -->
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="filter-select-wrapper">
+                        <select class="bs-input filter-input filter-select" 
+                                value="@FilterAssignee" 
+                                @onchange="OnFilterAssigneeChange">
+                            <option value="ALL">@Loc["Kanban_AllAssignees"]</option>
+                            <option value="UNASSIGNED">@Loc["Kanban_Unassigned"]</option>
+                            @foreach (var tradesman in GetAvailableAssignees())
+                            {
+                                <option value="@tradesman">@tradesman</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Filter Tags / Pills -->
+            @if (HasActiveFilters)
+            {
+                <div class="active-filter-tags d-flex align-items-center flex-wrap gap-2 mt-3 pt-2">
+                    <span class="active-tags-label text-muted" style="font-size: 0.75rem; font-weight: 600;">Active:</span>
+                    
+                    @if (!string.IsNullOrWhiteSpace(FilterSearchKeyword))
+                    {
+                        <span class="filter-pill" @onclick="ClearSearchFilter">
+                            Search: "@FilterSearchKeyword"
+                            <span class="pill-remove">&times;</span>
+                        </span>
+                    }
+
+                    @if (FilterCategory != "ALL")
+                    {
+                        <span class="filter-pill" @onclick="ClearCategoryFilter">
+                            Category: @FilterCategory
+                            <span class="pill-remove">&times;</span>
+                        </span>
+                    }
+
+                    @if (FilterAssignee != "ALL")
+                    {
+                        <span class="filter-pill" @onclick="ClearAssigneeFilter">
+                            Assignee: @(FilterAssignee == "UNASSIGNED" ? Loc["Kanban_Unassigned"].ToString() : FilterAssignee)
+                            <span class="pill-remove">&times;</span>
+                        </span>
+                    }
+                </div>
+            }
+        </div>
+
         <!-- 4 Column Kanban Board -->
         <div class="kanban-board-grid layout-@BoardViewMode">
             <!-- Column 1: To Do -->
@@ -294,13 +410,127 @@
 
     private string BoardViewMode { get; set; } = "horizontal";
     private string TaskSortOption { get; set; } = "Sequence";
+    private string FilterSearchKeyword { get; set; } = string.Empty;
+    private string FilterCategory { get; set; } = "ALL";
+    private string FilterAssignee { get; set; } = "ALL";
+
+    private bool HasActiveFilters => !string.IsNullOrWhiteSpace(FilterSearchKeyword) || FilterCategory != "ALL" || FilterAssignee != "ALL";
+
+    private void OnFilterSearchInput(ChangeEventArgs e)
+    {
+        FilterSearchKeyword = e.Value?.ToString() ?? string.Empty;
+        StateHasChanged();
+    }
+
+    private void OnFilterCategoryChange(ChangeEventArgs e)
+    {
+        FilterCategory = e.Value?.ToString() ?? "ALL";
+        StateHasChanged();
+    }
+
+    private void OnFilterAssigneeChange(ChangeEventArgs e)
+    {
+        FilterAssignee = e.Value?.ToString() ?? "ALL";
+        StateHasChanged();
+    }
+
+    private void ClearSearchFilter()
+    {
+        FilterSearchKeyword = string.Empty;
+        StateHasChanged();
+    }
+
+    private void ClearCategoryFilter()
+    {
+        FilterCategory = "ALL";
+        StateHasChanged();
+    }
+
+    private void ClearAssigneeFilter()
+    {
+        FilterAssignee = "ALL";
+        StateHasChanged();
+    }
+
+    private void ResetFilters()
+    {
+        FilterSearchKeyword = string.Empty;
+        FilterCategory = "ALL";
+        FilterAssignee = "ALL";
+        StateHasChanged();
+    }
+
+    private IEnumerable<string> GetAvailableCategories()
+    {
+        if (BoardData == null) return Enumerable.Empty<string>();
+        return BoardData.CategorySections
+            .Select(s => s.CategoryName)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Distinct()
+            .OrderBy(c => c);
+    }
+
+    private IEnumerable<string> GetAvailableAssignees()
+    {
+        if (BoardData == null) return Enumerable.Empty<string>();
+        return BoardData.CategorySections
+            .SelectMany(s => s.Tasks)
+            .Select(t => t.AssignedTradesmanName)
+            .Where(a => !string.IsNullOrWhiteSpace(a))
+            .Select(a => a!)
+            .Distinct()
+            .OrderBy(a => a);
+    }
+
+    private int GetTotalTaskCount()
+    {
+        if (BoardData == null) return 0;
+        return BoardData.CategorySections.Sum(s => s.Tasks.Count);
+    }
+
+    private int GetFilteredTaskCount()
+    {
+        if (BoardData == null) return 0;
+        return GetTasksByStatus(TaskStatus.ToDo).Count +
+               GetTasksByStatus(TaskStatus.InProgress).Count +
+               GetTasksByStatus(TaskStatus.AwaitingApproval).Count +
+               GetTasksByStatus(TaskStatus.Done).Count;
+    }
 
     private List<KanbanTaskCardDto> GetTasksByStatus(TaskStatus status)
     {
         if (BoardData == null) return new List<KanbanTaskCardDto>();
-        var tasks = BoardData.CategorySections
+        IEnumerable<KanbanTaskCardDto> tasks = BoardData.CategorySections
             .SelectMany(s => s.Tasks)
             .Where(t => t.Status == status);
+
+        if (!string.IsNullOrWhiteSpace(FilterSearchKeyword))
+        {
+            var kw = FilterSearchKeyword.Trim();
+            tasks = tasks.Where(t =>
+                (t.Title != null && t.Title.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (t.CategoryName != null && t.CategoryName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (t.AssignedTradesmanName != null && t.AssignedTradesmanName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (t.Skus != null && t.Skus.Any(s => s.SkuTitle != null && s.SkuTitle.Contains(kw, StringComparison.OrdinalIgnoreCase)))
+            );
+        }
+
+        if (!string.IsNullOrWhiteSpace(FilterCategory) && FilterCategory != "ALL")
+        {
+            tasks = tasks.Where(t => string.Equals(t.CategoryName, FilterCategory, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(FilterAssignee) && FilterAssignee != "ALL")
+        {
+            if (FilterAssignee == "UNASSIGNED")
+            {
+                tasks = tasks.Where(t => string.IsNullOrEmpty(t.AssignedTradesmanName));
+            }
+            else
+            {
+                tasks = tasks.Where(t => string.Equals(t.AssignedTradesmanName, FilterAssignee, StringComparison.OrdinalIgnoreCase));
+            }
+        }
 
         return TaskSortOption switch
         {
@@ -1106,5 +1336,130 @@
         justify-content: center;
         padding: 4rem;
         gap: 1rem;
+    }
+
+    /* Modern Filter Toolbar Styles */
+    .kanban-filter-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: var(--shadow-main);
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .filter-icon-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background-color: var(--bg-card-alt);
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+    }
+    .filter-title {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+    }
+    .filter-count-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background-color: var(--bg-card-alt);
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+    .filter-reset-btn {
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 20px;
+    }
+
+    .filter-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .filter-search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+    .filter-search-input {
+        padding-left: 38px !important;
+        padding-right: 34px !important;
+        height: 42px;
+        font-size: 0.875rem;
+    }
+    .filter-clear-btn {
+        position: absolute;
+        right: 10px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+        border-radius: 50%;
+        transition: color 0.15s ease;
+    }
+    .filter-clear-btn:hover {
+        color: var(--text-primary);
+    }
+    
+    .filter-select-wrapper {
+        width: 100%;
+    }
+    .filter-select {
+        height: 42px;
+        font-size: 0.875rem;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        cursor: pointer;
+    }
+    .filter-select option {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+    }
+
+    /* Active Filter Tags / Pills */
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-primary);
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        padding: 0.25rem 0.65rem;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .filter-pill:hover {
+        background-color: var(--border-color);
+        transform: translateY(-1px);
+    }
+    .pill-remove {
+        font-size: 0.95rem;
+        line-height: 1;
+        opacity: 0.7;
+    }
+    .filter-pill:hover .pill-remove {
+        opacity: 1.0;
+    }
+
+    @@media (max-width: 575.98px) {
+        .kanban-filter-card {
+            padding: 1rem !important;
+        }
+        .filter-search-input, .filter-select {
+            height: 44px;
+        }
     }
 </style>

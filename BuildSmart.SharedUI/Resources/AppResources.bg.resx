@@ -1920,4 +1920,31 @@
   <data name="Lander_Full_Item_Wardrobes_Luxury" xml:space="preserve">
     <value>Дизайнерски пушен МДФ гардероб до тавана с Calacatta гръб &amp; стъклени LED витрини</value>
   </data>
+  <data name="Kanban_FilterTitle" xml:space="preserve">
+    <value>Филтрирай задачи</value>
+  </data>
+  <data name="Kanban_SearchPlaceholder" xml:space="preserve">
+    <value>Търси задачи, специалност или майстор...</value>
+  </data>
+  <data name="Kanban_AllCategories" xml:space="preserve">
+    <value>Всички категории</value>
+  </data>
+  <data name="Kanban_AllAssignees" xml:space="preserve">
+    <value>Всички изпълнители</value>
+  </data>
+  <data name="Kanban_Unassigned" xml:space="preserve">
+    <value>Неназначени</value>
+  </data>
+  <data name="Kanban_ResetFilters" xml:space="preserve">
+    <value>Изчисти филтри</value>
+  </data>
+  <data name="Kanban_TaskCountFormat" xml:space="preserve">
+    <value>{0} от {1} задачи са видими</value>
+  </data>
+  <data name="ProjectDetail_FilterPlaceholder" xml:space="preserve">
+    <value>Търси дейности или задачи...</value>
+  </data>
+  <data name="ProjectDetail_AllCategories" xml:space="preserve">
+    <value>Всички категории</value>
+  </data>
 </root>

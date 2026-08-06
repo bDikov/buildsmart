@@ -10,6 +10,7 @@
 @implements IDisposable
 @inject BuildSmart.SharedUI.Services.SignalRService SignalRService
 @inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
+@inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
 
 <div class="admin-container">
     <div class="header-section d-flex justify-content-between align-items-center">
@@ -73,6 +74,14 @@
                             <span class="project-owner">Owner: @(project.Homeowner?.FirstName ?? "Unknown") @(project.Homeowner?.LastName ?? "") (@(project.Homeowner?.Email ?? "No Email"))</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
+                            @if (project.HasOfferPdf)
+                            {
+                                <span class="offer-status-badge ready" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: var(--color-success);" title="PDF offer is compiled and saved in DB">🟢 PDF Ready</span>
+                            }
+                            else
+                            {
+                                <span class="offer-status-badge pending" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(255, 193, 7, 0.15); color: var(--color-warning);" title="PDF offer will compile on demand when downloaded">🟡 PDF Pending</span>
+                            }
                             <span class="status-badge @project.Status.ToString().ToLower()">@Loc[$"Status_{project.Status}"]</span>
                             <button class="bs-btn-text text-danger p-0" title="Delete Project" @onclick="() => HandleDeleteProject(project.Id, project.Title)">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -109,9 +118,66 @@
                         <button class="bs-btn-secondary btn-sm" @onclick='() => NavManager.NavigateTo($"/project-messages?projectId={project.Id}")'>
                             Chat with Homeowner
                         </button>
+                        @if (project.HasOfferPdf)
+                        {
+                            <a class="bs-btn-primary btn-sm" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                📄 Download PDF Offer
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="bs-btn-primary btn-sm" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background-color: #f59e0b; border-color: #d97706; color: #ffffff;">
+                                ⚡ Generate & Download PDF
+                            </a>
+                        }
+                        <a class="bs-btn-secondary btn-sm" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download?force=true")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            🔄 Regenerate & Download PDF
+                        </a>
+                        <button class="bs-btn-primary btn-sm" style="background-color: var(--color-primary);" @onclick="() => OpenAddCategoryModal(project.Id)">
+                            + Add Trade Category
+                        </button>
                     </div>
                 </div>
             }
+        </div>
+    }
+
+    @if (ShowAddCategoryModal)
+    {
+        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div class="modal-card bs-card" style="width: 100%; max-width: 480px; padding: 24px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3 style="margin-top: 0; margin-bottom: 12px; color: var(--text-primary);">Add Trade Category to Project</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Select a trade category work package to append to this project with default SKUs.</p>
+                
+                <div class="mb-3">
+                    <label class="form-label" style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--text-primary);">Trade Category *</label>
+                    <select class="bs-input" style="width: 100%;" @bind="SelectedCategoryId">
+                        <option value="@Guid.Empty">-- Select Category --</option>
+                        @foreach (var cat in AvailableCategories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--text-primary);">Assign Tradesman (Optional)</label>
+                    <select class="bs-input" style="width: 100%;" @bind="SelectedTradesmanId">
+                        <option value="@Guid.Empty">-- Select Tradesman --</option>
+                        @foreach (var t in TradesmenLookup)
+                        {
+                            <option value="@t.UserId">@t.FullName (@t.Email)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="bs-btn-secondary" @onclick="CloseAddCategoryModal" disabled="@IsSubmittingCategory">Cancel</button>
+                    <button class="bs-btn-primary" @onclick="ConfirmAddCategory" disabled="@(IsSubmittingCategory || SelectedCategoryId == Guid.Empty)">
+                        @(IsSubmittingCategory ? "Adding..." : "Add Category")
+                    </button>
+                </div>
+            </div>
         </div>
     }
 </div>
@@ -374,6 +440,88 @@
             {
                 await JSRuntime.InvokeVoidAsync("alert", $"Failed to delete job: {ex.Message}");
             }
+        }
+    }
+
+    private bool ShowAddCategoryModal = false;
+    private bool IsSubmittingCategory = false;
+    private Guid SelectedTargetProjectId = Guid.Empty;
+    private Guid SelectedCategoryId = Guid.Empty;
+    private Guid SelectedTradesmanId = Guid.Empty;
+    private List<BuildSmart.Core.Domain.Entities.ServiceCategory> AvailableCategories = new();
+    private List<BuildSmart.Core.Application.DTOs.UserLookupDto> TradesmenLookup = new();
+
+    private async Task OpenAddCategoryModal(Guid projectId)
+    {
+        SelectedTargetProjectId = projectId;
+        SelectedCategoryId = Guid.Empty;
+        SelectedTradesmanId = Guid.Empty;
+        
+        try
+        {
+            AvailableCategories = await ProjectService.GetTradeCategoriesAsync();
+            TradesmenLookup = await ProjectService.GetTradesmenLookupAsync();
+            ShowAddCategoryModal = true;
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Failed to load categories: {ex.Message}");
+        }
+    }
+
+    private void CloseAddCategoryModal()
+    {
+        ShowAddCategoryModal = false;
+        SelectedTargetProjectId = Guid.Empty;
+        SelectedCategoryId = Guid.Empty;
+        SelectedTradesmanId = Guid.Empty;
+    }
+
+    private async Task ConfirmAddCategory()
+    {
+        if (SelectedTargetProjectId == Guid.Empty || SelectedCategoryId == Guid.Empty)
+            return;
+
+        IsSubmittingCategory = true;
+        try
+        {
+            await ProjectService.AddCategoryToProjectAsync(
+                SelectedTargetProjectId, 
+                SelectedCategoryId, 
+                SelectedTradesmanId != Guid.Empty ? SelectedTradesmanId : null);
+
+            await JSRuntime.InvokeVoidAsync("alert", "Category added successfully to project!");
+            CloseAddCategoryModal();
+            await TriggerSearch();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error adding category: {ex.Message}");
+        }
+        finally
+        {
+            IsSubmittingCategory = false;
+        }
+    }
+
+    private async Task HandleRegenerateOffer(Guid projectId)
+    {
+        try
+        {
+            var result = await ApiClient.AdminRegenerateOffer.ExecuteAsync(projectId);
+            if (result.Errors?.Count > 0)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error: " + result.Errors[0].Message);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Offer PDF invalidated! Click '⚡ Generate & Download PDF' to generate and view your fresh PDF offer.");
+                await TriggerSearch();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error: " + ex.Message);
         }
     }
 

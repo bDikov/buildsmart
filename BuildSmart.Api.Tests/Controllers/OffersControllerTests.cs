@@ -332,4 +332,132 @@ public class OffersControllerTests
         result.Should().BeOfType<BadRequestObjectResult>()
             .Which.Value.Should().Be("Cannot download offer until all categories are filled out.");
     }
+
+    [Fact]
+    public async Task DownloadOfferPdf_ShouldUseJobTasksFallback_WhenNoAiCalculationsExist()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var project = new Project
+        {
+            Id = projectId,
+            Title = "Kitchen Remodel",
+            LanguageCode = "bg",
+            HomeownerId = homeownerId,
+            Description = "Kitchen work",
+            MasterOfferPdf = null
+        };
+
+        var jobPost = new JobPost
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = projectId,
+            ServiceCategoryId = categoryId,
+            Title = "Kitchen Work Package"
+        };
+        jobPost.SubmitForScopeGeneration();
+        jobPost.CompletePricing();
+
+        var task = new JobTask
+        {
+            Id = Guid.NewGuid(),
+            JobPostId = jobPost.Id,
+            Title = "Install Cabinets",
+            Description = "Install wooden cabinets",
+            EstimatedPrice = 500m,
+            SequenceOrder = 1,
+            AcceptanceCriteria = new List<TaskAcceptanceCriteria>
+            {
+                new TaskAcceptanceCriteria { Description = "Quality verification for Install Cabinets according to BDS" }
+            }
+        };
+        jobPost.JobTasks.Add(task);
+        project.JobPosts.Add(jobPost);
+
+        var homeowner = new User { Id = homeownerId, FirstName = "Maria", LastName = "Petrova" };
+        var dummyPdfBytes = new byte[] { 10, 20, 30 };
+
+        _projectRepoMock.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _aiCalcRepoMock.Setup(r => r.GetByProjectWithTasksAsync(projectId))
+            .ReturnsAsync(new List<AiCalculation>()); // No AI calculations exist
+
+        var userRepoMock = new Mock<IUserRepository>();
+        userRepoMock.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(homeowner);
+        _unitOfWorkMock.Setup(u => u.Users).Returns(userRepoMock.Object);
+
+        _pdfGeneratorServiceMock.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>()))
+            .ReturnsAsync(dummyPdfBytes);
+
+        // Act
+        var result = await _controller.DownloadOfferPdf(projectId);
+
+        // Assert
+        var fileResult = result.Should().BeOfType<FileContentResult>().Subject;
+        fileResult.ContentType.Should().Be("application/pdf");
+        fileResult.FileDownloadName.Should().Be("Kitchen Remodel_Offer.pdf");
+        fileResult.FileContents.Should().BeEquivalentTo(dummyPdfBytes);
+    }
+
+    [Fact]
+    public async Task DownloadOfferPdf_ShouldBypassCacheAndRegenerate_WhenForceIsTrue()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var oldPdfBytes = new byte[] { 1, 1, 1 };
+        var newPdfBytes = new byte[] { 2, 2, 2 };
+
+        var project = new Project
+        {
+            Id = projectId,
+            Title = "Force Test Project",
+            LanguageCode = "bg",
+            HomeownerId = homeownerId,
+            MasterOfferPdf = oldPdfBytes
+        };
+
+        var jobPost = new JobPost { Id = Guid.NewGuid(), ProjectId = projectId, ServiceCategoryId = categoryId, Title = "Test Category" };
+        jobPost.SubmitForScopeGeneration();
+        jobPost.CompletePricing();
+
+        var task = new JobTask { Id = Guid.NewGuid(), JobPostId = jobPost.Id, Title = "Task 1", EstimatedPrice = 100m };
+        jobPost.JobTasks.Add(task);
+        project.JobPosts.Add(jobPost);
+
+        var calculation = new AiCalculation
+        {
+            ProjectId = projectId,
+            ServiceCategoryId = categoryId,
+            TotalEstimatedPrice = 100m,
+            Tasks = new List<AiCalculationTask> { new AiCalculationTask { Title = "Task 1", SequenceOrder = 1, EstimatedPrice = 100m } }
+        };
+
+        _projectRepoMock.Setup(r => r.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _aiCalcRepoMock.Setup(r => r.GetByProjectWithTasksAsync(projectId)).ReturnsAsync(new List<AiCalculation> { calculation });
+
+        var categoryRepoMock = new Mock<IServiceCategoryRepository>();
+        categoryRepoMock.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync(new ServiceCategory { Id = categoryId, Name = "Test Category" });
+        _unitOfWorkMock.Setup(u => u.ServiceCategories).Returns(categoryRepoMock.Object);
+
+        var userRepoMock = new Mock<IUserRepository>();
+        userRepoMock.Setup(r => r.GetByIdAsync(homeownerId)).ReturnsAsync(new User { Id = homeownerId, FirstName = "Test", LastName = "User" });
+        _unitOfWorkMock.Setup(u => u.Users).Returns(userRepoMock.Object);
+
+        _pdfGeneratorServiceMock.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>()))
+            .ReturnsAsync(newPdfBytes);
+
+        // Act
+        var result = await _controller.DownloadOfferPdf(projectId, force: true);
+
+        // Assert
+        var fileResult = result.Should().BeOfType<FileContentResult>().Subject;
+        fileResult.FileContents.Should().BeEquivalentTo(newPdfBytes);
+        project.MasterOfferPdf.Should().BeEquivalentTo(newPdfBytes); // Should be updated to new bytes
+    }
 }
+

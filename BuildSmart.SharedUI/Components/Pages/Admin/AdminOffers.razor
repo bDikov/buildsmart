@@ -64,7 +64,17 @@
                                     @project.Homeowner.FirstName @project.Homeowner.LastName (@project.Homeowner.Email)
                                 </p>
                             </div>
-                            <span class="status-badge @project.Status.ToString().ToLower()">@Loc[$"Status_{project.Status}"]</span>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (project.HasOfferPdf)
+                                {
+                                    <span class="offer-status-badge ready" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: var(--color-success);" title="PDF offer is compiled and saved in DB">🟢 PDF Ready</span>
+                                }
+                                else
+                                {
+                                    <span class="offer-status-badge pending" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(255, 193, 7, 0.15); color: var(--color-warning);" title="PDF offer will compile on demand when downloaded">🟡 PDF Pending</span>
+                                }
+                                <span class="status-badge @project.Status.ToString().ToLower()">@Loc[$"Status_{project.Status}"]</span>
+                            </div>
                         </div>
                         
                         <hr class="divider" />
@@ -75,21 +85,21 @@
                             {
                                 <a class="bs-btn-primary btn-sm mb-2" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                    Download Master Offer PDF
+                                    📄 Download PDF Offer
                                 </a>
                             }
                             else
                             {
                                 <a class="bs-btn-primary btn-sm mb-2" style="background-color: #ff9800; border-color: #ff9800; color: #ffffff;" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                    Download Draft Offer PDF
+                                    ⚡ Generate & Download PDF
                                 </a>
                             }
 
-                            <button class="bs-btn-secondary btn-sm" @onclick="() => HandleRegenerateOffer(project.Id)" disabled="@IsRegenerating">
+                            <a class="bs-btn-secondary btn-sm mb-2" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download?force=true")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M2.5 2v6h6M21.5 22v-6h-6M21.34 15.57a10 10 0 1 0-1.57 6.43l3.5-3.5"/></svg>
-                                @(IsRegenerating ? "Regenerating..." : "Regenerate Offer")
-                            </button>
+                                🔄 Regenerate & Download PDF
+                            </a>
                         </div>
                     </div>
                 }
@@ -157,7 +167,8 @@
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "Regeneration started in the background! The page will automatically refresh when the PDF is ready.");
+                await JSRuntime.InvokeVoidAsync("alert", "Offer cache invalidated! Click 'Generate & Download PDF' to view your fresh PDF offer.");
+                await TriggerSearch();
             }
         }
         catch (Exception ex)
