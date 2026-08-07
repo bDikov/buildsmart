@@ -209,7 +209,14 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 			else if (item is IGetAvailableAuctions_AvailableAuctions auction)
 			{
-				await AppServiceLocator.Navigation.NavigateToAsync($"/auction-hub?jobId={auction.Job.Id}");
+				if (auction.Job?.Project?.Id != null && auction.Job.Project.Id != Guid.Empty)
+				{
+					await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?projectId={auction.Job.Project.Id}");
+				}
+				else
+				{
+					await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?jobId={auction.Job.Id}");
+				}
 			}
 		}
 

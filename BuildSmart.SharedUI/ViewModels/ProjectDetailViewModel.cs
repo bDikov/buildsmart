@@ -437,7 +437,14 @@ public partial class ProjectDetailViewModel : ObservableObject, IQueryAttributab
 		if (job == null) return;
 		try
 		{
-			await AppServiceLocator.Navigation.NavigateToAsync($"/auction-hub?jobId={job.Id}");
+			if (job.Project?.Id != null && Guid.TryParse(job.Project.Id.ToString(), out var projId))
+			{
+				await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?projectId={projId}");
+			}
+			else
+			{
+				await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?jobId={job.Id}");
+			}
 		}
 		catch (Exception ex)
 		{

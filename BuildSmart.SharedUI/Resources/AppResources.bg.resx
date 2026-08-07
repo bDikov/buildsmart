@@ -1947,4 +1947,10 @@
   <data name="ProjectDetail_AllCategories" xml:space="preserve">
     <value>Всички категории</value>
   </data>
+  <data name="ProjectDetail_PendingActivation" xml:space="preserve">
+    <value>Предстои активиране</value>
+  </data>
+  <data name="ProjectDetail_PendingCategoryDisclaimer" xml:space="preserve">
+    <value>Тази категория предстои да бъде активирана. Включените задачи не са окончателни и са изключени от крайната сума за плащане.</value>
+  </data>
 </root>

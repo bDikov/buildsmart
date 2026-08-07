@@ -134,6 +134,7 @@ fragment JobPostDetails on JobPost {
     id
   }
   status
+  categoryStatus
   generatedScope
   userEditedScope
   adminFeedback

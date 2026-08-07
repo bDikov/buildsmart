@@ -1944,4 +1944,10 @@ Boncho | BuildSmart</value>
   <data name="ProjectDetail_AllCategories" xml:space="preserve">
     <value>All Categories</value>
   </data>
+  <data name="ProjectDetail_PendingActivation" xml:space="preserve">
+    <value>Pending Activation</value>
+  </data>
+  <data name="ProjectDetail_PendingCategoryDisclaimer" xml:space="preserve">
+    <value>This trade package is pending activation. Tasks below are non-firm and excluded from payment/contract grand totals.</value>
+  </data>
 </root>

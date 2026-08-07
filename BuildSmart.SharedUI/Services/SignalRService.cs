@@ -276,8 +276,7 @@ public class SignalRService : IAsyncDisposable
 					if (route == "AuctionHub" && element.TryGetProperty("jobId", out var jobIdProp))
 					{
 						var jobId = jobIdProp.GetString();
-						// Navigate to Auction Hub with JobId
-						await _navigation.NavigateToAsync($"AuctionHubPage?jobId={jobId}");
+						await _navigation.NavigateToAsync($"/project-detail?jobId={jobId}");
 					}
 					else if (route == "ProjectMessages" && element.TryGetProperty("projectId", out var projectIdProp))
 					{

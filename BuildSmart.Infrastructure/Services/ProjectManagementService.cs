@@ -152,6 +152,7 @@ public class ProjectManagementService : IProjectManagementService
                 Title = $"{category.Name} - Work Package",
                 Description = $"Auto-configured work package for {category.Name}",
                 Location = location ?? "Sofia",
+                CategoryStatus = ProjectCategoryStatus.Active,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -285,6 +286,7 @@ public class ProjectManagementService : IProjectManagementService
 
         decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
         var createdCategoryIds = new HashSet<Guid>();
+        var jobPostsByCategory = new Dictionary<Guid, JobPost>();
 
         foreach (var phase in phases)
         {
@@ -349,55 +351,63 @@ public class ProjectManagementService : IProjectManagementService
 
             createdCategoryIds.Add(categoryId);
 
-            var jobPost = new JobPost
+            if (!jobPostsByCategory.TryGetValue(categoryId, out var jobPost))
             {
-                Id = Guid.NewGuid(),
-                ProjectId = project.Id,
-                HomeownerProfileId = homeowner.HomeownerProfile.Id,
-                ServiceCategoryId = categoryId,
-                Title = phase.PhaseTitle,
-                Description = $"Detailed work phase: {phase.PhaseTitle}",
-                Location = location ?? "Sofia",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+                var matchedCategoryObj = allCategories.FirstOrDefault(c => c.Id == categoryId);
+                string catName = matchedCategoryObj?.Name ?? phase.CategoryName ?? phase.PhaseTitle;
 
-            _context.JobPosts.Add(jobPost);
+                jobPost = new JobPost
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = project.Id,
+                    HomeownerProfileId = homeowner.HomeownerProfile.Id,
+                    ServiceCategoryId = categoryId,
+                    Title = $"{catName} - Work Package",
+                    Description = $"Detailed work package for {catName}",
+                    Location = location ?? "Sofia",
+                    CategoryStatus = ProjectCategoryStatus.Active,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            if (categoryTradesmanMap != null && categoryTradesmanMap.Any())
-            {
-                Guid tradesmanId = Guid.Empty;
-                if (phase.CategoryId.HasValue && categoryTradesmanMap.TryGetValue(phase.CategoryId.Value, out var tId))
-                {
-                    tradesmanId = tId;
-                }
-                else if (categoryTradesmanMap.TryGetValue(categoryId, out var cId))
-                {
-                    tradesmanId = cId;
-                }
-                else
-                {
-                    tradesmanId = categoryTradesmanMap.Values.FirstOrDefault(v => v != Guid.Empty);
-                }
+                _context.JobPosts.Add(jobPost);
+                jobPostsByCategory[categoryId] = jobPost;
 
-                if (tradesmanId != Guid.Empty)
+                if (categoryTradesmanMap != null && categoryTradesmanMap.Any())
                 {
-                    jobPost.AssignedTradesmanId = tradesmanId;
-                    _context.CategoryTradesmanAssignments.Add(new CategoryTradesmanAssignment
+                    Guid tradesmanId = Guid.Empty;
+                    if (phase.CategoryId.HasValue && categoryTradesmanMap.TryGetValue(phase.CategoryId.Value, out var tId))
                     {
-                        Id = Guid.NewGuid(),
-                        ProjectId = project.Id,
-                        JobPostId = jobPost.Id,
-                        ServiceCategoryId = categoryId,
-                        TradesmanId = tradesmanId,
-                        AssignedByAdminId = homeownerUserId,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    });
-                }
-            }
+                        tradesmanId = tId;
+                    }
+                    else if (categoryTradesmanMap.TryGetValue(categoryId, out var cId))
+                    {
+                        tradesmanId = cId;
+                    }
+                    else
+                    {
+                        tradesmanId = categoryTradesmanMap.Values.FirstOrDefault(v => v != Guid.Empty);
+                    }
 
-            jobPost.Publish();
+                    if (tradesmanId != Guid.Empty)
+                    {
+                        jobPost.AssignedTradesmanId = tradesmanId;
+                        _context.CategoryTradesmanAssignments.Add(new CategoryTradesmanAssignment
+                        {
+                            Id = Guid.NewGuid(),
+                            ProjectId = project.Id,
+                            JobPostId = jobPost.Id,
+                            ServiceCategoryId = categoryId,
+                            TradesmanId = tradesmanId,
+                            AssignedByAdminId = homeownerUserId,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                jobPost.Publish();
+            }
 
             int taskSeq = 0;
             foreach (var item in phase.Items)
@@ -568,6 +578,16 @@ public class ProjectManagementService : IProjectManagementService
         var category = await _context.ServiceCategories.FirstOrDefaultAsync(c => c.Id == categoryId);
         if (category == null)
             throw new ArgumentException("Category not found.");
+
+        var existingJobPost = await _context.JobPosts.FirstOrDefaultAsync(j => j.ProjectId == projectId && j.ServiceCategoryId == categoryId);
+        if (existingJobPost != null)
+        {
+            if (assignedTradesmanId.HasValue && assignedTradesmanId.Value != Guid.Empty)
+            {
+                await AssignTradesmanToCategoryAsync(projectId, existingJobPost.Id, assignedTradesmanId.Value, adminUserId ?? project.HomeownerId);
+            }
+            return;
+        }
 
         var homeownerProfileId = project.Homeowner?.HomeownerProfile?.Id;
         if (!homeownerProfileId.HasValue)
@@ -987,10 +1007,16 @@ public class ProjectManagementService : IProjectManagementService
             CategorySections = new List<CategoryKanbanSectionDto>()
         };
 
-        var filteredJobPosts = project.JobPosts;
-        if (role == UserRoleTypes.Tradesman)
+        var filteredJobPosts = project.JobPosts.AsEnumerable();
+        if (role == UserRoleTypes.Homeowner)
         {
-            filteredJobPosts = project.JobPosts.Where(j => j.AssignedTradesmanId == currentUserId).ToList();
+            // Homeowner cannot see Draft categories
+            filteredJobPosts = filteredJobPosts.Where(j => j.CategoryStatus != ProjectCategoryStatus.Draft);
+        }
+        else if (role == UserRoleTypes.Tradesman)
+        {
+            // Assigned tradesman sees Draft/Pending/Active for their category; other tradesmen see ONLY Active categories
+            filteredJobPosts = filteredJobPosts.Where(j => j.AssignedTradesmanId == currentUserId || j.CategoryStatus == ProjectCategoryStatus.Active);
         }
 
         foreach (var jobPost in filteredJobPosts.OrderBy(j => j.Title))
@@ -1000,6 +1026,7 @@ public class ProjectManagementService : IProjectManagementService
                 JobPostId = jobPost.Id,
                 ServiceCategoryId = jobPost.ServiceCategoryId,
                 CategoryName = jobPost.ServiceCategory?.Name ?? jobPost.Title,
+                CategoryStatus = jobPost.CategoryStatus,
                 AssignedTradesmanId = jobPost.AssignedTradesmanId,
                 AssignedTradesmanName = jobPost.AssignedTradesman != null
                     ? $"{jobPost.AssignedTradesman.FirstName} {jobPost.AssignedTradesman.LastName}".Trim()
@@ -1054,11 +1081,14 @@ public class ProjectManagementService : IProjectManagementService
             PaidTasks = new List<KanbanTaskCardDto>()
         };
 
-        var filteredJobPosts = project.JobPosts;
+        var filteredJobPosts = project.JobPosts.AsEnumerable();
         if (role == UserRoleTypes.Tradesman)
         {
-            filteredJobPosts = project.JobPosts.Where(j => j.AssignedTradesmanId == currentUserId).ToList();
+            filteredJobPosts = project.JobPosts.Where(j => j.AssignedTradesmanId == currentUserId);
         }
+
+        // Only Active categories are included in payment calculations
+        filteredJobPosts = filteredJobPosts.Where(j => j.CategoryStatus == ProjectCategoryStatus.Active);
 
         foreach (var jobPost in filteredJobPosts)
         {
@@ -1186,6 +1216,7 @@ public class ProjectManagementService : IProjectManagementService
             TaskId = task.Id,
             JobPostId = jobPost.Id,
             CategoryName = jobPost.ServiceCategory?.Name ?? jobPost.Title,
+            CategoryStatus = jobPost.CategoryStatus,
             Title = task.Title,
             Description = task.Description,
             SequenceOrder = task.SequenceOrder,
@@ -1476,6 +1507,44 @@ public class ProjectManagementService : IProjectManagementService
         foreach (var t in allTasks)
         {
             t.SequenceOrder = seq++;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateJobPostCategoryStatusAsync(Guid jobPostId, ProjectCategoryStatus newStatus, Guid currentUserId, UserRoleTypes role)
+    {
+        var jobPost = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobPostId);
+        if (jobPost == null)
+            throw new ArgumentException("JobPost not found.");
+
+        if (role == UserRoleTypes.Admin)
+        {
+            jobPost.SetCategoryStatus(newStatus);
+        }
+        else if (role == UserRoleTypes.Tradesman)
+        {
+            if (jobPost.AssignedTradesmanId != currentUserId)
+                throw new UnauthorizedAccessException("Only the assigned tradesman or an admin can update category status.");
+
+            if (jobPost.CategoryStatus == ProjectCategoryStatus.Draft && newStatus == ProjectCategoryStatus.Pending)
+            {
+                jobPost.SetCategoryStatus(ProjectCategoryStatus.Pending);
+            }
+            else
+            {
+                throw new InvalidOperationException("Tradesmen can only submit Draft categories for review (Pending).");
+            }
+        }
+        else
+        {
+            throw new UnauthorizedAccessException("Homeowners cannot change category status.");
+        }
+
+        var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == jobPost.ProjectId);
+        if (project != null)
+        {
+            project.MasterOfferPdf = null; // Invalidate cache to ensure new offer PDF reflects category status
         }
 
         await _context.SaveChangesAsync();

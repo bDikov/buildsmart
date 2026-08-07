@@ -1,4 +1,5 @@
 using BuildSmart.Core.Domain.Entities;
+using BuildSmart.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -30,6 +31,10 @@ public class JobPostConfiguration : IEntityTypeConfiguration<JobPost>
 
         builder.Property(jp => jp.Location)
             .HasMaxLength(255);
+
+        builder.Property(jp => jp.CategoryStatus)
+            .HasDefaultValue(ProjectCategoryStatus.Draft)
+            .IsRequired();
 
         // Configure ImageUrls as a simple JSON array in the DB
         builder.Property(jp => jp.ImageUrls)

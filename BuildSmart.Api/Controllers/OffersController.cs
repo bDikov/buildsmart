@@ -55,15 +55,17 @@ public class OffersController : ControllerBase
             return File(project.MasterOfferPdf, "application/pdf", $"{project.Title}_Offer.pdf");
         }
 
-        var activeJobPosts = (project.JobPosts?.ToList() ?? new List<JobPost>()).Where(jp => jp.Status != JobPostStatus.Cancelled).ToList();
-        bool hasTasks = activeJobPosts.Any(j => j.JobTasks != null && j.JobTasks.Any());
-        var projectCalcs = (await _unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId)).ToList();
-        bool hasValidCalcs = projectCalcs.Any(c => c.Tasks != null && c.Tasks.Any());
-
         if (project.JobPosts != null && project.JobPosts.Any(jp => jp.Status == JobPostStatus.Draft))
         {
             return BadRequest("Cannot download offer until all categories are filled out.");
         }
+
+        var activeJobPosts = (project.JobPosts?.ToList() ?? new List<JobPost>())
+            .Where(jp => jp.Status != JobPostStatus.Cancelled && jp.CategoryStatus != ProjectCategoryStatus.Draft)
+            .ToList();
+        bool hasTasks = activeJobPosts.Any(j => j.JobTasks != null && j.JobTasks.Any());
+        var projectCalcs = (await _unitOfWork.AiCalculations.GetByProjectWithTasksAsync(projectId)).ToList();
+        bool hasValidCalcs = projectCalcs.Any(c => c.Tasks != null && c.Tasks.Any());
 
         if (!hasTasks && !hasValidCalcs)
         {
@@ -118,10 +120,17 @@ public class OffersController : ControllerBase
                 if (calc.Tasks == null || !calc.Tasks.Any()) continue;
 
                 var category = await _unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
+                var matchingJp = activeJobPosts.FirstOrDefault(j => j.ServiceCategoryId == calc.ServiceCategoryId);
+                if (matchingJp != null && matchingJp.CategoryStatus == ProjectCategoryStatus.Draft) continue;
+
                 var categoryName = category?.Name ?? "General";
                 if (category != null && !isBg && !string.IsNullOrEmpty(category.EnglishName))
                 {
                     categoryName = category.EnglishName;
+                }
+                if (matchingJp != null && matchingJp.CategoryStatus == ProjectCategoryStatus.Pending)
+                {
+                    categoryName += isBg ? " (Чака активиране)" : " (Pending Activation)";
                 }
 
                 decimal categorySubtotal = 0m;
@@ -139,7 +148,10 @@ public class OffersController : ControllerBase
                     });
                 }
 
-                grandTotal += categorySubtotal;
+                if (matchingJp == null || matchingJp.CategoryStatus == ProjectCategoryStatus.Active)
+                {
+                    grandTotal += categorySubtotal;
+                }
 
                 if (!categoryGroups.TryGetValue(categoryName, out var group))
                 {
@@ -165,6 +177,10 @@ public class OffersController : ControllerBase
                 if (jp.ServiceCategory != null && !isBg && !string.IsNullOrEmpty(jp.ServiceCategory.EnglishName) && categoryName == jp.ServiceCategory.Name)
                 {
                     categoryName = jp.ServiceCategory.EnglishName;
+                }
+                if (jp.CategoryStatus == ProjectCategoryStatus.Pending)
+                {
+                    categoryName += isBg ? " (Чака активиране)" : " (Pending Activation)";
                 }
 
                 decimal subtotal = 0m;
@@ -195,7 +211,10 @@ public class OffersController : ControllerBase
                     });
                 }
 
-                grandTotal += subtotal;
+                if (jp.CategoryStatus == ProjectCategoryStatus.Active)
+                {
+                    grandTotal += subtotal;
+                }
 
                 if (!categoryGroups.TryGetValue(categoryName, out var group))
                 {

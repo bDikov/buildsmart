@@ -42,7 +42,7 @@
                             <span class="status-badge status-@(ViewModel.Project.Status.ToString().ToLower())">@GetProjectDisplayStatus()</span>
                             @if (ShouldShowConsultationBadge())
                             {
-                                <span class="status-badge status-underreview" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
+                                <span class="badge-pending-activation">
                                     @(IsBulgarian() ? "Заявена Консултация" : "Consultation Requested")
                                 </span>
                             }

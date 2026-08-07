@@ -112,9 +112,15 @@ public partial class PassedAuctionsViewModel : ObservableObject
     [RelayCommand]
     private async Task NavigateToDetailsAsync(IGetPassedAuctions_PassedAuctions auction)
     {
-        if (auction == null) return;
-        // Using same route as FeedPage for consistency
-        await AppServiceLocator.Navigation.NavigateToAsync($"{"AuctionHubPage"}?jobId={auction.Job.Id}");
+        if (auction?.Job == null) return;
+        if (auction.Job.Project?.Id != null && auction.Job.Project.Id != Guid.Empty)
+        {
+            await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?projectId={auction.Job.Project.Id}");
+        }
+        else
+        {
+            await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?jobId={auction.Job.Id}");
+        }
     }
 }
 

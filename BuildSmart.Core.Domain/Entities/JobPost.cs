@@ -73,6 +73,12 @@ public class JobPost : BaseEntity
 	// --- Auction Mechanics ---
 	public JobPostStatus Status { get; private set; } = JobPostStatus.Draft;
 
+	/// <summary>
+	/// Status of this trade category within the project (Draft, Pending, Active).
+	/// Defaults to Draft.
+	/// </summary>
+	public ProjectCategoryStatus CategoryStatus { get; set; } = ProjectCategoryStatus.Draft;
+
 	public Amount? EstimatedBudget { get; set; }
 
 	/// <summary>
@@ -109,6 +115,7 @@ public class JobPost : BaseEntity
 		if (Status == JobPostStatus.Draft || Status == JobPostStatus.UnderReview)
 		{
 			Status = JobPostStatus.Open;
+			CategoryStatus = ProjectCategoryStatus.Active;
 			UpdatedAt = DateTime.UtcNow;
 		}
 	}
@@ -134,6 +141,12 @@ public class JobPost : BaseEntity
 	public void ForceSetStatus(JobPostStatus status)
 	{
 		Status = status;
+		UpdatedAt = DateTime.UtcNow;
+	}
+
+	public void SetCategoryStatus(ProjectCategoryStatus status)
+	{
+		CategoryStatus = status;
 		UpdatedAt = DateTime.UtcNow;
 	}
 
@@ -181,6 +194,7 @@ public class JobPost : BaseEntity
 		if (Status == JobPostStatus.GeneratingScope)
 		{
 			Status = JobPostStatus.WaitingForUserReview;
+			CategoryStatus = ProjectCategoryStatus.Active;
 			UpdatedAt = DateTime.UtcNow;
 		}
 	}

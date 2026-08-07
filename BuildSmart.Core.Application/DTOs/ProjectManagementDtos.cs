@@ -27,6 +27,7 @@ public class CategoryKanbanSectionDto
     public Guid JobPostId { get; set; }
     public Guid ServiceCategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    public ProjectCategoryStatus CategoryStatus { get; set; } = ProjectCategoryStatus.Draft;
     public Guid? AssignedTradesmanId { get; set; }
     public string? AssignedTradesmanName { get; set; }
     public List<KanbanTaskCardDto> Tasks { get; set; } = new();
@@ -37,6 +38,7 @@ public class KanbanTaskCardDto
     public Guid TaskId { get; set; }
     public Guid JobPostId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    public ProjectCategoryStatus CategoryStatus { get; set; } = ProjectCategoryStatus.Draft;
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int SequenceOrder { get; set; }

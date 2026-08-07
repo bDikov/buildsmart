@@ -2430,6 +2430,26 @@ public class Mutation
 		return true;
 	}
 
+	[Authorize]
+	public async Task<bool> UpdateJobPostCategoryStatus(
+		Guid jobPostId,
+		ProjectCategoryStatus status,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IProjectManagementService projectManagementService)
+	{
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var currentUserId))
+		{
+			throw new GraphQLException("Invalid user credentials.");
+		}
+
+		var roleClaim = claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value;
+		var role = Enum.TryParse<UserRoleTypes>(roleClaim, true, out var r) ? r : UserRoleTypes.Homeowner;
+
+		await projectManagementService.UpdateJobPostCategoryStatusAsync(jobPostId, status, currentUserId, role);
+		return true;
+	}
+
 	private static string GetEnglishUnitType(string unitType)
 	{
 		if (string.IsNullOrWhiteSpace(unitType)) return string.Empty;

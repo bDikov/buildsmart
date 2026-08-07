@@ -25,5 +25,6 @@ public interface IProjectManagementService
     Task AddCategoryToProjectAsync(Guid projectId, Guid categoryId, Guid? assignedTradesmanId = null, Guid? adminUserId = null);
     Task ReorderTaskAsync(Guid taskId, int direction, Guid currentUserId);
     Task MoveTaskBeforeTaskAsync(Guid draggedTaskId, Guid targetTaskId, Guid currentUserId);
+    Task UpdateJobPostCategoryStatusAsync(Guid jobPostId, ProjectCategoryStatus newStatus, Guid currentUserId, UserRoleTypes role);
 }
 

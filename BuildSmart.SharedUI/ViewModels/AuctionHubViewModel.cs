@@ -131,6 +131,12 @@ public partial class AuctionHubViewModel : ObservableObject, IDisposable
 			{
 				Auction = result.Data.AuctionById;
 
+				if (Auction.Job?.Project?.Id != null && Guid.TryParse(Auction.Job.Project.Id.ToString(), out var projId) && projId != Guid.Empty)
+				{
+					await AppServiceLocator.Navigation.NavigateToAsync($"/project-detail?projectId={projId}");
+					return;
+				}
+
 				if (CurrentTradesmanProfileId.HasValue && Auction.Bids != null)
 				{
 					var profileIdStr = CurrentTradesmanProfileId.Value.ToString();

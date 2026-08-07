@@ -255,8 +255,14 @@
     {
         if (auction?.Job != null)
         {
-            // Note: Update "auction-hub" route based on actual component route
-            NavManager.NavigateTo($"/auction-hub?jobId={auction.Job.Id}");
+            if (auction.Job.Project?.Id != null && auction.Job.Project.Id != Guid.Empty)
+            {
+                NavManager.NavigateTo($"/project-detail?projectId={auction.Job.Project.Id}");
+            }
+            else
+            {
+                NavManager.NavigateTo($"/project-detail?jobId={auction.Job.Id}");
+            }
         }
     }
 

@@ -46,7 +46,7 @@ public class NavigationBridge : INavigationBridge
                     "Notifications" => "/notifications",
                     "ActiveJobs" => "/active-jobs",
                     "TradesmanDetails" => "/tradesman-details",
-                    "AuctionHub" => "/auction-hub",
+                    "AuctionHub" => "/project-detail",
                     "ScopeReview" => "/scope-review",
                     "TaskBreakdown" => "/task-breakdown",
                     "BidDetails" => "/bid-details",

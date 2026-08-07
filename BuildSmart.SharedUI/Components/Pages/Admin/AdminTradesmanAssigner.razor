@@ -1,9 +1,10 @@
 @using BuildSmart.Core.Application.DTOs
+@using BuildSmart.Core.Domain.Enums
 @inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
 @inject BuildSmart.SharedUI.Services.IAlertService AlertService
 
 <div class="assigner-card">
-    <h4 class="assigner-title">Assign Tradesman to Category Packages</h4>
+    <h4 class="assigner-title">Assign Tradesman & Manage Category Status</h4>
     
     @if (IsLoading)
     {
@@ -12,7 +13,7 @@
     else
     {
         <div class="packages-list">
-            @foreach (var sec in Sections)
+            @foreach (var sec in Sections.GroupBy(s => s.ServiceCategoryId != Guid.Empty ? (object)s.ServiceCategoryId : s.CategoryName).Select(g => g.First()))
             {
                 <div class="package-row">
                     <div class="package-info">
@@ -22,16 +23,28 @@
                         </span>
                     </div>
                     
-                    <div class="assign-action">
-                        <select class="select-input" @onchange="(e) => AssignTradesman(sec.JobPostId, e.Value?.ToString())">
-                            <option value="">-- Select Tradesman --</option>
-                            @foreach (var t in Tradesmen)
-                            {
-                                <option value="@t.UserId" selected="@(sec.AssignedTradesmanId == t.UserId)">
-                                    @t.FullName (@t.Email)
-                                </option>
-                            }
-                        </select>
+                    <div class="assign-action d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="status-label" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Status:</span>
+                            <select class="select-input" value="@sec.CategoryStatus.ToString()" @onchange="(e) => UpdateCategoryStatus(sec.JobPostId, e.Value?.ToString())">
+                                <option value="Draft">Draft</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Active">Active</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="tradesman-label" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Tradesman:</span>
+                            <select class="select-input" @onchange="(e) => AssignTradesman(sec.JobPostId, e.Value?.ToString())">
+                                <option value="">-- Select Tradesman --</option>
+                                @foreach (var t in Tradesmen)
+                                {
+                                    <option value="@t.UserId" selected="@(sec.AssignedTradesmanId == t.UserId)">
+                                        @t.FullName (@t.Email)
+                                    </option>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
             }
@@ -66,6 +79,8 @@
         background-color: var(--bg-card-alt);
         border-radius: 8px;
         border: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
     .package-info {
         display: flex;
@@ -86,8 +101,9 @@
         color: var(--text-primary);
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        padding: 0.5rem 0.75rem;
+        padding: 0.4rem 0.65rem;
         font-size: 0.85rem;
+        font-weight: 600;
         outline: none;
     }
     select.select-input option {
@@ -135,6 +151,23 @@
         catch (Exception ex)
         {
             await AlertService.DisplayAlert("Assignment Error", ex.Message, "OK");
+        }
+    }
+
+    private async Task UpdateCategoryStatus(Guid jobPostId, string? newStatusStr)
+    {
+        if (string.IsNullOrEmpty(newStatusStr) || !Enum.TryParse<ProjectCategoryStatus>(newStatusStr, out var newStatus))
+            return;
+
+        try
+        {
+            await ProjectService.UpdateJobPostCategoryStatusAsync(jobPostId, newStatus, AdminUserId, UserRoleTypes.Admin);
+            await AlertService.DisplayAlert("Success", $"Category status updated to {newStatus}.", "OK");
+            await OnAssignmentsChanged.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            await AlertService.DisplayAlert("Status Update Error", ex.Message, "OK");
         }
     }
 }

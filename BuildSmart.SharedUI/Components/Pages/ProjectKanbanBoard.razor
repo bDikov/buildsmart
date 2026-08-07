@@ -764,8 +764,9 @@
     private RenderFragment RenderTaskCard(KanbanTaskCardDto task) => __builder =>
     {
         bool isDraggable = CurrentUserRole == UserRoleTypes.Admin || CurrentUserRole == UserRoleTypes.Tradesman;
+        bool isPending = task.CategoryStatus == ProjectCategoryStatus.Pending;
 
-        <div class="task-card @(isDraggable ? "is-draggable" : "not-draggable") @(DragOverTaskId == task.TaskId ? "drop-target-hover" : "")"
+        <div class="task-card @(isPending ? "task-card-pending" : "") @(isDraggable ? "is-draggable" : "not-draggable") @(DragOverTaskId == task.TaskId ? "drop-target-hover" : "")"
              draggable="@isDraggable.ToString().ToLower()"
              @ondragstart="(e) => HandleDragStart(e, task)"
              @ondragend="HandleDragEnd"
@@ -781,20 +782,28 @@
                 <div class="drop-insertion-line"></div>
             }
             <div class="card-top-bar">
-                <span class="card-category">@task.CategoryName</span>
+                <span class="card-category">
+                    @task.CategoryName
+                    @if (isPending)
+                    {
+                        <span class="badge-pending-activation ms-1" style="font-size: 0.7rem; padding: 1px 6px;">
+                            @Loc["ProjectDetail_PendingActivation"]
+                        </span>
+                    }
+                </span>
                 @if (CurrentUserRole == UserRoleTypes.Tradesman)
                 {
-                    <span class="card-price" title="Negotiated Tradesman Payout Rate">Rate: €@task.DisplayPrice.ToString("F2")</span>
+                    <span class="card-price @(isPending ? "price-pending" : "")" title="Negotiated Tradesman Payout Rate">Rate: €@task.DisplayPrice.ToString("F2")</span>
                 }
                 else if (CurrentUserRole == UserRoleTypes.Admin)
                 {
-                    <span class="card-price" title="Client Offer: €@task.EstimatedPrice.ToString("F2") | Tradesman Payout: €@task.TradesmanPrice.ToString("F2")">
+                    <span class="card-price @(isPending ? "price-pending" : "")" title="Client Offer: €@task.EstimatedPrice.ToString("F2") | Tradesman Payout: €@task.TradesmanPrice.ToString("F2")">
                         Client: €@task.EstimatedPrice.ToString("F2") <small style="font-size: 0.75rem; opacity: 0.85;">(Payout: €@task.TradesmanPrice.ToString("F2"))</small>
                     </span>
                 }
                 else
                 {
-                    <span class="card-price">€@task.DisplayPrice.ToString("F2")</span>
+                    <span class="card-price @(isPending ? "price-pending" : "")">€@task.DisplayPrice.ToString("F2")</span>
                 }
             </div>
 

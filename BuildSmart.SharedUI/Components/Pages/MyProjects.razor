@@ -92,8 +92,14 @@
                                     </span>
                                     @if (ShouldShowConsultationBadge(project))
                                     {
-                                        <span class="status-pill status-underreview" style="background-color: rgba(255, 152, 0, 0.15); color: #ff9800; border-color: transparent;">
+                                        <span class="badge-pending-activation">
                                             @(System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith("bg", StringComparison.OrdinalIgnoreCase) ? "Заявена Консултация" : "Consultation Requested")
+                                        </span>
+                                    }
+                                    @if (project.JobPosts != null && project.JobPosts.Any(jp => jp.CategoryStatus == ProjectCategoryStatus.Pending))
+                                    {
+                                        <span class="badge-pending-activation ms-1">
+                                            @Loc["ProjectDetail_PendingActivation"]
                                         </span>
                                     }
                                 </div>
@@ -141,9 +147,15 @@
                             <div class="jobs-preview">
                                 @foreach (var job in project.JobPosts.Take(2))
                                 {
-                                    <div class="job-chip">
+                                    <div class="job-chip @(job.CategoryStatus == ProjectCategoryStatus.Pending ? "task-card-pending" : "")">
                                         <span class="job-dot status-@job.Status.ToString().ToLower()"></span>
                                         <span class="job-name">@job.Title</span>
+                                        @if (job.CategoryStatus == ProjectCategoryStatus.Pending)
+                                        {
+                                            <span class="badge-pending-activation ms-1" style="font-size: 0.7rem; padding: 1px 6px;">
+                                                @Loc["ProjectDetail_PendingActivation"]
+                                            </span>
+                                        }
                                     </div>
                                 }
                                 @if (project.JobPosts.Count > 2)

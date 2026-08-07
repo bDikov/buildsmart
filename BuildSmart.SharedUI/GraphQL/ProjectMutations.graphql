@@ -52,3 +52,7 @@ mutation UpdateProjectDetails($projectId: UUID!, $title: String!, $description: 
 mutation UpdateProjectLocation($projectId: UUID!, $location: String!) {
     updateProjectLocation(projectId: $projectId, location: $location)
 }
+
+mutation UpdateJobPostCategoryStatus($jobPostId: UUID!, $status: ProjectCategoryStatus!) {
+    updateJobPostCategoryStatus(jobPostId: $jobPostId, status: $status)
+}
