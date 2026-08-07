@@ -108,13 +108,15 @@ public class OffersController : ControllerBase
 
         var categoryGroups = new Dictionary<string, (decimal Subtotal, List<object> Tasks)>();
 
+        decimal adminMarkupPercentage = project.AdminMarkupPercentage > 0 ? project.AdminMarkupPercentage : 20.0m;
+        decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
+
         if (hasValidCalcs)
         {
             foreach (var calc in projectCalcs)
             {
                 if (calc.Tasks == null || !calc.Tasks.Any()) continue;
 
-                grandTotal += calc.TotalEstimatedPrice;
                 var category = await _unitOfWork.ServiceCategories.GetByIdAsync(calc.ServiceCategoryId);
                 var categoryName = category?.Name ?? "General";
                 if (category != null && !isBg && !string.IsNullOrEmpty(category.EnglishName))
@@ -122,18 +124,28 @@ public class OffersController : ControllerBase
                     categoryName = category.EnglishName;
                 }
 
-                var tasksForCategory = calc.Tasks.OrderBy(t => t.SequenceOrder).Select(task => new
+                decimal categorySubtotal = 0m;
+                var tasksForCategory = new List<object>();
+
+                foreach (var task in calc.Tasks.OrderBy(t => t.SequenceOrder))
                 {
-                    Description = task.Title,
-                    Amount = task.EstimatedPrice.ToString("N2"),
-                    AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => localizeCriteria(c.Description)).ToList() ?? new List<string>()
-                }).Cast<object>().ToList();
+                    decimal effectivePrice = task.EstimatedPrice;
+                    categorySubtotal += effectivePrice;
+                    tasksForCategory.Add(new
+                    {
+                        Description = task.Title,
+                        Amount = effectivePrice.ToString("N2"),
+                        AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => localizeCriteria(c.Description)).ToList() ?? new List<string>()
+                    });
+                }
+
+                grandTotal += categorySubtotal;
 
                 if (!categoryGroups.TryGetValue(categoryName, out var group))
                 {
                     group = (0m, new List<object>());
                 }
-                group.Subtotal += calc.TotalEstimatedPrice;
+                group.Subtotal += categorySubtotal;
                 group.Tasks.AddRange(tasksForCategory);
                 categoryGroups[categoryName] = group;
             }
@@ -146,9 +158,6 @@ public class OffersController : ControllerBase
                 var tasks = (jp.JobTasks?.OrderBy(t => t.SequenceOrder) ?? Enumerable.Empty<JobTask>()).ToList();
                 if (!tasks.Any()) continue;
 
-                decimal subtotal = tasks.Sum(t => t.EstimatedPrice);
-                grandTotal += subtotal;
-
                 string categoryName = !string.IsNullOrWhiteSpace(jp.Title)
                     ? jp.Title.Replace(" - Work Package", "").Trim()
                     : (jp.ServiceCategory?.Name ?? "General");
@@ -158,12 +167,35 @@ public class OffersController : ControllerBase
                     categoryName = jp.ServiceCategory.EnglishName;
                 }
 
-                var tasksForCategory = tasks.Select(task => new
+                decimal subtotal = 0m;
+                var tasksForCategory = new List<object>();
+
+                foreach (var task in tasks)
                 {
-                    Description = task.Title,
-                    Amount = task.EstimatedPrice.ToString("N2"),
-                    AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => localizeCriteria(c.Description)).ToList() ?? new List<string>()
-                }).Cast<object>().ToList();
+                    decimal effectivePrice;
+                    if (task.TradesmanPrice > 0)
+                    {
+                        effectivePrice = (task.EstimatedPrice > task.TradesmanPrice)
+                            ? task.EstimatedPrice
+                            : Math.Round(task.TradesmanPrice * markupFactor, 2);
+                    }
+                    else
+                    {
+                        effectivePrice = task.EstimatedPrice > 0
+                            ? task.EstimatedPrice
+                            : 0m;
+                    }
+
+                    subtotal += effectivePrice;
+                    tasksForCategory.Add(new
+                    {
+                        Description = task.Title,
+                        Amount = effectivePrice.ToString("N2"),
+                        AcceptanceCriteria = task.AcceptanceCriteria?.Select(c => localizeCriteria(c.Description)).ToList() ?? new List<string>()
+                    });
+                }
+
+                grandTotal += subtotal;
 
                 if (!categoryGroups.TryGetValue(categoryName, out var group))
                 {
