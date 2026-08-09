@@ -1,10 +1,13 @@
 @page "/projects/{Id:guid}/payments"
 @using BuildSmart.Core.Application.DTOs
 @using BuildSmart.Core.Domain.Enums
+@using BuildSmart.SharedUI.Services
 @inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 @inject BuildSmart.SharedUI.Services.IAlertService AlertService
+@inject BuildSmart.SharedUI.Services.IAdminPerspectiveService AdminPerspectiveService
 @inject NavigationManager NavigationManager
+@implements IDisposable
 
 <div class="payments-page-container">
     @if (IsLoading)
@@ -25,9 +28,15 @@
     {
         <!-- Page Header & Workspace Nav -->
         <div class="page-header">
-            <div class="header-main">
-                <span class="project-badge">Financial Management</span>
-                <h1 class="project-title">@BoardData.ProjectTitle</h1>
+            <div class="header-main d-flex justify-content-between align-items-center flex-wrap w-100 mb-3 gap-2">
+                <div>
+                    <span class="project-badge">Financial Management</span>
+                    <h1 class="project-title">@BoardData.ProjectTitle</h1>
+                </div>
+                @if (IsAdminUser)
+                {
+                    <AdminDashboardSwitch />
+                }
             </div>
 
             <!-- Financial Summary Cards -->
@@ -102,6 +111,7 @@
             <a class="nav-tab active" href="/projects/@Id/payments">Payments & Financials</a>
             <a class="nav-tab" href="/project-detail?projectId=@Id">Scope & PDF Offer</a>
         </div>
+
 
         <!-- 3 Column Payments Grid -->
         <div class="payments-board-grid">
@@ -251,9 +261,46 @@
         return OverrideAmounts[taskId];
     }
 
+    private bool IsAdminUser { get; set; }
+
+    private void UpdateEffectiveRole()
+    {
+        if (!IsAdminUser) return;
+        if (AdminPerspectiveService.CurrentPerspective == AdminPerspectiveMode.Homeowner)
+        {
+            CurrentUserRole = UserRoleTypes.Homeowner;
+        }
+        else if (AdminPerspectiveService.CurrentPerspective == AdminPerspectiveMode.Tradesman)
+        {
+            CurrentUserRole = UserRoleTypes.Tradesman;
+        }
+        else
+        {
+            CurrentUserRole = UserRoleTypes.Admin;
+        }
+    }
+
+    private void OnPerspectiveSelectChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<AdminPerspectiveMode>(e.Value?.ToString(), true, out var mode))
+        {
+            AdminPerspectiveService.SetPerspective(mode);
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        AdminPerspectiveService.PerspectiveChanged += OnAdminPerspectiveChanged;
         await LoadUserAndBoard();
+    }
+
+    private async void OnAdminPerspectiveChanged()
+    {
+        if (IsAdminUser)
+        {
+            UpdateEffectiveRole();
+            await InvokeAsync(RefreshBoard);
+        }
     }
 
     private async Task LoadUserAndBoard()
@@ -270,7 +317,9 @@
                 var roleStr = AuthService.GetUserRoleFromToken(token);
                 if (Enum.TryParse<UserRoleTypes>(roleStr, true, out var r))
                 {
+                    IsAdminUser = r == UserRoleTypes.Admin;
                     CurrentUserRole = r;
+                    UpdateEffectiveRole();
                 }
             }
 
@@ -288,7 +337,14 @@
 
     private async Task RefreshBoard()
     {
+        UpdateEffectiveRole();
         BoardData = await ProjectService.GetProjectPaymentsBoardAsync(Id, CurrentUserId, CurrentUserRole);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AdminPerspectiveService.PerspectiveChanged -= OnAdminPerspectiveChanged;
     }
 
     private async Task MarkPaid(Guid taskId)

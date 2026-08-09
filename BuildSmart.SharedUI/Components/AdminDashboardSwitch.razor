@@ -1,0 +1,124 @@
+@using BuildSmart.SharedUI.Services
+@using Microsoft.Extensions.Localization
+@implements IDisposable
+@inject IAdminPerspectiveService AdminPerspectiveService
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+
+<div class="bs-admin-perspective-switcher">
+    <div class="bs-admin-perspective-label">
+        <span class="bs-admin-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            @Loc["Feed_AdminPreviewBadge"]
+        </span>
+        <span class="bs-admin-title">@Loc["Feed_AdminPerspectiveTitle"]:</span>
+    </div>
+
+    <div class="bs-admin-select-wrapper">
+        <select class="bs-admin-select" value="@AdminPerspectiveService.CurrentPerspective.ToString()" @onchange="OnPerspectiveSelectChanged">
+            <option value="Admin">@Loc["Feed_AdminModeAdmin"]</option>
+            <option value="Homeowner">@Loc["Feed_AdminModeUser"]</option>
+            <option value="Tradesman">@Loc["Feed_AdminModeTradesman"]</option>
+        </select>
+    </div>
+</div>
+
+<style>
+    .bs-admin-perspective-switcher {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 6px 14px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .bs-admin-perspective-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .bs-admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--color-primary, #3b82f6);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .bs-admin-title {
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .bs-admin-select-wrapper {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .bs-admin-select {
+        background: var(--bg-card-alt, #1e293b);
+        color: var(--text-primary, #ffffff);
+        border: 1.5px solid var(--color-primary, #3b82f6);
+        border-radius: 8px;
+        padding: 5px 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.15s ease;
+        max-width: 220px;
+        line-height: 1.2;
+    }
+
+    .bs-admin-select:focus {
+        border-color: var(--color-primary, #3b82f6);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    .bs-admin-select option {
+        background-color: var(--bg-card, #0f172a);
+        color: var(--text-primary, #ffffff);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AdminPerspectiveService.PerspectiveChanged += OnPerspectiveChanged;
+    }
+
+    private void OnPerspectiveSelectChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<AdminPerspectiveMode>(e.Value?.ToString(), true, out var mode))
+        {
+            AdminPerspectiveService.SetPerspective(mode);
+        }
+    }
+
+    private void OnPerspectiveChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AdminPerspectiveService.PerspectiveChanged -= OnPerspectiveChanged;
+    }
+}

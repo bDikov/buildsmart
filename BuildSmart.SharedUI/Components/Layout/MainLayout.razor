@@ -15,6 +15,7 @@
 @inject IJSRuntime JSRuntime
 @inject SignalRService SignalRService
 @inject BuildSmart.SharedUI.GraphQL.State.BuildSmartApiClientStoreAccessor StoreAccessor
+@inject IAdminPerspectiveService AdminPerspectiveService
 
 <div class="page">
     <!-- Mobile Header -->
@@ -1201,6 +1202,12 @@
     protected override void OnInitialized()
     {
         CheckIsGuestSynchronously();
+        AdminPerspectiveService.PerspectiveChanged += OnAdminPerspectiveChanged;
+    }
+
+    private void OnAdminPerspectiveChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task<bool> CheckIsGuestFromTokenAsync()
@@ -1728,6 +1735,7 @@
     public void Dispose()
     {
         AppServiceLocator.ToastAction = null;
+        AdminPerspectiveService.PerspectiveChanged -= OnAdminPerspectiveChanged;
         SignalRService.NotificationReceived -= OnNotificationReceived;
         SignalRService.NotificationsStateChanged -= OnNotificationsStateChanged;
         SignalRService.ProjectMessageReceived -= OnProjectMessageReceived;

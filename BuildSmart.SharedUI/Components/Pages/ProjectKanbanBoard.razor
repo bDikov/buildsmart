@@ -2,11 +2,14 @@
 @page "/projects/{Id:guid}/board"
 @using BuildSmart.Core.Application.DTOs
 @using BuildSmart.Core.Domain.Enums
+@using BuildSmart.SharedUI.Services
 @using TaskStatus = BuildSmart.Core.Domain.Enums.TaskStatus
 @inject BuildSmart.Core.Application.Interfaces.IProjectManagementService ProjectService
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 @inject BuildSmart.SharedUI.Services.IAlertService AlertService
+@inject BuildSmart.SharedUI.Services.IAdminPerspectiveService AdminPerspectiveService
 @inject NavigationManager NavigationManager
+@implements IDisposable
 
 <div class="kanban-page-container">
     @if (IsLoading)
@@ -33,26 +36,62 @@
                 <p class="homeowner-subtitle">Homeowner: <strong>@BoardData.HomeownerName</strong></p>
             </div>
 
-            <div class="header-actions">
-                <div class="project-status-box">
-                    <span class="status-label">Project Status:</span>
-                    <span class="status-pill status-@BoardData.ProjectStatus.ToString().ToLower()">@BoardData.ProjectStatus</span>
+            <div class="header-actions d-flex align-items-center gap-3 flex-wrap">
+                @if (IsAdminUser)
+                {
+                    <AdminDashboardSwitch />
+                }
+
+                <div class="project-status-box d-flex align-items-center gap-2 flex-wrap">
+                    <div class="d-inline-flex align-items-center gap-1">
+                        <span class="status-label">Project Status:</span>
+                        <span class="status-pill status-@BoardData.ProjectStatus.ToString().ToLower()">@BoardData.ProjectStatus</span>
+                        @if (CurrentUserRole == UserRoleTypes.Admin)
+                        {
+                            <button type="button" class="bs-pencil-edit-btn ms-1" @onclick="ToggleEditStatus" title="Edit Status">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                            </button>
+
+                            @if (_isEditingStatus)
+                            {
+                                <select class="status-select ms-2 bs-select-pill" value="@BoardData.ProjectStatus.ToString()" @onchange="PromptAdminStatusChange">
+                                    <option value="Draft">Draft/Preview</option>
+                                    <option value="UnderReview">Under Review</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Archived">Archived</option>
+                                </select>
+                            }
+                        }
+                    </div>
+
                     @if (CurrentUserRole == UserRoleTypes.Admin)
                     {
-                        <div class="markup-box ms-3 d-inline-flex align-items-center">
+                        <div class="markup-box ms-3 d-inline-flex align-items-center gap-1">
                             <span class="status-label me-1">Markup:</span>
-                            <input type="number" class="markup-input" style="width: 65px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-weight: 600;" 
-                                   value="@BoardData.AdminMarkupPercentage" @onchange="OnAdminMarkupChange" min="0" max="200" step="1" />
-                            <span class="status-label ms-1">%</span>
-                        </div>
+                            <span class="status-pill" style="background: rgba(59, 130, 246, 0.12); color: var(--color-primary, #3b82f6); border: 1px solid rgba(59, 130, 246, 0.25); font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                                @((BoardData.AdminMarkupPercentage).ToString("0.##"))%
+                            </span>
 
-                        <select class="status-select ms-2" value="@BoardData.ProjectStatus.ToString()" @onchange="OnAdminStatusChange">
-                            <option value="Draft">Draft/Preview</option>
-                            <option value="UnderReview">Under Review</option>
-                            <option value="Active">Active</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Archived">Archived</option>
-                        </select>
+                            <button type="button" class="bs-pencil-edit-btn ms-1" @onclick="ToggleEditMarkup" title="Edit Markup">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                            </button>
+
+                            @if (_isEditingMarkup)
+                            {
+                                <div class="d-inline-flex align-items-center ms-1">
+                                    <input type="number" class="markup-input bs-select-pill" style="width: 75px; text-align: center; font-weight: 600;" 
+                                           value="@_editingMarkupValue" @onchange="PromptAdminMarkupChange" min="0" max="200" step="1" />
+                                    <span class="status-label ms-1">%</span>
+                                </div>
+                            }
+                        </div>
                     }
                 </div>
             </div>
@@ -357,6 +396,22 @@
             OnConfirm="ConfirmDeleteTask"
             OnCancel="() => TaskToDelete = null" />
 
+        <!-- Confirmation Modal for Status Change -->
+        <BsConfirmationModal IsVisible="_showStatusConfirmModal"
+                             Title="Confirm Status Change"
+                             Message="@_statusConfirmMessage"
+                             AcceptText="Yes"
+                             CancelText="No"
+                             OnConfirmationChanged="OnStatusConfirmationChanged" />
+
+        <!-- Confirmation Modal for Markup Change -->
+        <BsConfirmationModal IsVisible="_showMarkupConfirmModal"
+                             Title="Confirm Markup Change"
+                             Message="@_markupConfirmMessage"
+                             AcceptText="Yes"
+                             CancelText="No"
+                             OnConfirmationChanged="OnMarkupConfirmationChanged" />
+
         <!-- Create Task Modal -->
         @if (BoardData != null)
         {
@@ -591,9 +646,46 @@
         }
     }
 
+    private bool IsAdminUser { get; set; }
+
+    private void UpdateEffectiveRole()
+    {
+        if (!IsAdminUser) return;
+        if (AdminPerspectiveService.CurrentPerspective == AdminPerspectiveMode.Homeowner)
+        {
+            CurrentUserRole = UserRoleTypes.Homeowner;
+        }
+        else if (AdminPerspectiveService.CurrentPerspective == AdminPerspectiveMode.Tradesman)
+        {
+            CurrentUserRole = UserRoleTypes.Tradesman;
+        }
+        else
+        {
+            CurrentUserRole = UserRoleTypes.Admin;
+        }
+    }
+
+    private void OnPerspectiveSelectChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<AdminPerspectiveMode>(e.Value?.ToString(), true, out var mode))
+        {
+            AdminPerspectiveService.SetPerspective(mode);
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        AdminPerspectiveService.PerspectiveChanged += OnAdminPerspectiveChanged;
         await LoadUserAndBoard();
+    }
+
+    private async void OnAdminPerspectiveChanged()
+    {
+        if (IsAdminUser)
+        {
+            UpdateEffectiveRole();
+            await InvokeAsync(RefreshBoard);
+        }
     }
 
     private async Task LoadUserAndBoard()
@@ -610,7 +702,9 @@
                 var roleStr = AuthService.GetUserRoleFromToken(token);
                 if (Enum.TryParse<UserRoleTypes>(roleStr, true, out var r))
                 {
+                    IsAdminUser = r == UserRoleTypes.Admin;
                     CurrentUserRole = r;
+                    UpdateEffectiveRole();
                 }
             }
 
@@ -628,8 +722,14 @@
 
     private async Task RefreshBoard()
     {
+        UpdateEffectiveRole();
         BoardData = await ProjectService.GetProjectKanbanBoardAsync(Id, CurrentUserId, CurrentUserRole);
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AdminPerspectiveService.PerspectiveChanged -= OnAdminPerspectiveChanged;
     }
 
     private void OpenTaskDetails(KanbanTaskCardDto task)
@@ -646,35 +746,89 @@
         }
     }
 
-    private async Task OnAdminStatusChange(ChangeEventArgs e)
+    private bool _isEditingStatus = false;
+    private bool _showStatusConfirmModal = false;
+    private ProjectStatus? _pendingStatus;
+    private string _statusConfirmMessage = string.Empty;
+
+    private void ToggleEditStatus()
     {
-        if (e.Value == null || !Enum.TryParse<ProjectStatus>(e.Value.ToString(), out var newStatus)) return;
-        try
-        {
-            await ProjectService.SetProjectStatusAsync(Id, newStatus, CurrentUserId);
-            await RefreshBoard();
-            await AlertService.DisplayAlert("Status Updated", $"Project status changed to {newStatus}", "OK");
-        }
-        catch (Exception ex)
-        {
-            await AlertService.DisplayAlert("Status Update Error", ex.Message, "OK");
-        }
+        _isEditingStatus = !_isEditingStatus;
     }
 
-    private async Task OnAdminMarkupChange(ChangeEventArgs e)
+    private void PromptAdminStatusChange(ChangeEventArgs e)
     {
-        if (decimal.TryParse(e.Value?.ToString(), out var newMarkup))
+        if (e.Value == null || !Enum.TryParse<ProjectStatus>(e.Value.ToString(), out var newStatus)) return;
+        if (newStatus == BoardData?.ProjectStatus) return;
+
+        _pendingStatus = newStatus;
+        _statusConfirmMessage = $"Are you sure you want to change project status to '{newStatus}'?";
+        _showStatusConfirmModal = true;
+    }
+
+    private async Task OnStatusConfirmationChanged(bool confirmed)
+    {
+        _showStatusConfirmModal = false;
+
+        if (confirmed && _pendingStatus.HasValue)
         {
             try
             {
-                await ProjectService.UpdateProjectMarkupPercentageAsync(Id, newMarkup, CurrentUserId);
+                await ProjectService.SetProjectStatusAsync(Id, _pendingStatus.Value, CurrentUserId);
                 await RefreshBoard();
+                _isEditingStatus = false;
+            }
+            catch (Exception ex)
+            {
+                await AlertService.DisplayAlert("Status Update Error", ex.Message, "OK");
+            }
+        }
+        _pendingStatus = null;
+    }
+
+    private bool _isEditingMarkup = false;
+    private bool _showMarkupConfirmModal = false;
+    private decimal? _pendingMarkup;
+    private decimal _editingMarkupValue;
+    private string _markupConfirmMessage = string.Empty;
+
+    private void ToggleEditMarkup()
+    {
+        _isEditingMarkup = !_isEditingMarkup;
+        if (_isEditingMarkup && BoardData != null)
+        {
+            _editingMarkupValue = BoardData.AdminMarkupPercentage;
+        }
+    }
+
+    private void PromptAdminMarkupChange(ChangeEventArgs e)
+    {
+        if (e.Value == null || !decimal.TryParse(e.Value.ToString(), out var newMarkup)) return;
+        if (newMarkup == BoardData?.AdminMarkupPercentage) return;
+
+        _pendingMarkup = newMarkup;
+        _markupConfirmMessage = $"Are you sure you want to change project markup percentage to {newMarkup}%?";
+        _showMarkupConfirmModal = true;
+    }
+
+    private async Task OnMarkupConfirmationChanged(bool confirmed)
+    {
+        _showMarkupConfirmModal = false;
+
+        if (confirmed && _pendingMarkup.HasValue)
+        {
+            try
+            {
+                await ProjectService.UpdateProjectMarkupPercentageAsync(Id, _pendingMarkup.Value, CurrentUserId);
+                await RefreshBoard();
+                _isEditingMarkup = false;
             }
             catch (Exception ex)
             {
                 await AlertService.DisplayAlert("Markup Error", ex.Message, "OK");
             }
         }
+        _pendingMarkup = null;
     }
 
     private void HandleDragStart(DragEventArgs e, KanbanTaskCardDto task)
@@ -1461,6 +1615,43 @@
     }
     .filter-pill:hover .pill-remove {
         opacity: 1.0;
+    }
+
+    .bs-pencil-edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--color-primary, #3b82f6);
+        border: 1px solid rgba(59, 130, 246, 0.25);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        padding: 0;
+    }
+    .bs-pencil-edit-btn:hover {
+        background: var(--color-primary, #3b82f6);
+        color: #ffffff;
+        transform: scale(1.05);
+    }
+
+    .bs-select-pill {
+        padding: 4px 10px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font: var(--font-h4);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .bs-select-pill:focus {
+        border-color: var(--color-primary, #3b82f6);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
 
     @@media (max-width: 575.98px) {

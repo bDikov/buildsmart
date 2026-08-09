@@ -83,6 +83,7 @@ public static class MauiProgram
 
 		// Services
 		builder.Services.AddSingleton<IAuthService, AuthService>();
+		builder.Services.AddSingleton<IAdminPerspectiveService, AdminPerspectiveService>();
 		builder.Services.AddSingleton<SignalRService>(); // Added SignalRService
 		builder.Services.AddSingleton<IFileService, FileService>();
 		builder.Services.AddSingleton<IBlazorNavigationRegistry, BlazorNavigationRegistry>();

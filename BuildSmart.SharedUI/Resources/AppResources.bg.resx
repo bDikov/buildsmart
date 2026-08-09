@@ -1953,4 +1953,19 @@
   <data name="ProjectDetail_PendingCategoryDisclaimer" xml:space="preserve">
     <value>Тази категория предстои да бъде активирана. Включените задачи не са окончателни и са изключени от крайната сума за плащане.</value>
   </data>
+  <data name="Feed_AdminPerspectiveTitle" xml:space="preserve">
+    <value>Изглед на таблото</value>
+  </data>
+  <data name="Feed_AdminPreviewBadge" xml:space="preserve">
+    <value>Режим на администратор</value>
+  </data>
+  <data name="Feed_AdminModeAdmin" xml:space="preserve">
+    <value>Администратор</value>
+  </data>
+  <data name="Feed_AdminModeUser" xml:space="preserve">
+    <value>Потребител (Собственик)</value>
+  </data>
+  <data name="Feed_AdminModeTradesman" xml:space="preserve">
+    <value>Майстор</value>
+  </data>
 </root>

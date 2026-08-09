@@ -91,6 +91,7 @@ builder.Services.AddScoped<IAppMainThread, WebAppMainThread>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, CircuitContextHandler>();
 
 // Shared Services
+builder.Services.AddScoped<IAdminPerspectiveService, AdminPerspectiveService>();
 builder.Services.AddScoped<SignalRService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailVerificationService, BuildSmart.Infrastructure.Services.EmailVerificationService>();
