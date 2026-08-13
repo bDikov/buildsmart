@@ -1,0 +1,1528 @@
+@page "/admin/landing-pages"
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.Core.Domain.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using BuildSmart.SharedUI.Resources
+@using System.Text.Json
+@using System.Net.Http.Json
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject BuildSmartApiClient ApiClient
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<AppResources> Loc
+@inject NavigationManager NavManager
+@inject BuildSmart.SharedUI.Services.IFileService FileService
+
+<div class="admin-page">
+    <div class="header-section">
+        <div class="title-group">
+            <h1 class="page-title">@Loc["Cms_LandingPagesTitle"]</h1>
+            <p class="page-subtitle">@Loc["Cms_LandingPagesSubtitle"]</p>
+        </div>
+        <div class="header-action-group">
+            <button class="bs-btn-secondary" @onclick="OpenCentralMediaLibrary">
+                🖼️ Central Media Library
+            </button>
+            <button class="bs-btn-primary" @onclick="CreateNewLandingPage">
+                @Loc["Cms_CreateLandingPage"]
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div class="status-alert @(_isError ? "error" : "success")">
+            @_statusMessage
+        </div>
+    }
+
+    @if (_isLoading)
+    {
+        <div class="loading-state">@Loc["Common_Loading"]</div>
+    }
+    else
+    {
+        <div class="cms-grid">
+            <!-- Sidebar Table / List of Landing Pages -->
+            <div class="bs-card list-card">
+                <h3 class="card-section-title">@Loc["Cms_PagesList"]</h3>
+                <div class="pages-list">
+                    @foreach (var p in _landingPages)
+                    {
+                        <div class="page-item @(_selectedPage?.Id == p.Id ? "active" : "")" @onclick="() => SelectPage(p)">
+                            <div class="page-info">
+                                <span class="page-slug">/@p.Slug</span>
+                                <span class="page-title-text">@(string.IsNullOrEmpty(p.TitleBg) ? p.Slug : p.TitleBg)</span>
+                            </div>
+                            <span class="status-badge @(p.IsPublished ? "published" : "draft")">
+                                @(p.IsPublished ? Loc["Cms_Published"] : Loc["Cms_Draft"])
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Main Editor Form -->
+            @if (_selectedPage != null)
+            {
+                <div class="bs-card editor-card">
+                    <div class="editor-header">
+                        <h2>@Loc["Cms_EditPageHeader"] (/@_selectedPage.Slug)</h2>
+                        <div class="editor-actions">
+                            <button class="bs-btn-secondary" @onclick="() => PreviewPage(_selectedPage.Slug)">
+                                @Loc["Cms_Preview"]
+                            </button>
+                            <button class="bs-btn-danger" @onclick="DeleteSelectedPage">
+                                @Loc["Cms_Delete"]
+                            </button>
+                            <button class="bs-btn-primary" @onclick="SaveSelectedPage" disabled="@_isSaving">
+                                @(_isSaving ? Loc["Cms_Saving"] : Loc["Cms_Save"])
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">@Loc["Cms_Slug"] *</label>
+                            <input type="text" class="bs-input" @bind="_selectedPage.Slug" placeholder="remont-na-apartament-sofia" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">@Loc["Cms_PageType"]</label>
+                            <select class="bs-input" @bind="_selectedPage.PageType">
+                                <option value="apartment">Apartment</option>
+                                <option value="bathroom">Bathroom</option>
+                                <option value="finishing">Finishing</option>
+                                <option value="mep">MEP Services</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">@Loc["Cms_TitleBg"] *</label>
+                            <input type="text" class="bs-input" @bind="_selectedPage.TitleBg" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">@Loc["Cms_TitleEn"] *</label>
+                            <input type="text" class="bs-input" @bind="_selectedPage.TitleEn" />
+                        </div>
+
+                        <div class="form-group span-2">
+                            <label class="form-label">@Loc["Cms_SubtitleBg"]</label>
+                            <textarea class="bs-input textarea" @bind="_selectedPage.SubtitleBg"></textarea>
+                        </div>
+
+                        <div class="form-group span-2">
+                            <label class="form-label">@Loc["Cms_SubtitleEn"]</label>
+                            <textarea class="bs-input textarea" @bind="_selectedPage.SubtitleEn"></textarea>
+                        </div>
+
+                        <!-- Hero Picture & Hero Video Pickers with Media Library -->
+                        <div class="media-section span-2">
+                            <h3 class="section-subtitle">@Loc["Cms_HeroMediaHeader"]</h3>
+                            <div class="media-grid">
+                                <!-- Hero Image Picker -->
+                                <div class="media-box">
+                                    <label class="form-label">@Loc["Cms_HeroImageUrl"]</label>
+                                    <div class="input-with-upload">
+                                        <input type="text" class="bs-input" @bind="_selectedPage.HeroImageUrl" placeholder="https://..." />
+                                        <button type="button" class="bs-btn-secondary" @onclick='() => OpenMediaPickerForTarget("hero-image")'>Pick Library</button>
+                                        <label class="bs-btn-upload">
+                                            <span>Upload</span>
+                                            <InputFile OnChange="UploadHeroImage" accept="image/*" style="display:none;" />
+                                        </label>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(_selectedPage.HeroImageUrl))
+                                    {
+                                        <div class="media-preview">
+                                            <img src="@_selectedPage.HeroImageUrl" alt="Hero Preview" />
+                                            <button class="remove-btn" @onclick="() => _selectedPage.HeroImageUrl = string.Empty">Clear</button>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Hero Video Picker -->
+                                <div class="media-box">
+                                    <label class="form-label">@Loc["Cms_HeroVideoUrl"]</label>
+                                    <div class="input-with-upload">
+                                        <input type="text" class="bs-input" @bind="_selectedPage.HeroVideoUrl" placeholder="https://...mp4" />
+                                        <button type="button" class="bs-btn-secondary" @onclick='() => OpenMediaPickerForTarget("hero-video")'>Pick Library</button>
+                                        <label class="bs-btn-upload">
+                                            <span>Upload</span>
+                                            <InputFile OnChange="UploadHeroVideo" accept="video/mp4,video/webm,video/*" style="display:none;" />
+                                        </label>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(_selectedPage.HeroVideoUrl))
+                                    {
+                                        <div class="media-preview">
+                                            <video src="@_selectedPage.HeroVideoUrl" controls muted style="max-height: 120px; width: 100%; object-fit: cover;"></video>
+                                            <button class="remove-btn" @onclick="() => _selectedPage.HeroVideoUrl = string.Empty">Clear</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Media Gallery Management -->
+                        <div class="media-section span-2">
+                            <div class="section-header-flex">
+                                <h3 class="section-subtitle">Pictures &amp; Videos Showcase Gallery</h3>
+                                <div class="gallery-upload-actions">
+                                    <button type="button" class="bs-btn-secondary" @onclick='() => OpenMediaPickerForTarget("gallery-add")'>Pick Library</button>
+                                    <label class="bs-btn-upload-primary">
+                                        <span>+ Upload Media</span>
+                                        <InputFile OnChange="UploadGalleryFile" accept="image/*,video/*" style="display:none;" />
+                                    </label>
+                                    <button type="button" class="bs-btn-secondary" @onclick="AddEmptyGalleryItem">+ Add URL Item</button>
+                                </div>
+                            </div>
+
+                            @if (_galleryItems.Count == 0)
+                            {
+                                <div class="empty-media-box">No pictures or videos added yet. Pick from Media Library or click "+ Upload Media".</div>
+                            }
+                            else
+                            {
+                                <div class="gallery-items-grid">
+                                    @for (int i = 0; i < _galleryItems.Count; i++)
+                                    {
+                                        var index = i;
+                                        var item = _galleryItems[index];
+                                        <div class="gallery-card">
+                                            <div class="card-media-preview">
+                                                @if (item.Type == "video")
+                                                {
+                                                    @if (!string.IsNullOrEmpty(item.Url))
+                                                    {
+                                                        <video src="@item.Url" controls muted class="card-media-element"></video>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="placeholder-media">MP4 Video</div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @if (!string.IsNullOrEmpty(item.Url))
+                                                    {
+                                                        <img src="@item.Url" alt="Gallery item" class="card-media-element" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="placeholder-media">Image</div>
+                                                    }
+                                                }
+                                                <div class="card-media-actions">
+                                                    <button type="button" class="icon-btn" disabled="@(index == 0)" @onclick="() => MoveGalleryItemUp(index)" title="Move Up">▲</button>
+                                                    <button type="button" class="icon-btn" disabled="@(index == _galleryItems.Count - 1)" @onclick="() => MoveGalleryItemDown(index)" title="Move Down">▼</button>
+                                                    <button type="button" class="icon-btn danger" @onclick="() => RemoveGalleryItem(index)" title="Delete">Remove</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="card-inputs">
+                                                <div class="form-group">
+                                                    <label class="form-label">Type</label>
+                                                    <select class="bs-input form-select-sm" @bind="item.Type">
+                                                        <option value="image">Image (Picture)</option>
+                                                        <option value="video">Video (MP4)</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label">Media URL</label>
+                                                    <div class="input-with-upload">
+                                                        <input type="text" class="bs-input" @bind="item.Url" placeholder="https://..." />
+                                                        <button type="button" class="bs-btn-secondary" style="padding:4px 8px; font-size:0.75rem;" @onclick='() => OpenMediaPickerForTarget("gallery-item-" + index)'>Library</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label">Title / Caption (Bulgarian)</label>
+                                                    <input type="text" class="bs-input" @bind="item.CaptionBg" placeholder="напр. Ремонт на тристаен апартамент" />
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label">Title / Caption (English)</label>
+                                                    <input type="text" class="bs-input" @bind="item.CaptionEn" placeholder="e.g. 3-Room Apartment Renovation" />
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label">Location (BG)</label>
+                                                    <input type="text" class="bs-input" @bind="item.LocationBg" placeholder="напр. София, кв. Лозенец" />
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label">Duration (BG)</label>
+                                                    <input type="text" class="bs-input" @bind="item.DurationBg" placeholder="напр. 42 работни дни" />
+                                                </div>
+
+                                                <div class="form-group span-2">
+                                                    <label class="form-label">Budget (BG)</label>
+                                                    <input type="text" class="bs-input" @bind="item.BudgetBg" placeholder="напр. 34,800 лв. (€17,793)" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Interactive Features & Benefits Manager -->
+                        <div class="media-section span-2">
+                            <div class="section-header-flex">
+                                <h3 class="section-subtitle">Features &amp; Benefits Cards</h3>
+                                <button type="button" class="bs-btn-secondary" @onclick="AddFeatureItem">+ Add Feature Card</button>
+                            </div>
+
+                            <div class="features-list-grid">
+                                @for (int i = 0; i < _featureItems.Count; i++)
+                                {
+                                    var index = i;
+                                    var feature = _featureItems[index];
+                                    <div class="feature-card">
+                                        <div class="feature-card-header">
+                                            <span>Feature #@(index + 1)</span>
+                                            <button type="button" class="bs-btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" @onclick="() => RemoveFeatureItem(index)">Remove</button>
+                                        </div>
+
+                                        <div class="form-grid">
+                                            <div class="form-group">
+                                                <label class="form-label">Icon</label>
+                                                <select class="bs-input" @bind="feature.Icon">
+                                                    <option value="shield">Shield (Security)</option>
+                                                    <option value="lock">Lock (Fixed Price)</option>
+                                                    <option value="clock">Clock (Fast Estimate)</option>
+                                                    <option value="droplet">Droplet (Waterproofing)</option>
+                                                    <option value="sparkles">Sparkles (Finishing)</option>
+                                                    <option value="zap">Zap (Electrical)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Title (BG)</label>
+                                                <input type="text" class="bs-input" @bind="feature.TitleBg" />
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Title (EN)</label>
+                                                <input type="text" class="bs-input" @bind="feature.TitleEn" />
+                                            </div>
+
+                                            <div class="form-group span-2">
+                                                <label class="form-label">Description (BG)</label>
+                                                <input type="text" class="bs-input" @bind="feature.DescBg" />
+                                            </div>
+
+                                            <div class="form-group span-2">
+                                                <label class="form-label">Description (EN)</label>
+                                                <input type="text" class="bs-input" @bind="feature.DescEn" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- CTA & Publication -->
+                        <div class="form-group">
+                            <label class="form-label">@Loc["Cms_CtaTextBg"]</label>
+                            <input type="text" class="bs-input" @bind="_selectedPage.CtaTextBg" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">@Loc["Cms_CtaTextEn"]</label>
+                            <input type="text" class="bs-input" @bind="_selectedPage.CtaTextEn" />
+                        </div>
+
+                        <div class="form-group span-2">
+                            <label class="form-label">@Loc["Cms_CtaLink"]</label>
+                            <input type="text" class="bs-input" @bind="_selectedPage.CtaLink" />
+                        </div>
+
+                        <div class="form-group span-2">
+                            <label class="checkbox-label">
+                                <input type="checkbox" @bind="_selectedPage.IsPublished" />
+                                <span>@Loc["Cms_IsPublishedLabel"]</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- CENTRAL MEDIA LIBRARY MODAL -->
+@if (_showMediaLibraryModal)
+{
+    <div class="modal-backdrop" @onclick="CloseMediaLibraryModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>🖼️ Central Media Library Collection</h2>
+                <button type="button" class="close-btn" @onclick="CloseMediaLibraryModal">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="library-filter-bar">
+                    <input type="text" class="bs-input search-input" placeholder="Search uploaded pictures &amp; videos by URL..." @bind="_librarySearchFilter" @bind:event="oninput" />
+                    <select class="bs-input" @bind="_libraryTypeFilter">
+                        <option value="all">All Media</option>
+                        <option value="image">Pictures Only</option>
+                        <option value="video">Videos Only (MP4)</option>
+                    </select>
+                </div>
+
+                @if (_isLibraryLoading)
+                {
+                    <div class="loading-state">Loading Central Media Collection...</div>
+                }
+                else if (FilteredLibraryAssets.Count == 0)
+                {
+                    <div class="empty-media-box">No matching uploaded media found. Upload pictures or videos to populate your collection!</div>
+                }
+                else
+                {
+                    <div class="library-grid">
+                        @foreach (var asset in FilteredLibraryAssets)
+                        {
+                            <div class="library-asset-card" @onclick="() => SelectAssetFromLibrary(asset)">
+                                <div class="asset-preview">
+                                    @if (asset.Type == "video")
+                                    {
+                                        <video src="@asset.Url" muted controls class="asset-element"></video>
+                                        <span class="type-pill video">VIDEO</span>
+                                    }
+                                    else
+                                    {
+                                        <img src="@asset.Url" alt="@asset.Title" class="asset-element" />
+                                        <span class="type-pill image">IMAGE</span>
+                                    }
+                                </div>
+                                <div class="asset-info">
+                                    <span class="asset-title">@asset.Title</span>
+                                    <span class="asset-url">@asset.Url</span>
+                                </div>
+                                <button type="button" class="bs-btn-primary select-btn">Select Media</button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+.admin-page {
+    padding: 24px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+.header-action-group {
+    display: flex;
+    gap: 12px;
+}
+
+.page-title {
+    font: var(--font-h4);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.page-subtitle {
+    font: var(--font-body-1);
+    color: var(--text-muted);
+    margin: 4px 0 0 0;
+}
+
+.status-alert {
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font: var(--font-body-1);
+}
+
+.status-alert.success {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+}
+
+.status-alert.error {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+}
+
+.loading-state {
+    font: var(--font-body-1);
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px;
+}
+
+.cms-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+}
+
+@@media (max-width: 900px) {
+    .cms-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bs-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-main);
+}
+
+.card-section-title {
+    font: var(--font-h5);
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+}
+
+.pages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.page-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.page-item:hover, .page-item.active {
+    border-color: var(--color-primary);
+}
+
+.page-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.page-slug {
+    font: var(--font-h3);
+    color: var(--text-primary);
+}
+
+.page-title-text {
+    font: var(--font-body-1);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font: var(--font-h3);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.status-badge.published {
+    background: var(--bg-card);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.status-badge.draft {
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+.editor-header h2 {
+    font: var(--font-h5);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.span-2 {
+    grid-column: span 2;
+}
+
+@@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .span-2 {
+        grid-column: span 1;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font: var(--font-h3);
+    color: var(--text-primary);
+}
+
+.bs-input {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font: var(--font-body-1);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.bs-input:focus {
+    border-color: var(--color-primary);
+}
+
+.bs-input.textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.media-section {
+    margin-top: 12px;
+    padding: 16px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+
+.section-subtitle {
+    font: var(--font-h6);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.input-with-upload {
+    display: flex;
+    gap: 8px;
+}
+
+.input-with-upload .bs-input {
+    flex: 1;
+}
+
+.bs-btn-upload {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font: var(--font-h3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.bs-btn-upload-primary {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    font: var(--font-h6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-preview {
+    margin-top: 10px;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.media-preview img {
+    width: 100%;
+    max-height: 120px;
+    object-fit: cover;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: var(--bg-card);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.empty-media-box {
+    padding: 24px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font: var(--font-body-1);
+}
+
+.gallery-items-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.gallery-card {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: 16px;
+}
+
+@@media (max-width: 700px) {
+    .gallery-card {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card-media-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-media-element {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.placeholder-media {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card-alt);
+    border: 1px dashed var(--border-color);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font: var(--font-h3);
+}
+
+.card-media-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+}
+
+.icon-btn {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.icon-btn.danger {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+}
+
+.card-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.features-list-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: 16px;
+}
+
+.feature-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font: var(--font-h6);
+    color: var(--text-primary);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: var(--font-body-1);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.bs-btn-primary {
+    background: var(--gradient-primary);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font: var(--font-h6);
+    cursor: pointer;
+    box-shadow: var(--shadow-main);
+    transition: transform 0.2s ease;
+}
+
+.bs-btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+.bs-btn-secondary {
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 18px;
+    font: var(--font-h3);
+    cursor: pointer;
+}
+
+.bs-btn-danger {
+    background: var(--bg-card-alt);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    border-radius: 12px;
+    padding: 10px 18px;
+    font: var(--font-h3);
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-main);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font: var(--font-h5);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.library-filter-bar {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 16px;
+}
+
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.library-asset-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.library-asset-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.asset-preview {
+    position: relative;
+    height: 140px;
+}
+
+.asset-element {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.type-pill {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font: var(--font-h3);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.type-pill.video {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.type-pill.image {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.asset-info {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.asset-title {
+    font: var(--font-h6);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.asset-url {
+    font: var(--font-body-1);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.select-btn {
+    margin: 8px 12px 12px 12px;
+    padding: 8px;
+    font-size: 0.85rem;
+}
+</style>
+
+@code {
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private string? _statusMessage;
+    private bool _isError = false;
+    private List<LandingPageContentModel> _landingPages = new();
+    private LandingPageContentModel? _selectedPage;
+
+    private List<MediaGalleryItemModel> _galleryItems = new();
+    private List<FeatureItemModel> _featureItems = new();
+
+    // Central Media Library state
+    private bool _showMediaLibraryModal = false;
+    private bool _isLibraryLoading = false;
+    private string _libraryPickerTarget = string.Empty; // "hero-image", "hero-video", "gallery-add", "gallery-item-X"
+    private string _librarySearchFilter = string.Empty;
+    private string _libraryTypeFilter = "all";
+    private List<MediaAssetModel> _libraryAssets = new();
+
+    public class LandingPageContentModel
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Slug { get; set; } = string.Empty;
+        public string PageType { get; set; } = "custom";
+        public string TitleBg { get; set; } = string.Empty;
+        public string TitleEn { get; set; } = string.Empty;
+        public string SubtitleBg { get; set; } = string.Empty;
+        public string SubtitleEn { get; set; } = string.Empty;
+        public string BadgeBg { get; set; } = string.Empty;
+        public string BadgeEn { get; set; } = string.Empty;
+        public string HeroImageUrl { get; set; } = string.Empty;
+        public string HeroVideoUrl { get; set; } = string.Empty;
+        public string MediaGalleryJson { get; set; } = "[]";
+        public string FeaturesJson { get; set; } = "[]";
+        public string CtaTextBg { get; set; } = string.Empty;
+        public string CtaTextEn { get; set; } = string.Empty;
+        public string CtaLink { get; set; } = "/renovation-estimator";
+        public bool IsPublished { get; set; } = true;
+    }
+
+    public class MediaGalleryItemModel
+    {
+        public string Url { get; set; } = string.Empty;
+        public string Type { get; set; } = "image";
+        public string CaptionBg { get; set; } = string.Empty;
+        public string CaptionEn { get; set; } = string.Empty;
+        public string LocationBg { get; set; } = string.Empty;
+        public string DurationBg { get; set; } = string.Empty;
+        public string BudgetBg { get; set; } = string.Empty;
+        public int Order { get; set; } = 1;
+    }
+
+    public class FeatureItemModel
+    {
+        public string TitleBg { get; set; } = string.Empty;
+        public string TitleEn { get; set; } = string.Empty;
+        public string DescBg { get; set; } = string.Empty;
+        public string DescEn { get; set; } = string.Empty;
+        public string Icon { get; set; } = "shield";
+    }
+
+    public class MediaAssetModel
+    {
+        public Guid Id { get; set; }
+        public string Url { get; set; } = string.Empty;
+        public string ThumbnailUrl { get; set; } = string.Empty;
+        public string Type { get; set; } = "image";
+        public string Title { get; set; } = string.Empty;
+    }
+
+    public class UploadResultPayload
+    {
+        public string Url { get; set; } = string.Empty;
+        public string? Type { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLandingPages();
+    }
+
+    private async Task LoadLandingPages()
+    {
+        _isLoading = true;
+        _statusMessage = null;
+        try
+        {
+            var result = await ApiClient.GetLandingPages.ExecuteAsync();
+            if (result.Errors.Count == 0 && result.Data?.LandingPages != null)
+            {
+                _landingPages = result.Data.LandingPages.Select(p => new LandingPageContentModel
+                {
+                    Id = p.Id,
+                    Slug = p.Slug,
+                    PageType = p.PageType,
+                    TitleBg = p.TitleBg,
+                    TitleEn = p.TitleEn,
+                    SubtitleBg = p.SubtitleBg,
+                    SubtitleEn = p.SubtitleEn,
+                    BadgeBg = p.BadgeBg,
+                    BadgeEn = p.BadgeEn,
+                    HeroImageUrl = p.HeroImageUrl,
+                    HeroVideoUrl = p.HeroVideoUrl,
+                    MediaGalleryJson = p.MediaGalleryJson,
+                    FeaturesJson = p.FeaturesJson,
+                    CtaTextBg = p.CtaTextBg,
+                    CtaTextEn = p.CtaTextEn,
+                    CtaLink = p.CtaLink,
+                    IsPublished = p.IsPublished
+                }).ToList();
+
+                if (_landingPages.Any() && _selectedPage == null)
+                {
+                    SelectPage(_landingPages.First());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = "Error loading landing pages: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void SelectPage(LandingPageContentModel page)
+    {
+        _selectedPage = page;
+        _statusMessage = null;
+
+        try
+        {
+            _galleryItems = JsonSerializer.Deserialize<List<MediaGalleryItemModel>>(page.MediaGalleryJson) ?? new();
+        }
+        catch
+        {
+            _galleryItems = new();
+        }
+
+        try
+        {
+            _featureItems = JsonSerializer.Deserialize<List<FeatureItemModel>>(page.FeaturesJson) ?? new();
+        }
+        catch
+        {
+            _featureItems = new();
+        }
+    }
+
+    private void CreateNewLandingPage()
+    {
+        var newPage = new LandingPageContentModel
+        {
+            Id = Guid.NewGuid(),
+            Slug = "new-landing-page-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
+            TitleBg = "Нова Лендинг Страница",
+            TitleEn = "New Landing Page",
+            IsPublished = true
+        };
+        _landingPages.Add(newPage);
+        SelectPage(newPage);
+    }
+
+    private void PreviewPage(string slug)
+    {
+        NavManager.NavigateTo("/" + slug, forceLoad: true);
+    }
+
+    private async Task OpenCentralMediaLibrary()
+    {
+        _libraryPickerTarget = string.Empty;
+        await LoadMediaLibraryAssets();
+        _showMediaLibraryModal = true;
+    }
+
+    private async Task OpenMediaPickerForTarget(string target)
+    {
+        _libraryPickerTarget = target;
+        await LoadMediaLibraryAssets();
+        _showMediaLibraryModal = true;
+    }
+
+    private void CloseMediaLibraryModal()
+    {
+        _showMediaLibraryModal = false;
+        _libraryPickerTarget = string.Empty;
+    }
+
+    private async Task LoadMediaLibraryAssets()
+    {
+        _isLibraryLoading = true;
+        try
+        {
+            var res = await ApiClient.GetMediaLibraryAssets.ExecuteAsync();
+            if (res.Errors.Count == 0 && res.Data?.MediaLibraryAssets != null)
+            {
+                _libraryAssets = res.Data.MediaLibraryAssets.Select(a => new MediaAssetModel
+                {
+                    Id = a.Id,
+                    Url = a.Url,
+                    ThumbnailUrl = a.ThumbnailUrl,
+                    Type = a.Type,
+                    Title = a.Title
+                }).ToList();
+            }
+        }
+        catch
+        {
+            _libraryAssets = new();
+        }
+        finally
+        {
+            _isLibraryLoading = false;
+        }
+    }
+
+    private List<MediaAssetModel> FilteredLibraryAssets
+    {
+        get
+        {
+            var query = _libraryAssets.AsEnumerable();
+            if (_libraryTypeFilter == "image")
+            {
+                query = query.Where(a => a.Type == "image");
+            }
+            else if (_libraryTypeFilter == "video")
+            {
+                query = query.Where(a => a.Type == "video");
+            }
+
+            if (!string.IsNullOrWhiteSpace(_librarySearchFilter))
+            {
+                var term = _librarySearchFilter.Trim().ToLowerInvariant();
+                query = query.Where(a => a.Url.ToLowerInvariant().Contains(term) || a.Title.ToLowerInvariant().Contains(term));
+            }
+
+            return query.ToList();
+        }
+    }
+
+    private void SelectAssetFromLibrary(MediaAssetModel asset)
+    {
+        if (_selectedPage != null && !string.IsNullOrEmpty(_libraryPickerTarget))
+        {
+            if (_libraryPickerTarget == "hero-image")
+            {
+                _selectedPage.HeroImageUrl = asset.Url;
+            }
+            else if (_libraryPickerTarget == "hero-video")
+            {
+                _selectedPage.HeroVideoUrl = asset.Url;
+            }
+            else if (_libraryPickerTarget == "gallery-add")
+            {
+                _galleryItems.Add(new MediaGalleryItemModel
+                {
+                    Url = asset.Url,
+                    Type = asset.Type,
+                    Order = _galleryItems.Count + 1
+                });
+            }
+            else if (_libraryPickerTarget.StartsWith("gallery-item-"))
+            {
+                var indexStr = _libraryPickerTarget.Replace("gallery-item-", "");
+                if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _galleryItems.Count)
+                {
+                    _galleryItems[idx].Url = asset.Url;
+                    _galleryItems[idx].Type = asset.Type;
+                }
+            }
+        }
+
+        CloseMediaLibraryModal();
+    }
+
+    private async Task<string?> UploadFileToServerAsync(IBrowserFile file)
+    {
+        try
+        {
+            var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(file.Name, file.ContentType);
+            if (urlResult.Errors.Count == 0 && !string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
+            {
+                var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;
+                using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024);
+                using var streamContent = new StreamContent(rawStream);
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+                using var uploadClient = new HttpClient();
+                uploadClient.Timeout = TimeSpan.FromMinutes(30);
+
+                var r2Response = await uploadClient.PutAsync(preSignedUrl, streamContent);
+                if (r2Response.IsSuccessStatusCode)
+                {
+                    var privateUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
+                    var fileName = System.IO.Path.GetFileName(privateUrl);
+                    return $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
+                }
+            }
+        }
+        catch
+        {
+            // Fall through to API media controller
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
+            var uploadedUrl = await FileService.UploadAdminImageAsync(stream, file.Name);
+            if (!string.IsNullOrEmpty(uploadedUrl))
+            {
+                var fullUrl = uploadedUrl.StartsWith("http") ? uploadedUrl : BuildSmart.SharedUI.ApiConfig.GetBaseUrl().TrimEnd('/') + uploadedUrl;
+                return fullUrl;
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = "File upload error: " + ex.Message;
+            _isError = true;
+        }
+        return null;
+    }
+
+    private async Task UploadHeroImage(InputFileChangeEventArgs e)
+    {
+        if (_selectedPage == null || e.File == null) return;
+        _statusMessage = "Uploading image...";
+        var url = await UploadFileToServerAsync(e.File);
+        if (!string.IsNullOrEmpty(url))
+        {
+            _selectedPage.HeroImageUrl = url;
+            _statusMessage = "Hero image uploaded successfully!";
+            _isError = false;
+        }
+    }
+
+    private async Task UploadHeroVideo(InputFileChangeEventArgs e)
+    {
+        if (_selectedPage == null || e.File == null) return;
+        _statusMessage = "Uploading video...";
+        var url = await UploadFileToServerAsync(e.File);
+        if (!string.IsNullOrEmpty(url))
+        {
+            _selectedPage.HeroVideoUrl = url;
+            _statusMessage = "Hero MP4 video uploaded successfully!";
+            _isError = false;
+        }
+    }
+
+    private async Task UploadGalleryFile(InputFileChangeEventArgs e)
+    {
+        if (_selectedPage == null || e.File == null) return;
+        _statusMessage = "Uploading media...";
+        var url = await UploadFileToServerAsync(e.File);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var isVideo = e.File.ContentType.StartsWith("video");
+            _galleryItems.Add(new MediaGalleryItemModel
+            {
+                Url = url,
+                Type = isVideo ? "video" : "image",
+                Order = _galleryItems.Count + 1
+            });
+            _statusMessage = "Media uploaded and added to gallery!";
+            _isError = false;
+        }
+    }
+
+    private void AddEmptyGalleryItem()
+    {
+        _galleryItems.Add(new MediaGalleryItemModel
+        {
+            Order = _galleryItems.Count + 1
+        });
+    }
+
+    private void RemoveGalleryItem(int index)
+    {
+        if (index >= 0 && index < _galleryItems.Count)
+        {
+            _galleryItems.RemoveAt(index);
+        }
+    }
+
+    private void MoveGalleryItemUp(int index)
+    {
+        if (index > 0)
+        {
+            var item = _galleryItems[index];
+            _galleryItems.RemoveAt(index);
+            _galleryItems.Insert(index - 1, item);
+        }
+    }
+
+    private void MoveGalleryItemDown(int index)
+    {
+        if (index < _galleryItems.Count - 1)
+        {
+            var item = _galleryItems[index];
+            _galleryItems.RemoveAt(index);
+            _galleryItems.Insert(index + 1, item);
+        }
+    }
+
+    private void AddFeatureItem()
+    {
+        _featureItems.Add(new FeatureItemModel
+        {
+            Icon = "shield"
+        });
+    }
+
+    private void RemoveFeatureItem(int index)
+    {
+        if (index >= 0 && index < _featureItems.Count)
+        {
+            _featureItems.RemoveAt(index);
+        }
+    }
+
+    private async Task SaveSelectedPage()
+    {
+        if (_selectedPage == null) return;
+
+        _isSaving = true;
+        _statusMessage = null;
+        _isError = false;
+
+        try
+        {
+            _selectedPage.MediaGalleryJson = JsonSerializer.Serialize(_galleryItems);
+            _selectedPage.FeaturesJson = JsonSerializer.Serialize(_featureItems);
+
+            var input = new LandingPageInput
+            {
+                Id = _selectedPage.Id,
+                Slug = _selectedPage.Slug,
+                PageType = _selectedPage.PageType,
+                TitleBg = _selectedPage.TitleBg,
+                TitleEn = _selectedPage.TitleEn,
+                SubtitleBg = _selectedPage.SubtitleBg,
+                SubtitleEn = _selectedPage.SubtitleEn,
+                BadgeBg = _selectedPage.BadgeBg,
+                BadgeEn = _selectedPage.BadgeEn,
+                HeroImageUrl = _selectedPage.HeroImageUrl,
+                HeroVideoUrl = _selectedPage.HeroVideoUrl,
+                MediaGalleryJson = _selectedPage.MediaGalleryJson,
+                FeaturesJson = _selectedPage.FeaturesJson,
+                CtaTextBg = _selectedPage.CtaTextBg,
+                CtaTextEn = _selectedPage.CtaTextEn,
+                CtaLink = _selectedPage.CtaLink,
+                IsPublished = _selectedPage.IsPublished
+            };
+
+            var result = await ApiClient.UpsertLandingPage.ExecuteAsync(input);
+            if (result.Errors.Count == 0)
+            {
+                _statusMessage = "Landing page saved successfully!";
+                await LoadLandingPages();
+            }
+            else
+            {
+                _statusMessage = "Save failed: " + string.Join(", ", result.Errors.Select(e => e.Message));
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = "Error saving page: " + ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteSelectedPage()
+    {
+        if (_selectedPage == null) return;
+
+        _statusMessage = null;
+        _isError = false;
+
+        try
+        {
+            var result = await ApiClient.DeleteLandingPage.ExecuteAsync(_selectedPage.Id);
+            if (result.Errors.Count == 0 && result.Data?.DeleteLandingPage == true)
+            {
+                _statusMessage = "Landing page deleted successfully.";
+                _selectedPage = null;
+                await LoadLandingPages();
+            }
+            else
+            {
+                _statusMessage = "Delete failed.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = "Error deleting page: " + ex.Message;
+            _isError = true;
+        }
+    }
+}

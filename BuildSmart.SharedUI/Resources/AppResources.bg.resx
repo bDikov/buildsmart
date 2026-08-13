@@ -523,8 +523,89 @@
   <data name="Status_Rejected" xml:space="preserve">
     <value>Отхвърлен</value>
   </data>
-  <data name="Settings_Colorful" xml:space="preserve">
-    <value>Цветна</value>
+  <data name="FloatingActions_AriaCalc" xml:space="preserve">
+    <value>Бърз AI Калкулатор</value>
+  </data>
+  <data name="Nav_LandingPages" xml:space="preserve">
+    <value>Лендинг Страници</value>
+  </data>
+  <data name="Cms_LandingPagesTitle" xml:space="preserve">
+    <value>Управление на Лендинг Страници</value>
+  </data>
+  <data name="Cms_LandingPagesSubtitle" xml:space="preserve">
+    <value>Редактиране на снимки, видеа, галерии, заглавия и бутони за лендинг страниците.</value>
+  </data>
+  <data name="Cms_CreateLandingPage" xml:space="preserve">
+    <value>+ Нова Лендинг Страница</value>
+  </data>
+  <data name="Cms_PagesList" xml:space="preserve">
+    <value>Лендинг Страници</value>
+  </data>
+  <data name="Cms_EditPageHeader" xml:space="preserve">
+    <value>Редактор на Страница</value>
+  </data>
+  <data name="Cms_Published" xml:space="preserve">
+    <value>Публикувана</value>
+  </data>
+  <data name="Cms_Draft" xml:space="preserve">
+    <value>Чернова</value>
+  </data>
+  <data name="Cms_Preview" xml:space="preserve">
+    <value>Преглед</value>
+  </data>
+  <data name="Cms_Delete" xml:space="preserve">
+    <value>Изтрий</value>
+  </data>
+  <data name="Cms_Save" xml:space="preserve">
+    <value>Запази Страница</value>
+  </data>
+  <data name="Cms_Saving" xml:space="preserve">
+    <value>Запазване...</value>
+  </data>
+  <data name="Cms_Slug" xml:space="preserve">
+    <value>URL Slug на Страницата</value>
+  </data>
+  <data name="Cms_PageType" xml:space="preserve">
+    <value>Тип на Страницата</value>
+  </data>
+  <data name="Cms_TitleBg" xml:space="preserve">
+    <value>Заглавие (Български)</value>
+  </data>
+  <data name="Cms_TitleEn" xml:space="preserve">
+    <value>Заглавие (Английски)</value>
+  </data>
+  <data name="Cms_SubtitleBg" xml:space="preserve">
+    <value>Подзаглавие (Български)</value>
+  </data>
+  <data name="Cms_SubtitleEn" xml:space="preserve">
+    <value>Подзаглавие (Английски)</value>
+  </data>
+  <data name="Cms_HeroMediaHeader" xml:space="preserve">
+    <value>Снимки и Видео в Хедъра</value>
+  </data>
+  <data name="Cms_HeroImageUrl" xml:space="preserve">
+    <value>URL на Снимка за Хедър</value>
+  </data>
+  <data name="Cms_HeroVideoUrl" xml:space="preserve">
+    <value>URL на Видео за Хедър (.mp4)</value>
+  </data>
+  <data name="Cms_GalleryJson" xml:space="preserve">
+    <value>Галерия Снимки и Видеа (JSON)</value>
+  </data>
+  <data name="Cms_FeaturesJson" xml:space="preserve">
+    <value>Предимства и Функции (JSON)</value>
+  </data>
+  <data name="Cms_CtaTextBg" xml:space="preserve">
+    <value>Текст на Бутон (Български)</value>
+  </data>
+  <data name="Cms_CtaTextEn" xml:space="preserve">
+    <value>Текст на Бутон (Английски)</value>
+  </data>
+  <data name="Cms_CtaLink" xml:space="preserve">
+    <value>Линк на Бутона</value>
+  </data>
+  <data name="Cms_IsPublishedLabel" xml:space="preserve">
+    <value>Публикувай Страницата</value>
   </data>
   <data name="Notifications_Title" xml:space="preserve">
     <value>Известия</value>
@@ -1005,7 +1086,7 @@
     <value>Напишете съобщение...</value>
   </data>
   <data name="Support_PhoneNumber" xml:space="preserve">
-    <value>+359 888 888 888</value>
+    <value>+359 899 836 365</value>
   </data>
   <data name="MobileCRO_ChatPrompt" xml:space="preserve">
     <value>Имате въпроси? Пишете ни в чата</value>
@@ -1395,9 +1476,6 @@
   <data name="Lander_ProcessingComplete" xml:space="preserve">
     <value>Изчислението е готово!</value>
   </data>
-  <data name="Lander_ModalTitle" xml:space="preserve">
-    <value>Къде да изпратим Вашата готова оферта?</value>
-  </data>
   <data name="Lander_PhonePlaceholder" xml:space="preserve">
     <value>Телефонен номер</value>
   </data>
@@ -1519,7 +1597,7 @@
     <value>Телефонът е копиран!</value>
   </data>
   <data name="Lander_PhoneCopiedSuccess" xml:space="preserve">
-    <value>Номерът +359 888 888 888 е копиран в клипборда!</value>
+    <value>Номерът +359 899 836 365 е копиран в клипборда!</value>
   </data>
   <data name="Lander_DynamicTitle_Full" xml:space="preserve">
     <value>Пълен Ремонт на Апартамент - {0} кв.м.</value>
@@ -1617,23 +1695,14 @@
   <data name="Lander_ConditionLabel" xml:space="preserve">
     <value>Състояние на имота</value>
   </data>
-  <data name="Lander_ToggleFurniture" xml:space="preserve">
-    <value>Включи Мебели по Поръчка</value>
-  </data>
   <data name="Lander_FurnitureDesc" xml:space="preserve">
     <value>Кухня, Гардероби и Мебели за дневна</value>
   </data>
   <data name="GeneratedOffer_StatusEstimateReady" xml:space="preserve">
     <value>Готова Оферта</value>
   </data>
-  <data name="GeneratedOffer_TotalValue" xml:space="preserve">
-    <value>Обща стойност на офертата</value>
-  </data>
   <data name="ProjectOverview_TimelineLabel" xml:space="preserve">
     <value>Срок за изпълнение</value>
-  </data>
-  <data name="Lander_BathroomIncludedDisclaimer" xml:space="preserve">
-    <value>✓ ЦЯЛОСТНА ОФЕРТА „ДО КЛЮЧ“: Включва 2K хидроизолация, плочки, вградено казанче, ВиК и сифон, водоустойчив таван с LED осветление, душ параван/закалено стъкло, шкафове за баня и смесители.</value>
   </data>
   <data name="Lander_BathroomFullDisclaimer" xml:space="preserve">
     <value>✓ ЦЯЛОСТНА ОФЕРТА „ДО КЛЮЧ“: Включва 2K хидроизолация, плочки, вградено казанче, ВиК и сифон, водоустойчив таван с LED осветление, душ параван/закалено стъкло, шкафове за баня и смесители.</value>
@@ -1967,5 +2036,101 @@
   </data>
   <data name="Feed_AdminModeTradesman" xml:space="preserve">
     <value>Майстор</value>
+  </data>
+  <data name="Trust_AdvanceTitle" xml:space="preserve">
+    <value>0 лв. Авансово Плащане</value>
+  </data>
+  <data name="Trust_AdvanceDesc" xml:space="preserve">
+    <value>Плащате само за свършена и одобрена работа</value>
+  </data>
+  <data name="Trust_ContractTitle" xml:space="preserve">
+    <value>Гаранция по Договор</value>
+  </data>
+  <data name="Trust_ContractDesc" xml:space="preserve">
+    <value>Фиксирани цени без оскъпяване по време на ремонта</value>
+  </data>
+  <data name="Trust_TimelineTitle" xml:space="preserve">
+    <value>Спазени Срокове</value>
+  </data>
+  <data name="Trust_TimelineDesc" xml:space="preserve">
+    <value>Писмени неустойки при всяко закъснение</value>
+  </data>
+  <data name="Trust_TransparentTitle" xml:space="preserve">
+    <value>100% Прозрачна Оферта</value>
+  </data>
+  <data name="Trust_TransparentDesc" xml:space="preserve">
+    <value>Подробен разпис на труд и материали за 3 минути</value>
+  </data>
+  <data name="PriceTable_Title" xml:space="preserve">
+    <value>Светкавичен ценоразпис за ремонтни дейности</value>
+  </data>
+  <data name="PriceTable_Subtitle" xml:space="preserve">
+    <value>Ориентировъчни цени за труд и основни материали в София</value>
+  </data>
+  <data name="PriceTable_ColService" xml:space="preserve">
+    <value>Ремонтна Дейност / Услуга</value>
+  </data>
+  <data name="PriceTable_ColUnit" xml:space="preserve">
+    <value>Мярка</value>
+  </data>
+  <data name="PriceTable_ColPriceBgn" xml:space="preserve">
+    <value>Цена (БГН)</value>
+  </data>
+  <data name="PriceTable_ColPriceEur" xml:space="preserve">
+    <value>Цена (EUR)</value>
+  </data>
+  <data name="PriceTable_Cta" xml:space="preserve">
+    <value>Искате точна оферта за вашите размери? Пресметнете я за 3 минути с AI Калкулатора</value>
+  </data>
+  <data name="ExitModal_Badge" xml:space="preserve">
+    <value>Бърза оферта</value>
+  </data>
+  <data name="ExitModal_Title" xml:space="preserve">
+    <value>Не бързайте! Получете примерен бюджет за 10 секунди</value>
+  </data>
+  <data name="ExitModal_Subtitle" xml:space="preserve">
+    <value>Въведете квадратурата си и нашият екип ще Ви изпрати ориентировъчна оферта по имейл и телефон.</value>
+  </data>
+  <data name="ExitModal_Name" xml:space="preserve">
+    <value>Вашето Име</value>
+  </data>
+  <data name="ExitModal_Phone" xml:space="preserve">
+    <value>Телефон за връзка</value>
+  </data>
+  <data name="ExitModal_Email" xml:space="preserve">
+    <value>Имейл адрес</value>
+  </data>
+  <data name="ExitModal_Area" xml:space="preserve">
+    <value>Площ на имота (кв.м)</value>
+  </data>
+  <data name="ExitModal_Submit" xml:space="preserve">
+    <value>Изпрати заявка за оферта</value>
+  </data>
+  <data name="ExitModal_Success" xml:space="preserve">
+    <value>Благодарим Ви! Вашата заявка е приета. Ще се свържем с Вас бързо.</value>
+  </data>
+  <data name="Landing_ApartmentTitle" xml:space="preserve">
+    <value>Цялостен Ремонт на Апартамент в София</value>
+  </data>
+  <data name="Landing_ApartmentSubtitle" xml:space="preserve">
+    <value>Професионално изпълнение от А до Я. Без авансови плащания, с гаранция за фиксирана цена по договор.</value>
+  </data>
+  <data name="Landing_BathroomTitle" xml:space="preserve">
+    <value>Модерен и Качествен Ремонт на Баня в София</value>
+  </data>
+  <data name="Landing_BathroomSubtitle" xml:space="preserve">
+    <value>Хидроизолация, лепене на плочки, подмяна на ВиК и монтаж на санитария с 5 години гаранция.</value>
+  </data>
+  <data name="Landing_FinishingTitle" xml:space="preserve">
+    <value>Довършителни Работи, Шпакловка &amp; Боядисване</value>
+  </data>
+  <data name="Landing_FinishingSubtitle" xml:space="preserve">
+    <value>Перфектно гладки стени, гипсокартон, ламинат и боядисване с висококачествени материали.</value>
+  </data>
+  <data name="Landing_MepTitle" xml:space="preserve">
+    <value>Електро и ВиК Инсталации в София</value>
+  </data>
+  <data name="Landing_MepSubtitle" xml:space="preserve">
+    <value>Подмяна на ел. табла, окабеляване, водопровод и канализация от сертифицирани майстори.</value>
   </data>
 </root>

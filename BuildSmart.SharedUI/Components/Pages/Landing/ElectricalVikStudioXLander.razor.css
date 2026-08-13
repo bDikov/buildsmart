@@ -1,0 +1,530 @@
+/* Studio X Landing Page Scoped Styles for BuildSmart */
+
+.studiox-lander-wrapper {
+  background-color: var(--bg-surface, #0f172a);
+  color: var(--text-primary, #ffffff);
+  font-family: 'Outfit', 'Raleway', sans-serif;
+  min-height: 100vh;
+}
+
+.sx-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 16px 24px;
+  transition: all 0.3s ease;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sx-header.scrolled {
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.sx-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sx-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-primary, #ffffff);
+}
+
+.sx-logo-badge {
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  background: var(--gradient-primary, linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sx-brand-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.sx-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sx-phone-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.sx-drawer-trigger-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mega Menu Drawer */
+.sx-mega-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-surface, rgba(10, 15, 26, 0.95));
+  backdrop-filter: blur(20px);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sx-mega-menu.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sx-close-drawer {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+}
+
+.sx-mega-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 900px;
+  width: 100%;
+  padding: 24px;
+}
+
+.sx-mega-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  text-decoration: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sx-mega-card:hover {
+  background: var(--bg-card-alt);
+  border-color: var(--color-primary);
+  transform: translateY(-4px);
+}
+
+.sx-card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.sx-card-title {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.sx-card-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Hero Section */
+.sx-hero-section {
+  padding: 140px 24px 80px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sx-hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sx-hero-content {
+  max-width: 780px;
+}
+
+.sx-badge-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sx-badge {
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sx-badge-elec {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.sx-badge-vik {
+  color: #06b6d4;
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+.sx-display-headline {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.sx-hero-lead {
+  font-size: 1.15rem;
+  color: var(--text-secondary, #9ca3af);
+  margin-bottom: 32px;
+}
+
+.sx-hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sx-btn {
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sx-btn-primary-elec {
+  background: #f59e0b;
+  color: #000;
+}
+
+.sx-btn-primary-elec:hover {
+  background: #fbbf24;
+  transform: translateY(-2px);
+}
+
+.sx-btn-primary-vik {
+  background: #06b6d4;
+  color: #000;
+}
+
+.sx-btn-primary-vik:hover {
+  background: #22d3ee;
+  transform: translateY(-2px);
+}
+
+/* Blueprint Section */
+.sx-blueprint-section {
+  padding: 80px 24px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.sx-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sx-section-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 40px auto;
+}
+
+.sx-section-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-top: 12px;
+}
+
+.sx-section-lead {
+  color: #9ca3af;
+}
+
+.sx-toggle-group {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 24px;
+}
+
+.sx-toggle-btn {
+  padding: 10px 24px;
+  border-radius: 50px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sx-toggle-btn.active-elec {
+  background: #f59e0b;
+  color: #000;
+}
+
+.sx-toggle-btn.active-vik {
+  background: #06b6d4;
+  color: #000;
+}
+
+.sx-blueprint-viewport {
+  position: relative;
+  background: #090e17;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  overflow: hidden;
+}
+
+.sx-blueprint-svg {
+  width: 100%;
+  height: 450px;
+}
+
+.sx-wall {
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.sx-label {
+  fill: #64748b;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.sx-circuit-path {
+  stroke: #f59e0b;
+  stroke-width: 3;
+  stroke-dasharray: 8 6;
+  fill: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.sx-pipe-path {
+  stroke: #06b6d4;
+  stroke-width: 4;
+  fill: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.sx-mode-elec .sx-circuit-path { opacity: 1; }
+.sx-mode-vik .sx-pipe-path { opacity: 1; }
+
+.sx-hotspot {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.sx-hotspot:hover {
+  transform: scale(1.3);
+}
+
+.sx-node-drawer {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 300px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.sx-drawer-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.sx-node-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.sx-spec-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+
+.sx-spec-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+
+/* Calculator Section */
+.sx-calculator-section {
+  padding: 80px 24px;
+}
+
+.sx-calc-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .sx-calc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sx-calc-main {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.sx-calc-step {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+.sx-room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.sx-room-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sx-room-card.is-selected {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.sx-counter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sx-counter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sx-sublabel {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.sx-cnt-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sx-cnt-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.sx-cnt-val {
+  font-weight: 800;
+  width: 24px;
+  text-align: center;
+}
+
+.sx-summary-box {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.sx-price-total {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #f59e0b;
+  margin-top: 16px;
+}
+
+.sx-days-est {
+  color: #06b6d4;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}

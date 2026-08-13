@@ -1,0 +1,80 @@
+query GetLandingPages {
+  landingPages {
+    id
+    slug
+    pageType
+    titleBg
+    titleEn
+    subtitleBg
+    subtitleEn
+    badgeBg
+    badgeEn
+    heroImageUrl
+    heroVideoUrl
+    mediaGalleryJson
+    featuresJson
+    ctaTextBg
+    ctaTextEn
+    ctaLink
+    isPublished
+  }
+}
+
+query GetLandingPageBySlug($slug: String!) {
+  landingPageBySlug(slug: $slug) {
+    id
+    slug
+    pageType
+    titleBg
+    titleEn
+    subtitleBg
+    subtitleEn
+    badgeBg
+    badgeEn
+    heroImageUrl
+    heroVideoUrl
+    mediaGalleryJson
+    featuresJson
+    ctaTextBg
+    ctaTextEn
+    ctaLink
+    isPublished
+  }
+}
+
+mutation UpsertLandingPage($input: LandingPageInput!) {
+  upsertLandingPage(input: $input) {
+    id
+    slug
+    pageType
+    titleBg
+    titleEn
+    subtitleBg
+    subtitleEn
+    badgeBg
+    badgeEn
+    heroImageUrl
+    heroVideoUrl
+    mediaGalleryJson
+    featuresJson
+    ctaTextBg
+    ctaTextEn
+    ctaLink
+    isPublished
+  }
+}
+
+mutation DeleteLandingPage($id: UUID!) {
+  deleteLandingPage(id: $id)
+}
+
+query GetMediaLibraryAssets {
+  mediaLibraryAssets {
+    id
+    url
+    thumbnailUrl
+    type
+    title
+    createdAt
+  }
+}

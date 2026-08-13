@@ -9,6 +9,12 @@ Allow: /blog
 Allow: /blog/
 Allow: /login
 Allow: /create-account
+Allow: /renovation-estimator
+Allow: /remont-na-apartament-sofia
+Allow: /remont-na-banya
+Allow: /dovarshetelni-raboti
+Allow: /el-i-vik-uslugi
+Allow: /landing/
 
 # Disallow internal pages requiring authentication (private dashboards and wizards)
 Disallow: /admin/

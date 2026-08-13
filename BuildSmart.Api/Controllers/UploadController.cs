@@ -107,6 +107,28 @@ public class UploadController : ControllerBase
         return Ok(new { Url = url });
     }
 
+    [HttpPost("landing-media")]
+    [Authorize(Roles = "Admin, ADMIN, admin")]
+    public async Task<IActionResult> UploadLandingMedia(IFormFile file, [FromServices] IMediaService mediaService)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        string url;
+        try
+        {
+            using var stream = file.OpenReadStream();
+            url = await mediaService.UploadFileAsync(stream, file.FileName, file.ContentType);
+        }
+        catch
+        {
+            using var stream = file.OpenReadStream();
+            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+        }
+
+        return Ok(new { Url = url, Type = file.ContentType != null && file.ContentType.StartsWith("video") ? "video" : "image" });
+    }
+
     private Guid GetUserId()
     {
         var claim = User.FindFirst(ClaimTypes.NameIdentifier);

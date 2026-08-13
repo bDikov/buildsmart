@@ -1011,10 +1011,74 @@ type Mutation {
   saveCategory(id: UUID name: String! description: String isGlobal: Boolean! templateStructure: String! status: CategoryStatus): ServiceCategory!
   startAnonymousSupportChat: AnonymousChatPayload!
   updateLocalizationString(input: UpdateLocalizationInput!): LocalizationResource!
+  upsertLandingPage(input: LandingPageInput!): LandingPageContent!
+  deleteLandingPage(id: UUID!): Boolean!
+}
+
+type LandingPageContent {
+  id: UUID!
+  slug: String!
+  pageType: String!
+  titleBg: String!
+  titleEn: String!
+  subtitleBg: String!
+  subtitleEn: String!
+  badgeBg: String!
+  badgeEn: String!
+  heroImageUrl: String!
+  heroVideoUrl: String!
+  mediaGalleryJson: String!
+  featuresJson: String!
+  ctaTextBg: String!
+  ctaTextEn: String!
+  ctaLink: String!
+  metaTitleBg: String
+  metaTitleEn: String
+  metaDescriptionBg: String
+  metaDescriptionEn: String
+  isPublished: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input LandingPageInput {
+  id: UUID
+  slug: String!
+  pageType: String!
+  titleBg: String!
+  titleEn: String!
+  subtitleBg: String!
+  subtitleEn: String!
+  badgeBg: String!
+  badgeEn: String!
+  heroImageUrl: String!
+  heroVideoUrl: String!
+  mediaGalleryJson: String!
+  featuresJson: String!
+  ctaTextBg: String!
+  ctaTextEn: String!
+  ctaLink: String!
+  metaTitleBg: String
+  metaTitleEn: String
+  metaDescriptionBg: String
+  metaDescriptionEn: String
+  isPublished: Boolean!
+}
+
+type MediaAssetDto {
+  id: UUID!
+  url: String!
+  thumbnailUrl: String!
+  type: String!
+  title: String!
+  createdAt: DateTime!
 }
 
 "The root query object."
 type Query {
+  mediaLibraryAssets: [MediaAssetDto!]!
+  landingPages: [LandingPageContent!]!
+  landingPageBySlug(slug: String!): LandingPageContent
   "Gets a queryable list of active media for the public feed."
   feedMedia(skip: Int take: Int where: TradesmanMediaFilterInput order: [TradesmanMediaSortInput!]): FeedMediaCollectionSegment
   "Gets a queryable list of tradesman profiles."

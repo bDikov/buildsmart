@@ -1877,7 +1877,12 @@ public class Mutation
 						}
 					}
 
-					var existingCategory = liveCategories.FirstOrDefault(x => x.Id == localId || x.Name.Equals(cName, StringComparison.OrdinalIgnoreCase));
+					var existingCategory = liveCategories.FirstOrDefault(x => 
+						x.Id == localId || 
+						x.Name.Equals(cName, StringComparison.OrdinalIgnoreCase) ||
+						(cName.Contains("мебели", StringComparison.OrdinalIgnoreCase) && x.Name.Contains("мебели", StringComparison.OrdinalIgnoreCase)) ||
+						(cName.Contains("Бутиков", StringComparison.OrdinalIgnoreCase) && (x.Name.Contains("мебели", StringComparison.OrdinalIgnoreCase) || x.Name.Contains("Бутиков", StringComparison.OrdinalIgnoreCase)))
+					);
 					if (existingCategory != null)
 					{
 						existingCategory.Name = cName;
@@ -1978,7 +1983,7 @@ public class Mutation
 			}
 
 			// 3. Sync / Import SKUs
-			if (root.TryGetProperty("Skus", out var skusArr))
+			if (root.TryGetProperty("Skus", out var skusArr) || root.TryGetProperty("ServiceSkus", out skusArr))
 			{
 				LogInfo($"Processing {skusArr.GetArrayLength()} SKUs from import block...");
 				foreach (var sJson in skusArr.EnumerateArray())
@@ -1989,7 +1994,7 @@ public class Mutation
 					var sPrice = sJson.GetProperty("BasePrice").GetDecimal();
 					var sUnit = sJson.GetProperty("UnitType").GetString() ?? "";
 					var sFormula = sJson.TryGetProperty("CalculationFormula", out var sfProp) ? sfProp.GetString() ?? "" : "";
-					var sCatId = sJson.GetProperty("ServiceCategoryId").GetGuid();
+					var sCatId = sJson.TryGetProperty("ServiceCategoryId", out var scProp) && scProp.ValueKind != JsonValueKind.Null ? scProp.GetGuid() : Guid.Empty;
 					var localId = sJson.GetProperty("Id").GetGuid();
 					
 					Guid liveCatId = Guid.Empty;
@@ -2010,6 +2015,17 @@ public class Mutation
 							{
 								liveCatId = matchedCat.Id;
 							}
+						}
+					}
+
+					if (liveCatId == Guid.Empty)
+					{
+						var matchedCat = liveCategories.FirstOrDefault(lc => 
+							(sCode.StartsWith("FURN-") || sCode.StartsWith("TILE-PANEL-")) && (lc.Name.Contains("мебели", StringComparison.OrdinalIgnoreCase) || lc.Name.Contains("Бутиков", StringComparison.OrdinalIgnoreCase))
+						);
+						if (matchedCat != null)
+						{
+							liveCatId = matchedCat.Id;
 						}
 					}
 
@@ -2459,6 +2475,92 @@ public class Mutation
 		if (trimmed == "л.м." || trimmed == "лин.м" || trimmed == "лин. м." || trimmed == "л. м.") return "lm";
 		if (trimmed == "модул") return "module";
 		return unitType;
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	public async Task<LandingPageContent> UpsertLandingPage(
+		LandingPageInput input,
+		[Service] AppDbContext context,
+		CancellationToken cancellationToken)
+	{
+		if (string.IsNullOrWhiteSpace(input.Slug))
+		{
+			throw new GraphQLException("Landing page slug cannot be empty.");
+		}
+
+		var slug = input.Slug.Trim().ToLowerInvariant();
+		LandingPageContent? page = null;
+
+		if (input.Id.HasValue && input.Id.Value != Guid.Empty)
+		{
+			page = await context.LandingPages.FirstOrDefaultAsync(p => p.Id == input.Id.Value, cancellationToken);
+		}
+
+		if (page == null)
+		{
+			page = await context.LandingPages.FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
+		}
+
+		if (page == null)
+		{
+			page = new LandingPageContent
+			{
+				Id = input.Id.HasValue && input.Id.Value != Guid.Empty ? input.Id.Value : Guid.NewGuid(),
+				CreatedAt = DateTime.UtcNow
+			};
+			await context.LandingPages.AddAsync(page, cancellationToken);
+		}
+
+		page.Slug = slug;
+		page.PageType = string.IsNullOrWhiteSpace(input.PageType) ? "custom" : input.PageType;
+		page.TitleBg = input.TitleBg ?? string.Empty;
+		page.TitleEn = input.TitleEn ?? string.Empty;
+		page.SubtitleBg = input.SubtitleBg ?? string.Empty;
+		page.SubtitleEn = input.SubtitleEn ?? string.Empty;
+		page.BadgeBg = input.BadgeBg ?? string.Empty;
+		page.BadgeEn = input.BadgeEn ?? string.Empty;
+		page.HeroImageUrl = input.HeroImageUrl ?? string.Empty;
+		page.HeroVideoUrl = input.HeroVideoUrl ?? string.Empty;
+		page.MediaGalleryJson = string.IsNullOrWhiteSpace(input.MediaGalleryJson) ? "[]" : input.MediaGalleryJson;
+		page.FeaturesJson = string.IsNullOrWhiteSpace(input.FeaturesJson) ? "[]" : input.FeaturesJson;
+		page.CtaTextBg = input.CtaTextBg ?? string.Empty;
+		page.CtaTextEn = input.CtaTextEn ?? string.Empty;
+		page.CtaLink = string.IsNullOrWhiteSpace(input.CtaLink) ? "/renovation-estimator" : input.CtaLink;
+		page.MetaTitleBg = input.MetaTitleBg;
+		page.MetaTitleEn = input.MetaTitleEn;
+		page.MetaDescriptionBg = input.MetaDescriptionBg;
+		page.MetaDescriptionEn = input.MetaDescriptionEn;
+		page.IsPublished = input.IsPublished;
+		page.UpdatedAt = DateTime.UtcNow;
+
+		await context.SaveChangesAsync(cancellationToken);
+		return page;
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	public async Task<bool> DeleteLandingPage(
+		Guid id,
+		[Service] AppDbContext context,
+		CancellationToken cancellationToken)
+	{
+		var page = await context.LandingPages.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+		if (page == null) return false;
+
+		context.LandingPages.Remove(page);
+		await context.SaveChangesAsync(cancellationToken);
+		return true;
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	public async Task<string> UploadLandingPageMedia(
+		IFile file,
+		string mediaType,
+		[Service] IMultimediaStorageService storageService,
+		CancellationToken cancellationToken)
+	{
+		using var stream = file.OpenReadStream();
+		string url = await storageService.SaveFileAsync(stream, file.Name, file.ContentType);
+		return url;
 	}
 }
 

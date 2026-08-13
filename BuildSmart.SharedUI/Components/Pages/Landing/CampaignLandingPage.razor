@@ -1,0 +1,1439 @@
+@page "/remont-na-apartament-sofia"
+@page "/remont-na-banya"
+@page "/dovarshetelni-raboti"
+@page "/el-i-vik-uslugi"
+@page "/landing/{CampaignSlug}"
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using BuildSmart.SharedUI.GraphQL
+@using System.Text.Json
+@using BuildSmart.SharedUI.ViewModels
+@using BuildSmart.SharedUI.Services
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject BuildSmartApiClient ApiClient
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject FeedPageViewModel ViewModel
+
+<PageTitle>@GetTitle() | BuildSmart.bg</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@GetMetaDescription()" />
+    <meta name="keywords" content="@GetKeywords()" />
+    <meta property="og:title" content="@GetTitle()" />
+    <meta property="og:description" content="@GetMetaDescription()" />
+    <meta property="og:type" content="website" />
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "HomeAndConstructionBusiness",
+      "name": "BuildSmart Bulgaria",
+      "description": "@GetMetaDescription()",
+      "url": "https://buildsmart.bg",
+      "telephone": "+359888888888",
+      "address": {
+        "@@type": "PostalAddress",
+        "addressLocality": "Sofia",
+        "addressCountry": "BG"
+      },
+      "priceRange": "$$",
+      "areaServed": "Sofia",
+      "knowsAbout": ["Ремонт на апартаменти", "Ремонт на баня", "Довършителни работи", "Шпакловка и боядисване", "Ел и ВиК услуги"]
+    }
+    </script>
+</HeadContent>
+
+<div class="interio-page-wrapper">
+    <!-- Interio Navigation Bar -->
+    <header class="interio-header">
+        <div class="header-container">
+            <a href="/" class="brand-logo" @onclick='() => NavManager.NavigateTo("/", forceLoad: true)' @onclick:preventDefault>
+                <div class="logo-icon-emerald">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="logo-text">BuildSmart</span>
+            </a>
+
+            <nav class="header-nav d-none d-md-flex">
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("process")'>Как работи</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("why-us")'>Защо нас</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("prices")'>Ценоразпис</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("guarantees")'>Гаранции</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("proof")'>Проекти</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("faq")'>Чести въпроси</button>
+            </nav>
+
+            <div class="header-actions">
+                <button type="button" class="header-phone-btn d-none d-sm-inline-flex border-0" @onclick="CopyPhoneToClipboard" title="Копирай телефон">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span>@(_isPhoneCopied ? Loc["Lander_PhoneCopiedNotice"] : Loc["Support_PhoneNumber"])</span>
+                </button>
+                <button class="bs-btn-primary" @onclick="HandleHeroCtaClick">
+                    <span>AI Калкулатор</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Interio Split Hero Section -->
+    <section class="interio-hero-section">
+        <div class="hero-grid-container">
+            <div class="hero-text-col">
+                <div class="emerald-badge">
+                    <span class="pulse-dot"></span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    Официална Оферта за София &amp; Региона
+                </div>
+                <h1 class="hero-headline">@GetTitle()</h1>
+                <p class="hero-subtext">@GetSubtitle()</p>
+
+                <!-- Checkmark List -->
+                <ul class="hero-check-list">
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span><strong>0 лв. Авансово плащане</strong> – заплащате само след одобрен етап</span>
+                    </li>
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span><strong>100% Гаранция по Договор</strong> – твърда крайна цена и фиксирани срокове</span>
+                    </li>
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span><strong>Автоматизиран AI Калкулатор</strong> – безплатна подробна КСС оферта за 3 минути</span>
+                    </li>
+                </ul>
+
+                <!-- Hero Action Buttons -->
+                <div class="hero-cta-group">
+                    <button class="bs-btn-primary py-3 px-4" @onclick="HandleHeroCtaClick">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span>Изчислете вашата оферта онлайн</span>
+                    </button>
+                    <button type="button" class="interio-btn-secondary border-0" @onclick="CopyPhoneToClipboard">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        <span>@(_isPhoneCopied ? Loc["Lander_PhoneCopiedNotice"] : $"{Loc["MobileCRO_CallPrompt"]}: {Loc["Support_PhoneNumber"]}")</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interio Hero Showcase (Dynamic CMS Image or Video Header) -->
+            <div class="hero-img-col">
+                <div class="hero-image-card video-card-wrapper">
+                    @if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.HeroVideoUrl))
+                    {
+                        <video id="hero-campaign-video" src="@_cmsPage.HeroVideoUrl" poster="@GetHeroImageUrl()" autoplay loop muted=@_isHeroMuted playsinline class="hero-img" style="object-fit: cover;"></video>
+                        <button type="button" class="sound-toggle-badge" @onclick="ToggleHeroSound" title="Включи / Изключи Звук">
+                            @if (_isHeroMuted)
+                            {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                                <span>Включи звук</span>
+                            }
+                            else
+                            {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                <span>Изключи звук</span>
+                            }
+                        </button>
+                    }
+                    else
+                    {
+                        <img src="@GetHeroImageUrl()" alt="Модерен интериор ремонт София" class="hero-img" />
+                    }
+                    <div class="floating-proof-badge">
+                        <div class="star-rating">★★★★★</div>
+                        <span class="proof-badge-text"><strong>4.9/5 Оценка</strong> от над 180 завършени имота в София</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Guarantee & Why Us Bar Integration -->
+    <section id="why-us" class="interio-section-wrapper">
+        <section id="guarantees">
+            <TrustGuaranteeBar />
+        </section>
+    </section>
+
+    <!-- Interio Emerald 3-Step Process Banner -->
+    <section id="process" class="interio-process-banner">
+        <div class="banner-container">
+            <div class="process-header">
+                <h2>Опростен процес за вашия ремонт</h2>
+                <p>От изчислението на офертата до окончателното предаване на ключа.</p>
+            </div>
+
+            <div class="process-grid">
+                <div class="process-card">
+                    <div class="step-num">01</div>
+                    <h3>Въведете размерите</h3>
+                    <p>Изберете квадратурата и желания клас довършителни работи в нашия калкулатор.</p>
+                </div>
+                <div class="process-card">
+                    <div class="step-num">02</div>
+                    <h3>Получете КСС оферта</h3>
+                    <p>Системата генерира подробен количествено-стойностна сметка с финални цени.</p>
+                </div>
+                <div class="process-card">
+                    <div class="step-num">03</div>
+                    <h3>Ремонт без аванс</h3>
+                    <p>Започваме работа по Договор. Заплащате поетапно след одобрение на изпълнението.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real Project Portfolio Section (Dynamically Bound to CMS Showcase Gallery) -->
+    <section id="proof" class="interio-section-wrapper proof-section">
+        <div class="section-title-box">
+            <h2>Нашите Реализирани Проекти в София</h2>
+            <p>Разгледайте реални довършени апартаменти с краен бюджет и материали.</p>
+        </div>
+
+        <div class="portfolio-grid">
+            @if (_galleryItems.Any())
+            {
+                @foreach (var media in _galleryItems)
+                {
+                    <div class="portfolio-card">
+                        <div class="card-img-wrapper">
+                            @if (media.Type == "video")
+                            {
+                                <video src="@media.Url" controls playsinline preload="metadata" class="portfolio-img"></video>
+                                <span class="portfolio-tag video-tag">VIDEO</span>
+                            }
+                            else
+                            {
+                                <img src="@media.Url" alt="@media.CaptionBg" class="portfolio-img" />
+                                <span class="portfolio-tag">Завършен 2026</span>
+                            }
+                        </div>
+                        <div class="card-content">
+                            @if (!string.IsNullOrEmpty(media.LocationBg))
+                            {
+                                <div class="card-location">@media.LocationBg</div>
+                            }
+                            <h3>@(string.IsNullOrEmpty(media.CaptionBg) ? "Изпълнение на обект" : media.CaptionBg)</h3>
+                            @if (!string.IsNullOrEmpty(media.DurationBg) || !string.IsNullOrEmpty(media.BudgetBg))
+                            {
+                                <div class="card-meta">
+                                    @if (!string.IsNullOrEmpty(media.DurationBg))
+                                    {
+                                        <div class="meta-item"><strong>Срок:</strong> @media.DurationBg</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(media.BudgetBg))
+                                    {
+                                        <div class="meta-item price"><strong>Бюджет:</strong> @media.BudgetBg</div>
+                                    }
+                                </div>
+                            }
+                            <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- Default Fallback Cards -->
+                <div class="portfolio-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" alt="Цялостен ремонт на апартамент" class="portfolio-img" />
+                        <span class="portfolio-tag">Завършен 2026</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-location">София, кв. Манастирски Ливади</div>
+                        <h3>Цялостен ремонт на тристаен апартамент (88 кв.м)</h3>
+                        <div class="card-meta">
+                            <div class="meta-item"><strong>Срок:</strong> 42 работни дни</div>
+                            <div class="meta-item price"><strong>Бюджет:</strong> 34,800 лв. (€17,793)</div>
+                        </div>
+                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                    </div>
+                </div>
+
+                <div class="portfolio-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80" alt="Луксозен ремонт на баня" class="portfolio-img" />
+                        <span class="portfolio-tag">Завършен 2026</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-location">София, кв. Лозенец</div>
+                        <h3>Модерен ремонт на баня с крупноформатен гранитогрес (6 кв.м)</h3>
+                        <div class="card-meta">
+                            <div class="meta-item"><strong>Срок:</strong> 11 работни дни</div>
+                            <div class="meta-item price"><strong>Бюджет:</strong> 7,450 лв. (€3,809)</div>
+                        </div>
+                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                    </div>
+                </div>
+
+                <div class="portfolio-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" alt="Довършителни работи дневна" class="portfolio-img" />
+                        <span class="portfolio-tag">Завършен 2026</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-location">София, кв. Младост 4</div>
+                        <h3>Шпакловка, боядисване и гипсокартон на нов апартамент (65 кв.м)</h3>
+                        <div class="card-meta">
+                            <div class="meta-item"><strong>Срок:</strong> 18 работни дни</div>
+                            <div class="meta-item price"><strong>Бюджет:</strong> 14,200 лв. (€7,260)</div>
+                        </div>
+                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Interactive SEO Price Table Section -->
+    <section id="prices" class="interio-section-wrapper">
+        <SeoPriceTable SelectedCategory="@GetCategoryFilter()" />
+    </section>
+
+    <!-- Financing CTA Banner -->
+    <section class="interio-cta-banner">
+        <div class="cta-banner-content">
+            <h2>Ремонтирайте имота си без първоначален аванс</h2>
+            <p>Заплащате само за реално извършена и приета работа. Получете вашата оферта за 3 минути.</p>
+            <button class="bs-btn-primary cta-banner-btn py-3 px-5" @onclick="HandleCreateProjectClick">Пресметнете оферта сега</button>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="interio-section-wrapper faq-section">
+        <div class="section-title-box">
+            <h2>Често Задавани Въпроси</h2>
+            <p>Всичко, което трябва да знаете за ремонта и работата с BuildSmart</p>
+        </div>
+        <div class="faq-accordion-grid">
+            <div class="faq-card shadow-sm">
+                <h3>Как се определя цената на ремонта?</h3>
+                <p>Цената се калкулира автоматично на база точните размери (кв.м) на вашия имот и избраните довършителни работи. Получавате прозрачна КСС оферта с детайлни единични цени.</p>
+            </div>
+            <div class="faq-card shadow-sm">
+                <h3>Има ли първоначален аванс?</h3>
+                <p>Не! Работата започва по Договор с 0 лв. аванс. Плащате поетапно, само след като инспектирате и одобрите съответния завършен етап от ремонта.</p>
+            </div>
+            <div class="faq-card shadow-sm">
+                <h3>Колко време отнема изготвянето на оферта?</h3>
+                <p>Офертата се генерира онлайн за под 3 минути в нашия интелигентен AI калкулатор, без да чакате огледи или ръчни изчисления.</p>
+            </div>
+            <div class="faq-card shadow-sm">
+                <h3>Какви са гаранциите за срокове и качество?</h3>
+                <p>Крайната цена и сроковете са твърдо заложени в Договора. Всички извършени СМР дейности разполагат с пълна гаранционна поддръжка.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interio Footer -->
+    <footer class="interio-footer">
+        <div class="footer-container">
+            <div class="footer-col brand-col">
+                <div class="brand-logo">
+                    <div class="logo-icon-emerald small">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <span class="logo-text">BuildSmart</span>
+                </div>
+                <p class="footer-desc">Строително-ремонтна платформа №1 в София. Прозрачност, качество по Договор и 0 лв. авансово плащане.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Услуги</h4>
+                <ul>
+                    <li><a href="/remont-na-apartament-sofia" @onclick='() => NavManager.NavigateTo("/remont-na-apartament-sofia", forceLoad: true)' @onclick:preventDefault>Ремонт на апартамент</a></li>
+                    <li><a href="/remont-na-banya" @onclick='() => NavManager.NavigateTo("/remont-na-banya", forceLoad: true)' @onclick:preventDefault>Ремонт на баня</a></li>
+                    <li><a href="/dovarshetelni-raboti" @onclick='() => NavManager.NavigateTo("/dovarshetelni-raboti", forceLoad: true)' @onclick:preventDefault>Довършителни работи</a></li>
+                    <li><a href="/el-i-vik-uslugi" @onclick='() => NavManager.NavigateTo("/el-i-vik-uslugi", forceLoad: true)' @onclick:preventDefault>Ел и ВиК услуги</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Контакти</h4>
+                <ul>
+                    <li>София, България</li>
+                    <li>Тел: @Loc["Support_PhoneNumber"]</li>
+                    <li>Email: info@buildsmart.bg</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; @DateTime.Now.Year BuildSmart Bulgaria. Всички права запазени.</p>
+        </div>
+    </footer>
+
+    <!-- Auth Prompt Confirmation Modal (Feed Style) -->
+    <BsConfirmationModal IsVisible="_showAuthModal"
+                         Title="@Loc["Feed_AuthAlert_Title"]"
+                         Message="@Loc["Feed_AuthAlert_Message"]"
+                         AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+                         CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+                         OnConfirmationChanged="OnAuthConfirmationChanged" />
+
+    <!-- Global Exit Intent Lead Capture Modal -->
+    <ExitIntentModal />
+</div>
+
+<style>
+html {
+    scroll-behavior: smooth;
+}
+
+.interio-page-wrapper {
+    background: var(--bg-app);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Interio Header */
+.interio-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 24px;
+}
+
+.header-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.logo-icon-emerald {
+    width: 38px;
+    height: 38px;
+    background: var(--gradient-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: var(--shadow-main);
+}
+
+.logo-icon-emerald.small {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.header-nav .nav-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 650;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.header-nav .nav-link:hover {
+    color: var(--color-primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-phone-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 750;
+    font-size: 0.92rem;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    transition: background 0.2s ease;
+}
+
+.header-phone-btn:hover {
+    border-color: var(--color-primary);
+}
+
+.interio-primary-pill-btn {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 22px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--shadow-main);
+    transition: transform 0.2s ease;
+}
+
+.interio-primary-pill-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Interio Hero Section */
+.interio-hero-section {
+    padding: 64px 24px;
+    background: var(--bg-app);
+}
+
+.hero-grid-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 48px;
+    align-items: center;
+}
+
+@@media (max-width: 992px) {
+    .hero-grid-container {
+        grid-template-columns: 1fr;
+        gap: 36px;
+    }
+}
+
+.hero-text-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.emerald-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card-alt);
+    color: var(--color-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 750;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.7);
+    animation: pulseDot 1.8s infinite;
+}
+
+.hero-headline {
+    font-size: 3rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin: 0 0 16px 0;
+}
+
+@@media (max-width: 768px) {
+    .hero-headline { font-size: 2.2rem; }
+}
+
+.hero-subtext {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0 0 28px 0;
+}
+
+.faq-accordion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1240px;
+    margin: 30px auto 0 auto;
+}
+
+.faq-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.faq-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+}
+
+.faq-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+}
+
+.faq-card p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.hero-check-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 36px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hero-check-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.98rem;
+    color: var(--text-primary);
+}
+
+.hero-cta-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.interio-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--gradient-primary);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 32px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--shadow-main);
+    transition: transform 0.2s ease;
+}
+
+.interio-btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+.interio-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 24px;
+    font-size: 1rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+}
+
+.interio-btn-secondary:hover {
+    border-color: var(--color-primary);
+}
+
+.hero-image-card {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-main);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.hero-img {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+.floating-proof-badge {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 14px 20px;
+    box-shadow: var(--shadow-main);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.star-rating {
+    color: #f59e0b;
+    font-size: 1.1rem;
+}
+
+.proof-badge-text {
+    font-size: 0.88rem;
+    color: var(--text-primary);
+}
+
+/* Interio Section Wrapper */
+.interio-section-wrapper {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Interio Process Banner */
+.interio-process-banner {
+    background: var(--bg-card-alt);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 64px 24px;
+    margin: 48px 0;
+}
+
+.banner-container {
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.process-header {
+    text-align: center;
+    margin-bottom: 44px;
+}
+
+.process-header h2 {
+    font-size: 2.2rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+}
+
+.process-header p {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.process-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 28px;
+}
+
+.process-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow-main);
+}
+
+.step-num {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.process-card h3 {
+    font-size: 1.25rem;
+    font-weight: 750;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.process-card p {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Portfolio Section */
+.proof-section {
+    margin-top: 56px;
+}
+
+.section-title-box {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-title-box h2 {
+    font-size: 2.2rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+}
+
+.section-title-box p {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 28px;
+}
+
+@@media (max-width: 768px) {
+    .portfolio-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 16px;
+        padding-bottom: 20px;
+        margin-left: -24px;
+        margin-right: -24px;
+        padding-left: 24px;
+        padding-right: 24px;
+        scroll-behavior: smooth;
+    }
+    .portfolio-grid::-webkit-scrollbar {
+        display: none;
+    }
+    .portfolio-card {
+        flex: 0 0 85%;
+        min-width: 285px;
+        scroll-snap-align: center;
+    }
+}
+
+.portfolio-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: var(--shadow-main);
+    transition: transform 0.2s ease;
+}
+
+.portfolio-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+}
+
+.card-img-wrapper {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    background: var(--bg-card-alt);
+}
+
+.portfolio-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.portfolio-card:hover .portfolio-img {
+    transform: scale(1.04);
+}
+
+.portfolio-tag {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 4px 12px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.portfolio-tag.video-tag {
+    background: var(--color-primary);
+    color: #ffffff;
+    border: none;
+}
+
+.card-content {
+    padding: 24px;
+}
+
+.card-location {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-content h3 {
+    font-size: 1.15rem;
+    font-weight: 750;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+    line-height: 1.35;
+}
+
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.card-meta .price {
+    color: var(--color-primary);
+}
+
+.card-btn {
+    width: 100%;
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 0.92rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.card-btn:hover {
+    border-color: var(--color-primary);
+}
+
+/* CTA Banner */
+.interio-cta-banner {
+    max-width: 1240px;
+    margin: 64px auto;
+    padding: 0 24px;
+}
+
+.cta-banner-content {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 56px 40px;
+    text-align: center;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-main);
+}
+
+.cta-banner-content h2 {
+    font-size: 2.2rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+}
+
+.cta-banner-content p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin: 0 auto 32px auto;
+    max-width: 680px;
+}
+
+.cta-banner-btn {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 36px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--shadow-main);
+    transition: transform 0.2s ease;
+}
+
+.cta-banner-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Footer */
+.interio-footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    padding: 56px 24px 28px 24px;
+}
+
+.footer-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 40px;
+}
+
+@@media (max-width: 768px) {
+    .footer-container { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.footer-desc {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    margin-top: 12px;
+    line-height: 1.5;
+    max-width: 380px;
+}
+
+.footer-col h4 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-col a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+    color: var(--color-primary);
+}
+
+.footer-col li {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.footer-bottom {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.video-card-wrapper {
+    position: relative;
+}
+
+.sound-toggle-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: var(--shadow-main);
+    transition: transform 0.2s ease;
+}
+
+.sound-toggle-badge:hover {
+    transform: scale(1.05);
+    border-color: var(--color-primary);
+}
+
+@@keyframes pulseDot {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(15, 118, 110, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(15, 118, 110, 0); }
+}
+</style>
+
+@code {
+    [Parameter]
+    public string? CampaignSlug { get; set; }
+
+    private IGetLandingPageBySlug_LandingPageBySlug? _cmsPage;
+    private bool _isHeroMuted = true;
+    private List<MediaGalleryItemModel> _galleryItems = new();
+
+    public class MediaGalleryItemModel
+    {
+        public string Url { get; set; } = string.Empty;
+        public string Type { get; set; } = "image";
+        public string CaptionBg { get; set; } = string.Empty;
+        public string CaptionEn { get; set; } = string.Empty;
+        public string LocationBg { get; set; } = string.Empty;
+        public string DurationBg { get; set; } = string.Empty;
+        public string BudgetBg { get; set; } = string.Empty;
+    }
+
+    private async Task ToggleHeroSound()
+    {
+        _isHeroMuted = !_isHeroMuted;
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $"const v = document.getElementById('hero-campaign-video'); if(v) {{ v.muted = {_isHeroMuted.ToString().ToLower()}; }}");
+        }
+        catch
+        {
+            // Fallback JS interop handler
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            var relativePath = NavManager.ToBaseRelativePath(NavManager.Uri).TrimStart('/').ToLowerInvariant();
+            var targetSlug = string.IsNullOrWhiteSpace(relativePath) ? "remont-na-apartament-sofia" : relativePath;
+            if (targetSlug.StartsWith("landing/"))
+            {
+                targetSlug = CampaignSlug ?? targetSlug.Replace("landing/", "");
+            }
+
+            var res = await ApiClient.GetLandingPageBySlug.ExecuteAsync(targetSlug);
+            if (res.Errors.Count == 0 && res.Data?.LandingPageBySlug != null)
+            {
+                _cmsPage = res.Data.LandingPageBySlug;
+                if (!string.IsNullOrEmpty(_cmsPage.MediaGalleryJson))
+                {
+                    try
+                    {
+                        _galleryItems = JsonSerializer.Deserialize<List<MediaGalleryItemModel>>(_cmsPage.MediaGalleryJson) ?? new();
+                    }
+                    catch
+                    {
+                        _galleryItems = new();
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Silently fall back to default resource content
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var currentUrl = NavManager.Uri;
+                await JSRuntime.InvokeVoidAsync("posthog.capture", "campaign_landing_viewed", new
+                {
+                    slug = GetSlug(),
+                    url = currentUrl
+                });
+            }
+            catch
+            {
+                // Silently ignore JS analytics interop errors
+            }
+        }
+    }
+
+    private string GetSlug()
+    {
+        var relativePath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+        if (relativePath.Contains("remont-na-apartament-sofia")) return "apartment-sofia";
+        if (relativePath.Contains("remont-na-banya")) return "bathroom-sofia";
+        if (relativePath.Contains("dovarshetelni-raboti")) return "finishing-sofia";
+        if (relativePath.Contains("el-i-vik-uslugi")) return "mep-sofia";
+        return CampaignSlug?.ToLowerInvariant() ?? "general";
+    }
+
+    private string GetTitle()
+    {
+        if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.TitleBg))
+        {
+            return _cmsPage.TitleBg;
+        }
+
+        return GetSlug() switch
+        {
+            "bathroom-sofia" => Loc["Landing_BathroomTitle"],
+            "finishing-sofia" => Loc["Landing_FinishingTitle"],
+            "mep-sofia" => Loc["Landing_MepTitle"],
+            _ => Loc["Landing_ApartmentTitle"]
+        };
+    }
+
+    private string GetSubtitle()
+    {
+        if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.SubtitleBg))
+        {
+            return _cmsPage.SubtitleBg;
+        }
+
+        return GetSlug() switch
+        {
+            "bathroom-sofia" => Loc["Landing_BathroomSubtitle"],
+            "finishing-sofia" => Loc["Landing_FinishingSubtitle"],
+            "mep-sofia" => Loc["Landing_MepSubtitle"],
+            _ => Loc["Landing_ApartmentSubtitle"]
+        };
+    }
+
+    private string GetHeroImageUrl()
+    {
+        if (_cmsPage != null && !string.IsNullOrWhiteSpace(_cmsPage.HeroImageUrl))
+        {
+            return _cmsPage.HeroImageUrl;
+        }
+
+        return GetSlug() switch
+        {
+            "mep-sofia" => "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+            "bathroom-sofia" => "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
+            "finishing-sofia" => "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+            _ => "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"
+        };
+    }
+
+    private string GetMetaDescription()
+    {
+        return $"{GetTitle()} - {GetSubtitle()} Получете подробна КСС оферта за 3 минути.";
+    }
+
+    private string GetKeywords()
+    {
+        return "ремонт на апартамент софия, ремонт на баня софия, довършителни работи цени, шпакловка боядисване, лепене на плочки софия";
+    }
+
+    private string GetCategoryFilter()
+    {
+        return GetSlug() switch
+        {
+            "bathroom-sofia" => "banya",
+            "finishing-sofia" => "dovarshetelni",
+            "mep-sofia" => "mep",
+            _ => "all"
+        };
+    }
+
+    private LandingPageCopyRule? _activeRule;
+    private bool _isGuest = true;
+    private bool _showAuthModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (ViewModel != null)
+            {
+                await ViewModel.LoadFeedCommand.ExecuteAsync(null);
+            }
+            _isGuest = AuthService == null || !AuthService.IsAuthenticated || await CheckIsGuestAsync();
+        }
+        catch { }
+    }
+
+    private void ResolveActiveCopyRule()
+    {
+        _activeRule = null;
+        if (!BuildSmart.SharedUI.ApiConfig.LandingPage_EnableDynamicTitles) return;
+
+        try
+        {
+            var json = Loc["LandingPage_CopywritingRules"];
+            var rules = LandingPageRuleEvaluator.ParseRules(json);
+            bool hasProjectsVal = ViewModel?.HasProjects == true;
+            bool hasDraftVal = ViewModel?.LatestDraftProjectId.HasValue == true;
+            bool hasActiveVal = ViewModel?.LatestActiveProjectId.HasValue == true;
+
+            foreach (var rule in rules)
+            {
+                if (LandingPageRuleEvaluator.EvaluateCondition(
+                    rule.Condition, 
+                    _isGuest, 
+                    hasProjectsVal, 
+                    ViewModel?.IsTradesman == true, 
+                    ViewModel?.IsHomeowner == true,
+                    hasDraftVal,
+                    hasActiveVal))
+                {
+                    _activeRule = rule;
+                    break;
+                }
+            }
+        }
+        catch { }
+    }
+
+    private void HandleHeroCtaClick()
+    {
+        ResolveActiveCopyRule();
+
+        if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.CtaAction))
+        {
+            var route = _activeRule.CtaAction;
+            if (route.Contains("{DraftProjectId}"))
+            {
+                route = route.Replace("{DraftProjectId}", ViewModel?.LatestDraftProjectId?.ToString() ?? string.Empty);
+            }
+            if (route.Contains("{ActiveProjectId}"))
+            {
+                route = route.Replace("{ActiveProjectId}", ViewModel?.LatestActiveProjectId?.ToString() ?? string.Empty);
+            }
+
+            NavManager.NavigateTo(route);
+        }
+        else
+        {
+            HandleCreateProjectClick();
+        }
+    }
+
+    private async void HandleCreateProjectClick()
+    {
+        bool isGuest = await CheckIsGuestAsync();
+        if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+        {
+            _showAuthModal = true;
+            StateHasChanged();
+        }
+        else
+        {
+            NavigateToWizard();
+        }
+    }
+
+    private void OnAuthConfirmationChanged(bool proceed)
+    {
+        _showAuthModal = false;
+        if (proceed)
+        {
+            string targetUrl = "/job-wizard";
+            var returnUrl = Uri.EscapeDataString(targetUrl);
+            NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
+        }
+    }
+
+    private void NavigateToWizard()
+    {
+        NavManager.NavigateTo("/job-wizard");
+    }
+
+    private async Task<bool> CheckIsGuestAsync()
+    {
+        try
+        {
+            if (AuthService == null) return false;
+            var token = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token)) return false;
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var email = jwtToken.Claims.FirstOrDefault(c =>
+                c.Type == "email" ||
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            return email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private bool _isPhoneCopied = false;
+
+    private async Task ScrollToSection(string elementId)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('{elementId}')?.scrollIntoView({{ behavior: 'smooth', block: 'start' }})");
+        }
+        catch { }
+    }
+
+    private async Task CopyPhoneToClipboard()
+    {
+        try
+        {
+            var number = Loc["Support_PhoneNumber"].Value;
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", number);
+            _isPhoneCopied = true;
+            StateHasChanged();
+            await Task.Delay(3000);
+            _isPhoneCopied = false;
+            StateHasChanged();
+        }
+        catch { }
+    }
+
+    private void NavigateToEstimator()
+    {
+        HandleHeroCtaClick();
+    }
+}

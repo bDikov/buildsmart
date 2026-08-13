@@ -15,6 +15,7 @@
 @inject BuildSmart.Core.Application.Interfaces.IEmailVerificationService EmailVerificationService
 @inject BuildSmart.Core.Application.Interfaces.IEmailService EmailService
 @inject BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository LeadRepository
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
 
 <div class="project-detail-container magazine-theme-wrapper">
     @if (_isProposalReady)
@@ -536,6 +537,8 @@
             </div>
         }
 
+        <TrustGuaranteeBar />
+
         <!-- Step 1 Macro Parameter Controls Card -->
         <div class="bs-card p-4 mb-4 mx-auto max-w-700 magazine-input-card">
             <!-- Step 1 Header & Progress Indicator Inside Card -->
@@ -801,6 +804,14 @@
             </button>
         </div>
     }
+
+    <!-- Auth Prompt Confirmation Modal (Feed Style) -->
+    <BsConfirmationModal IsVisible="_showAuthModal"
+                         Title="@Loc["Feed_AuthAlert_Title"]"
+                         Message="@Loc["Feed_AuthAlert_Message"]"
+                         AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+                         CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+                         OnConfirmationChanged="OnAuthConfirmationChanged" />
 </div>
 
 <!-- Background Processing Modal -->
@@ -904,6 +915,12 @@
         </div>
     </div>
 }
+
+<div class="mt-5 mx-auto max-w-700">
+    <SeoPriceTable />
+</div>
+
+<ExitIntentModal />
 
 @code {
     [SupplyParameterFromQuery(Name = "scope")]
@@ -1356,7 +1373,34 @@
         catch { }
     }
 
+    private bool _showAuthModal = false;
+
     private async Task ProceedToWizard()
+    {
+        bool isGuest = await CheckIsGuestAsync();
+        if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+        {
+            _showAuthModal = true;
+            StateHasChanged();
+        }
+        else
+        {
+            await NavigateToWizardInternal();
+        }
+    }
+
+    private void OnAuthConfirmationChanged(bool proceed)
+    {
+        _showAuthModal = false;
+        if (proceed)
+        {
+            string targetUrl = "/job-wizard";
+            var returnUrl = Uri.EscapeDataString(targetUrl);
+            NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
+        }
+    }
+
+    private async Task NavigateToWizardInternal()
     {
         try
         {
@@ -1367,5 +1411,25 @@
         catch { }
 
         NavManager.NavigateTo("/job-wizard");
+    }
+
+    private async Task<bool> CheckIsGuestAsync()
+    {
+        try
+        {
+            if (AuthService == null) return false;
+            var token = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token)) return false;
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var email = jwtToken.Claims.FirstOrDefault(c =>
+                c.Type == "email" ||
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            return email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

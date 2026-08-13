@@ -47,3 +47,4 @@ docker-compose.override.yml
 
 # Scratch files
 scratch/
+/BuildSmart.Api/wwwroot/uploads/1db20aa3-dbaa-4450-9258-9d8b50e16290_PXL_20260719_134019223.jpg

@@ -368,6 +368,11 @@ public class ScopeGenerationWorker
 				await saveUnitOfWork.AiCalculations.AddAsync(aiCalc);
 
 				var project = await saveUnitOfWork.Projects.GetByIdAsync(freshJobPost.ProjectId);
+				if (project != null)
+				{
+					project.MasterOfferPdf = null;
+					saveUnitOfWork.Projects.Update(project);
+				}
 				decimal adminMarkupPercentage = project?.AdminMarkupPercentage ?? 20.0m;
 				decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
 

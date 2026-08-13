@@ -2,6 +2,7 @@ using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Infrastructure.Persistence;
 using BuildSmart.Api.GraphQL.Types;
+using BuildSmart.Api.DTOs;
 using HotChocolate.Authorization;
 using HotChocolate.Types;
 using System.Security.Claims;
@@ -31,6 +32,84 @@ public class Query
 	public async Task<BlogPost?> GetBlogPostBySlug(string slug, [Service] AppDbContext context, CancellationToken cancellationToken)
 	{
 		return await context.BlogPosts.AsNoTracking().FirstOrDefaultAsync(b => b.Slug == slug, cancellationToken);
+	}
+
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
+	public IQueryable<LandingPageContent> GetLandingPages([Service] AppDbContext context)
+	{
+		return context.LandingPages.OrderByDescending(l => l.UpdatedAt);
+	}
+
+	public async Task<LandingPageContent?> GetLandingPageBySlug(string slug, [Service] AppDbContext context, CancellationToken cancellationToken)
+	{
+		return await context.LandingPages.AsNoTracking().FirstOrDefaultAsync(l => l.Slug == slug, cancellationToken);
+	}
+
+	public async Task<List<MediaAssetDto>> GetMediaLibraryAssets([Service] AppDbContext context, CancellationToken cancellationToken)
+	{
+		var list = new List<MediaAssetDto>();
+
+		var feedMedia = await context.TradesmanMedia.AsNoTracking().ToListAsync(cancellationToken);
+		foreach (var m in feedMedia)
+		{
+			if (!string.IsNullOrEmpty(m.VideoUrl))
+			{
+				list.Add(new MediaAssetDto
+				{
+					Id = m.Id,
+					Url = m.VideoUrl,
+					ThumbnailUrl = m.ThumbnailUrl ?? m.ImageUrl ?? string.Empty,
+					Type = m.Type == Core.Domain.Enums.MediaType.Video ? "video" : "image",
+					Title = "Feed Video Asset",
+					CreatedAt = m.CreatedAt
+				});
+			}
+			if (!string.IsNullOrEmpty(m.ImageUrl) && m.ImageUrl != m.VideoUrl)
+			{
+				list.Add(new MediaAssetDto
+				{
+					Id = Guid.NewGuid(),
+					Url = m.ImageUrl,
+					ThumbnailUrl = m.ImageUrl,
+					Type = "image",
+					Title = "Feed Image Asset",
+					CreatedAt = m.CreatedAt
+				});
+			}
+		}
+
+		var landingPages = await context.LandingPages.AsNoTracking().ToListAsync(cancellationToken);
+		foreach (var lp in landingPages)
+		{
+			if (!string.IsNullOrEmpty(lp.HeroImageUrl))
+			{
+				list.Add(new MediaAssetDto
+				{
+					Id = Guid.NewGuid(),
+					Url = lp.HeroImageUrl,
+					ThumbnailUrl = lp.HeroImageUrl,
+					Type = "image",
+					Title = $"Hero Banner (/{lp.Slug})",
+					CreatedAt = lp.CreatedAt
+				});
+			}
+			if (!string.IsNullOrEmpty(lp.HeroVideoUrl))
+			{
+				list.Add(new MediaAssetDto
+				{
+					Id = Guid.NewGuid(),
+					Url = lp.HeroVideoUrl,
+					ThumbnailUrl = string.Empty,
+					Type = "video",
+					Title = $"Hero Video (/{lp.Slug})",
+					CreatedAt = lp.CreatedAt
+				});
+			}
+		}
+
+		return list.GroupBy(x => x.Url).Select(g => g.First()).OrderByDescending(x => x.CreatedAt).ToList();
 	}
 
 	[UseProjection]

@@ -1,0 +1,433 @@
+@page "/el-i-vik-studiox"
+@page "/landing/el-i-vik-studiox"
+@attribute [AllowAnonymous]
+@layout BuildSmart.SharedUI.Components.Layout.BlankLayout
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using BuildSmart.SharedUI.GraphQL
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
+@inject BuildSmart.SharedUI.Services.IAuthService AuthService
+
+<PageTitle>@Loc["ElectricalVikTitle"] | BuildSmart.bg</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@Loc["ElectricalVikMetaDesc"]" />
+    <meta property="og:title" content="@Loc["ElectricalVikTitle"]" />
+    <meta property="og:description" content="@Loc["ElectricalVikMetaDesc"]" />
+    <meta property="og:type" content="website" />
+</HeadContent>
+
+<div class="studiox-lander-wrapper">
+    <!-- Studio X Header -->
+    <header class="sx-header @(isHeaderScrolled ? "scrolled" : "")" id="sxHeader">
+        <nav class="sx-nav">
+            <a href="/" class="sx-brand" @onclick='() => NavManager.NavigateTo("/", forceLoad: true)' @onclick:preventDefault>
+                <div class="sx-logo-badge">BuildSmart</div>
+                <span class="sx-brand-subtitle">Studio X Series &bull; @Loc["ElectricalVikHeaderTag"]</span>
+            </a>
+
+            <div class="sx-nav-actions">
+                <button type="button" class="sx-phone-btn d-none d-sm-inline-flex border-0" @onclick="CopyPhoneToClipboard" title="Копирай телефон">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span>@(_isPhoneCopied ? Loc["Lander_PhoneCopiedNotice"] : Loc["Support_PhoneNumber"])</span>
+                </button>
+
+                <button class="sx-drawer-trigger-btn" @onclick="ToggleContactDrawer" aria-label="Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mega Menu Drawer -->
+    <div class="sx-mega-menu @(isDrawerOpen ? "is-active" : "")">
+        <button type="button" class="sx-close-drawer" @onclick="ToggleContactDrawer">@Loc["Close"]</button>
+        <div class="sx-mega-container">
+            <div class="sx-mega-grid">
+                <button type="button" class="sx-mega-card text-start border-0" @onclick="CopyPhoneToClipboard">
+                    <div class="sx-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </div>
+                    <strong class="sx-card-title">@(_isPhoneCopied ? Loc["Lander_PhoneCopiedNotice"] : Loc["Support_PhoneNumber"])</strong>
+                    <span class="sx-card-sub">@Loc["ContactUsPhoneSub"]</span>
+                </button>
+                <a href="mailto:office@buildsmart.bg" class="sx-mega-card" @onclick="LogCtaClick">
+                    <div class="sx-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
+                    <strong class="sx-card-title">office@buildsmart.bg</strong>
+                    <span class="sx-card-sub">@Loc["ContactUsEmailSub"]</span>
+                </a>
+                <div class="sx-mega-card" @onclick="NavigateToWizard">
+                    <div class="sx-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </div>
+                    <strong class="sx-card-title">@Loc["StartWizardTitle"]</strong>
+                    <span class="sx-card-sub">@Loc["StartWizardSub"]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="sx-hero-section">
+        <div class="sx-hero-backdrop"></div>
+        <div class="sx-hero-container">
+            <div class="sx-hero-content">
+                <div class="sx-badge-group">
+                    <span class="sx-badge sx-badge-elec">@Loc["ElectricalTag"]</span>
+                    <span class="sx-badge sx-badge-vik">@Loc["VikTag"]</span>
+                </div>
+                <h1 class="sx-display-headline">
+                    @Loc["ElectricalVikHeroHeading"]
+                </h1>
+                <p class="sx-hero-lead">
+                    @Loc["ElectricalVikHeroSubtext"]
+                </p>
+                <div class="sx-hero-actions">
+                    <a href="#blueprint" class="sx-btn sx-btn-primary-elec">@Loc["ExploreBlueprintBtn"]</a>
+                    <button class="bs-btn-primary py-3 px-4" @onclick="HandleCreateProjectClick">@Loc["CalculateOfferBtn"]</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Studio X Dual-Layer Interactive Blueprint Explorer -->
+    <section class="sx-blueprint-section" id="blueprint">
+        <div class="sx-container">
+            <div class="sx-section-header">
+                <span class="sx-badge sx-badge-elec">@Loc["InteractiveBlueprintBadge"]</span>
+                <h2 class="sx-section-title">@Loc["BlueprintSectionTitle"]</h2>
+                <p class="sx-section-lead">@Loc["BlueprintSectionSubtitle"]</p>
+
+                <div class="sx-toggle-group">
+                    <button class="sx-toggle-btn @(activeMode == "elec" ? "active-elec" : "")" @onclick='() => SetMode("elec")'>
+                        @Loc["ElectricalSchematicToggle"]
+                    </button>
+                    <button class="sx-toggle-btn @(activeMode == "vik" ? "active-vik" : "")" @onclick='() => SetMode("vik")'>
+                        @Loc["VikSchematicToggle"]
+                    </button>
+                </div>
+            </div>
+
+            <!-- Blueprint Viewport -->
+            <div class="sx-blueprint-viewport sx-mode-@activeMode">
+                <svg class="sx-blueprint-svg" viewBox="0 0 1000 500">
+                    <!-- Wall outlines -->
+                    <rect class="sx-wall" x="50" y="50" width="900" height="400" rx="12" />
+                    <line class="sx-wall" x1="350" y1="50" x2="350" y2="450" />
+                    <line class="sx-wall" x1="650" y1="50" x2="650" y2="450" />
+                    <line class="sx-wall" x1="350" y1="250" x2="950" y2="250" />
+
+                    <!-- Labels -->
+                    <text x="160" y="90" class="sx-label">@Loc["RoomLiving"]</text>
+                    <text x="470" y="90" class="sx-label">@Loc["RoomBedroom"]</text>
+                    <text x="770" y="90" class="sx-label">@Loc["RoomBathroom"]</text>
+
+                    <!-- Circuits -->
+                    <path class="sx-circuit-path" d="M100 120 L250 120 L250 350 L500 350 L500 150" />
+                    <path class="sx-circuit-path" d="M500 150 L800 150 L800 350" />
+
+                    <!-- Pipes -->
+                    <path class="sx-pipe-path" d="M700 450 L700 200 L880 200 L880 100" />
+                    <path class="sx-pipe-path" d="M700 200 L400 200 L400 100" />
+
+                    <!-- Hotspots -->
+                    <g class="sx-hotspot" @onclick='() => SelectNode("panel")'>
+                        <circle class="sx-pulse sx-pulse-elec" cx="100" cy="120" r="10" />
+                        <circle cx="100" cy="120" r="6" fill="var(--color-primary, #f59e0b)" />
+                    </g>
+                    <g class="sx-hotspot" @onclick='() => SelectNode("smart")'>
+                        <circle class="sx-pulse sx-pulse-elec" cx="500" cy="150" r="10" />
+                        <circle cx="500" cy="150" r="6" fill="var(--color-primary, #f59e0b)" />
+                    </g>
+                    <g class="sx-hotspot" @onclick='() => SelectNode("manifold")'>
+                        <circle class="sx-pulse sx-pulse-vik" cx="700" cy="200" r="10" />
+                        <circle cx="700" cy="200" r="6" fill="var(--accent-vik, #06b6d4)" />
+                    </g>
+                </svg>
+
+                <!-- Spec Drawer -->
+                @if (selectedNode != null)
+                {
+                    <div class="sx-node-drawer is-open">
+                        <button class="sx-drawer-close" @onclick="CloseNodeDrawer">&times;</button>
+                        <h4 class="sx-node-title">@selectedNodeTitle</h4>
+                        <span class="sx-badge sx-badge-elec">@selectedNodeBadge</span>
+                        <ul class="sx-spec-list">
+                            @foreach (var spec in selectedNodeSpecs)
+                            {
+                                <li><span>@spec.Key</span><strong>@spec.Value</strong></li>
+                            }
+                        </ul>
+                        <button class="sx-btn sx-btn-primary-elec w-100 mt-3" @onclick="NavigateToWizard">
+                            @Loc["IncludeInOfferBtn"]
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Scope Calculator Section -->
+    <section class="sx-calculator-section" id="calculator">
+        <div class="sx-container">
+            <div class="sx-section-header">
+                <span class="sx-badge sx-badge-vik">@Loc["DynamicCalculatorBadge"]</span>
+                <h2 class="sx-section-title">@Loc["CalculateScopeTitle"]</h2>
+            </div>
+
+            <div class="sx-calc-grid">
+                <div class="sx-calc-main">
+                    <h3 class="sx-calc-step">1. @Loc["SelectRoomsStep"]</h3>
+                    <div class="sx-room-grid">
+                        <div class="sx-room-card @(selectedRooms.Contains("kitchen") ? "is-selected" : "")" @onclick='() => ToggleRoom("kitchen")'>
+                            <strong>@Loc["RoomKitchen"]</strong>
+                            <small>@Loc["ElecAndVik"]</small>
+                        </div>
+                        <div class="sx-room-card @(selectedRooms.Contains("bathroom") ? "is-selected" : "")" @onclick='() => ToggleRoom("bathroom")'>
+                            <strong>@Loc["RoomBathroom"]</strong>
+                            <small>@Loc["VikSiphon"]</small>
+                        </div>
+                        <div class="sx-room-card @(selectedRooms.Contains("living") ? "is-selected" : "")" @onclick='() => ToggleRoom("living")'>
+                            <strong>@Loc["RoomLiving"]</strong>
+                            <small>@Loc["LedSmart"]</small>
+                        </div>
+                    </div>
+
+                    <h3 class="sx-calc-step mt-4">2. @Loc["InstallationPointsStep"]</h3>
+                    <div class="sx-counter-list">
+                        <div class="sx-counter-row">
+                            <div>
+                                <strong>@Loc["ElecOutletsLabel"]</strong>
+                                <div class="sx-sublabel">@Loc["OutletsSublabel"]</div>
+                            </div>
+                            <div class="sx-cnt-controls">
+                                <button class="sx-cnt-btn" @onclick='() => UpdateCount("elecOutlets", -1)'>-</button>
+                                <span class="sx-cnt-val">@cntElecOutlets</span>
+                                <button class="sx-cnt-btn" @onclick='() => UpdateCount("elecOutlets", 1)'>+</button>
+                            </div>
+                        </div>
+
+                        <div class="sx-counter-row">
+                            <div>
+                                <strong>@Loc["VikPointsLabel"]</strong>
+                                <div class="sx-sublabel">@Loc["VikPointsSublabel"]</div>
+                            </div>
+                            <div class="sx-cnt-controls">
+                                <button class="sx-cnt-btn" @onclick='() => UpdateCount("vikPoints", -1)'>-</button>
+                                <span class="sx-cnt-val">@cntVikPoints</span>
+                                <button class="sx-cnt-btn" @onclick='() => UpdateCount("vikPoints", 1)'>+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sx-calc-sidebar">
+                    <div class="sx-summary-box">
+                        <h3>@Loc["EstimateSummaryTitle"]</h3>
+                        <div class="sx-price-total">@computedPrice.ToString("N0") BGN</div>
+                        <div class="sx-days-est">~@computedDays @Loc["WorkingDays"]</div>
+                        <button class="sx-btn sx-btn-primary-elec w-100 mt-3" @onclick="NavigateToWizard">
+                            @Loc["GetOfficialOfferBtn"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Prompt Confirmation Modal (Feed Style) -->
+    <BsConfirmationModal IsVisible="_showAuthModal"
+                         Title="@Loc["Feed_AuthAlert_Title"]"
+                         Message="@Loc["Feed_AuthAlert_Message"]"
+                         AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+                         CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+                         OnConfirmationChanged="OnAuthConfirmationChanged" />
+</div>
+
+@code {
+    private bool isHeaderScrolled = false;
+    private bool isDrawerOpen = false;
+    private string activeMode = "elec";
+    
+    private string selectedNode = null;
+    private string selectedNodeTitle = "";
+    private string selectedNodeBadge = "";
+    private Dictionary<string, string> selectedNodeSpecs = new();
+
+    private List<string> selectedRooms = new() { "kitchen", "bathroom" };
+    private int cntElecOutlets = 12;
+    private int cntVikPoints = 5;
+
+    private decimal computedPrice => (cntElecOutlets * 25m + cntVikPoints * 65m + 380m) * (selectedRooms.Count > 0 ? selectedRooms.Count * 0.85m : 1m);
+    private int computedDays => Math.Max(2, (int)Math.Ceiling(cntElecOutlets * 0.1 + cntVikPoints * 0.3));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("posthog.capture", "studiox_landing_page_viewed", new { page = "el-i-vik-studiox" });
+            }
+            catch
+            {
+                // PostHog safety wrapper
+            }
+        }
+    }
+
+    private void ToggleContactDrawer()
+    {
+        isDrawerOpen = !isDrawerOpen;
+    }
+
+    private void SetMode(string mode)
+    {
+        activeMode = mode;
+    }
+
+    private void SelectNode(string nodeKey)
+    {
+        selectedNode = nodeKey;
+        if (nodeKey == "panel")
+        {
+            selectedNodeTitle = "Главно Ел. Табло Schneider";
+            selectedNodeBadge = "Електро Защита";
+            selectedNodeSpecs = new Dictionary<string, string>
+            {
+                { "Защита", "ДТЗ 30mA Schneider" },
+                { "Мощност", "Трифазно 15 kW" },
+                { "Гаранция", "10 Години" }
+            };
+        }
+        else if (nodeKey == "smart")
+        {
+            selectedNodeTitle = "Smart LED Контрол";
+            selectedNodeBadge = "Смарт Автоматизация";
+            selectedNodeSpecs = new Dictionary<string, string>
+            {
+                { "Протокол", "Zigbee 3.0 / KNX" },
+                { "Интеграция", "Apple HomeKit & Google" }
+            };
+        }
+        else if (nodeKey == "manifold")
+        {
+            selectedNodeTitle = "ВиК Колекторна Система";
+            selectedNodeBadge = "Водопровод";
+            selectedNodeSpecs = new Dictionary<string, string>
+            {
+                { "Тръби", "PEX-a Ф16/Ф20 Изолирани" },
+                { "Налягане", "Тест на 10 bar" }
+            };
+        }
+    }
+
+    private void CloseNodeDrawer()
+    {
+        selectedNode = null;
+    }
+
+    private void ToggleRoom(string room)
+    {
+        if (selectedRooms.Contains(room))
+            selectedRooms.Remove(room);
+        else
+            selectedRooms.Add(room);
+    }
+
+    private void UpdateCount(string item, int dir)
+    {
+        if (item == "elecOutlets")
+            cntElecOutlets = Math.Max(0, cntElecOutlets + dir);
+        else if (item == "vikPoints")
+            cntVikPoints = Math.Max(0, cntVikPoints + dir);
+    }
+
+    private async Task LogCtaClick()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("posthog.capture", "studiox_landing_page_cta_clicked", new { cta = "contact_drawer" });
+        }
+        catch { }
+    }
+
+    private bool _showAuthModal = false;
+
+    private async void HandleCreateProjectClick()
+    {
+        bool isGuest = await CheckIsGuestAsync();
+        if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+        {
+            _showAuthModal = true;
+            StateHasChanged();
+        }
+        else
+        {
+            NavigateToWizard();
+        }
+    }
+
+    private void OnAuthConfirmationChanged(bool proceed)
+    {
+        _showAuthModal = false;
+        if (proceed)
+        {
+            string targetUrl = "/job-wizard";
+            var returnUrl = Uri.EscapeDataString(targetUrl);
+            NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
+        }
+    }
+
+    private void NavigateToWizard()
+    {
+        NavManager.NavigateTo("/job-wizard");
+    }
+
+    private async Task<bool> CheckIsGuestAsync()
+    {
+        try
+        {
+            if (AuthService == null) return false;
+            var token = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token)) return false;
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var email = jwtToken.Claims.FirstOrDefault(c =>
+                c.Type == "email" ||
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            return email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private bool _isPhoneCopied = false;
+
+    private async Task CopyPhoneToClipboard()
+    {
+        try
+        {
+            var number = Loc["Support_PhoneNumber"].Value;
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", number);
+            _isPhoneCopied = true;
+            StateHasChanged();
+            await Task.Delay(3000);
+            _isPhoneCopied = false;
+            StateHasChanged();
+        }
+        catch { }
+    }
+}

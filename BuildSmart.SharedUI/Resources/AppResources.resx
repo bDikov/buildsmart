@@ -1002,7 +1002,7 @@
     <value>Write a message...</value>
   </data>
   <data name="Support_PhoneNumber" xml:space="preserve">
-    <value>+359 888 888 888</value>
+    <value>+359 899 836 365</value>
   </data>
   <data name="MobileCRO_ChatPrompt" xml:space="preserve">
     <value>Have questions? Chat with us</value>
@@ -1516,7 +1516,7 @@ Boncho | BuildSmart</value>
     <value>Phone Number Copied!</value>
   </data>
   <data name="Lander_PhoneCopiedSuccess" xml:space="preserve">
-    <value>Phone +359 888 888 888 copied to clipboard!</value>
+    <value>Phone +359 899 836 365 copied to clipboard!</value>
   </data>
   <data name="Lander_DynamicTitle_Full" xml:space="preserve">
     <value>Full Apartment Renovation - {0} m²</value>
@@ -1964,5 +1964,221 @@ Boncho | BuildSmart</value>
   </data>
   <data name="Feed_AdminModeTradesman" xml:space="preserve">
     <value>Tradesman</value>
+  </data>
+  <data name="Trust_AdvanceTitle" xml:space="preserve">
+    <value>0 BGN Upfront Payment</value>
+  </data>
+  <data name="Trust_AdvanceDesc" xml:space="preserve">
+    <value>Pay only after completed and approved work milestones</value>
+  </data>
+  <data name="Trust_ContractTitle" xml:space="preserve">
+    <value>Fixed Contract Guarantee</value>
+  </data>
+  <data name="Trust_ContractDesc" xml:space="preserve">
+    <value>Fixed prices with zero price inflation during renovation</value>
+  </data>
+  <data name="Trust_TimelineTitle" xml:space="preserve">
+    <value>Guaranteed Deadlines</value>
+  </data>
+  <data name="Trust_TimelineDesc" xml:space="preserve">
+    <value>Strict written penalty clauses for any deadline delays</value>
+  </data>
+  <data name="Trust_TransparentTitle" xml:space="preserve">
+    <value>100% Transparent Offer</value>
+  </data>
+  <data name="Trust_TransparentDesc" xml:space="preserve">
+    <value>Detailed itemized labor and material breakdown in 3 minutes</value>
+  </data>
+  <data name="PriceTable_Title" xml:space="preserve">
+    <value>Instant Renovation Price Guide</value>
+  </data>
+  <data name="PriceTable_Subtitle" xml:space="preserve">
+    <value>Official benchmark pricing for labor and core materials in Sofia</value>
+  </data>
+  <data name="PriceTable_ColService" xml:space="preserve">
+    <value>Renovation Trade / Service</value>
+  </data>
+  <data name="PriceTable_ColUnit" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="PriceTable_ColPriceBgn" xml:space="preserve">
+    <value>Price (BGN)</value>
+  </data>
+  <data name="PriceTable_ColPriceEur" xml:space="preserve">
+    <value>Price (EUR)</value>
+  </data>
+  <data name="PriceTable_Cta" xml:space="preserve">
+    <value>Want an exact estimate for your dimensions? Calculate in 3 minutes with our AI Calculator</value>
+  </data>
+  <data name="ExitModal_Badge" xml:space="preserve">
+    <value>Quick Estimate</value>
+  </data>
+  <data name="ExitModal_Title" xml:space="preserve">
+    <value>Don't rush! Get a custom budget estimate in 10 seconds</value>
+  </data>
+  <data name="ExitModal_Subtitle" xml:space="preserve">
+    <value>Enter your property area and our team will send a benchmark offer directly to your email and phone.</value>
+  </data>
+  <data name="ExitModal_Name" xml:space="preserve">
+    <value>Your Name</value>
+  </data>
+  <data name="ExitModal_Phone" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="ExitModal_Email" xml:space="preserve">
+    <value>Email Address</value>
+  </data>
+  <data name="ExitModal_Area" xml:space="preserve">
+    <value>Property Area (m²)</value>
+  </data>
+  <data name="ExitModal_Submit" xml:space="preserve">
+    <value>Send Estimate Request</value>
+  </data>
+  <data name="ExitModal_Success" xml:space="preserve">
+    <value>Thank you! Your request has been received. We will contact you shortly.</value>
+  </data>
+  <data name="Landing_ApartmentTitle" xml:space="preserve">
+    <value>Turnkey Apartment Renovation in Sofia</value>
+  </data>
+  <data name="Landing_ApartmentSubtitle" xml:space="preserve">
+    <value>Professional A-Z execution. Zero upfront payment, fixed contract prices, and complete transparency.</value>
+  </data>
+  <data name="Landing_BathroomTitle" xml:space="preserve">
+    <value>Modern &amp; Premium Bathroom Renovation in Sofia</value>
+  </data>
+  <data name="Landing_BathroomSubtitle" xml:space="preserve">
+    <value>2K Waterproofing, porcelain tiling, plumbing, and sanitary fitout with a 5-year written warranty.</value>
+  </data>
+  <data name="Landing_FinishingTitle" xml:space="preserve">
+    <value>Finishing Works, Plaster Skimming &amp; Painting</value>
+  </data>
+  <data name="Landing_FinishingSubtitle" xml:space="preserve">
+    <value>Flawless smooth walls, drywall ceilings, laminate flooring, and premium paint finish.</value>
+  </data>
+  <data name="Landing_MepTitle" xml:space="preserve">
+    <value>Electrical &amp; Plumbing Services in Sofia</value>
+  </data>
+  <data name="Landing_MepSubtitle" xml:space="preserve">
+    <value>Distribution panels, wiring, plumbing supply, and drainage by certified master technicians.</value>
+  </data>
+  <data name="ExitModal_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ExitModal_PlaceholderName" xml:space="preserve">
+    <value>Ivan Ivanov</value>
+  </data>
+  <data name="ExitModal_PlaceholderPhone" xml:space="preserve">
+    <value>0888 123 456</value>
+  </data>
+  <data name="ExitModal_PlaceholderEmail" xml:space="preserve">
+    <value>ivan@example.com</value>
+  </data>
+  <data name="ExitModal_Sending" xml:space="preserve">
+    <value>Submitting...</value>
+  </data>
+  <data name="ExitModal_ErrorValidation" xml:space="preserve">
+    <value>Please fill in name, phone, and email.</value>
+  </data>
+  <data name="ExitModal_ErrorGeneric" xml:space="preserve">
+    <value>An error occurred while submitting. Please try again.</value>
+  </data>
+  <data name="FloatingActions_Viber" xml:space="preserve">
+    <value>Viber Chat</value>
+  </data>
+  <data name="FloatingActions_Call" xml:space="preserve">
+    <value>Call Us</value>
+  </data>
+  <data name="FloatingActions_Calculator" xml:space="preserve">
+    <value>AI Calculator</value>
+  </data>
+  <data name="FloatingActions_AriaViber" xml:space="preserve">
+    <value>Message us on Viber</value>
+  </data>
+  <data name="FloatingActions_AriaCall" xml:space="preserve">
+    <value>Direct phone call shortcut</value>
+  </data>
+  <data name="FloatingActions_AriaCalc" xml:space="preserve">
+    <value>Quick AI Calculator shortcut</value>
+  </data>
+  <data name="Nav_LandingPages" xml:space="preserve">
+    <value>Landing Pages CMS</value>
+  </data>
+  <data name="Cms_LandingPagesTitle" xml:space="preserve">
+    <value>Landing Pages Content &amp; Media CMS</value>
+  </data>
+  <data name="Cms_LandingPagesSubtitle" xml:space="preserve">
+    <value>Manage pictures, hero videos, before-and-after galleries, dynamic titles, and features for SEO landing pages.</value>
+  </data>
+  <data name="Cms_CreateLandingPage" xml:space="preserve">
+    <value>+ New Landing Page</value>
+  </data>
+  <data name="Cms_PagesList" xml:space="preserve">
+    <value>Landing Pages</value>
+  </data>
+  <data name="Cms_EditPageHeader" xml:space="preserve">
+    <value>Page CMS Editor</value>
+  </data>
+  <data name="Cms_Published" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Cms_Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Cms_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Cms_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cms_Save" xml:space="preserve">
+    <value>Save Page</value>
+  </data>
+  <data name="Cms_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="Cms_Slug" xml:space="preserve">
+    <value>Page Slug (URL)</value>
+  </data>
+  <data name="Cms_PageType" xml:space="preserve">
+    <value>Page Category Type</value>
+  </data>
+  <data name="Cms_TitleBg" xml:space="preserve">
+    <value>Title (Bulgarian)</value>
+  </data>
+  <data name="Cms_TitleEn" xml:space="preserve">
+    <value>Title (English)</value>
+  </data>
+  <data name="Cms_SubtitleBg" xml:space="preserve">
+    <value>Subtitle (Bulgarian)</value>
+  </data>
+  <data name="Cms_SubtitleEn" xml:space="preserve">
+    <value>Subtitle (English)</value>
+  </data>
+  <data name="Cms_HeroMediaHeader" xml:space="preserve">
+    <value>Hero Pictures &amp; Video Components</value>
+  </data>
+  <data name="Cms_HeroImageUrl" xml:space="preserve">
+    <value>Hero Banner Image URL</value>
+  </data>
+  <data name="Cms_HeroVideoUrl" xml:space="preserve">
+    <value>Hero Web-Optimized MP4 Video URL</value>
+  </data>
+  <data name="Cms_GalleryJson" xml:space="preserve">
+    <value>Media Gallery JSON (Pictures &amp; Videos)</value>
+  </data>
+  <data name="Cms_FeaturesJson" xml:space="preserve">
+    <value>Features &amp; Benefits JSON</value>
+  </data>
+  <data name="Cms_CtaTextBg" xml:space="preserve">
+    <value>CTA Button Text (Bulgarian)</value>
+  </data>
+  <data name="Cms_CtaTextEn" xml:space="preserve">
+    <value>CTA Button Text (English)</value>
+  </data>
+  <data name="Cms_CtaLink" xml:space="preserve">
+    <value>CTA Link URL</value>
+  </data>
+  <data name="Cms_IsPublishedLabel" xml:space="preserve">
+    <value>Publish Page Live</value>
   </data>
 </root>

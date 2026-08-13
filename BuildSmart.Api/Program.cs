@@ -441,6 +441,11 @@ public partial class Program
 							Console.WriteLine("Database already initialized. Initial seeders skipped (except categories type sync).");
 						}
 
+						await context.SeedBlogPostsAsync(builder.Environment.WebRootPath);
+						context.ChangeTracker.Clear();
+						await context.SeedLandingPagesAsync();
+						context.ChangeTracker.Clear();
+
 						await transaction.CommitAsync();
 					}
 				}
@@ -471,6 +476,11 @@ public partial class Program
 					{
 						Console.WriteLine("Database already initialized. Initial seeders skipped (except categories type sync).");
 					}
+
+					await context.SeedBlogPostsAsync(builder.Environment.WebRootPath);
+					context.ChangeTracker.Clear();
+					await context.SeedLandingPagesAsync();
+					context.ChangeTracker.Clear();
 				}
 
 				// Seed localization resources if empty using compiled assembly resources
@@ -479,7 +489,6 @@ public partial class Program
 					typeof(BuildSmart.SharedUI.Resources.AppResources).Assembly
 				);
 				await context.SeedLocalizationResourcesAsync(resourceManager);
-				await context.SeedBlogPostsAsync(builder.Environment.WebRootPath);
 
 				// Warm up localization cache
 				var cacheService = services.GetRequiredService<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService>();
