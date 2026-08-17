@@ -1,0 +1,353 @@
+@page "/admin/leads"
+@using BuildSmart.Core.Application.Interfaces
+@using BuildSmart.Core.Domain.Entities
+@using BuildSmart.SharedUI.Resources
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject ICalculatorLeadRepository LeadRepository
+@inject IStringLocalizer<AppResources> Loc
+@inject NavigationManager NavManager
+
+<div class="admin-page-container" style="padding: 24px; max-width: 1400px; margin: 0 auto; color: var(--text-primary); font-family: 'Outfit', sans-serif;">
+    
+    <!-- Page Header -->
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); padding-bottom: 20px;">
+        <div class="title-group">
+            <h1 class="page-title" style="font: var(--font-h1); margin: 0; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                @Loc["Admin_LeadsTitle"]
+            </h1>
+            <p class="page-subtitle" style="color: var(--text-muted); margin: 4px 0 0 0; font: var(--font-body-1);">
+                @Loc["Admin_LeadsSubtitle"]
+            </p>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 12px;">
+            <button class="bs-btn-secondary" @onclick="RefreshLeadsAsync" style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_TotalLeads"]</div>
+            <div style="font: var(--font-h0); color: var(--text-primary); margin-top: 8px; font-weight: 700;">@_allLeads.Count</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_EstimatorLeads"]</div>
+            <div style="font: var(--font-h0); color: #3b82f6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope != "exit_intent_lead")</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_ExitIntentLeads"]</div>
+            <div style="font: var(--font-h0); color: #8b5cf6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "exit_intent_lead")</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_VerifiedEmailRate"]</div>
+            <div style="font: var(--font-h0); color: #10b981; margin-top: 8px; font-weight: 700;">
+                @(_allLeads.Count > 0 ? $"{(_allLeads.Count(l => l.VerificationStatus == "Valid" || l.IsEmailVerified) * 100 / _allLeads.Count)}%" : "0%")
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="controls-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+            <!-- Scope Filter Tabs -->
+            <div class="tab-group" style="display: flex; gap: 8px; background: var(--bg-card-alt); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <button class="tab-btn @(_activeScopeFilter == "all" ? "active" : "")" @onclick='() => SetScopeFilter("all")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "all" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "all" ? "#ffffff" : "var(--text-secondary)");">
+                    @Loc["Admin_FilterAll"] (@_allLeads.Count)
+                </button>
+                <button class="tab-btn @(_activeScopeFilter == "estimator" ? "active" : "")" @onclick='() => SetScopeFilter("estimator")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "estimator" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "estimator" ? "#ffffff" : "var(--text-secondary)");">
+                    Estimator (@_allLeads.Count(l => l.Scope != "exit_intent_lead"))
+                </button>
+                <button class="tab-btn @(_activeScopeFilter == "exit_intent" ? "active" : "")" @onclick='() => SetScopeFilter("exit_intent")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "exit_intent" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "exit_intent" ? "#ffffff" : "var(--text-secondary)");">
+                    Exit Intent (@_allLeads.Count(l => l.Scope == "exit_intent_lead"))
+                </button>
+            </div>
+
+            <!-- Search Input & Campaign Filter -->
+            <div style="display: flex; gap: 12px; flex-grow: 1; max-width: 500px;">
+                <input type="text" class="bs-input" @bind="_searchQuery" @bind:event="oninput" placeholder="@Loc["Admin_SearchLeadsPlaceholder"]"
+                       style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card-alt); color: var(--text-primary); font: var(--font-body-2);" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Leads Data Table -->
+    @if (_isLoading)
+    {
+        <div style="display: flex; justify-content: center; align-items: center; padding: 60px 0;">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+        </div>
+    }
+    else if (FilteredLeads.Count == 0)
+    {
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 48px; text-align: center;">
+            <h3 style="font: var(--font-h3); color: var(--text-secondary); margin-bottom: 8px;">No leads found</h3>
+            <p style="font: var(--font-body-2); color: var(--text-muted);">Try adjusting your search query or filters.</p>
+        </div>
+    }
+    else
+    {
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font: var(--font-body-2);">
+                    <thead>
+                        <tr style="background: var(--bg-card-alt); border-bottom: 1px solid var(--border-color); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">
+                            <th style="padding: 14px 16px;">Submitted</th>
+                            <th style="padding: 14px 16px;">Contact</th>
+                            <th style="padding: 14px 16px;">Scope</th>
+                            <th style="padding: 14px 16px;">Specs / Area</th>
+                            <th style="padding: 14px 16px;">Estimated Total</th>
+                            <th style="padding: 14px 16px;">Email Verification</th>
+                            <th style="padding: 14px 16px;">Campaign / Source</th>
+                            <th style="padding: 14px 16px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lead in FilteredLeads)
+                        {
+                            <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.15s ease;">
+                                <td style="padding: 14px 16px; color: var(--text-secondary); white-space: nowrap;">
+                                    @lead.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                </td>
+                                <td style="padding: 14px 16px;">
+                                    <div style="font-weight: 600; color: var(--text-primary);">
+                                        @(string.IsNullOrWhiteSpace(lead.Name) ? "Anonymous Lead" : lead.Name)
+                                    </div>
+                                    <div style="color: var(--text-muted); font-size: 0.85rem;">@lead.Email</div>
+                                    @if (!string.IsNullOrWhiteSpace(lead.Phone))
+                                    {
+                                        <div style="color: var(--text-muted); font-size: 0.85rem;">@lead.Phone</div>
+                                    }
+                                </td>
+                                <td style="padding: 14px 16px;">
+                                    @if (lead.Scope == "exit_intent_lead")
+                                    {
+                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3);">
+                                            Exit Intent Popup
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                                            @lead.Scope Calculator
+                                        </span>
+                                    }
+                                </td>
+                                <td style="padding: 14px 16px; color: var(--text-secondary);">
+                                    @if (lead.SelectedArea > 0)
+                                    {
+                                        <div>@lead.SelectedArea m²</div>
+                                    }
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                        Tier: @lead.QualityTier • Status: @lead.BuildingStatus
+                                    </div>
+                                </td>
+                                <td style="padding: 14px 16px; font-weight: 600; color: var(--text-primary);">
+                                    @if (lead.MaxPriceEur > 0)
+                                    {
+                                        <div>€@lead.MinPriceEur.ToString("N0") - €@lead.MaxPriceEur.ToString("N0")</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">(@lead.MinPriceBgn.ToString("N0") - @lead.MaxPriceBgn.ToString("N0") BGN)</div>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--text-muted);">-</span>
+                                    }
+                                </td>
+                                <td style="padding: 14px 16px;">
+                                    @if (lead.VerificationStatus == "Valid" || lead.IsEmailVerified)
+                                    {
+                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                            Valid Email
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);" title="@lead.VerificationReason">
+                                            @(string.IsNullOrEmpty(lead.VerificationStatus) ? "Unverified" : lead.VerificationStatus)
+                                        </span>
+                                    }
+                                </td>
+                                <td style="padding: 14px 16px; color: var(--text-muted); font-size: 0.85rem;">
+                                    @if (!string.IsNullOrEmpty(lead.UtmCampaign) || !string.IsNullOrEmpty(lead.UtmSource))
+                                    {
+                                        <div>Src: @(string.IsNullOrEmpty(lead.UtmSource) ? "Direct" : lead.UtmSource)</div>
+                                        <div>Cmp: @(string.IsNullOrEmpty(lead.UtmCampaign) ? "-" : lead.UtmCampaign)</div>
+                                    }
+                                    else
+                                    {
+                                        <span>Direct / Organic</span>
+                                    }
+                                </td>
+                                <td style="padding: 14px 16px; text-align: right;">
+                                    <button class="bs-btn-secondary" @onclick="() => SelectLead(lead)" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;">
+                                        Inspect
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- Lead Detail Modal -->
+    @if (_selectedLead != null)
+    {
+        <div class="bs-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1100; backdrop-filter: blur(4px);" @onclick="CloseLeadModal">
+            <div class="bs-modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-width: 650px; width: 90%; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); color: var(--text-primary);" @onclick:stopPropagation="true">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
+                    <h2 style="font: var(--font-h2); margin: 0; font-weight: 700;">@Loc["Admin_LeadDetails"]</h2>
+                    <button type="button" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;" @onclick="CloseLeadModal">&times;</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div>
+                        <label style="font: var(--font-body-2); color: var(--text-muted);">Name</label>
+                        <div style="font: var(--font-h3); font-weight: 600;">@(string.IsNullOrWhiteSpace(_selectedLead.Name) ? "Anonymous" : _selectedLead.Name)</div>
+                    </div>
+                    <div>
+                        <label style="font: var(--font-body-2); color: var(--text-muted);">Created Date</label>
+                        <div style="font: var(--font-body-1);">@_selectedLead.CreatedAt.ToString("f")</div>
+                    </div>
+                    <div>
+                        <label style="font: var(--font-body-2); color: var(--text-muted);">Email</label>
+                        <div style="font: var(--font-body-1);"><a href="mailto:@_selectedLead.Email" style="color: #3b82f6; text-decoration: underline;">@_selectedLead.Email</a></div>
+                    </div>
+                    <div>
+                        <label style="font: var(--font-body-2); color: var(--text-muted);">Phone</label>
+                        <div style="font: var(--font-body-1);"><a href="tel:@_selectedLead.Phone" style="color: #3b82f6; text-decoration: underline;">@_selectedLead.Phone</a></div>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;" />
+
+                <h4 style="font: var(--font-h4); margin-bottom: 12px; color: var(--text-secondary);">Project Requirements</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font: var(--font-body-2);">
+                    <div>Scope: <strong>@_selectedLead.Scope</strong></div>
+                    <div>Property Area: <strong>@_selectedLead.SelectedArea m²</strong></div>
+                    <div>Building Status: <strong>@_selectedLead.BuildingStatus</strong></div>
+                    <div>Quality Tier: <strong>@_selectedLead.QualityTier</strong></div>
+                    <div>Include Furniture: <strong>@(_selectedLead.IncludeFurniture ? "Yes" : "No")</strong></div>
+                    <div>Include Equipment: <strong>@(_selectedLead.IncludeEquipment ? "Yes" : "No")</strong></div>
+                    <div>Bathrooms: <strong>@_selectedLead.BathroomCount</strong></div>
+                    <div>Estimated Duration: <strong>@_selectedLead.EstimatedDays days</strong></div>
+                </div>
+
+                <div style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <div style="font: var(--font-body-2); color: var(--text-muted);">Estimated Price Quote</div>
+                    <div style="font: var(--font-h2); font-weight: 700; color: #10b981; margin-top: 4px;">
+                        €@_selectedLead.MinPriceEur.ToString("N0") - €@_selectedLead.MaxPriceEur.ToString("N0")
+                        <span style="font: var(--font-body-2); color: var(--text-muted); margin-left: 8px;">(@_selectedLead.MinPriceBgn.ToString("N0") - @_selectedLead.MaxPriceBgn.ToString("N0") BGN)</span>
+                    </div>
+                </div>
+
+                <h4 style="font: var(--font-h4); margin-bottom: 12px; color: var(--text-secondary);">Marketing & Attribution</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font: var(--font-body-2); color: var(--text-muted);">
+                    <div>UTM Source: <span style="color: var(--text-primary);">@(_selectedLead.UtmSource ?? "N/A")</span></div>
+                    <div>UTM Medium: <span style="color: var(--text-primary);">@(_selectedLead.UtmMedium ?? "N/A")</span></div>
+                    <div>UTM Campaign: <span style="color: var(--text-primary);">@(_selectedLead.UtmCampaign ?? "N/A")</span></div>
+                    <div>UTM Term: <span style="color: var(--text-primary);">@(_selectedLead.UtmTerm ?? "N/A")</span></div>
+                </div>
+
+                <div style="margin-top: 24px; text-align: right;">
+                    <button class="bs-btn-secondary" @onclick="CloseLeadModal" style="padding: 10px 20px; border-radius: 8px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<CalculatorLead> _allLeads = new();
+    private bool _isLoading = true;
+    private string _searchQuery = string.Empty;
+    private string _activeScopeFilter = "all";
+    private CalculatorLead? _selectedLead = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshLeadsAsync();
+    }
+
+    private async Task RefreshLeadsAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _allLeads = await LeadRepository.GetLeadsAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading leads: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void SetScopeFilter(string scope)
+    {
+        _activeScopeFilter = scope;
+    }
+
+    private List<CalculatorLead> FilteredLeads
+    {
+        get
+        {
+            var query = _allLeads.AsEnumerable();
+
+            if (_activeScopeFilter == "estimator")
+            {
+                query = query.Where(l => l.Scope != "exit_intent_lead");
+            }
+            else if (_activeScopeFilter == "exit_intent")
+            {
+                query = query.Where(l => l.Scope == "exit_intent_lead");
+            }
+
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                var q = _searchQuery.Trim().ToLowerInvariant();
+                query = query.Where(l =>
+                    (l.Name != null && l.Name.ToLowerInvariant().Contains(q)) ||
+                    (l.Email != null && l.Email.ToLowerInvariant().Contains(q)) ||
+                    (l.Phone != null && l.Phone.ToLowerInvariant().Contains(q)) ||
+                    (l.UtmCampaign != null && l.UtmCampaign.ToLowerInvariant().Contains(q)) ||
+                    (l.UtmSource != null && l.UtmSource.ToLowerInvariant().Contains(q))
+                );
+            }
+
+            return query.ToList();
+        }
+    }
+
+    private void SelectLead(CalculatorLead lead)
+    {
+        _selectedLead = lead;
+    }
+
+    private void CloseLeadModal()
+    {
+        _selectedLead = null;
+    }
+}

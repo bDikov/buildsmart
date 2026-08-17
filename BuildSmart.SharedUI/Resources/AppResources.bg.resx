@@ -2133,4 +2133,34 @@
   <data name="Landing_MepSubtitle" xml:space="preserve">
     <value>Подмяна на ел. табла, окабеляване, водопровод и канализация от сертифицирани майстори.</value>
   </data>
+  <data name="Nav_Leads" xml:space="preserve">
+    <value>Запитвания и Калкулатор</value>
+  </data>
+  <data name="Admin_LeadsTitle" xml:space="preserve">
+    <value>Запитвания от Лийд Магнети</value>
+  </data>
+  <data name="Admin_LeadsSubtitle" xml:space="preserve">
+    <value>Мониторинг и анализ на запитванията от лендинг страници и бързия калкулатор</value>
+  </data>
+  <data name="Admin_TotalLeads" xml:space="preserve">
+    <value>Общо Запитвания</value>
+  </data>
+  <data name="Admin_EstimatorLeads" xml:space="preserve">
+    <value>Запитвания от Калкулатора</value>
+  </data>
+  <data name="Admin_ExitIntentLeads" xml:space="preserve">
+    <value>Захващания при Изход</value>
+  </data>
+  <data name="Admin_VerifiedEmailRate" xml:space="preserve">
+    <value>Валидни Имейли</value>
+  </data>
+  <data name="Admin_SearchLeadsPlaceholder" xml:space="preserve">
+    <value>Търси по име, имейл, телефон или кампания...</value>
+  </data>
+  <data name="Admin_FilterAll" xml:space="preserve">
+    <value>Всички Запитвания</value>
+  </data>
+  <data name="Admin_LeadDetails" xml:space="preserve">
+    <value>Детайли за Запитването</value>
+  </data>
 </root>

@@ -47,6 +47,16 @@ public class Query
 		return await context.LandingPages.AsNoTracking().FirstOrDefaultAsync(l => l.Slug == slug, cancellationToken);
 	}
 
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	[UseProjection]
+	[UseFiltering]
+	[UseSorting]
+	public IQueryable<CalculatorLead> GetCalculatorLeads([Service] AppDbContext context)
+	{
+		return context.CalculatorLeads.OrderByDescending(c => c.CreatedAt);
+	}
+
+
 	public async Task<List<MediaAssetDto>> GetMediaLibraryAssets([Service] AppDbContext context, CancellationToken cancellationToken)
 	{
 		var list = new List<MediaAssetDto>();

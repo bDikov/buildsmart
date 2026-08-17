@@ -2181,4 +2181,34 @@ Boncho | BuildSmart</value>
   <data name="Cms_IsPublishedLabel" xml:space="preserve">
     <value>Publish Page Live</value>
   </data>
+  <data name="Nav_Leads" xml:space="preserve">
+    <value>Lead Magnets</value>
+  </data>
+  <data name="Admin_LeadsTitle" xml:space="preserve">
+    <value>Lead Magnet Dashboard</value>
+  </data>
+  <data name="Admin_LeadsSubtitle" xml:space="preserve">
+    <value>Monitor, analyze, and track incoming leads from landing pages and fast estimator calculator</value>
+  </data>
+  <data name="Admin_TotalLeads" xml:space="preserve">
+    <value>Total Captured Leads</value>
+  </data>
+  <data name="Admin_EstimatorLeads" xml:space="preserve">
+    <value>Calculator Submissions</value>
+  </data>
+  <data name="Admin_ExitIntentLeads" xml:space="preserve">
+    <value>Exit-Intent Captures</value>
+  </data>
+  <data name="Admin_VerifiedEmailRate" xml:space="preserve">
+    <value>Valid Email Rate</value>
+  </data>
+  <data name="Admin_SearchLeadsPlaceholder" xml:space="preserve">
+    <value>Search by Name, Email, Phone, or Campaign...</value>
+  </data>
+  <data name="Admin_FilterAll" xml:space="preserve">
+    <value>All Leads</value>
+  </data>
+  <data name="Admin_LeadDetails" xml:space="preserve">
+    <value>Lead Details</value>
+  </data>
 </root>

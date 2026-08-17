@@ -97,6 +97,10 @@ public class QueryType : ObjectType<Query>
 				descriptor.Field(q => q.GetAllLocalizationResources(default!))
 					.Description("Gets all localization resources across all cultures. (Admin only)")
 					.Authorize(roles: AdminRoles);
+
+				descriptor.Field(q => q.GetCalculatorLeads(default!))
+					.Description("Gets all calculator leads for lead magnet monitoring. (Admin only)")
+					.Authorize(roles: AdminRoles);
         	}
         }
         
