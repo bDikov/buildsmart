@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
 @attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@implements IDisposable
 @inject ICalculatorLeadRepository LeadRepository
 @inject IStringLocalizer<AppResources> Loc
 @inject NavigationManager NavManager
@@ -34,20 +35,30 @@
     </div>
 
     <!-- Summary Metrics Cards -->
-    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
         <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
             <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_TotalLeads"]</div>
             <div style="font: var(--font-h0); color: var(--text-primary); margin-top: 8px; font-weight: 700;">@_allLeads.Count</div>
         </div>
 
         <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_EstimatorLeads"]</div>
-            <div style="font: var(--font-h0); color: #3b82f6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope != "exit_intent_lead")</div>
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Запитвания за Баня</div>
+            <div style="font: var(--font-h0); color: #10b981; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "bathroom")</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Цялостни Калкулатори</div>
+            <div style="font: var(--font-h0); color: #3b82f6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom"))</div>
         </div>
 
         <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
             <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_ExitIntentLeads"]</div>
             <div style="font: var(--font-h0); color: #8b5cf6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "exit_intent_lead")</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Фалшиви / Невалидни</div>
+            <div style="font: var(--font-h0); color: #f59e0b; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified)</div>
         </div>
 
         <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
@@ -62,18 +73,30 @@
     <div class="controls-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
         <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
             <!-- Scope Filter Tabs -->
-            <div class="tab-group" style="display: flex; gap: 8px; background: var(--bg-card-alt); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div class="tab-group" style="display: flex; flex-wrap: wrap; gap: 8px; background: var(--bg-card-alt); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
                 <button class="tab-btn @(_activeScopeFilter == "all" ? "active" : "")" @onclick='() => SetScopeFilter("all")'
                         style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "all" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "all" ? "#ffffff" : "var(--text-secondary)");">
                     @Loc["Admin_FilterAll"] (@_allLeads.Count)
                 </button>
-                <button class="tab-btn @(_activeScopeFilter == "estimator" ? "active" : "")" @onclick='() => SetScopeFilter("estimator")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "estimator" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "estimator" ? "#ffffff" : "var(--text-secondary)");">
-                    Estimator (@_allLeads.Count(l => l.Scope != "exit_intent_lead"))
+                <button class="tab-btn @(_activeScopeFilter == "bathroom" ? "active" : "")" @onclick='() => SetScopeFilter("bathroom")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "bathroom" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "bathroom" ? "#ffffff" : "var(--text-secondary)");">
+                    Баня (@_allLeads.Count(l => l.Scope == "bathroom"))
+                </button>
+                <button class="tab-btn @(_activeScopeFilter == "full" ? "active" : "")" @onclick='() => SetScopeFilter("full")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "full" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "full" ? "#ffffff" : "var(--text-secondary)");">
+                    Цялостен (@_allLeads.Count(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom")))
                 </button>
                 <button class="tab-btn @(_activeScopeFilter == "exit_intent" ? "active" : "")" @onclick='() => SetScopeFilter("exit_intent")'
                         style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "exit_intent" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "exit_intent" ? "#ffffff" : "var(--text-secondary)");">
                     Exit Intent (@_allLeads.Count(l => l.Scope == "exit_intent_lead"))
+                </button>
+                <button class="tab-btn @(_activeScopeFilter == "valid_emails" ? "active" : "")" @onclick='() => SetScopeFilter("valid_emails")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "valid_emails" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "valid_emails" ? "#ffffff" : "var(--text-secondary)");">
+                    ✓ Валидни (@_allLeads.Count(l => l.VerificationStatus == "Valid" || l.IsEmailVerified))
+                </button>
+                <button class="tab-btn @(_activeScopeFilter == "fake_emails" ? "active" : "")" @onclick='() => SetScopeFilter("fake_emails")'
+                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "fake_emails" ? "#ef4444" : "transparent"); color: @(_activeScopeFilter == "fake_emails" ? "#ffffff" : "var(--text-secondary)");">
+                    ⚠️ Фалшиви (@_allLeads.Count(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified))
                 </button>
             </div>
 
@@ -140,10 +163,16 @@
                                             Exit Intent Popup
                                         </span>
                                     }
+                                    else if (lead.Scope == "bathroom")
+                                    {
+                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                            Баня Калкулатор
+                                        </span>
+                                    }
                                     else
                                     {
                                         <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
-                                            @lead.Scope Calculator
+                                            @(string.Equals(lead.Scope, "full", StringComparison.OrdinalIgnoreCase) ? "Цялостен Калкулатор" : $"{lead.Scope} Калкулатор")
                                         </span>
                                     }
                                 </td>
@@ -282,10 +311,28 @@
     private string _searchQuery = string.Empty;
     private string _activeScopeFilter = "all";
     private CalculatorLead? _selectedLead = null;
+    private System.Threading.Timer? _autoRefreshTimer = null;
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshLeadsAsync();
+        _autoRefreshTimer = new System.Threading.Timer(async _ =>
+        {
+            try
+            {
+                await InvokeAsync(async () =>
+                {
+                    _allLeads = await LeadRepository.GetLeadsAsync();
+                    StateHasChanged();
+                });
+            }
+            catch { }
+        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    public void Dispose()
+    {
+        _autoRefreshTimer?.Dispose();
     }
 
     private async Task RefreshLeadsAsync()
@@ -316,13 +363,29 @@
         {
             var query = _allLeads.AsEnumerable();
 
-            if (_activeScopeFilter == "estimator")
+            if (_activeScopeFilter == "bathroom")
+            {
+                query = query.Where(l => l.Scope == "bathroom");
+            }
+            else if (_activeScopeFilter == "full")
+            {
+                query = query.Where(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom"));
+            }
+            else if (_activeScopeFilter == "estimator")
             {
                 query = query.Where(l => l.Scope != "exit_intent_lead");
             }
             else if (_activeScopeFilter == "exit_intent")
             {
                 query = query.Where(l => l.Scope == "exit_intent_lead");
+            }
+            else if (_activeScopeFilter == "valid_emails")
+            {
+                query = query.Where(l => l.VerificationStatus == "Valid" || l.IsEmailVerified);
+            }
+            else if (_activeScopeFilter == "fake_emails")
+            {
+                query = query.Where(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified);
             }
 
             if (!string.IsNullOrWhiteSpace(_searchQuery))

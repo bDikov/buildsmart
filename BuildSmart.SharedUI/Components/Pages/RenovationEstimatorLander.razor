@@ -171,7 +171,7 @@
 
             <!-- Primary Contact Action CTA Button Bar -->
             <div class="mb-5 text-center">
-                <button class="bs-btn-primary py-3 px-4 w-100 fw-bold fs-5 d-flex align-items-center justify-content-center gap-2 proposal-cta-btn @(_isPhoneCopied ? "btn-success text-white" : "")" @onclick="CopyPhoneToClipboard">
+                <button class="bs-btn-primary py-3 px-4 w-100 fw-bold fs-5 d-flex align-items-center justify-content-center gap-2 proposal-cta-btn @(_isPhoneCopied ? "btn-success text-white" : "")" @onclick="HandleProposalContactClick">
                     @if (_isPhoneCopied)
                     {
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -920,7 +920,7 @@
     <SeoPriceTable />
 </div>
 
-<ExitIntentModal />
+<ExitIntentModal IsEnabled="true" />
 
 @code {
     [SupplyParameterFromQuery(Name = "scope")]
@@ -1180,6 +1180,11 @@
 
     private string? _emailValidationError;
     private bool _isVerifyingEmail;
+    private async Task HandleProposalContactClick()
+    {
+        await CopyPhoneToClipboard();
+        await OpenLeadModal();
+    }
 
     private async Task OpenLeadModal()
     {
@@ -1237,6 +1242,10 @@
         }
         _isVerifyingEmail = false;
 
+        bool isVerified = verificationResult.IsValid;
+        string verificationStatus = verificationResult.Status ?? (isVerified ? "Valid" : "Unverified");
+        string? verificationReason = verificationResult.ErrorMessage;
+
         if (!verificationResult.IsValid)
         {
             _emailValidationError = verificationResult.ErrorMessage ?? "Моля, въведете реален имейл адрес.";
@@ -1250,9 +1259,6 @@
                 });
             }
             catch { }
-
-            StateHasChanged();
-            return;
         }
 
         // Save CalculatorLead to Database
@@ -1266,7 +1272,7 @@
             Email = _email.Trim(),
             Phone = string.IsNullOrWhiteSpace(_phone) ? null : _phone.Trim(),
             Name = string.IsNullOrWhiteSpace(_name) ? null : _name.Trim(),
-            Scope = _activeScope,
+            Scope = string.IsNullOrWhiteSpace(_activeScope) ? "full" : _activeScope,
             SelectedArea = _selectedArea,
             BuildingStatus = _buildingStatus,
             QualityTier = _finishQualityTier,
@@ -1278,8 +1284,9 @@
             MinPriceBgn = minBgn,
             MaxPriceBgn = maxBgn,
             EstimatedDays = GetEstimatedDays(),
-            IsEmailVerified = true,
-            VerificationStatus = "Valid",
+            IsEmailVerified = isVerified,
+            VerificationStatus = verificationStatus,
+            VerificationReason = verificationReason,
             UtmSource = UtmSource,
             UtmMedium = UtmMedium,
             UtmCampaign = UtmCampaign,
@@ -1294,7 +1301,7 @@
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error saving CalculatorLead: {ex.Message}");
+            Console.WriteLine($"Error saving CalculatorLead: {ex.Message}");
         }
 
         // Fire-and-forget email offer dispatch

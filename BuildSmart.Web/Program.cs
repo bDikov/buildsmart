@@ -62,8 +62,9 @@ if (!string.IsNullOrEmpty(webConnString))
 }
 else
 {
+    var inMemoryDbName = "BuildSmartWeb_Shared";
     builder.Services.AddDbContextFactory<BuildSmart.Infrastructure.Persistence.AppDbContext>(options =>
-        options.UseInMemoryDatabase($"BuildSmartWeb_{Guid.NewGuid()}"));
+        options.UseInMemoryDatabase(inMemoryDbName));
 }
 
 // Configure SharedUI API Config based on Web

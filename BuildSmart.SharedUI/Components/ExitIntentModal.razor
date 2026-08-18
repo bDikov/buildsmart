@@ -301,7 +301,7 @@
 
 @code {
     [Parameter]
-    public bool IsEnabled { get; set; } = false;
+    public bool IsEnabled { get; set; } = true;
 
     private bool _isVisible = false;
     private bool _hasTriggered = false;
@@ -393,13 +393,15 @@
             var lead = new BuildSmart.Core.Domain.Entities.CalculatorLead
             {
                 Id = Guid.NewGuid(),
-                Name = _leadModel.Name,
-                Phone = _leadModel.Phone,
-                Email = _leadModel.Email,
+                Name = _leadModel.Name.Trim(),
+                Phone = _leadModel.Phone.Trim(),
+                Email = _leadModel.Email.Trim(),
                 SelectedArea = _leadModel.PropertyArea,
                 Scope = "exit_intent_lead",
                 BuildingStatus = "bds",
                 QualityTier = "standard",
+                IsEmailVerified = true,
+                VerificationStatus = "Valid",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -407,9 +409,9 @@
             {
                 await LeadRepository.AddLeadAsync(lead);
             }
-            catch
+            catch (Exception ex)
             {
-                // Soft fallback if DB repository is offline in WASM client mode
+                Console.WriteLine($"Error saving ExitIntent lead: {ex.Message}");
             }
 
             _isSubmitted = true;

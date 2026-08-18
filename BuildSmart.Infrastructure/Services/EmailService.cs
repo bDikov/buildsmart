@@ -477,6 +477,36 @@ namespace BuildSmart.Infrastructure.Services
 
 			await SendGenericEmailAsync(lead.Email, subject, htmlBody);
 			_logger.LogInformation("Successfully sent calculator lead offer email to {Email}", lead.Email);
+
+			// Send instant alert email to admin
+			try
+			{
+				string adminSubject = $"⚡ НОВ ЛИЙД: {scopeText} ({lead.Name ?? "Анонимен"})";
+				string adminBody = $@"
+					<html>
+					<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b; padding: 20px;'>
+						<h2 style='color: #2563eb;'>НОВО ЗАПИТВАНЕ ОТ ЛИЙД МАГНЕТ</h2>
+						<p>Получено е ново запитване през дигиталния калкулатор:</p>
+						<ul>
+							<li><strong>Име:</strong> {lead.Name ?? "Анонимен"}</li>
+							<li><strong>Имейл:</strong> <a href='mailto:{lead.Email}'>{lead.Email}</a></li>
+							<li><strong>Телефон:</strong> <a href='tel:{lead.Phone}'>{lead.Phone ?? "Не е посочен"}</a></li>
+							<li><strong>Обхват:</strong> {scopeText} ({lead.SelectedArea} кв.м.)</li>
+							<li><strong>Ориентировъчен Бюджет:</strong> €{lead.MinPriceEur:N0} - €{lead.MaxPriceEur:N0} ({lead.MinPriceBgn:N0} - {lead.MaxPriceBgn:N0} лв.)</li>
+							<li><strong>Статус имейл:</strong> {lead.VerificationStatus} (Verified: {lead.IsEmailVerified})</li>
+							<li><strong>Източник / Кампания:</strong> Src: {lead.UtmSource ?? "Direct"} | Cmp: {lead.UtmCampaign ?? "-"}</li>
+							<li><strong>Дата:</strong> {lead.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC</li>
+						</ul>
+						<p><a href='https://buildsmart.bg/admin/leads' style='background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none;'>Отворете Админ Таблото</a></p>
+					</body>
+					</html>";
+				string adminEmail = _config["Smtp:SenderEmail"] ?? "office@buildsmart.bg";
+				await SendGenericEmailAsync(adminEmail, adminSubject, adminBody);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning(ex, "Failed to send admin notification email for CalculatorLead {LeadId}", lead.Id);
+			}
 		}
 
 		public async Task SendCalculatorLeadOfferEmailByIdAsync(Guid leadId)
