@@ -268,7 +268,7 @@
     private int cntElecOutlets = 12;
     private int cntVikPoints = 5;
 
-    private decimal computedPrice => (cntElecOutlets * 25m + cntVikPoints * 65m + 380m) * (selectedRooms.Count > 0 ? selectedRooms.Count * 0.85m : 1m);
+    private decimal computedPrice => (cntElecOutlets * 35m + cntVikPoints * 70m + 380m) * (selectedRooms.Count > 0 ? selectedRooms.Count * 0.85m : 1m);
     private int computedDays => Math.Max(2, (int)Math.Ceiling(cntElecOutlets * 0.1 + cntVikPoints * 0.3));
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
