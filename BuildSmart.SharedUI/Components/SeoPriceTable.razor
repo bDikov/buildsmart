@@ -218,7 +218,20 @@
 
     private void NavigateToWizard()
     {
-        NavManager.NavigateTo("/renovation-estimator");
+        var scope = "full";
+        if (!string.IsNullOrEmpty(SelectedCategory))
+        {
+            var categoryLower = SelectedCategory.ToLowerInvariant();
+            if (categoryLower.Contains("banya") || categoryLower.Contains("bathroom"))
+            {
+                scope = "bathroom";
+            }
+            else if (categoryLower.Contains("dovarshetelni") || categoryLower.Contains("finishing") || categoryLower.Contains("mep") || categoryLower.Contains("el") || categoryLower.Contains("vik"))
+            {
+                scope = "finishing";
+            }
+        }
+        NavManager.NavigateTo($"/renovation-estimator?scope={scope}");
     }
 
     private string FormatEur(decimal bgnPrice)

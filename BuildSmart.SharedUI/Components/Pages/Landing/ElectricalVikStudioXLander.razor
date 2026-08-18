@@ -364,18 +364,14 @@
 
     private bool _showAuthModal = false;
 
-    private async void HandleCreateProjectClick()
+    private void HandleCreateProjectClick()
     {
-        bool isGuest = await CheckIsGuestAsync();
-        if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
-        {
-            _showAuthModal = true;
-            StateHasChanged();
-        }
-        else
-        {
-            NavigateToWizard();
-        }
+        NavigateToWizard();
+    }
+
+    private string GetEstimatorTargetUrl()
+    {
+        return "/renovation-estimator?scope=finishing";
     }
 
     private void OnAuthConfirmationChanged(bool proceed)
@@ -383,7 +379,7 @@
         _showAuthModal = false;
         if (proceed)
         {
-            string targetUrl = "/job-wizard";
+            string targetUrl = GetEstimatorTargetUrl();
             var returnUrl = Uri.EscapeDataString(targetUrl);
             NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
         }
@@ -391,7 +387,7 @@
 
     private void NavigateToWizard()
     {
-        NavManager.NavigateTo("/job-wizard");
+        NavManager.NavigateTo(GetEstimatorTargetUrl());
     }
 
     private async Task<bool> CheckIsGuestAsync()

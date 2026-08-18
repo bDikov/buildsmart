@@ -1065,7 +1065,7 @@
     &quot;TitleKey&quot;: &quot;Feed_HeroTitle_Guest&quot;,
     &quot;SubtitleKey&quot;: &quot;Feed_HeroSubtitle_Guest&quot;,
     &quot;CtaKey&quot;: &quot;Feed_HeroCta_Register&quot;,
-    &quot;CtaAction&quot;: &quot;/create-account?ReturnUrl=/job-wizard&quot;,
+    &quot;CtaAction&quot;: &quot;/renovation-estimator&quot;,
     &quot;ShowLoginPrompt&quot;: false
   },
   {

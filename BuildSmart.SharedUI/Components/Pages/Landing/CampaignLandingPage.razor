@@ -1336,7 +1336,7 @@ html {
     {
         ResolveActiveCopyRule();
 
-        if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.CtaAction))
+        if (_activeRule != null && !string.IsNullOrEmpty(_activeRule.CtaAction) && !_isGuest && !_activeRule.CtaAction.Contains("/job-wizard") && !_activeRule.CtaAction.Contains("/create-account"))
         {
             var route = _activeRule.CtaAction;
             if (route.Contains("{DraftProjectId}"))
@@ -1352,22 +1352,26 @@ html {
         }
         else
         {
-            HandleCreateProjectClick();
+            NavigateToWizard();
         }
     }
 
-    private async void HandleCreateProjectClick()
+    private void HandleCreateProjectClick()
     {
-        bool isGuest = await CheckIsGuestAsync();
-        if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+        NavigateToWizard();
+    }
+
+    private string GetEstimatorTargetUrl()
+    {
+        var slug = GetSlug();
+        var scope = slug switch
         {
-            _showAuthModal = true;
-            StateHasChanged();
-        }
-        else
-        {
-            NavigateToWizard();
-        }
+            "bathroom-sofia" => "bathroom",
+            "finishing-sofia" => "finishing",
+            "mep-sofia" => "finishing",
+            _ => "full"
+        };
+        return $"/renovation-estimator?scope={scope}";
     }
 
     private void OnAuthConfirmationChanged(bool proceed)
@@ -1375,7 +1379,7 @@ html {
         _showAuthModal = false;
         if (proceed)
         {
-            string targetUrl = "/job-wizard";
+            string targetUrl = GetEstimatorTargetUrl();
             var returnUrl = Uri.EscapeDataString(targetUrl);
             NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
         }
@@ -1383,7 +1387,7 @@ html {
 
     private void NavigateToWizard()
     {
-        NavManager.NavigateTo("/job-wizard");
+        NavManager.NavigateTo(GetEstimatorTargetUrl());
     }
 
     private async Task<bool> CheckIsGuestAsync()
