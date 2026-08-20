@@ -327,35 +327,36 @@
     private void SelectNode(string nodeKey)
     {
         selectedNode = nodeKey;
+        var isEn = _currentCulture == "en";
         if (nodeKey == "panel")
         {
-            selectedNodeTitle = "Главно Ел. Табло Schneider";
-            selectedNodeBadge = "Електро Защита";
+            selectedNodeTitle = isEn ? "Main Schneider Electrical Panel" : "Главно Ел. Табло Schneider";
+            selectedNodeBadge = isEn ? "Electrical Protection" : "Електро Защита";
             selectedNodeSpecs = new Dictionary<string, string>
             {
-                { "Защита", "ДТЗ 30mA Schneider" },
-                { "Мощност", "Трифазно 15 kW" },
-                { "Гаранция", "10 Години" }
+                { isEn ? "Protection" : "Защита", "RCD 30mA Schneider" },
+                { isEn ? "Power" : "Мощност", isEn ? "Three-phase 15 kW" : "Трифазно 15 kW" },
+                { isEn ? "Warranty" : "Гаранция", isEn ? "10 Years" : "10 Години" }
             };
         }
         else if (nodeKey == "smart")
         {
-            selectedNodeTitle = "Smart LED Контрол";
-            selectedNodeBadge = "Смарт Автоматизация";
+            selectedNodeTitle = isEn ? "Smart LED Lighting Control" : "Smart LED Контрол";
+            selectedNodeBadge = isEn ? "Smart Automation" : "Смарт Автоматизация";
             selectedNodeSpecs = new Dictionary<string, string>
             {
-                { "Протокол", "Zigbee 3.0 / KNX" },
-                { "Интеграция", "Apple HomeKit & Google" }
+                { isEn ? "Protocol" : "Протокол", "Zigbee 3.0 / KNX" },
+                { isEn ? "Integration" : "Интеграция", "Apple HomeKit & Google" }
             };
         }
         else if (nodeKey == "manifold")
         {
-            selectedNodeTitle = "ВиК Колекторна Система";
-            selectedNodeBadge = "Водопровод";
+            selectedNodeTitle = isEn ? "Plumbing Manifold System" : "ВиК Колекторна Система";
+            selectedNodeBadge = isEn ? "Plumbing" : "Водопровод";
             selectedNodeSpecs = new Dictionary<string, string>
             {
-                { "Тръби", "PEX-a Ф16/Ф20 Изолирани" },
-                { "Налягане", "Тест на 10 bar" }
+                { isEn ? "Pipes" : "Тръби", isEn ? "Insulated PEX-a Ф16/Ф20" : "PEX-a Ф16/Ф20 Изолирани" },
+                { isEn ? "Pressure" : "Налягане", isEn ? "Tested at 10 bar" : "Тест на 10 bar" }
             };
         }
     }

@@ -1241,8 +1241,26 @@ html {
         return CampaignSlug?.ToLowerInvariant() ?? "general";
     }
 
+    private bool IsEnglish => System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase);
+
     private string GetTitle()
     {
+        if (IsEnglish)
+        {
+            if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.TitleEn))
+            {
+                return _cmsPage.TitleEn;
+            }
+
+            return GetSlug() switch
+            {
+                "bathroom-sofia" => Loc["Landing_BathroomTitle"],
+                "finishing-sofia" => Loc["Landing_FinishingTitle"],
+                "mep-sofia" => Loc["Landing_MepTitle"],
+                _ => Loc["Landing_ApartmentTitle"]
+            };
+        }
+
         if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.TitleBg))
         {
             return _cmsPage.TitleBg;
@@ -1259,6 +1277,22 @@ html {
 
     private string GetSubtitle()
     {
+        if (IsEnglish)
+        {
+            if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.SubtitleEn))
+            {
+                return _cmsPage.SubtitleEn;
+            }
+
+            return GetSlug() switch
+            {
+                "bathroom-sofia" => Loc["Landing_BathroomSubtitle"],
+                "finishing-sofia" => Loc["Landing_FinishingSubtitle"],
+                "mep-sofia" => Loc["Landing_MepSubtitle"],
+                _ => Loc["Landing_ApartmentSubtitle"]
+            };
+        }
+
         if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.SubtitleBg))
         {
             return _cmsPage.SubtitleBg;
