@@ -9,6 +9,7 @@
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject BuildSmartApiClient ApiClient
 
 <PageTitle>@Loc["ElectricalVikTitle"] | BuildSmart.bg</PageTitle>
 
@@ -29,6 +30,33 @@
             </a>
 
             <div class="sx-nav-actions">
+                <div class="bs-lang-toggle-wrapper position-relative d-inline-block">
+                    <button type="button" class="btn btn-sm d-flex align-items-center gap-1 border py-1.5 px-2.5 rounded-3" @onclick="ToggleLanguageDropdown" style="background: var(--bg-card-alt); border-color: var(--border-color) !important; color: var(--text-primary); font-size: 0.85rem; font-weight: 700;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>@(_currentCulture?.ToUpper() ?? "BG")</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: @(_isLangOpen ? "rotate(180deg)" : "rotate(0deg)"); transition: transform 0.2s ease;">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    @if (_isLangOpen)
+                    {
+                        <div class="bs-lang-menu position-absolute end-0 mt-1 p-1 rounded-3 shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); min-width: 130px; z-index: 1050;">
+                            <button type="button" class="w-100 border-0 bg-transparent text-start py-1.5 px-2 rounded d-flex align-items-center justify-content-between" @onclick='() => SwitchLanguageAsync("bg")' style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                <span>Български</span>
+                                @if (_currentCulture == "bg") { <span>✓</span> }
+                            </button>
+                            <button type="button" class="w-100 border-0 bg-transparent text-start py-1.5 px-2 rounded d-flex align-items-center justify-content-between" @onclick='() => SwitchLanguageAsync("en")' style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                <span>English</span>
+                                @if (_currentCulture == "en") { <span>✓</span> }
+                            </button>
+                        </div>
+                    }
+                </div>
+
                 <button type="button" class="sx-phone-btn d-none d-sm-inline-flex border-0" @onclick="CopyPhoneToClipboard" title="Копирай телефон">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -425,5 +453,35 @@
             StateHasChanged();
         }
         catch { }
+    }
+
+    private string _currentCulture => System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.ToLower();
+    private bool _isLangOpen = false;
+
+    private void ToggleLanguageDropdown() => _isLangOpen = !_isLangOpen;
+
+    private async Task SwitchLanguageAsync(string lang)
+    {
+        _isLangOpen = false;
+        if (_currentCulture == lang) return;
+
+        try
+        {
+            var cookieValue = $"c={lang}|uic={lang}";
+            await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "preferred_language", lang);
+
+            var culture = new System.Globalization.CultureInfo(lang);
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+            System.Globalization.CultureInfo.CurrentUICulture = culture;
+
+            if (AuthService != null && AuthService.IsAuthenticated)
+            {
+                try { await ApiClient.UpdateUserLanguage.ExecuteAsync(lang); } catch { }
+            }
+        }
+        catch { }
+
+        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
     }
 }

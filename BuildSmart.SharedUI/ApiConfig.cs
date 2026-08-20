@@ -9,6 +9,9 @@ public static class ApiConfig
     public static string? PostHogApiKey { get; set; } = "";
     public static string? PostHogApiHost { get; set; } = "https://us.i.posthog.com";
 
+    // --- FEATURE FLAGS & OAUTH TOGGLES ---
+    public static bool EnableFacebookLogin { get; set; } = false;
+
     // --- LANDING PAGE CONFIGURABLE BUSINESS RULES ---
     public static string LandingPage_CityName { get; set; } = "София";
     public static bool LandingPage_ShowGuestTitleToUsersWithoutProjects { get; set; } = true;

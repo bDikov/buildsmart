@@ -60,15 +60,42 @@
             </a>
 
             <nav class="header-nav d-none d-md-flex">
-                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("process")'>Как работи</button>
-                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("why-us")'>Защо нас</button>
-                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("prices")'>Ценоразпис</button>
-                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("guarantees")'>Гаранции</button>
-                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("proof")'>Проекти</button>
-                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("faq")'>Чести въпроси</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("process")'>@Loc["Lander_Nav_HowItWorks"]</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("why-us")'>@Loc["Lander_Nav_WhyUs"]</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("prices")'>@Loc["Lander_Nav_Pricing"]</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("guarantees")'>@Loc["Lander_Nav_Guarantees"]</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("proof")'>@Loc["Lander_Nav_Projects"]</button>
+                <button type="button" class="nav-link border-0 bg-transparent" @onclick='() => ScrollToSection("faq")'>@Loc["Lander_Nav_Faq"]</button>
             </nav>
 
             <div class="header-actions">
+                <div class="bs-lang-toggle-wrapper position-relative d-inline-block">
+                    <button type="button" class="btn btn-sm d-flex align-items-center gap-1 border py-1.5 px-2.5 rounded-3" @onclick="ToggleLanguageDropdown" style="background: var(--bg-card-alt); border-color: var(--border-color) !important; color: var(--text-primary); font-size: 0.85rem; font-weight: 700;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>@(_currentCulture?.ToUpper() ?? "BG")</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: @(_isLangOpen ? "rotate(180deg)" : "rotate(0deg)"); transition: transform 0.2s ease;">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    @if (_isLangOpen)
+                    {
+                        <div class="bs-lang-menu position-absolute end-0 mt-1 p-1 rounded-3 shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); min-width: 130px; z-index: 1050;">
+                            <button type="button" class="w-100 border-0 bg-transparent text-start py-1.5 px-2 rounded d-flex align-items-center justify-content-between" @onclick='() => SwitchLanguageAsync("bg")' style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                <span>Български</span>
+                                @if (_currentCulture == "bg") { <span>✓</span> }
+                            </button>
+                            <button type="button" class="w-100 border-0 bg-transparent text-start py-1.5 px-2 rounded d-flex align-items-center justify-content-between" @onclick='() => SwitchLanguageAsync("en")' style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                <span>English</span>
+                                @if (_currentCulture == "en") { <span>✓</span> }
+                            </button>
+                        </div>
+                    }
+                </div>
+
                 <button type="button" class="header-phone-btn d-none d-sm-inline-flex border-0" @onclick="CopyPhoneToClipboard" title="Копирай телефон">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -76,7 +103,7 @@
                     <span>@(_isPhoneCopied ? Loc["Lander_PhoneCopiedNotice"] : Loc["Support_PhoneNumber"])</span>
                 </button>
                 <button class="bs-btn-primary" @onclick="HandleHeroCtaClick">
-                    <span>AI Калкулатор</span>
+                    <span>@Loc["Lander_Nav_AiCalculator"]</span>
                 </button>
             </div>
         </div>
@@ -91,7 +118,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                     </svg>
-                    Официална Оферта за София &amp; Региона
+                    @Loc["Lander_OfficialOfferTag"]
                 </div>
                 <h1 class="hero-headline">@GetTitle()</h1>
                 <p class="hero-subtext">@GetSubtitle()</p>
@@ -100,15 +127,15 @@
                 <ul class="hero-check-list">
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span><strong>0 лв. Авансово плащане</strong> – заплащате само след одобрен етап</span>
+                        <span>@Loc["Lander_HeroFeature1"]</span>
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span><strong>100% Гаранция по Договор</strong> – твърда крайна цена и фиксирани срокове</span>
+                        <span>@Loc["Lander_HeroFeature2"]</span>
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span><strong>Автоматизиран AI Калкулатор</strong> – безплатна подробна КСС оферта за 3 минути</span>
+                        <span>@Loc["Lander_HeroFeature3"]</span>
                     </li>
                 </ul>
 
@@ -118,7 +145,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                         </svg>
-                        <span>Изчислете вашата оферта онлайн</span>
+                        <span>@Loc["Lander_CalculateOnlineBtn"]</span>
                     </button>
                     <button type="button" class="interio-btn-secondary border-0" @onclick="CopyPhoneToClipboard">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -135,26 +162,26 @@
                     @if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.HeroVideoUrl))
                     {
                         <video id="hero-campaign-video" src="@_cmsPage.HeroVideoUrl" poster="@GetHeroImageUrl()" autoplay loop muted=@_isHeroMuted playsinline class="hero-img" style="object-fit: cover;"></video>
-                        <button type="button" class="sound-toggle-badge" @onclick="ToggleHeroSound" title="Включи / Изключи Звук">
+                        <button type="button" class="sound-toggle-badge" @onclick="ToggleHeroSound" title="Sound">
                             @if (_isHeroMuted)
                             {
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
-                                <span>Включи звук</span>
+                                <span>@Loc["Lander_SoundOn"]</span>
                             }
                             else
                             {
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                                <span>Изключи звук</span>
+                                <span>@Loc["Lander_SoundOff"]</span>
                             }
                         </button>
                     }
                     else
                     {
-                        <img src="@GetHeroImageUrl()" alt="Модерен интериор ремонт София" class="hero-img" />
+                        <img src="@GetHeroImageUrl()" alt="BuildSmart Renovation Sofia" class="hero-img" />
                     }
                     <div class="floating-proof-badge">
                         <div class="star-rating">★★★★★</div>
-                        <span class="proof-badge-text"><strong>4.9/5 Оценка</strong> от над 180 завършени имота в София</span>
+                        <span class="proof-badge-text">@Loc["Lander_RatingBadge"]</span>
                     </div>
                 </div>
             </div>
@@ -172,25 +199,25 @@
     <section id="process" class="interio-process-banner">
         <div class="banner-container">
             <div class="process-header">
-                <h2>Опростен процес за вашия ремонт</h2>
-                <p>От изчислението на офертата до окончателното предаване на ключа.</p>
+                <h2>@Loc["Lander_ProcessTitle"]</h2>
+                <p>@Loc["Lander_ProcessSubtitle"]</p>
             </div>
 
             <div class="process-grid">
                 <div class="process-card">
                     <div class="step-num">01</div>
-                    <h3>Въведете размерите</h3>
-                    <p>Изберете квадратурата и желания клас довършителни работи в нашия калкулатор.</p>
+                    <h3>@Loc["Lander_Step1Title"]</h3>
+                    <p>@Loc["Lander_Step1Desc"]</p>
                 </div>
                 <div class="process-card">
                     <div class="step-num">02</div>
-                    <h3>Получете КСС оферта</h3>
-                    <p>Системата генерира подробен количествено-стойностна сметка с финални цени.</p>
+                    <h3>@Loc["Lander_Step2Title"]</h3>
+                    <p>@Loc["Lander_Step2Desc"]</p>
                 </div>
                 <div class="process-card">
                     <div class="step-num">03</div>
-                    <h3>Ремонт без аванс</h3>
-                    <p>Започваме работа по Договор. Заплащате поетапно след одобрение на изпълнението.</p>
+                    <h3>@Loc["Lander_Step3Title"]</h3>
+                    <p>@Loc["Lander_Step3Desc"]</p>
                 </div>
             </div>
         </div>
@@ -199,8 +226,8 @@
     <!-- Real Project Portfolio Section (Dynamically Bound to CMS Showcase Gallery) -->
     <section id="proof" class="interio-section-wrapper proof-section">
         <div class="section-title-box">
-            <h2>Нашите Реализирани Проекти в София</h2>
-            <p>Разгледайте реални довършени апартаменти с краен бюджет и материали.</p>
+            <h2>@Loc["Lander_PortfolioTitle"]</h2>
+            <p>@Loc["Lander_PortfolioSubtitle"]</p>
         </div>
 
         <div class="portfolio-grid">
@@ -218,7 +245,7 @@
                             else
                             {
                                 <img src="@media.Url" alt="@media.CaptionBg" class="portfolio-img" />
-                                <span class="portfolio-tag">Завършен 2026</span>
+                                <span class="portfolio-tag">@Loc["Lander_Nav_Projects"] 2026</span>
                             }
                         </div>
                         <div class="card-content">
@@ -226,21 +253,21 @@
                             {
                                 <div class="card-location">@media.LocationBg</div>
                             }
-                            <h3>@(string.IsNullOrEmpty(media.CaptionBg) ? "Изпълнение на обект" : media.CaptionBg)</h3>
+                            <h3>@(string.IsNullOrEmpty(media.CaptionBg) ? Loc["Lander_Nav_Projects"] : media.CaptionBg)</h3>
                             @if (!string.IsNullOrEmpty(media.DurationBg) || !string.IsNullOrEmpty(media.BudgetBg))
                             {
                                 <div class="card-meta">
                                     @if (!string.IsNullOrEmpty(media.DurationBg))
                                     {
-                                        <div class="meta-item"><strong>Срок:</strong> @media.DurationBg</div>
+                                        <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> @media.DurationBg</div>
                                     }
                                     @if (!string.IsNullOrEmpty(media.BudgetBg))
                                     {
-                                        <div class="meta-item price"><strong>Бюджет:</strong> @media.BudgetBg</div>
+                                        <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> @media.BudgetBg</div>
                                     }
                                 </div>
                             }
-                            <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                            <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
                         </div>
                     </div>
                 }
@@ -250,49 +277,49 @@
                 <!-- Default Fallback Cards -->
                 <div class="portfolio-card">
                     <div class="card-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" alt="Цялостен ремонт на апартамент" class="portfolio-img" />
-                        <span class="portfolio-tag">Завършен 2026</span>
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" alt="Full apartment renovation" class="portfolio-img" />
+                        <span class="portfolio-tag">2026</span>
                     </div>
                     <div class="card-content">
                         <div class="card-location">София, кв. Манастирски Ливади</div>
                         <h3>Цялостен ремонт на тристаен апартамент (88 кв.м)</h3>
                         <div class="card-meta">
-                            <div class="meta-item"><strong>Срок:</strong> 42 работни дни</div>
-                            <div class="meta-item price"><strong>Бюджет:</strong> 34,800 лв. (€17,793)</div>
+                            <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> 42 работни дни</div>
+                            <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> 34,800 лв. (€17,793)</div>
                         </div>
-                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
                     </div>
                 </div>
 
                 <div class="portfolio-card">
                     <div class="card-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80" alt="Луксозен ремонт на баня" class="portfolio-img" />
-                        <span class="portfolio-tag">Завършен 2026</span>
+                        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80" alt="Luxury bathroom renovation" class="portfolio-img" />
+                        <span class="portfolio-tag">2026</span>
                     </div>
                     <div class="card-content">
                         <div class="card-location">София, кв. Лозенец</div>
                         <h3>Модерен ремонт на баня с крупноформатен гранитогрес (6 кв.м)</h3>
                         <div class="card-meta">
-                            <div class="meta-item"><strong>Срок:</strong> 11 работни дни</div>
-                            <div class="meta-item price"><strong>Бюджет:</strong> 7,450 лв. (€3,809)</div>
+                            <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> 11 работни дни</div>
+                            <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> 7,450 лв. (€3,809)</div>
                         </div>
-                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
                     </div>
                 </div>
 
                 <div class="portfolio-card">
                     <div class="card-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" alt="Довършителни работи дневна" class="portfolio-img" />
-                        <span class="portfolio-tag">Завършен 2026</span>
+                        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" alt="Finishing works" class="portfolio-img" />
+                        <span class="portfolio-tag">2026</span>
                     </div>
                     <div class="card-content">
                         <div class="card-location">София, кв. Младост 4</div>
                         <h3>Шпакловка, боядисване и гипсокартон на нов апартамент (65 кв.м)</h3>
                         <div class="card-meta">
-                            <div class="meta-item"><strong>Срок:</strong> 18 работни дни</div>
-                            <div class="meta-item price"><strong>Бюджет:</strong> 14,200 лв. (€7,260)</div>
+                            <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> 18 работни дни</div>
+                            <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> 14,200 лв. (€7,260)</div>
                         </div>
-                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">Вижте сходна оферта</button>
+                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
                     </div>
                 </div>
             }
@@ -307,34 +334,34 @@
     <!-- Financing CTA Banner -->
     <section class="interio-cta-banner">
         <div class="cta-banner-content">
-            <h2>Ремонтирайте имота си без първоначален аванс</h2>
-            <p>Заплащате само за реално извършена и приета работа. Получете вашата оферта за 3 минути.</p>
-            <button class="bs-btn-primary cta-banner-btn py-3 px-5" @onclick="HandleCreateProjectClick">Пресметнете оферта сега</button>
+            <h2>@Loc["Lander_FinancingTitle"]</h2>
+            <p>@Loc["Lander_FinancingSub"]</p>
+            <button class="bs-btn-primary cta-banner-btn py-3 px-5" @onclick="HandleCreateProjectClick">@Loc["Lander_CalculateNowBtn"]</button>
         </div>
     </section>
 
     <!-- FAQ Section -->
     <section id="faq" class="interio-section-wrapper faq-section">
         <div class="section-title-box">
-            <h2>Често Задавани Въпроси</h2>
-            <p>Всичко, което трябва да знаете за ремонта и работата с BuildSmart</p>
+            <h2>@Loc["Lander_FaqTitle"]</h2>
+            <p>@Loc["Lander_FaqSubtitle"]</p>
         </div>
         <div class="faq-accordion-grid">
             <div class="faq-card shadow-sm">
-                <h3>Как се определя цената на ремонта?</h3>
-                <p>Цената се калкулира автоматично на база точните размери (кв.м) на вашия имот и избраните довършителни работи. Получавате прозрачна КСС оферта с детайлни единични цени.</p>
+                <h3>@Loc["Lander_FaqQ1"]</h3>
+                <p>@Loc["Lander_FaqA1"]</p>
             </div>
             <div class="faq-card shadow-sm">
-                <h3>Има ли първоначален аванс?</h3>
-                <p>Не! Работата започва по Договор с 0 лв. аванс. Плащате поетапно, само след като инспектирате и одобрите съответния завършен етап от ремонта.</p>
+                <h3>@Loc["Lander_FaqQ2"]</h3>
+                <p>@Loc["Lander_FaqA2"]</p>
             </div>
             <div class="faq-card shadow-sm">
-                <h3>Колко време отнема изготвянето на оферта?</h3>
-                <p>Офертата се генерира онлайн за под 3 минути в нашия интелигентен AI калкулатор, без да чакате огледи или ръчни изчисления.</p>
+                <h3>@Loc["Lander_FaqQ3"]</h3>
+                <p>@Loc["Lander_FaqA3"]</p>
             </div>
             <div class="faq-card shadow-sm">
-                <h3>Какви са гаранциите за срокове и качество?</h3>
-                <p>Крайната цена и сроковете са твърдо заложени в Договора. Всички извършени СМР дейности разполагат с пълна гаранционна поддръжка.</p>
+                <h3>@Loc["Lander_FaqQ4"]</h3>
+                <p>@Loc["Lander_FaqA4"]</p>
             </div>
         </div>
     </section>
@@ -351,21 +378,21 @@
                     </div>
                     <span class="logo-text">BuildSmart</span>
                 </div>
-                <p class="footer-desc">Строително-ремонтна платформа №1 в София. Прозрачност, качество по Договор и 0 лв. авансово плащане.</p>
+                <p class="footer-desc">@Loc["Lander_FooterDesc"]</p>
             </div>
 
             <div class="footer-col">
-                <h4>Услуги</h4>
+                <h4>@Loc["Lander_FooterServices"]</h4>
                 <ul>
-                    <li><a href="/remont-na-apartament-sofia" @onclick='() => NavManager.NavigateTo("/remont-na-apartament-sofia", forceLoad: true)' @onclick:preventDefault>Ремонт на апартамент</a></li>
-                    <li><a href="/remont-na-banya" @onclick='() => NavManager.NavigateTo("/remont-na-banya", forceLoad: true)' @onclick:preventDefault>Ремонт на баня</a></li>
-                    <li><a href="/dovarshetelni-raboti" @onclick='() => NavManager.NavigateTo("/dovarshetelni-raboti", forceLoad: true)' @onclick:preventDefault>Довършителни работи</a></li>
-                    <li><a href="/el-i-vik-uslugi" @onclick='() => NavManager.NavigateTo("/el-i-vik-uslugi", forceLoad: true)' @onclick:preventDefault>Ел и ВиК услуги</a></li>
+                    <li><a href="/remont-na-apartament-sofia" @onclick='() => NavManager.NavigateTo("/remont-na-apartament-sofia", forceLoad: true)' @onclick:preventDefault>@Loc["Lander_Nav_Projects"]</a></li>
+                    <li><a href="/remont-na-banya" @onclick='() => NavManager.NavigateTo("/remont-na-banya", forceLoad: true)' @onclick:preventDefault>@Loc["Lander_Nav_Pricing"]</a></li>
+                    <li><a href="/dovarshetelni-raboti" @onclick='() => NavManager.NavigateTo("/dovarshetelni-raboti", forceLoad: true)' @onclick:preventDefault>@Loc["Lander_Nav_Guarantees"]</a></li>
+                    <li><a href="/el-i-vik-uslugi" @onclick='() => NavManager.NavigateTo("/el-i-vik-uslugi", forceLoad: true)' @onclick:preventDefault>@Loc["Lander_Nav_HowItWorks"]</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
-                <h4>Контакти</h4>
+                <h4>@Loc["Lander_FooterContacts"]</h4>
                 <ul>
                     <li>София, България</li>
                     <li>Тел: @Loc["Support_PhoneNumber"]</li>
@@ -375,7 +402,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; @DateTime.Now.Year BuildSmart Bulgaria. Всички права запазени.</p>
+            <p>&copy; @DateTime.Now.Year BuildSmart Bulgaria. @Loc["Lander_FooterRights"]</p>
         </div>
     </footer>
 
@@ -1439,5 +1466,35 @@ html {
     private void NavigateToEstimator()
     {
         HandleHeroCtaClick();
+    }
+
+    private string _currentCulture => System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.ToLower();
+    private bool _isLangOpen = false;
+
+    private void ToggleLanguageDropdown() => _isLangOpen = !_isLangOpen;
+
+    private async Task SwitchLanguageAsync(string lang)
+    {
+        _isLangOpen = false;
+        if (_currentCulture == lang) return;
+
+        try
+        {
+            var cookieValue = $"c={lang}|uic={lang}";
+            await JSRuntime.InvokeVoidAsync("setCookie", ".AspNetCore.Culture", cookieValue, 365);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "preferred_language", lang);
+
+            var culture = new System.Globalization.CultureInfo(lang);
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+            System.Globalization.CultureInfo.CurrentUICulture = culture;
+
+            if (AuthService != null && AuthService.IsAuthenticated)
+            {
+                try { await ApiClient.UpdateUserLanguage.ExecuteAsync(lang); } catch { }
+            }
+        }
+        catch { }
+
+        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
     }
 }

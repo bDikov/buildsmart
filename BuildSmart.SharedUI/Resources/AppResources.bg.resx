@@ -2181,4 +2181,181 @@
   <data name="Admin_ReportingSubtitle" xml:space="preserve">
     <value>Следете конверсиите от Facebook/Meta Ads, източниците на трафик и прогнозните стойности.</value>
   </data>
+  <data name="Lander_SocialOrManualDivider" xml:space="preserve">
+    <value>или попълнете данните си ръчно</value>
+  </data>
+  <data name="Lander_Nav_HowItWorks" xml:space="preserve">
+    <value>Как работи</value>
+  </data>
+  <data name="Lander_Nav_WhyUs" xml:space="preserve">
+    <value>Защо нас</value>
+  </data>
+  <data name="Lander_Nav_Pricing" xml:space="preserve">
+    <value>Ценоразпис</value>
+  </data>
+  <data name="Lander_Nav_Guarantees" xml:space="preserve">
+    <value>Гаранции</value>
+  </data>
+  <data name="Lander_Nav_Projects" xml:space="preserve">
+    <value>Проекти</value>
+  </data>
+  <data name="Lander_Nav_Faq" xml:space="preserve">
+    <value>Чести въпроси</value>
+  </data>
+  <data name="Lander_Nav_AiCalculator" xml:space="preserve">
+    <value>AI Калкулатор</value>
+  </data>
+  <data name="Lander_OfficialOfferTag" xml:space="preserve">
+    <value>Официална Оферта за София &amp; Региона</value>
+  </data>
+  <data name="Lander_HeroFeature1" xml:space="preserve">
+    <value>0 лв. Авансово плащане – заплащате само след одобрен етап</value>
+  </data>
+  <data name="Lander_HeroFeature2" xml:space="preserve">
+    <value>100% Гаранция по Договор – твърда крайна цена и фиксирани срокове</value>
+  </data>
+  <data name="Lander_HeroFeature3" xml:space="preserve">
+    <value>Автоматизиран AI Калкулатор – безплатна подробна КСС оферта за 3 минути</value>
+  </data>
+  <data name="Lander_CalculateOnlineBtn" xml:space="preserve">
+    <value>Изчислете вашата оферта онлайн</value>
+  </data>
+  <data name="Lander_SoundOn" xml:space="preserve">
+    <value>Включи звук</value>
+  </data>
+  <data name="Lander_SoundOff" xml:space="preserve">
+    <value>Изключи звук</value>
+  </data>
+  <data name="Lander_RatingBadge" xml:space="preserve">
+    <value>4.9/5 Оценка от над 180 завършени имота в София</value>
+  </data>
+  <data name="Lander_ProcessTitle" xml:space="preserve">
+    <value>Опростен процес за вашия ремонт</value>
+  </data>
+  <data name="Lander_ProcessSubtitle" xml:space="preserve">
+    <value>От изчислението на офертата до окончателното предаване на ключа.</value>
+  </data>
+  <data name="Lander_Step1Title" xml:space="preserve">
+    <value>Въведете размерите</value>
+  </data>
+  <data name="Lander_Step1Desc" xml:space="preserve">
+    <value>Изберете квадратурата и желания клас довършителни работи в нашия калкулатор.</value>
+  </data>
+  <data name="Lander_Step2Title" xml:space="preserve">
+    <value>Получете КСС оферта</value>
+  </data>
+  <data name="Lander_Step2Desc" xml:space="preserve">
+    <value>Системата генерира подробен количествено-стойностна сметка с финални цени.</value>
+  </data>
+  <data name="Lander_Step3Title" xml:space="preserve">
+    <value>Ремонт без аванс</value>
+  </data>
+  <data name="Lander_Step3Desc" xml:space="preserve">
+    <value>Започваме работа по Договор. Заплащате поетапно след одобрение на изпълнението.</value>
+  </data>
+  <data name="Lander_PortfolioTitle" xml:space="preserve">
+    <value>Нашите Реализирани Проекти в София</value>
+  </data>
+  <data name="Lander_PortfolioSubtitle" xml:space="preserve">
+    <value>Разгледайте реални довършени апартаменти с краен бюджет и материали.</value>
+  </data>
+  <data name="Lander_SeeSimilarOffer" xml:space="preserve">
+    <value>Вижте сходна оферта</value>
+  </data>
+  <data name="Lander_FinancingTitle" xml:space="preserve">
+    <value>Ремонтирайте имота си без първоначален аванс</value>
+  </data>
+  <data name="Lander_FinancingSub" xml:space="preserve">
+    <value>Заплащате само за реално извършена и приета работа. Получете вашата оферта за 3 минути.</value>
+  </data>
+  <data name="Lander_CalculateNowBtn" xml:space="preserve">
+    <value>Пресметнете оферта сега</value>
+  </data>
+  <data name="Lander_FaqTitle" xml:space="preserve">
+    <value>Често Задавани Въпроси</value>
+  </data>
+  <data name="Lander_FaqSubtitle" xml:space="preserve">
+    <value>Всичко, което трябва да знаете за ремонта и работата с BuildSmart</value>
+  </data>
+  <data name="Lander_FaqQ1" xml:space="preserve">
+    <value>Как се определя цената на ремонта?</value>
+  </data>
+  <data name="Lander_FaqA1" xml:space="preserve">
+    <value>Цената се калкулира автоматично на база точните размери (кв.м) на вашия имот и избраните довършителни работи. Получавате прозрачна КСС оферта с детайлни единични цени.</value>
+  </data>
+  <data name="Lander_FaqQ2" xml:space="preserve">
+    <value>Има ли първоначален аванс?</value>
+  </data>
+  <data name="Lander_FaqA2" xml:space="preserve">
+    <value>Не! Работата започва по Договор с 0 лв. аванс. Плащате поетапно, само след като инспектирате и одобрите съответния завършен етап от ремонта.</value>
+  </data>
+  <data name="Lander_FaqQ3" xml:space="preserve">
+    <value>Колко време отнема изготвянето на оферта?</value>
+  </data>
+  <data name="Lander_FaqA3" xml:space="preserve">
+    <value>Офертата се генерира онлайн за под 3 минути в нашия интелигентен AI калкулатор, без да чакате огледи или ръчни изчисления.</value>
+  </data>
+  <data name="Lander_FaqQ4" xml:space="preserve">
+    <value>Какви са гаранциите за срокове и качество?</value>
+  </data>
+  <data name="Lander_FaqA4" xml:space="preserve">
+    <value>Крайната цена и сроковете са твърдо заложени в Договора. Всички извършени СМР дейности разполагат с пълна гаранционна поддръжка.</value>
+  </data>
+  <data name="Lander_FooterDesc" xml:space="preserve">
+    <value>Строително-ремонтна платформа №1 в София. Прозрачност, качество по Договор и 0 лв. авансово плащане.</value>
+  </data>
+  <data name="Lander_FooterServices" xml:space="preserve">
+    <value>Услуги</value>
+  </data>
+  <data name="Lander_FooterContacts" xml:space="preserve">
+    <value>Контакти</value>
+  </data>
+  <data name="Lander_FooterRights" xml:space="preserve">
+    <value>Всички права запазени.</value>
+  </data>
+  <data name="ExitIntent_Badge" xml:space="preserve">
+    <value>Бърза оферта</value>
+  </data>
+  <data name="ExitIntent_Title" xml:space="preserve">
+    <value>Не бързайте! Получете примерен бюджет за 10 секунди</value>
+  </data>
+  <data name="ExitIntent_Subtitle" xml:space="preserve">
+    <value>Въведете квадратурата си и нашият екип ще Ви изпрати ориентировъчна оферта по имейл и телефон.</value>
+  </data>
+  <data name="ExitIntent_SuccessMsg" xml:space="preserve">
+    <value>Благодарим Ви! Вашата заявка за оферта бе получена успешно. Наш специалист ще се свърже с Вас скоро.</value>
+  </data>
+  <data name="ExitIntent_NameLabel" xml:space="preserve">
+    <value>Вашето Име *</value>
+  </data>
+  <data name="ExitIntent_PhoneLabel" xml:space="preserve">
+    <value>Телефон за връзка *</value>
+  </data>
+  <data name="ExitIntent_EmailLabel" xml:space="preserve">
+    <value>Имейл адрес *</value>
+  </data>
+  <data name="ExitIntent_AreaLabel" xml:space="preserve">
+    <value>Площ на имота (кв.м)</value>
+  </data>
+  <data name="ExitIntent_SubmitBtn" xml:space="preserve">
+    <value>Изпрати заявка за оферта</value>
+  </data>
+  <data name="ExitIntent_SendingBtn" xml:space="preserve">
+    <value>Изпращане...</value>
+  </data>
+  <data name="ExitIntent_CloseBtn" xml:space="preserve">
+    <value>Затвори</value>
+  </data>
+  <data name="Lander_MostPopularBadge" xml:space="preserve">
+    <value>★ Най-популярен</value>
+  </data>
+  <data name="Lander_VerifyingStatus" xml:space="preserve">
+    <value>Проверка...</value>
+  </data>
+  <data name="Lander_GeneratingProposalTitle" xml:space="preserve">
+    <value>Генериране на персонализирана КСС оферта...</value>
+  </data>
+  <data name="Lander_ItemizedKsBreakdown" xml:space="preserve">
+    <value>Подробна КСС Сметка</value>
+  </data>
 </root>

@@ -32,6 +32,7 @@ services:
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
       # Facebook OAuth & Webhooks
+      - Authentication__Facebook__EnableFacebookLogin=${FACEBOOK_ENABLE_LOGIN:-false}
       - Authentication__Facebook__AppId=${FACEBOOK_APP_ID}
       - Authentication__Facebook__AppSecret=${FACEBOOK_APP_SECRET}
       - Authentication__Facebook__VerifyToken=${FACEBOOK_VERIFY_TOKEN}
@@ -67,6 +68,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       # Inform the Web UI where the GraphQL endpoint lives, using the Caddy domain
       - ApiConfig__BaseUrlOverride=https://${DOMAIN_WEB:-app.buildsmart.localhost}
+      - Authentication__Facebook__EnableFacebookLogin=${FACEBOOK_ENABLE_LOGIN:-false}
       - PostHog__ApiKey=${POSTHOG_API_KEY}
       - PostHog__ApiHost=${POSTHOG_API_HOST:-https://us.i.posthog.com}
       # SMTP Mail Server

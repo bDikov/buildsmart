@@ -2229,4 +2229,181 @@ Boncho | BuildSmart</value>
   <data name="Admin_ReportingSubtitle" xml:space="preserve">
     <value>Track Meta/Facebook Ads conversions, traffic sources, and pipeline values.</value>
   </data>
+  <data name="Lander_SocialOrManualDivider" xml:space="preserve">
+    <value>or enter details manually</value>
+  </data>
+  <data name="Lander_Nav_HowItWorks" xml:space="preserve">
+    <value>How it Works</value>
+  </data>
+  <data name="Lander_Nav_WhyUs" xml:space="preserve">
+    <value>Why Us</value>
+  </data>
+  <data name="Lander_Nav_Pricing" xml:space="preserve">
+    <value>Pricing</value>
+  </data>
+  <data name="Lander_Nav_Guarantees" xml:space="preserve">
+    <value>Guarantees</value>
+  </data>
+  <data name="Lander_Nav_Projects" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="Lander_Nav_Faq" xml:space="preserve">
+    <value>FAQ</value>
+  </data>
+  <data name="Lander_Nav_AiCalculator" xml:space="preserve">
+    <value>AI Calculator</value>
+  </data>
+  <data name="Lander_OfficialOfferTag" xml:space="preserve">
+    <value>Official Estimate for Sofia &amp; Region</value>
+  </data>
+  <data name="Lander_HeroFeature1" xml:space="preserve">
+    <value>0 BGN Advance Payment – pay only after an approved phase</value>
+  </data>
+  <data name="Lander_HeroFeature2" xml:space="preserve">
+    <value>100% Contract Guarantee – fixed final price and deadlines</value>
+  </data>
+  <data name="Lander_HeroFeature3" xml:space="preserve">
+    <value>Automated AI Calculator – free detailed estimate in 3 minutes</value>
+  </data>
+  <data name="Lander_CalculateOnlineBtn" xml:space="preserve">
+    <value>Calculate Your Offer Online</value>
+  </data>
+  <data name="Lander_SoundOn" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="Lander_SoundOff" xml:space="preserve">
+    <value>Mute</value>
+  </data>
+  <data name="Lander_RatingBadge" xml:space="preserve">
+    <value>4.9/5 Rating from over 180 completed properties in Sofia</value>
+  </data>
+  <data name="Lander_ProcessTitle" xml:space="preserve">
+    <value>Simplified Process for Your Renovation</value>
+  </data>
+  <data name="Lander_ProcessSubtitle" xml:space="preserve">
+    <value>From estimate calculation to final key delivery.</value>
+  </data>
+  <data name="Lander_Step1Title" xml:space="preserve">
+    <value>Enter Dimensions</value>
+  </data>
+  <data name="Lander_Step1Desc" xml:space="preserve">
+    <value>Select property area and desired finish quality tier in our calculator.</value>
+  </data>
+  <data name="Lander_Step2Title" xml:space="preserve">
+    <value>Get Itemized Offer</value>
+  </data>
+  <data name="Lander_Step2Desc" xml:space="preserve">
+    <value>System generates a detailed itemized estimate with final prices.</value>
+  </data>
+  <data name="Lander_Step3Title" xml:space="preserve">
+    <value>Renovation Without Deposit</value>
+  </data>
+  <data name="Lander_Step3Desc" xml:space="preserve">
+    <value>Work starts under contract. Pay step-by-step after inspecting execution.</value>
+  </data>
+  <data name="Lander_PortfolioTitle" xml:space="preserve">
+    <value>Our Completed Projects in Sofia</value>
+  </data>
+  <data name="Lander_PortfolioSubtitle" xml:space="preserve">
+    <value>Browse real finished apartments with final budget and materials.</value>
+  </data>
+  <data name="Lander_SeeSimilarOffer" xml:space="preserve">
+    <value>See Similar Offer</value>
+  </data>
+  <data name="Lander_FinancingTitle" xml:space="preserve">
+    <value>Renovate Your Property With 0 BGN Deposit</value>
+  </data>
+  <data name="Lander_FinancingSub" xml:space="preserve">
+    <value>Pay only for completed and approved work. Get your estimate in 3 minutes.</value>
+  </data>
+  <data name="Lander_CalculateNowBtn" xml:space="preserve">
+    <value>Calculate Offer Now</value>
+  </data>
+  <data name="Lander_FaqTitle" xml:space="preserve">
+    <value>Frequently Asked Questions</value>
+  </data>
+  <data name="Lander_FaqSubtitle" xml:space="preserve">
+    <value>Everything you need to know about renovation and working with BuildSmart</value>
+  </data>
+  <data name="Lander_FaqQ1" xml:space="preserve">
+    <value>How is the renovation price determined?</value>
+  </data>
+  <data name="Lander_FaqA1" xml:space="preserve">
+    <value>Price is automatically calculated based on exact dimensions (sq.m) and selected finishing works. You receive a transparent itemized estimate with detailed unit prices.</value>
+  </data>
+  <data name="Lander_FaqQ2" xml:space="preserve">
+    <value>Is there an advance deposit?</value>
+  </data>
+  <data name="Lander_FaqA2" xml:space="preserve">
+    <value>No! Work starts under contract with 0 BGN deposit. You pay step-by-step, only after inspecting and approving each completed stage.</value>
+  </data>
+  <data name="Lander_FaqQ3" xml:space="preserve">
+    <value>How long does it take to prepare an offer?</value>
+  </data>
+  <data name="Lander_FaqA3" xml:space="preserve">
+    <value>The estimate is generated online in under 3 minutes in our intelligent AI calculator, without waiting for site visits or manual calculations.</value>
+  </data>
+  <data name="Lander_FaqQ4" xml:space="preserve">
+    <value>What are the guarantees for deadlines and quality?</value>
+  </data>
+  <data name="Lander_FaqA4" xml:space="preserve">
+    <value>Final price and timelines are fixed in the contract. All performed construction activities come with full warranty support.</value>
+  </data>
+  <data name="Lander_FooterDesc" xml:space="preserve">
+    <value>Construction &amp; Renovation Platform #1 in Sofia. Transparency, Contract Guarantee, and 0 BGN deposit.</value>
+  </data>
+  <data name="Lander_FooterServices" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Lander_FooterContacts" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="Lander_FooterRights" xml:space="preserve">
+    <value>All rights reserved.</value>
+  </data>
+  <data name="ExitIntent_Badge" xml:space="preserve">
+    <value>Fast Estimate</value>
+  </data>
+  <data name="ExitIntent_Title" xml:space="preserve">
+    <value>Don't rush! Get a sample budget in 10 seconds</value>
+  </data>
+  <data name="ExitIntent_Subtitle" xml:space="preserve">
+    <value>Enter your property area and our team will send an estimated offer via email and phone.</value>
+  </data>
+  <data name="ExitIntent_SuccessMsg" xml:space="preserve">
+    <value>Thank you! Your estimate request was received successfully. Our specialist will contact you shortly.</value>
+  </data>
+  <data name="ExitIntent_NameLabel" xml:space="preserve">
+    <value>Your Name *</value>
+  </data>
+  <data name="ExitIntent_PhoneLabel" xml:space="preserve">
+    <value>Contact Phone *</value>
+  </data>
+  <data name="ExitIntent_EmailLabel" xml:space="preserve">
+    <value>Email Address *</value>
+  </data>
+  <data name="ExitIntent_AreaLabel" xml:space="preserve">
+    <value>Property Area (sq.m)</value>
+  </data>
+  <data name="ExitIntent_SubmitBtn" xml:space="preserve">
+    <value>Send Estimate Request</value>
+  </data>
+  <data name="ExitIntent_SendingBtn" xml:space="preserve">
+    <value>Sending...</value>
+  </data>
+  <data name="ExitIntent_CloseBtn" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Lander_MostPopularBadge" xml:space="preserve">
+    <value>★ Most Popular</value>
+  </data>
+  <data name="Lander_VerifyingStatus" xml:space="preserve">
+    <value>Verifying...</value>
+  </data>
+  <data name="Lander_GeneratingProposalTitle" xml:space="preserve">
+    <value>Generating Custom PDF Offer &amp; Proposal...</value>
+  </data>
+  <data name="Lander_ItemizedKsBreakdown" xml:space="preserve">
+    <value>Itemized КСС Breakdown</value>
+  </data>
 </root>
