@@ -272,6 +272,43 @@ public partial class Program
 					return Task.CompletedTask;
 				}
 			};
+		})
+		.AddFacebook(options =>
+		{
+			options.SignInScheme = "ExternalCookie";
+			options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "1400203902055364";
+			options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "761d6e49031ea9270ddb98bf8b4230ca";
+			options.CallbackPath = "/api/externalauth/signin-facebook";
+			options.Fields.Add("email");
+			options.Fields.Add("name");
+			options.Fields.Add("picture");
+			options.CorrelationCookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+			options.CorrelationCookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.Always;
+			options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+			{
+				OnRemoteFailure = context =>
+				{
+					var returnUrl = "buildsmart://auth";
+					if (context.Properties?.RedirectUri != null)
+					{
+						try
+						{
+							var uri = new Uri(context.Properties.RedirectUri);
+							var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+							if (query.TryGetValue("returnUrl", out var rUrl))
+							{
+								returnUrl = rUrl.ToString();
+							}
+						}
+						catch { }
+					}
+					var errorMessage = context.Failure?.Message ?? "Remote Facebook login failed";
+					var separator = returnUrl.Contains("?") ? "&" : "?";
+					context.Response.Redirect($"{returnUrl}{separator}error={System.Web.HttpUtility.UrlEncode(errorMessage)}");
+					context.HandleResponse();
+					return Task.CompletedTask;
+				}
+			};
 		});
 		// .AddApple(options =>
 		// {

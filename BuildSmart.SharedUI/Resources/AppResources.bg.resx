@@ -2163,4 +2163,22 @@
   <data name="Admin_LeadDetails" xml:space="preserve">
     <value>Детайли за Запитването</value>
   </data>
+  <data name="Login_FacebookButton" xml:space="preserve">
+    <value>Продължи с Facebook</value>
+  </data>
+  <data name="NAV_ADMINSECTION" xml:space="preserve">
+    <value>АДМИН ПАНЕЛ</value>
+  </data>
+  <data name="Nav_AdminSection" xml:space="preserve">
+    <value>АДМИН ПАНЕЛ</value>
+  </data>
+  <data name="Nav_Reporting" xml:space="preserve">
+    <value>Маркетинг &amp; Анализи</value>
+  </data>
+  <data name="Admin_ReportingTitle" xml:space="preserve">
+    <value>Маркетинг &amp; Рекламни Анализи</value>
+  </data>
+  <data name="Admin_ReportingSubtitle" xml:space="preserve">
+    <value>Следете конверсиите от Facebook/Meta Ads, източниците на трафик и прогнозните стойности.</value>
+  </data>
 </root>

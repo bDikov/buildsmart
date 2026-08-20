@@ -174,6 +174,33 @@ namespace BuildSmart.SharedUI.ViewModels
 		}
 
 		[RelayCommand]
+		private async Task FacebookLoginAsync()
+		{
+			try
+			{
+				var token = await _authService.AuthenticateWithFacebookAsync();
+
+				if (!string.IsNullOrEmpty(token))
+				{
+					await _authService.SaveTokenAsync(token);
+
+                    var authStateProvider = _serviceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+                    authStateProvider?.NotifyAuthenticationStateChanged();
+
+                    await AppServiceLocator.Navigation.NavigateToAsync("//BlazorHostPage");
+				}
+			}
+			catch (TaskCanceledException)
+			{
+				// User canceled the authentication
+			}
+			catch (Exception ex)
+			{
+				await AppServiceLocator.Alerts.DisplayAlert("Error", ex.Message, "OK");
+			}
+		}
+
+		[RelayCommand]
 		private async Task AppleLoginAsync()
 		{
 			try

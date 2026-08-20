@@ -31,6 +31,11 @@ services:
       # Google OAuth
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      # Facebook OAuth & Webhooks
+      - Authentication__Facebook__AppId=${FACEBOOK_APP_ID}
+      - Authentication__Facebook__AppSecret=${FACEBOOK_APP_SECRET}
+      - Authentication__Facebook__VerifyToken=${FACEBOOK_VERIFY_TOKEN}
+      - Authentication__Facebook__PixelId=${FACEBOOK_PIXEL_ID}
       # Sentry Error Tracking
       - SENTRY_DSN=${SENTRY_DSN}
       # Cloudflare R2 Media

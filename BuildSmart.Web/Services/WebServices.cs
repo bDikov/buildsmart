@@ -206,6 +206,20 @@ public class WebAuthService : IAuthService
         return Task.FromResult<string?>(null);
     }
 
+    public Task<string?> AuthenticateWithFacebookAsync()
+    {
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        string returnDest = "/";
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+        {
+            returnDest = returnUrlValues.FirstOrDefault() ?? "/";
+        }
+
+        var returnUrl = _navigationManager.ToAbsoluteUri($"/login?ReturnUrl={Uri.EscapeDataString(returnDest)}").ToString();
+        _navigationManager.NavigateTo($"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/externalauth/facebook-login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+        return Task.FromResult<string?>(null);
+    }
+
     public Task<string?> AuthenticateWithAppleAsync()
     {
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
@@ -327,6 +341,7 @@ public class WebNavigationBridge : INavigationBridge
                 "CategoryManagement" => "/admin/spider-net",
                 "CategoryDetail" => "/admin/spider-net",
                 "AdminCategorySkus" => "/admin/spider-net",
+                "AdminReporting" => "/admin/reporting",
                 _ => pathPart
             };
             url = mappedPath + queryPart;

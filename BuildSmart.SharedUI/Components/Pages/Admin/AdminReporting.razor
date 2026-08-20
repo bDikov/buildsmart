@@ -1,0 +1,228 @@
+@page "/admin/reporting"
+@using BuildSmart.Core.Application.Interfaces
+@using BuildSmart.Core.Domain.Entities
+@using BuildSmart.SharedUI.Resources
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@implements IDisposable
+@inject ICalculatorLeadRepository LeadRepository
+@inject IStringLocalizer<AppResources> Loc
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>BuildSmart - Marketing & Ad Reporting</PageTitle>
+
+<div class="admin-page-container" style="padding: 24px; max-width: 1400px; margin: 0 auto; color: var(--text-primary); font-family: var(--font-primary, 'Outfit', sans-serif);">
+    
+    <!-- Page Header -->
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); padding-bottom: 20px;">
+        <div class="title-group">
+            <h1 class="page-title" style="font: var(--font-h1); margin: 0; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                @Loc["Admin_ReportingTitle"]
+            </h1>
+            <p class="page-subtitle" style="color: var(--text-muted); margin: 4px 0 0 0; font: var(--font-body-1);">
+                @Loc["Admin_ReportingSubtitle"]
+            </p>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 12px;">
+            <button class="bs-btn-secondary" @onclick="ExportToCsv" style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export CSV
+            </button>
+            <button class="bs-btn-primary" @onclick="RefreshDataAsync" style="display: inline-flex; align-items: center; gap: 8px; background: #3b82f6; border: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Leads</div>
+            <div style="font: var(--font-h0); color: var(--text-primary); margin-top: 8px; font-weight: 700;">@_allLeads.Count</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="font: var(--font-body-2); color: #1877F2; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Facebook Ads Leads</div>
+            <div style="font: var(--font-h0); color: #1877F2; margin-top: 8px; font-weight: 700;">@_facebookLeadsCount</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="font: var(--font-body-2); color: #ea4335; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Google Ads Leads</div>
+            <div style="font: var(--font-h0); color: #ea4335; margin-top: 8px; font-weight: 700;">@_googleLeadsCount</div>
+        </div>
+
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="font: var(--font-body-2); color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Estimated Pipeline Value</div>
+            <div style="font: var(--font-h0); color: #10b981; margin-top: 8px; font-weight: 700;">€@_totalPipelineValue.ToString("N0")</div>
+        </div>
+    </div>
+
+    <!-- Marketing Campaign Breakdown -->
+    <div class="card-section" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+        <h3 style="font: var(--font-h3); margin: 0 0 16px 0; color: var(--text-primary);">Traffic & Campaign Source Performance</h3>
+        
+        @if (_isLoading)
+        {
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">Loading campaign metrics...</div>
+        }
+        else if (_campaignGroups.Count == 0)
+        {
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">No campaign data captured yet.</div>
+        }
+        else
+        {
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font: var(--font-body-2);">
+                            <th style="padding: 12px;">Source (`utm_source`)</th>
+                            <th style="padding: 12px;">Medium (`utm_medium`)</th>
+                            <th style="padding: 12px;">Campaign (`utm_campaign`)</th>
+                            <th style="padding: 12px; text-align: right;">Total Leads</th>
+                            <th style="padding: 12px; text-align: right;">Est. Pipeline (€)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var campaign in _campaignGroups)
+                        {
+                            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary); font: var(--font-body-1);">
+                                <td style="padding: 14px 12px; font-weight: 600;">
+                                    @if (campaign.Source.Contains("facebook", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span style="color: #1877F2; display: inline-flex; align-items: center; gap: 6px;">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                            Facebook
+                                        </span>
+                                    }
+                                    else if (campaign.Source.Contains("google", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span style="color: #ea4335; display: inline-flex; align-items: center; gap: 6px;">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 15.987 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+                                            Google
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>@(string.IsNullOrEmpty(campaign.Source) ? "Direct / Organic" : campaign.Source)</span>
+                                    }
+                                </td>
+                                <td style="padding: 14px 12px; color: var(--text-muted);">@(string.IsNullOrEmpty(campaign.Medium) ? "-" : campaign.Medium)</td>
+                                <td style="padding: 14px 12px;">@(string.IsNullOrEmpty(campaign.Campaign) ? "-" : campaign.Campaign)</td>
+                                <td style="padding: 14px 12px; text-align: right; font-weight: 700;">@campaign.LeadsCount</td>
+                                <td style="padding: 14px 12px; text-align: right; font-weight: 700; color: #10b981;">€@campaign.TotalValue.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<CalculatorLead> _allLeads = new();
+    private List<CampaignGroupDto> _campaignGroups = new();
+    private bool _isLoading = true;
+    private int _facebookLeadsCount = 0;
+    private int _googleLeadsCount = 0;
+    private decimal _totalPipelineValue = 0m;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshDataAsync();
+    }
+
+    private async Task RefreshDataAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+
+            var leads = await LeadRepository.GetLeadsAsync();
+            _allLeads = leads?.ToList() ?? new List<CalculatorLead>();
+
+            // Calculate Metrics
+            _facebookLeadsCount = _allLeads.Count(l => !string.IsNullOrEmpty(l.UtmSource) && l.UtmSource.Contains("facebook", StringComparison.OrdinalIgnoreCase));
+            _googleLeadsCount = _allLeads.Count(l => !string.IsNullOrEmpty(l.UtmSource) && l.UtmSource.Contains("google", StringComparison.OrdinalIgnoreCase));
+            _totalPipelineValue = _allLeads.Sum(l => l.MaxPriceEur > 0 ? l.MaxPriceEur : (l.MaxPriceBgn > 0 ? l.MaxPriceBgn / 1.95583m : 0m));
+
+            // Group by Campaign Source
+            _campaignGroups = _allLeads
+                .GroupBy(l => new { 
+                    Source = string.IsNullOrEmpty(l.UtmSource) ? "Direct / Organic" : l.UtmSource, 
+                    Medium = l.UtmMedium ?? "-", 
+                    Campaign = l.UtmCampaign ?? "-" 
+                })
+                .Select(g => new CampaignGroupDto
+                {
+                    Source = g.Key.Source,
+                    Medium = g.Key.Medium,
+                    Campaign = g.Key.Campaign,
+                    LeadsCount = g.Count(),
+                    TotalValue = g.Sum(l => l.MaxPriceEur > 0 ? l.MaxPriceEur : (l.MaxPriceBgn > 0 ? l.MaxPriceBgn / 1.95583m : 0m))
+                })
+                .OrderByDescending(c => c.LeadsCount)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AdminReporting] Error loading reporting data: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ExportToCsv()
+    {
+        try
+        {
+            var csvBuilder = new System.Text.StringBuilder();
+            csvBuilder.AppendLine("Source,Medium,Campaign,LeadsCount,TotalValueEur");
+            foreach (var group in _campaignGroups)
+            {
+                csvBuilder.AppendLine($"\"{group.Source}\",\"{group.Medium}\",\"{group.Campaign}\",{group.LeadsCount},{group.TotalValue:F2}");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csvBuilder.ToString());
+            var base64 = Convert.ToBase64String(bytes);
+            await JSRuntime.InvokeVoidAsync("eval", $"const a = document.createElement('a'); a.href = 'data:text/csv;base64,{base64}'; a.download = 'buildsmart_marketing_report.csv'; a.click();");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AdminReporting] CSV Export failed: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+
+    private class CampaignGroupDto
+    {
+        public string Source { get; set; } = string.Empty;
+        public string Medium { get; set; } = string.Empty;
+        public string Campaign { get; set; } = string.Empty;
+        public int LeadsCount { get; set; }
+        public decimal TotalValue { get; set; }
+    }
+}

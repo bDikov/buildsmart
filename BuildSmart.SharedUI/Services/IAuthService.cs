@@ -12,5 +12,6 @@ public interface IAuthService
     string? GetUserRoleFromToken(string? token);
     Guid? GetUserIdFromToken(string? token);
     Task<string?> AuthenticateWithGoogleAsync();
+    Task<string?> AuthenticateWithFacebookAsync();
     Task<string?> AuthenticateWithAppleAsync();
 }

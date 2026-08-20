@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using BuildSmart.Core.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using AspNet.Security.OAuth.Apple;
 
 namespace BuildSmart.Api.Controllers
@@ -25,6 +26,13 @@ namespace BuildSmart.Api.Controllers
         {
             var properties = new AuthenticationProperties { RedirectUri = Url.Action("Signin", new { returnUrl }) };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("facebook-login")]
+        public IActionResult FacebookLogin(string returnUrl = "buildsmart://auth")
+        {
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("Signin", new { returnUrl }) };
+            return Challenge(properties, FacebookDefaults.AuthenticationScheme);
         }
 
         [HttpGet("apple-login")]
@@ -53,9 +61,10 @@ namespace BuildSmart.Api.Controllers
                 }
 
                 var email = principal.FindFirstValue(ClaimTypes.Email);
-                if (email == null)
+                if (string.IsNullOrEmpty(email))
                 {
-                    return BadRequest("Email not found in external authentication provider.");
+                    var id = principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? principal.FindFirstValue("id") ?? Guid.NewGuid().ToString("N");
+                    email = $"{id}@facebook.user";
                 }
 
                 var name = principal.FindFirstValue(ClaimTypes.Name) ?? string.Empty;

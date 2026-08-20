@@ -2211,4 +2211,22 @@ Boncho | BuildSmart</value>
   <data name="Admin_LeadDetails" xml:space="preserve">
     <value>Lead Details</value>
   </data>
+  <data name="Login_FacebookButton" xml:space="preserve">
+    <value>Continue with Facebook</value>
+  </data>
+  <data name="NAV_ADMINSECTION" xml:space="preserve">
+    <value>ADMIN PANEL</value>
+  </data>
+  <data name="Nav_AdminSection" xml:space="preserve">
+    <value>ADMIN PANEL</value>
+  </data>
+  <data name="Nav_Reporting" xml:space="preserve">
+    <value>Marketing &amp; Reports</value>
+  </data>
+  <data name="Admin_ReportingTitle" xml:space="preserve">
+    <value>Marketing &amp; Ad Campaign Analytics</value>
+  </data>
+  <data name="Admin_ReportingSubtitle" xml:space="preserve">
+    <value>Track Meta/Facebook Ads conversions, traffic sources, and pipeline values.</value>
+  </data>
 </root>

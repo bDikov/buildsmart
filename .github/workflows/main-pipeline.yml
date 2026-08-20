@@ -171,6 +171,10 @@ jobs:
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+            echo "FACEBOOK_APP_ID=${{ secrets.FACEBOOK_APP_ID }}" >> .env
+            echo "FACEBOOK_APP_SECRET=${{ secrets.FACEBOOK_APP_SECRET }}" >> .env
+            echo "FACEBOOK_VERIFY_TOKEN=${{ secrets.FACEBOOK_VERIFY_TOKEN }}" >> .env
+            echo "FACEBOOK_PIXEL_ID=${{ secrets.FACEBOOK_PIXEL_ID }}" >> .env
             echo "SENTRY_DSN=${{ secrets.SENTRY_API_DSN }}" >> .env
             echo "CLOUDFLARE_R2_SERVICE_URL=${{ secrets.CLOUDFLARE_R2_SERVICE_URL }}" >> .env
             echo "CLOUDFLARE_R2_SECRET_KEY=${{ secrets.CLOUDFLARE_R2_SECRET_KEY }}" >> .env

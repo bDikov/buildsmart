@@ -131,6 +131,19 @@ namespace BuildSmart.Maui.Services
             return null;
 		}
 
+		public async Task<string?> AuthenticateWithFacebookAsync()
+		{
+            var authResult = await Microsoft.Maui.Authentication.WebAuthenticator.Default.AuthenticateAsync(
+                new Uri($"{BuildSmart.SharedUI.ApiConfig.GetBaseUrl()}/api/externalauth/facebook-login?returnUrl=buildsmart://auth"),
+                new Uri("buildsmart://"));
+
+            if (authResult?.Properties != null && authResult.Properties.TryGetValue("token", out var token))
+            {
+                return token;
+            }
+            return null;
+		}
+
 		public async Task<string?> AuthenticateWithAppleAsync()
 		{
             var authResult = await Microsoft.Maui.Authentication.WebAuthenticator.Default.AuthenticateAsync(
