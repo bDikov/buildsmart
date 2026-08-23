@@ -156,34 +156,12 @@
                 </div>
             </div>
 
-            <!-- Interio Hero Showcase (Dynamic CMS Image or Video Header) -->
+            <!-- Interio Hero Showcase (Dynamic Hero Carousel with Backwards Compatibility) -->
             <div class="hero-img-col">
-                <div class="hero-image-card video-card-wrapper">
-                    @if (_cmsPage != null && !string.IsNullOrEmpty(_cmsPage.HeroVideoUrl))
-                    {
-                        <video id="hero-campaign-video" src="@_cmsPage.HeroVideoUrl" poster="@GetHeroImageUrl()" autoplay loop muted=@_isHeroMuted playsinline class="hero-img" style="object-fit: cover;"></video>
-                        <button type="button" class="sound-toggle-badge" @onclick="ToggleHeroSound" title="Sound">
-                            @if (_isHeroMuted)
-                            {
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
-                                <span>@Loc["Lander_SoundOn"]</span>
-                            }
-                            else
-                            {
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                                <span>@Loc["Lander_SoundOff"]</span>
-                            }
-                        </button>
-                    }
-                    else
-                    {
-                        <img src="@GetHeroImageUrl()" alt="BuildSmart Renovation Sofia" class="hero-img" />
-                    }
-                    <div class="floating-proof-badge">
-                        <div class="star-rating">★★★★★</div>
-                        <span class="proof-badge-text">@Loc["Lander_RatingBadge"]</span>
-                    </div>
-                </div>
+                <HeroCarousel Items="_carouselItems"
+                              FallbackImageUrl="@GetHeroImageUrl()"
+                              FallbackVideoUrl="@(_cmsPage?.HeroVideoUrl)"
+                              RatingBadgeText="@Loc["Lander_RatingBadge"]" />
             </div>
         </div>
     </section>
@@ -552,18 +530,25 @@ html {
 }
 
 .hero-grid-container {
-    max-width: 1240px;
+    max-width: 1280px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 48px;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
     align-items: center;
+}
+
+.hero-img-col {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 @@media (max-width: 992px) {
     .hero-grid-container {
         grid-template-columns: 1fr;
-        gap: 36px;
+        gap: 32px;
     }
 }
 
@@ -1150,7 +1135,7 @@ html {
     public string? CampaignSlug { get; set; }
 
     private IGetLandingPageBySlug_LandingPageBySlug? _cmsPage;
-    private bool _isHeroMuted = true;
+    private List<HeroCarousel.HeroCarouselItemModel> _carouselItems = new();
     private List<MediaGalleryItemModel> _galleryItems = new();
 
     public class MediaGalleryItemModel
@@ -1162,19 +1147,8 @@ html {
         public string LocationBg { get; set; } = string.Empty;
         public string DurationBg { get; set; } = string.Empty;
         public string BudgetBg { get; set; } = string.Empty;
-    }
-
-    private async Task ToggleHeroSound()
-    {
-        _isHeroMuted = !_isHeroMuted;
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("eval", $"const v = document.getElementById('hero-campaign-video'); if(v) {{ v.muted = {_isHeroMuted.ToString().ToLower()}; }}");
-        }
-        catch
-        {
-            // Fallback JS interop handler
-        }
+        public string Section { get; set; } = "gallery"; // "hero" or "gallery"
+        public int Order { get; set; } = 1;
     }
 
     protected override async Task OnParametersSetAsync()
@@ -1192,16 +1166,33 @@ html {
             if (res.Errors.Count == 0 && res.Data?.LandingPageBySlug != null)
             {
                 _cmsPage = res.Data.LandingPageBySlug;
+                
                 if (!string.IsNullOrEmpty(_cmsPage.MediaGalleryJson))
                 {
                     try
                     {
-                        _galleryItems = JsonSerializer.Deserialize<List<MediaGalleryItemModel>>(_cmsPage.MediaGalleryJson) ?? new();
+                        var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        var allMedia = JsonSerializer.Deserialize<List<MediaGalleryItemModel>>(_cmsPage.MediaGalleryJson, jsonOptions) ?? new();
+                        _galleryItems = allMedia.Where(m => !string.Equals(m.Section, "hero", StringComparison.OrdinalIgnoreCase)).ToList();
+                        _carouselItems = allMedia.Where(m => string.Equals(m.Section, "hero", StringComparison.OrdinalIgnoreCase)).Select(m => new HeroCarousel.HeroCarouselItemModel
+                        {
+                            Url = m.Url,
+                            Type = m.Type,
+                            CaptionBg = m.CaptionBg,
+                            CaptionEn = m.CaptionEn,
+                            Order = m.Order
+                        }).ToList();
                     }
                     catch
                     {
                         _galleryItems = new();
+                        _carouselItems = new();
                     }
+                }
+                else
+                {
+                    _galleryItems = new();
+                    _carouselItems = new();
                 }
             }
         }
@@ -1309,17 +1300,17 @@ html {
 
     private string GetHeroImageUrl()
     {
-        if (_cmsPage != null && !string.IsNullOrWhiteSpace(_cmsPage.HeroImageUrl))
+        if (_cmsPage != null && !string.IsNullOrWhiteSpace(_cmsPage.HeroImageUrl) && !_cmsPage.HeroImageUrl.StartsWith("/images/interio/"))
         {
             return _cmsPage.HeroImageUrl;
         }
 
         return GetSlug() switch
         {
-            "mep-sofia" => "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+            "mep-sofia" => "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80",
             "bathroom-sofia" => "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
             "finishing-sofia" => "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
-            _ => "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"
+            _ => "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
         };
     }
 

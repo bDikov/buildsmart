@@ -1,6 +1,7 @@
 @page "/admin/landing-pages"
 @using BuildSmart.SharedUI.GraphQL
 @using BuildSmart.Core.Domain.Entities
+@using BuildSmart.SharedUI.Components.Pages.Landing
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
@@ -122,7 +123,7 @@
 
                         <!-- Hero Picture & Hero Video Pickers with Media Library -->
                         <div class="media-section span-2">
-                            <h3 class="section-subtitle">@Loc["Cms_HeroMediaHeader"]</h3>
+                            <h3 class="section-subtitle">@Loc["Cms_HeroMediaHeader"] (Legacy Fallback)</h3>
                             <div class="media-grid">
                                 <!-- Hero Image Picker -->
                                 <div class="media-box">
@@ -164,6 +165,102 @@
                                     }
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Top Hero Media Carousel Management -->
+                        <div class="media-section span-2">
+                            <div class="section-header-flex">
+                                <div>
+                                    <h3 class="section-subtitle">Top Hero Media Carousel (Multi-slide Video/Image Showcase)</h3>
+                                    <p class="text-muted extra-small" style="margin: 4px 0 0 0; font-size: 0.8rem;">
+                                        Manage multiple images and videos that display in the interactive hero carousel on live landing pages.
+                                    </p>
+                                </div>
+                                <div class="gallery-upload-actions">
+                                    <button type="button" class="bs-btn-secondary" @onclick='() => OpenMediaPickerForTarget("hero-carousel-add")'>Pick Library</button>
+                                    <label class="bs-btn-upload-primary">
+                                        <span>+ Upload Slide</span>
+                                        <InputFile OnChange="UploadHeroCarouselFile" accept="image/*,video/*" style="display:none;" />
+                                    </label>
+                                    <button type="button" class="bs-btn-secondary" @onclick="AddEmptyHeroCarouselItem">+ Add URL Slide</button>
+                                </div>
+                            </div>
+
+                            @if (_heroCarouselItems.Count == 0)
+                            {
+                                <div class="empty-media-box">No carousel slides added yet. Pick from Media Library or click "+ Upload Slide".</div>
+                            }
+                            else
+                            {
+                                <div class="gallery-items-grid">
+                                    @for (int i = 0; i < _heroCarouselItems.Count; i++)
+                                    {
+                                        var index = i;
+                                        var item = _heroCarouselItems[index];
+                                        <div class="gallery-card">
+                                            <div class="card-media-preview">
+                                                @if (item.Type == "video")
+                                                {
+                                                    @if (!string.IsNullOrEmpty(item.Url))
+                                                    {
+                                                        <video src="@item.Url" controls muted class="card-media-element"></video>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="placeholder-media">MP4 Video</div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @if (!string.IsNullOrEmpty(item.Url))
+                                                    {
+                                                        <img src="@item.Url" alt="Slide" class="card-media-element" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="placeholder-media">Image</div>
+                                                    }
+                                                }
+                                                <div class="media-type-badge">@(item.Type.ToUpper()) #@(index + 1)</div>
+                                            </div>
+
+                                            <div class="card-media-actions">
+                                                <button type="button" class="action-btn" title="Move Up" disabled="@(index == 0)" @onclick="() => MoveHeroCarouselItemUp(index)">▲</button>
+                                                <button type="button" class="action-btn" title="Move Down" disabled="@(index == _heroCarouselItems.Count - 1)" @onclick="() => MoveHeroCarouselItemDown(index)">▼</button>
+                                                <button type="button" class="action-btn remove" title="Remove" @onclick="() => RemoveHeroCarouselItem(index)">✕</button>
+                                            </div>
+
+                                            <div class="card-media-form">
+                                                <div class="form-group span-2">
+                                                    <label class="form-label">Type</label>
+                                                    <select class="bs-input" @bind="item.Type">
+                                                        <option value="image">Image</option>
+                                                        <option value="video">Video (MP4)</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group span-2">
+                                                    <label class="form-label">Media URL</label>
+                                                    <div class="input-with-upload">
+                                                        <input type="text" class="bs-input" @bind="item.Url" placeholder="https://..." />
+                                                        <button type="button" class="bs-btn-secondary" style="padding: 6px 10px; font-size: 0.8rem;" @onclick='() => OpenMediaPickerForTarget($"hero-carousel-item-{index}")'>Pick</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group span-2">
+                                                    <label class="form-label">Caption (BG)</label>
+                                                    <input type="text" class="bs-input" @bind="item.CaptionBg" placeholder="напр. Цялостен луксозен ремонт" />
+                                                </div>
+
+                                                <div class="form-group span-2">
+                                                    <label class="form-label">Caption (EN)</label>
+                                                    <input type="text" class="bs-input" @bind="item.CaptionEn" placeholder="e.g. Turnkey Luxury Renovation" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
                         </div>
 
                         <!-- Interactive Media Gallery Management -->
@@ -1026,13 +1123,14 @@
     private List<LandingPageContentModel> _landingPages = new();
     private LandingPageContentModel? _selectedPage;
 
+    private List<HeroCarousel.HeroCarouselItemModel> _heroCarouselItems = new();
     private List<MediaGalleryItemModel> _galleryItems = new();
     private List<FeatureItemModel> _featureItems = new();
 
     // Central Media Library state
     private bool _showMediaLibraryModal = false;
     private bool _isLibraryLoading = false;
-    private string _libraryPickerTarget = string.Empty; // "hero-image", "hero-video", "gallery-add", "gallery-item-X"
+    private string _libraryPickerTarget = string.Empty; // "hero-image", "hero-video", "hero-carousel-add", "hero-carousel-item-X", "gallery-add", "gallery-item-X"
     private string _librarySearchFilter = string.Empty;
     private string _libraryTypeFilter = "all";
     private List<MediaAssetModel> _libraryAssets = new();
@@ -1067,6 +1165,7 @@
         public string LocationBg { get; set; } = string.Empty;
         public string DurationBg { get; set; } = string.Empty;
         public string BudgetBg { get; set; } = string.Empty;
+        public string Section { get; set; } = "gallery"; // "hero" or "gallery"
         public int Order { get; set; } = 1;
     }
 
@@ -1153,16 +1252,40 @@
 
         try
         {
-            _galleryItems = JsonSerializer.Deserialize<List<MediaGalleryItemModel>>(page.MediaGalleryJson) ?? new();
+            var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var allMedia = JsonSerializer.Deserialize<List<MediaGalleryItemModel>>(page.MediaGalleryJson, jsonOptions) ?? new();
+            _galleryItems = allMedia.Where(m => !string.Equals(m.Section, "hero", StringComparison.OrdinalIgnoreCase)).ToList();
+            _heroCarouselItems = allMedia.Where(m => string.Equals(m.Section, "hero", StringComparison.OrdinalIgnoreCase)).Select(m => new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = m.Url,
+                Type = m.Type,
+                CaptionBg = m.CaptionBg,
+                CaptionEn = m.CaptionEn,
+                Order = m.Order
+            }).ToList();
         }
         catch
         {
             _galleryItems = new();
+            _heroCarouselItems = new();
+        }
+
+        if (_heroCarouselItems.Count == 0)
+        {
+            if (!string.IsNullOrEmpty(page.HeroVideoUrl))
+            {
+                _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel { Url = page.HeroVideoUrl, Type = "video", Order = 1 });
+            }
+            if (!string.IsNullOrEmpty(page.HeroImageUrl) && page.HeroImageUrl != page.HeroVideoUrl)
+            {
+                _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel { Url = page.HeroImageUrl, Type = "image", Order = 2 });
+            }
         }
 
         try
         {
-            _featureItems = JsonSerializer.Deserialize<List<FeatureItemModel>>(page.FeaturesJson) ?? new();
+            var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _featureItems = JsonSerializer.Deserialize<List<FeatureItemModel>>(page.FeaturesJson, jsonOptions) ?? new();
         }
         catch
         {
@@ -1273,6 +1396,24 @@
             {
                 _selectedPage.HeroVideoUrl = asset.Url;
             }
+            else if (_libraryPickerTarget == "hero-carousel-add")
+            {
+                _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
+                {
+                    Url = asset.Url,
+                    Type = asset.Type,
+                    Order = _heroCarouselItems.Count + 1
+                });
+            }
+            else if (_libraryPickerTarget.StartsWith("hero-carousel-item-"))
+            {
+                var indexStr = _libraryPickerTarget.Replace("hero-carousel-item-", "");
+                if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _heroCarouselItems.Count)
+                {
+                    _heroCarouselItems[idx].Url = asset.Url;
+                    _heroCarouselItems[idx].Type = asset.Type;
+                }
+            }
             else if (_libraryPickerTarget == "gallery-add")
             {
                 _galleryItems.Add(new MediaGalleryItemModel
@@ -1369,6 +1510,61 @@
         }
     }
 
+    private async Task UploadHeroCarouselFile(InputFileChangeEventArgs e)
+    {
+        if (_selectedPage == null || e.File == null) return;
+        _statusMessage = "Uploading hero carousel media...";
+        var url = await UploadFileToServerAsync(e.File);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var isVideo = e.File.ContentType.StartsWith("video");
+            _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = url,
+                Type = isVideo ? "video" : "image",
+                Order = _heroCarouselItems.Count + 1
+            });
+            _statusMessage = "Hero media uploaded and added to carousel!";
+            _isError = false;
+        }
+    }
+
+    private void AddEmptyHeroCarouselItem()
+    {
+        _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
+        {
+            Order = _heroCarouselItems.Count + 1
+        });
+    }
+
+    private void RemoveHeroCarouselItem(int index)
+    {
+        if (index >= 0 && index < _heroCarouselItems.Count)
+        {
+            _heroCarouselItems.RemoveAt(index);
+        }
+    }
+
+    private void MoveHeroCarouselItemUp(int index)
+    {
+        if (index > 0 && index < _heroCarouselItems.Count)
+        {
+            var item = _heroCarouselItems[index];
+            _heroCarouselItems.RemoveAt(index);
+            _heroCarouselItems.Insert(index - 1, item);
+        }
+    }
+
+    private void MoveHeroCarouselItemDown(int index)
+    {
+        if (index >= 0 && index < _heroCarouselItems.Count - 1)
+        {
+            var item = _heroCarouselItems[index];
+            _heroCarouselItems.RemoveAt(index);
+            _heroCarouselItems.Insert(index + 1, item);
+        }
+    }
+
     private async Task UploadGalleryFile(InputFileChangeEventArgs e)
     {
         if (_selectedPage == null || e.File == null) return;
@@ -1450,8 +1646,36 @@
 
         try
         {
-            _selectedPage.MediaGalleryJson = JsonSerializer.Serialize(_galleryItems);
+            var combinedMedia = new List<MediaGalleryItemModel>();
+            combinedMedia.AddRange(_heroCarouselItems.Select(h => new MediaGalleryItemModel
+            {
+                Url = h.Url,
+                Type = h.Type,
+                CaptionBg = h.CaptionBg,
+                CaptionEn = h.CaptionEn,
+                Order = h.Order,
+                Section = "hero"
+            }));
+            combinedMedia.AddRange(_galleryItems.Select(g =>
+            {
+                g.Section = "gallery";
+                return g;
+            }));
+
+            _selectedPage.MediaGalleryJson = JsonSerializer.Serialize(combinedMedia);
             _selectedPage.FeaturesJson = JsonSerializer.Serialize(_featureItems);
+
+            // Sync fallback hero image and video from the first carousel items if available
+            var firstVideo = _heroCarouselItems.FirstOrDefault(i => i.Type == "video");
+            if (firstVideo != null && !string.IsNullOrWhiteSpace(firstVideo.Url))
+            {
+                _selectedPage.HeroVideoUrl = firstVideo.Url;
+            }
+            var firstImage = _heroCarouselItems.FirstOrDefault(i => i.Type == "image");
+            if (firstImage != null && !string.IsNullOrWhiteSpace(firstImage.Url))
+            {
+                _selectedPage.HeroImageUrl = firstImage.Url;
+            }
 
             var input = new LandingPageInput
             {

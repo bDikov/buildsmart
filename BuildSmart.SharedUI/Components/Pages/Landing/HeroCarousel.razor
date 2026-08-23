@@ -1,0 +1,691 @@
+@using Microsoft.JSInterop
+@using Microsoft.Extensions.Localization
+@using BuildSmart.SharedUI.Resources
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<AppResources> Loc
+@implements IDisposable
+
+<div class="hero-carousel-container @(IsHovered ? "is-hovered" : "")"
+     @onmouseenter="OnMouseEnter"
+     @onmouseleave="OnMouseLeave"
+     @ontouchstart="OnTouchStart"
+     @ontouchend="OnTouchEnd">
+    
+    <div class="hero-carousel-track">
+        @if (EffectiveItems.Count > 0)
+        {
+            @for (int i = 0; i < EffectiveItems.Count; i++)
+            {
+                var item = EffectiveItems[i];
+                var isActive = (i == _currentIndex);
+                var slideIndex = i;
+
+                <div class="hero-carousel-slide @(isActive ? "active" : "") @(GetSlidePositionClass(slideIndex))"
+                     style="@(item.Type != "video" && !IsVideo(item.Url) ? $"background-image: url('{GetSlideImageUrl(item)}');" : "background-color: #0b0f19;")"
+                     aria-hidden="@(!isActive)">
+                    @if (item.Type == "video" || IsVideo(item.Url))
+                    {
+                        <!-- Ambient Blur Background to fill aspect ratios seamlessly without cutting -->
+                        <video id="@($"hero-video-bg-{slideIndex}")"
+                               src="@item.Url"
+                               autoplay
+                               loop
+                               muted
+                               playsinline
+                               webkit-playsinline
+                               preload="auto"
+                               class="hero-video-ambient-bg"
+                               aria-hidden="true"></video>
+
+                        <!-- Main Uncropped Video (object-fit: contain prevents cropping/squashing) -->
+                        <video id="@($"hero-video-{slideIndex}")"
+                               src="@item.Url"
+                               autoplay
+                               loop
+                               muted
+                               playsinline
+                               webkit-playsinline
+                               preload="auto"
+                               class="hero-carousel-media hero-video-contained"
+                               style="object-fit: contain; width: 100%; height: 100%; position: relative; z-index: 2; display: block;"></video>
+                        
+                        @if (isActive)
+                        {
+                            <button type="button" class="sound-toggle-badge" @onclick="ToggleSound" title="Sound">
+                                @if (_isMuted)
+                                {
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                                    <span>@Loc["Lander_SoundOn"]</span>
+                                }
+                                else
+                                {
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                    <span>@Loc["Lander_SoundOff"]</span>
+                                }
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <img src="@GetSlideImageUrl(item)"
+                             alt="@(GetCaption(item) ?? "BuildSmart Renovation Sofia")"
+                             class="hero-carousel-media"
+                             loading="eager" />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(GetCaption(item)))
+                    {
+                        <div class="slide-caption-overlay">
+                            <span class="slide-caption-text">@GetCaption(item)</span>
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="hero-carousel-slide active">
+                <img src="@(FallbackImageUrl ?? "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80")"
+                     alt="BuildSmart Hero"
+                     class="hero-carousel-media" />
+            </div>
+        }
+    </div>
+
+    <!-- Floating Social Proof Badge (Bottom Overlay) -->
+    <div class="floating-proof-badge">
+        <div class="star-rating">★★★★★</div>
+        <span class="proof-badge-text">@(RatingBadgeText ?? Loc["Lander_RatingBadge"])</span>
+    </div>
+
+    @if (EffectiveItems.Count > 1)
+    {
+        <!-- Slide Counter Pill (Top-Left) -->
+        <div class="hero-slide-counter">
+            <span>@(_currentIndex + 1)</span>
+            <span class="counter-divider">/</span>
+            <span>@EffectiveItems.Count</span>
+        </div>
+
+        <!-- Left / Right Navigation Controls -->
+        <button type="button" class="carousel-nav-btn prev-btn" @onclick="PrevSlide" aria-label="Previous Slide">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+
+        <button type="button" class="carousel-nav-btn next-btn" @onclick="NextSlide" aria-label="Next Slide">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+
+        <!-- Bottom Dot Indicators -->
+        <div class="carousel-dots-container">
+            @for (int d = 0; d < EffectiveItems.Count; d++)
+            {
+                var dotIndex = d;
+                <button type="button"
+                        class="carousel-dot @(dotIndex == _currentIndex ? "active" : "")"
+                        @onclick="() => GoToSlide(dotIndex)"
+                        aria-label="@($"Go to slide {dotIndex + 1}")"></button>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .hero-carousel-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        min-height: 380px;
+        max-height: 520px;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #0b0f19;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-main);
+        user-select: none;
+    }
+
+    @@media (max-width: 991px) {
+        .hero-carousel-container {
+            aspect-ratio: 16 / 10;
+            min-height: 320px;
+            max-height: 420px;
+            border-radius: 18px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .hero-carousel-container {
+            aspect-ratio: 16 / 10;
+            min-height: 240px;
+            max-height: 320px;
+            border-radius: 16px;
+        }
+    }
+
+    .hero-carousel-track {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .hero-carousel-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        visibility: hidden;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        z-index: 1;
+    }
+
+    .hero-carousel-slide.active {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+        z-index: 2;
+    }
+
+    .hero-carousel-slide.prev {
+        transform: scale(0.98);
+    }
+
+    .hero-carousel-slide.next {
+        transform: scale(1.02);
+    }
+
+    .hero-carousel-media {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .hero-video-ambient-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(28px) brightness(0.35);
+        transform: scale(1.18);
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .hero-video-contained {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        object-position: center;
+        z-index: 2;
+        display: block;
+    }
+
+    .hero-poster-underlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+    }
+
+    .slide-caption-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 32px 20px 20px 20px;
+        background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+        z-index: 4;
+        pointer-events: none;
+    }
+
+    .slide-caption-text {
+        color: #ffffff;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        display: block;
+        max-width: 80%;
+    }
+
+    .hero-slide-counter {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #ffffff;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .counter-divider {
+        opacity: 0.6;
+        font-size: 0.75rem;
+    }
+
+    .sound-toggle-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 30px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: var(--shadow-main);
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .sound-toggle-badge:hover {
+        transform: scale(1.05);
+        border-color: var(--color-primary);
+    }
+
+    .carousel-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.25s ease;
+        opacity: 0;
+    }
+
+    .hero-carousel-container:hover .carousel-nav-btn,
+    .hero-carousel-container.is-hovered .carousel-nav-btn {
+        opacity: 1;
+    }
+
+    @@media (max-width: 768px) {
+        .carousel-nav-btn {
+            opacity: 0.85;
+            width: 36px;
+            height: 36px;
+        }
+    }
+
+    .carousel-nav-btn:hover {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .carousel-nav-btn.prev-btn {
+        left: 14px;
+    }
+
+    .carousel-nav-btn.next-btn {
+        right: 14px;
+    }
+
+    .carousel-dots-container {
+        position: absolute;
+        bottom: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        padding: 5px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.45);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.3s ease;
+    }
+
+    .carousel-dot.active {
+        width: 22px;
+        border-radius: 6px;
+        background: var(--color-primary);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    .floating-proof-badge {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: rgba(15, 23, 42, 0.72);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 5px 12px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 8;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        max-width: fit-content;
+        pointer-events: none;
+    }
+
+    @@media (max-width: 576px) {
+        .floating-proof-badge {
+            bottom: 8px;
+            left: 8px;
+            padding: 4px 8px;
+        }
+    }
+
+    .star-rating {
+        color: #f59e0b;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        line-height: 1;
+    }
+
+    .proof-badge-text {
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    [Parameter] public List<HeroCarouselItemModel>? Items { get; set; }
+    [Parameter] public string? FallbackImageUrl { get; set; }
+    [Parameter] public string? FallbackVideoUrl { get; set; }
+    [Parameter] public string? RatingBadgeText { get; set; }
+    [Parameter] public bool AutoPlay { get; set; } = true;
+    [Parameter] public int AutoPlayIntervalSeconds { get; set; } = 6;
+
+    private int _currentIndex = 0;
+    private bool _isMuted = true;
+    private bool IsHovered = false;
+    private System.Threading.Timer? _timer;
+    private double _touchStartX = 0;
+
+    public class HeroCarouselItemModel
+    {
+        public string Url { get; set; } = string.Empty;
+        public string Type { get; set; } = "image"; // "image" or "video"
+        public string CaptionBg { get; set; } = string.Empty;
+        public string CaptionEn { get; set; } = string.Empty;
+        public string TagBg { get; set; } = string.Empty;
+        public string TagEn { get; set; } = string.Empty;
+        public int Order { get; set; }
+    }
+
+    private List<HeroCarouselItemModel> EffectiveItems
+    {
+        get
+        {
+            if (Items != null && Items.Count > 0)
+            {
+                return Items;
+            }
+
+            // Backwards compatibility fallback: construct a list from legacy video/image properties
+            var fallback = new List<HeroCarouselItemModel>();
+            if (!string.IsNullOrWhiteSpace(FallbackVideoUrl) && IsVideo(FallbackVideoUrl))
+            {
+                fallback.Add(new HeroCarouselItemModel
+                {
+                    Url = FallbackVideoUrl,
+                    Type = "video",
+                    Order = 1
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(FallbackImageUrl) && (fallback.Count == 0 || FallbackImageUrl != FallbackVideoUrl))
+            {
+                fallback.Add(new HeroCarouselItemModel
+                {
+                    Url = FallbackImageUrl,
+                    Type = "image",
+                    Order = fallback.Count + 1
+                });
+            }
+
+            return fallback;
+        }
+    }
+
+    private bool IsVideo(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        var clean = url.ToLowerInvariant();
+        return clean.EndsWith(".mp4") || clean.EndsWith(".webm") || clean.EndsWith(".mov") || clean.Contains(".mp4") || clean.Contains(".webm") || clean.Contains("video") || clean.Contains("r2.dev");
+    }
+
+    private string GetSlideImageUrl(HeroCarouselItemModel item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.Url) && !item.Url.StartsWith("/images/interio/") && !IsVideo(item.Url))
+        {
+            return item.Url;
+        }
+        if (!string.IsNullOrWhiteSpace(FallbackImageUrl) && !FallbackImageUrl.StartsWith("/images/interio/"))
+        {
+            return FallbackImageUrl;
+        }
+        return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80";
+    }
+
+    private string GetSlidePosterUrl(HeroCarouselItemModel item)
+    {
+        return GetSlideImageUrl(item);
+    }
+
+    protected override void OnInitialized()
+    {
+        StartAutoPlayTimer();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await EnsureActiveVideoPlayingAsync();
+    }
+
+    private async Task EnsureActiveVideoPlayingAsync()
+    {
+        try
+        {
+            var jsCode = $@"
+                (function() {{
+                    var activeMainId = 'hero-video-{_currentIndex}';
+                    var activeBgId = 'hero-video-bg-{_currentIndex}';
+                    var videos = document.querySelectorAll('[id^=""hero-video-""]');
+                    videos.forEach(function(v) {{
+                        if (v.id === activeMainId) {{
+                            v.muted = {_isMuted.ToString().ToLower()};
+                            v.playsInline = true;
+                            var p = v.play();
+                            if (p !== undefined) {{
+                                p.catch(function() {{
+                                    v.muted = true;
+                                    v.play().catch(function() {{}});
+                                }});
+                            }}
+                        }} else if (v.id === activeBgId) {{
+                            v.muted = true;
+                            v.playsInline = true;
+                            var pBg = v.play();
+                            if (pBg !== undefined) {{
+                                pBg.catch(function() {{}});
+                            }}
+                        }} else {{
+                            v.pause();
+                        }}
+                    }});
+                }})();
+            ";
+            await JSRuntime.InvokeVoidAsync("eval", jsCode);
+        }
+        catch { }
+    }
+
+    private void StartAutoPlayTimer()
+    {
+        if (!AutoPlay || EffectiveItems.Count <= 1) return;
+
+        _timer?.Dispose();
+        _timer = new System.Threading.Timer(async _ =>
+        {
+            if (!IsHovered && EffectiveItems.Count > 1)
+            {
+                await InvokeAsync(async () =>
+                {
+                    NextSlide();
+                    StateHasChanged();
+                    await EnsureActiveVideoPlayingAsync();
+                });
+            }
+        }, null, TimeSpan.FromSeconds(AutoPlayIntervalSeconds), TimeSpan.FromSeconds(AutoPlayIntervalSeconds));
+    }
+
+    private void OnMouseEnter() => IsHovered = true;
+    private void OnMouseLeave() => IsHovered = false;
+
+    private void OnTouchStart(Microsoft.AspNetCore.Components.Web.TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            _touchStartX = e.Touches[0].ClientX;
+        }
+    }
+
+    private void OnTouchEnd(Microsoft.AspNetCore.Components.Web.TouchEventArgs e)
+    {
+        if (e.ChangedTouches.Length > 0)
+        {
+            var touchEndX = e.ChangedTouches[0].ClientX;
+            var diff = touchEndX - _touchStartX;
+            if (Math.Abs(diff) > 40)
+            {
+                if (diff < 0)
+                {
+                    NextSlide();
+                }
+                else
+                {
+                    PrevSlide();
+                }
+            }
+        }
+    }
+
+    private void NextSlide()
+    {
+        if (EffectiveItems.Count <= 1) return;
+        _currentIndex = (_currentIndex + 1) % EffectiveItems.Count;
+        _ = EnsureActiveVideoPlayingAsync();
+    }
+
+    private void PrevSlide()
+    {
+        if (EffectiveItems.Count <= 1) return;
+        _currentIndex = (_currentIndex - 1 + EffectiveItems.Count) % EffectiveItems.Count;
+        _ = EnsureActiveVideoPlayingAsync();
+    }
+
+    private void GoToSlide(int index)
+    {
+        if (index >= 0 && index < EffectiveItems.Count)
+        {
+            _currentIndex = index;
+            _ = EnsureActiveVideoPlayingAsync();
+        }
+    }
+
+    private string GetSlidePositionClass(int slideIndex)
+    {
+        if (slideIndex < _currentIndex) return "prev";
+        if (slideIndex > _currentIndex) return "next";
+        return "";
+    }
+
+    private bool IsEnglish => System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetCaption(HeroCarouselItemModel item)
+    {
+        if (IsEnglish && !string.IsNullOrWhiteSpace(item.CaptionEn)) return item.CaptionEn;
+        return item.CaptionBg;
+    }
+
+    private async Task ToggleSound()
+    {
+        _isMuted = !_isMuted;
+        try
+        {
+            var jsCode = $@"
+                (function() {{
+                    var v = document.getElementById('hero-video-{_currentIndex}');
+                    if (v) {{
+                        v.muted = {_isMuted.ToString().ToLower()};
+                        if (v.paused) {{
+                            v.play().catch(function() {{}});
+                        }}
+                    }}
+                }})();
+            ";
+            await JSRuntime.InvokeVoidAsync("eval", jsCode);
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _timer = null;
+    }
+}
