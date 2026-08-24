@@ -10,6 +10,8 @@ namespace BuildSmart.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[RequestSizeLimit(524288000)] // 500 MB limit
+[RequestFormLimits(MultipartBodyLengthLimit = 524288000)]
 public class UploadController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;

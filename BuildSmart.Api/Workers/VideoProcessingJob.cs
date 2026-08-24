@@ -140,14 +140,49 @@ public class VideoProcessingJob
 
         try
         {
+            var sanitizedUrl = originalRawUrl;
+            var bucketName = _config["CloudflareR2:BucketName"];
+            if (!string.IsNullOrEmpty(bucketName) && sanitizedUrl.Contains($"/{bucketName}/"))
+            {
+                sanitizedUrl = sanitizedUrl.Replace($"/{bucketName}/", "/");
+            }
+            if (sanitizedUrl.Contains("/buildsmart-media/"))
+            {
+                sanitizedUrl = sanitizedUrl.Replace("/buildsmart-media/", "/");
+            }
+            if (sanitizedUrl.Contains("/buildsmart-r2-prod/"))
+            {
+                sanitizedUrl = sanitizedUrl.Replace("/buildsmart-r2-prod/", "/");
+            }
+
             // 1. Download original video
-            _logger.LogInformation("Downloading original video from {Url} to {Path}", originalRawUrl, originalVideoPath);
+            _logger.LogInformation("Downloading original video from {Url} to {Path}", sanitizedUrl, originalVideoPath);
             using (var httpClient = new HttpClient())
             {
-                using var response = await httpClient.GetAsync(originalRawUrl);
-                response.EnsureSuccessStatusCode();
-                using var fileStream = File.Create(originalVideoPath);
-                await response.Content.CopyToAsync(fileStream);
+                var downloadSuccess = false;
+                try
+                {
+                    using var response = await httpClient.GetAsync(sanitizedUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        using var fileStream = File.Create(originalVideoPath);
+                        await response.Content.CopyToAsync(fileStream);
+                        downloadSuccess = true;
+                    }
+                }
+                catch
+                {
+                    // Fall back to original URL
+                }
+
+                if (!downloadSuccess)
+                {
+                    _logger.LogWarning("Download from sanitized URL {Sanitized} failed, trying raw URL: {Raw}", sanitizedUrl, originalRawUrl);
+                    using var response = await httpClient.GetAsync(originalRawUrl);
+                    response.EnsureSuccessStatusCode();
+                    using var fileStream = File.Create(originalVideoPath);
+                    await response.Content.CopyToAsync(fileStream);
+                }
             }
 
             var ffmpegExe = GetFfmpegPath();

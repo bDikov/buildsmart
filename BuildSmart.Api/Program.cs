@@ -110,6 +110,18 @@ public partial class Program
 							  });
 		});
 
+		builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+		{
+			options.MultipartBodyLengthLimit = 524288000; // 500 MB
+			options.ValueLengthLimit = int.MaxValue;
+			options.MultipartHeadersLengthLimit = int.MaxValue;
+		});
+
+		builder.WebHost.ConfigureKestrel(serverOptions =>
+		{
+			serverOptions.Limits.MaxRequestBodySize = 524288000; // 500 MB
+		});
+
 		// --- 1. Add services to the container (Dependency Injection) ---
 		builder.Services.AddLocalization();
 		builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.ILocalizationCacheService, BuildSmart.SharedUI.Services.Localization.LocalizationCacheService>();

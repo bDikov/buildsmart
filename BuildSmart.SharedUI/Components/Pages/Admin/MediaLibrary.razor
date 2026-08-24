@@ -747,7 +747,9 @@
                     if (r2Response.IsSuccessStatusCode)
                     {
                         var uri = new Uri(preSignedUrl);
-                        var r2Key = uri.AbsolutePath.TrimStart('/');
+                        var path = uri.AbsolutePath.TrimStart('/');
+                        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                        var r2Key = segments.Length > 1 ? string.Join('/', segments.Skip(1)) : path;
 
                         await ApiClient.RegisterUploadedMedia.ExecuteAsync(
                             folderId: _currentFolder?.Id,

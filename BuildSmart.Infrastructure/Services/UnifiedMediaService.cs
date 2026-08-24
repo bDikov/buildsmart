@@ -293,6 +293,11 @@ public class UnifiedMediaService : IUnifiedMediaService
         CancellationToken ct = default)
     {
         var cleanKey = r2Key.TrimStart('/');
+        if (!string.IsNullOrEmpty(_bucketName) && cleanKey.StartsWith($"{_bucketName}/", StringComparison.OrdinalIgnoreCase))
+        {
+            cleanKey = cleanKey.Substring($"{_bucketName}/".Length).TrimStart('/');
+        }
+
         var publicUrl = BuildPublicUrl(cleanKey);
         var mediaType = DetermineMediaType(contentType, fileName);
 
@@ -613,6 +618,11 @@ public class UnifiedMediaService : IUnifiedMediaService
     private string BuildPublicUrl(string r2Key)
     {
         var cleanKey = r2Key.TrimStart('/');
+        if (!string.IsNullOrEmpty(_bucketName) && cleanKey.StartsWith($"{_bucketName}/", StringComparison.OrdinalIgnoreCase))
+        {
+            cleanKey = cleanKey.Substring($"{_bucketName}/".Length).TrimStart('/');
+        }
+
         if (!string.IsNullOrEmpty(_publicBaseUrl))
         {
             return $"{_publicBaseUrl.TrimEnd('/')}/{cleanKey}";

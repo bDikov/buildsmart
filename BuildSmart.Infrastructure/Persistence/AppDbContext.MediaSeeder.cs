@@ -100,6 +100,27 @@ public static class MediaSeeder
 
     private static async Task SyncAndSeedMediaAssetsAsync(this AppDbContext context, List<MediaFolder> folders)
     {
+        // Fix any malformed assets that had the bucket name accidentally prefixed in PublicUrl or R2Key
+        var malformedAssets = await context.MediaAssets
+            .Where(a => a.PublicUrl.Contains("/buildsmart-media/") || a.PublicUrl.Contains("/buildsmart-r2-prod/") ||
+                        a.R2Key.StartsWith("buildsmart-media/") || a.R2Key.StartsWith("buildsmart-r2-prod/"))
+            .ToListAsync();
+
+        if (malformedAssets.Count > 0)
+        {
+            foreach (var ma in malformedAssets)
+            {
+                if (ma.R2Key.StartsWith("buildsmart-media/")) ma.R2Key = ma.R2Key.Substring("buildsmart-media/".Length);
+                if (ma.R2Key.StartsWith("buildsmart-r2-prod/")) ma.R2Key = ma.R2Key.Substring("buildsmart-r2-prod/".Length);
+                ma.PublicUrl = ma.PublicUrl.Replace("/buildsmart-media/", "/").Replace("/buildsmart-r2-prod/", "/");
+                if (ma.ThumbnailUrl != null)
+                {
+                    ma.ThumbnailUrl = ma.ThumbnailUrl.Replace("/buildsmart-media/", "/").Replace("/buildsmart-r2-prod/", "/");
+                }
+            }
+            await context.SaveChangesAsync();
+        }
+
         var existingAssets = await context.MediaAssets.ToListAsync();
         var assetsToInsert = new List<MediaAsset>();
 

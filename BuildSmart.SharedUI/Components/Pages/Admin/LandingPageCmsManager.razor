@@ -1343,10 +1343,18 @@
     {
         try
         {
-            var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(file.Name, file.ContentType ?? "application/octet-stream");
-            if (urlResult.Errors.Count == 0 && !string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
+            var folderPath = _selectedPage != null && !string.IsNullOrWhiteSpace(_selectedPage.Slug)
+                ? $"/landing-pages/{_selectedPage.Slug}"
+                : "/landing-pages";
+
+            var urlResult = await ApiClient.RequestFolderUploadUrl.ExecuteAsync(
+                folderPath: folderPath,
+                fileName: file.Name,
+                contentType: file.ContentType ?? "application/octet-stream");
+
+            if (urlResult.Errors.Count == 0 && !string.IsNullOrEmpty(urlResult.Data?.RequestFolderUploadUrl))
             {
-                var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;
+                var preSignedUrl = urlResult.Data.RequestFolderUploadUrl;
                 using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024);
                 using var streamContent = new StreamContent(rawStream);
                 if (!string.IsNullOrEmpty(file.ContentType))
@@ -1360,31 +1368,45 @@
                 var r2Response = await uploadClient.PutAsync(preSignedUrl, streamContent);
                 if (r2Response.IsSuccessStatusCode)
                 {
-                    var privateUrl = new Uri(preSignedUrl).GetLeftPart(UriPartial.Path);
-                    var fileName = System.IO.Path.GetFileName(privateUrl);
-                    return $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{fileName}";
+                    var uri = new Uri(preSignedUrl);
+                    var path = uri.AbsolutePath.TrimStart('/');
+                    var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                    var r2Key = segments.Length > 1 ? string.Join('/', segments.Skip(1)) : path;
+
+                    var regResult = await ApiClient.RegisterUploadedMedia.ExecuteAsync(
+                        folderId: null,
+                        r2Key: r2Key,
+                        fileName: file.Name,
+                        contentType: file.ContentType ?? "application/octet-stream",
+                        sizeBytes: file.Size,
+                        width: null,
+                        height: null,
+                        durationSeconds: null);
+
+                    if (regResult.Errors.Count == 0 && regResult.Data?.RegisterUploadedMedia != null)
+                    {
+                        return regResult.Data.RegisterUploadedMedia.PublicUrl;
+                    }
+
+                    return $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{r2Key}";
+                }
+                else
+                {
+                    var errBody = await r2Response.Content.ReadAsStringAsync();
+                    throw new Exception($"Cloudflare R2 error ({(int)r2Response.StatusCode}): {errBody}");
                 }
             }
-        }
-        catch
-        {
-            // Fall through to API media controller
-        }
-
-        try
-        {
-            using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
-            var uploadedUrl = await FileService.UploadAdminImageAsync(stream, file.Name);
-            if (!string.IsNullOrEmpty(uploadedUrl))
+            else if (urlResult.Errors.Count > 0)
             {
-                return uploadedUrl;
+                throw new Exception(string.Join(", ", urlResult.Errors.Select(e => e.Message)));
             }
         }
         catch (Exception ex)
         {
-            _statusMessage = "File upload error: " + ex.Message;
+            _statusMessage = "Upload error: " + ex.Message;
             _isError = true;
         }
+
         return null;
     }
 
