@@ -211,13 +211,15 @@
         <div class="portfolio-grid">
             @if (_galleryItems.Any())
             {
-                @foreach (var media in _galleryItems)
+                @for (int gIdx = 0; gIdx < _galleryItems.Count; gIdx++)
                 {
+                    var mediaIndex = gIdx;
+                    var media = _galleryItems[mediaIndex];
                     <div class="portfolio-card">
-                        <div class="card-img-wrapper">
+                        <div class="card-img-wrapper" @onclick="() => OpenGalleryLightbox(mediaIndex)" style="cursor: pointer;" title="Click to view full size">
                             @if (media.Type == "video")
                             {
-                                <video src="@media.Url" controls playsinline preload="metadata" class="portfolio-img"></video>
+                                <video src="@media.Url" playsinline preload="metadata" class="portfolio-img"></video>
                                 <span class="portfolio-tag video-tag">VIDEO</span>
                             }
                             else
@@ -225,6 +227,11 @@
                                 <img src="@media.Url" alt="@media.CaptionBg" class="portfolio-img" />
                                 <span class="portfolio-tag">@Loc["Lander_Nav_Projects"] 2026</span>
                             }
+                            <div class="portfolio-expand-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                                </svg>
+                            </div>
                         </div>
                         <div class="card-content">
                             @if (!string.IsNullOrEmpty(media.LocationBg))
@@ -394,6 +401,79 @@
 
     <!-- Global Exit Intent Lead Capture Modal -->
     <ExitIntentModal />
+
+    <!-- GALLERY FULLSCREEN LIGHTBOX MODAL -->
+    @if (_isGalleryLightboxOpen && _galleryItems.Count > 0)
+    {
+        var currentItem = _galleryItems[Math.Clamp(_galleryLightboxIndex, 0, _galleryItems.Count - 1)];
+        var isVid = string.Equals(currentItem.Type, "video", StringComparison.OrdinalIgnoreCase);
+        var caption = IsEnglish ? (!string.IsNullOrEmpty(currentItem.CaptionEn) ? currentItem.CaptionEn : currentItem.CaptionBg) : currentItem.CaptionBg;
+
+        <div class="hero-lightbox-backdrop" @onclick="CloseGalleryLightbox">
+            <div class="hero-lightbox-header" @onclick:stopPropagation="true">
+                <div class="lightbox-info-group">
+                    @if (_galleryItems.Count > 1)
+                    {
+                        <span class="lightbox-counter">@(_galleryLightboxIndex + 1) / @_galleryItems.Count</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(caption))
+                    {
+                        <span class="lightbox-title">@caption</span>
+                    }
+                </div>
+                <button type="button" class="lightbox-close-btn" @onclick="CloseGalleryLightbox" aria-label="Exit full size">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="hero-lightbox-body">
+                @if (_galleryItems.Count > 1)
+                {
+                    <button type="button" class="lightbox-arrow-btn prev-arrow" @onclick="PrevGalleryLightbox" @onclick:stopPropagation="true" aria-label="Previous">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                }
+
+                <div class="lightbox-media-container" @onclick:stopPropagation="true">
+                    @if (isVid)
+                    {
+                        <video src="@currentItem.Url"
+                               controls
+                               autoplay
+                               playsinline
+                               class="lightbox-media-element" />
+                    }
+                    else
+                    {
+                        <img src="@currentItem.Url"
+                             alt="@(caption ?? "Full size preview")"
+                             class="lightbox-media-element" />
+                    }
+                </div>
+
+                @if (_galleryItems.Count > 1)
+                {
+                    <button type="button" class="lightbox-arrow-btn next-arrow" @onclick="NextGalleryLightbox" @onclick:stopPropagation="true" aria-label="Next">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(caption))
+            {
+                <div class="hero-lightbox-caption-bar" @onclick:stopPropagation="true">
+                    <span>@caption</span>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 <style>
@@ -1123,10 +1203,187 @@ html {
     border-color: var(--color-primary);
 }
 
-@@keyframes pulseDot {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(15, 118, 110, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(15, 118, 110, 0); }
+.portfolio-expand-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    opacity: 0.85;
+}
+
+.portfolio-card:hover .portfolio-expand-badge {
+    opacity: 1;
+    background: rgba(15, 23, 42, 0.95);
+    border-color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+/* Fullscreen Lightbox Styles */
+.hero-lightbox-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    background: rgba(5, 8, 15, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    user-select: none;
+    animation: lbFadeIn 0.2s ease-out;
+}
+
+@@keyframes lbFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.hero-lightbox-header {
+    width: 100%;
+    max-width: 1300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    padding: 8px 12px;
+}
+
+.lightbox-info-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lightbox-counter {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font: var(--font-h6);
+    font-size: 0.85rem;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.lightbox-title {
+    color: #ffffff;
+    font: var(--font-h6);
+    font-size: 1rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.lightbox-close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.lightbox-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: #ffffff;
+    transform: scale(1.1);
+}
+
+.hero-lightbox-body {
+    position: relative;
+    width: 100%;
+    max-width: 1300px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin: 12px 0;
+}
+
+.lightbox-arrow-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.lightbox-arrow-btn.prev-arrow {
+    left: 12px;
+}
+
+.lightbox-arrow-btn.next-arrow {
+    right: 12px;
+}
+
+.lightbox-arrow-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: #ffffff;
+    transform: translateY(-50%) scale(1.08);
+}
+
+.lightbox-media-container {
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.lightbox-media-element {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.hero-lightbox-caption-bar {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 10px 24px;
+    border-radius: 999px;
+    font: var(--font-body-1);
+    max-width: 800px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 </style>
 
@@ -1137,6 +1394,35 @@ html {
     private IGetLandingPageBySlug_LandingPageBySlug? _cmsPage;
     private List<HeroCarousel.HeroCarouselItemModel> _carouselItems = new();
     private List<MediaGalleryItemModel> _galleryItems = new();
+
+    private bool _isGalleryLightboxOpen = false;
+    private int _galleryLightboxIndex = 0;
+
+    private void OpenGalleryLightbox(int index)
+    {
+        if (_galleryItems.Any())
+        {
+            _galleryLightboxIndex = Math.Clamp(index, 0, _galleryItems.Count - 1);
+            _isGalleryLightboxOpen = true;
+        }
+    }
+
+    private void CloseGalleryLightbox()
+    {
+        _isGalleryLightboxOpen = false;
+    }
+
+    private void NextGalleryLightbox()
+    {
+        if (_galleryItems.Count <= 1) return;
+        _galleryLightboxIndex = (_galleryLightboxIndex + 1) % _galleryItems.Count;
+    }
+
+    private void PrevGalleryLightbox()
+    {
+        if (_galleryItems.Count <= 1) return;
+        _galleryLightboxIndex = (_galleryLightboxIndex - 1 + _galleryItems.Count) % _galleryItems.Count;
+    }
 
     public class MediaGalleryItemModel
     {
@@ -1177,7 +1463,7 @@ html {
                         _carouselItems = allMedia.Where(m => string.Equals(m.Section, "hero", StringComparison.OrdinalIgnoreCase)).Select(m => new HeroCarousel.HeroCarouselItemModel
                         {
                             Url = m.Url,
-                            Type = m.Type,
+                            Type = string.IsNullOrWhiteSpace(m.Type) ? (m.Url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || m.Url.EndsWith(".webm", StringComparison.OrdinalIgnoreCase) ? "video" : "image") : m.Type,
                             CaptionBg = m.CaptionBg,
                             CaptionEn = m.CaptionEn,
                             Order = m.Order

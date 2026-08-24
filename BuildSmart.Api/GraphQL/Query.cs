@@ -117,6 +117,40 @@ public class Query
 					CreatedAt = lp.CreatedAt
 				});
 			}
+			if (!string.IsNullOrEmpty(lp.MediaGalleryJson))
+			{
+				try
+				{
+					var galleryItems = System.Text.Json.JsonSerializer.Deserialize<List<MediaGalleryItemDto>>(
+						lp.MediaGalleryJson,
+						new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+					if (galleryItems != null)
+					{
+						foreach (var g in galleryItems)
+						{
+							if (!string.IsNullOrWhiteSpace(g.Url))
+							{
+								var isVid = string.Equals(g.Type, "video", StringComparison.OrdinalIgnoreCase) ||
+								            g.Url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
+								            g.Url.EndsWith(".webm", StringComparison.OrdinalIgnoreCase);
+								var title = !string.IsNullOrWhiteSpace(g.CaptionBg)
+									? g.CaptionBg
+									: (!string.IsNullOrWhiteSpace(g.CaptionEn) ? g.CaptionEn : (isVid ? $"Video Slide (/{lp.Slug})" : $"Image Slide (/{lp.Slug})"));
+								list.Add(new MediaAssetDto
+								{
+									Id = Guid.NewGuid(),
+									Url = g.Url,
+									ThumbnailUrl = isVid ? string.Empty : g.Url,
+									Type = isVid ? "video" : "image",
+									Title = title,
+									CreatedAt = lp.CreatedAt
+								});
+							}
+						}
+					}
+				}
+				catch { }
+			}
 		}
 
 		return list.GroupBy(x => x.Url).Select(g => g.First()).OrderByDescending(x => x.CreatedAt).ToList();

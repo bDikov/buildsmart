@@ -19,11 +19,14 @@
                 var item = EffectiveItems[i];
                 var isActive = (i == _currentIndex);
                 var slideIndex = i;
+                var isVideo = IsVideoItem(item);
 
                 <div class="hero-carousel-slide @(isActive ? "active" : "") @(GetSlidePositionClass(slideIndex))"
-                     style="@(item.Type != "video" && !IsVideo(item.Url) ? $"background-image: url('{GetSlideImageUrl(item)}');" : "background-color: #0b0f19;")"
-                     aria-hidden="@(!isActive)">
-                    @if (item.Type == "video" || IsVideo(item.Url))
+                     style="@(!isVideo ? $"background-image: url('{GetSlideImageUrl(item)}');" : "background-color: #0b0f19;")"
+                     aria-hidden="@(!isActive)"
+                     @onclick="() => OpenLightbox(slideIndex)"
+                     title="Click to view full size">
+                    @if (isVideo)
                     {
                         <!-- Ambient Blur Background to fill aspect ratios seamlessly without cutting -->
                         <video id="@($"hero-video-bg-{slideIndex}")"
@@ -51,7 +54,7 @@
                         
                         @if (isActive)
                         {
-                            <button type="button" class="sound-toggle-badge" @onclick="ToggleSound" title="Sound">
+                            <button type="button" class="sound-toggle-badge" @onclick="ToggleSound" @onclick:stopPropagation="true" title="Sound">
                                 @if (_isMuted)
                                 {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
@@ -73,6 +76,13 @@
                              loading="eager" />
                     }
 
+                    <!-- Fullscreen Expand Button Overlay -->
+                    <button type="button" class="hero-fullscreen-btn" @onclick="() => OpenLightbox(slideIndex)" @onclick:stopPropagation="true" title="Full size">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                        </svg>
+                    </button>
+
                     @if (!string.IsNullOrWhiteSpace(GetCaption(item)))
                     {
                         <div class="slide-caption-overlay">
@@ -84,16 +94,21 @@
         }
         else
         {
-            <div class="hero-carousel-slide active">
+            <div class="hero-carousel-slide active" @onclick="OpenFallbackLightbox" style="cursor: pointer;" title="Click to view full size">
                 <img src="@(FallbackImageUrl ?? "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80")"
                      alt="BuildSmart Hero"
                      class="hero-carousel-media" />
+                <button type="button" class="hero-fullscreen-btn" @onclick="OpenFallbackLightbox" @onclick:stopPropagation="true" title="Full size">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                    </svg>
+                </button>
             </div>
         }
     </div>
 
     <!-- Floating Social Proof Badge (Bottom Overlay) -->
-    <div class="floating-proof-badge">
+    <div class="floating-proof-badge" @onclick:stopPropagation="true">
         <div class="star-rating">★★★★★</div>
         <span class="proof-badge-text">@(RatingBadgeText ?? Loc["Lander_RatingBadge"])</span>
     </div>
@@ -108,31 +123,108 @@
         </div>
 
         <!-- Left / Right Navigation Controls -->
-        <button type="button" class="carousel-nav-btn prev-btn" @onclick="PrevSlide" aria-label="Previous Slide">
+        <button type="button" class="carousel-nav-btn prev-btn" @onclick="PrevSlide" @onclick:stopPropagation="true" aria-label="Previous Slide">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </button>
 
-        <button type="button" class="carousel-nav-btn next-btn" @onclick="NextSlide" aria-label="Next Slide">
+        <button type="button" class="carousel-nav-btn next-btn" @onclick="NextSlide" @onclick:stopPropagation="true" aria-label="Next Slide">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </button>
 
         <!-- Bottom Dot Indicators -->
-        <div class="carousel-dots-container">
+        <div class="carousel-dots-container" @onclick:stopPropagation="true">
             @for (int d = 0; d < EffectiveItems.Count; d++)
             {
                 var dotIndex = d;
                 <button type="button"
                         class="carousel-dot @(dotIndex == _currentIndex ? "active" : "")"
                         @onclick="() => GoToSlide(dotIndex)"
+                        @onclick:stopPropagation="true"
                         aria-label="@($"Go to slide {dotIndex + 1}")"></button>
             }
         </div>
     }
 </div>
+
+<!-- FULLSCREEN LIGHTBOX MODAL (SINGLE CLICK FULL SIZE) -->
+@if (_isLightboxOpen)
+{
+    var currentItem = EffectiveItems.Count > 0 && _lightboxIndex >= 0 && _lightboxIndex < EffectiveItems.Count
+        ? EffectiveItems[_lightboxIndex]
+        : null;
+    var isCurrentVid = currentItem != null && IsVideoItem(currentItem);
+    var fullMediaUrl = currentItem != null ? (isCurrentVid ? currentItem.Url : GetSlideImageUrl(currentItem)) : (FallbackImageUrl ?? "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80");
+    var caption = currentItem != null ? GetCaption(currentItem) : null;
+
+    <div class="hero-lightbox-backdrop" @onclick="CloseLightbox">
+        <div class="hero-lightbox-header" @onclick:stopPropagation="true">
+            <div class="lightbox-info-group">
+                @if (EffectiveItems.Count > 1)
+                {
+                    <span class="lightbox-counter">@(_lightboxIndex + 1) / @EffectiveItems.Count</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(caption))
+                {
+                    <span class="lightbox-title">@caption</span>
+                }
+            </div>
+            <button type="button" class="lightbox-close-btn" @onclick="CloseLightbox" aria-label="Exit full size">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="hero-lightbox-body">
+            @if (EffectiveItems.Count > 1)
+            {
+                <button type="button" class="lightbox-arrow-btn prev-arrow" @onclick="PrevLightboxSlide" @onclick:stopPropagation="true" aria-label="Previous">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+            }
+
+            <div class="lightbox-media-container" @onclick:stopPropagation="true">
+                @if (isCurrentVid)
+                {
+                    <video src="@fullMediaUrl"
+                           controls
+                           autoplay
+                           playsinline
+                           class="lightbox-media-element" />
+                }
+                else
+                {
+                    <img src="@fullMediaUrl"
+                         alt="@(caption ?? "Full size preview")"
+                         class="lightbox-media-element" />
+                }
+            </div>
+
+            @if (EffectiveItems.Count > 1)
+            {
+                <button type="button" class="lightbox-arrow-btn next-arrow" @onclick="NextLightboxSlide" @onclick:stopPropagation="true" aria-label="Next">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(caption))
+        {
+            <div class="hero-lightbox-caption-bar" @onclick:stopPropagation="true">
+                <span>@caption</span>
+            </div>
+        }
+    </div>
+}
 
 <style>
     .hero-carousel-container {
@@ -440,6 +532,190 @@
         line-height: 1;
         white-space: nowrap;
     }
+
+    .hero-fullscreen-btn {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 6;
+        background: rgba(11, 15, 25, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-fullscreen-btn:hover {
+        background: rgba(11, 15, 25, 0.95);
+        border-color: var(--color-primary);
+        transform: scale(1.1);
+    }
+
+    /* Fullscreen Lightbox Styles */
+    .hero-lightbox-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999999;
+        background: rgba(5, 8, 15, 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+        user-select: none;
+        animation: lbFadeIn 0.2s ease-out;
+    }
+
+    @@keyframes lbFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .hero-lightbox-header {
+        width: 100%;
+        max-width: 1300px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+        padding: 8px 12px;
+    }
+
+    .lightbox-info-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .lightbox-counter {
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font: var(--font-h6);
+        font-size: 0.85rem;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .lightbox-title {
+        color: #ffffff;
+        font: var(--font-h6);
+        font-size: 1rem;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .lightbox-close-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(8px);
+    }
+
+    .lightbox-close-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: #ffffff;
+        transform: scale(1.1);
+    }
+
+    .hero-lightbox-body {
+        position: relative;
+        width: 100%;
+        max-width: 1300px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin: 12px 0;
+    }
+
+    .lightbox-arrow-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(8px);
+    }
+
+    .lightbox-arrow-btn.prev-arrow {
+        left: 12px;
+    }
+
+    .lightbox-arrow-btn.next-arrow {
+        right: 12px;
+    }
+
+    .lightbox-arrow-btn:hover {
+        background: rgba(255, 255, 255, 0.28);
+        border-color: #ffffff;
+        transform: translateY(-50%) scale(1.08);
+    }
+
+    .lightbox-media-container {
+        max-width: 90vw;
+        max-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .lightbox-media-element {
+        max-width: 100%;
+        max-height: 80vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .hero-lightbox-caption-bar {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        padding: 10px 24px;
+        border-radius: 999px;
+        font: var(--font-body-1);
+        max-width: 800px;
+        text-align: center;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
 </style>
 
 @code {
@@ -478,7 +754,7 @@
 
             // Backwards compatibility fallback: construct a list from legacy video/image properties
             var fallback = new List<HeroCarouselItemModel>();
-            if (!string.IsNullOrWhiteSpace(FallbackVideoUrl) && IsVideo(FallbackVideoUrl))
+            if (!string.IsNullOrWhiteSpace(FallbackVideoUrl) && IsVideoUrl(FallbackVideoUrl))
             {
                 fallback.Add(new HeroCarouselItemModel
                 {
@@ -501,16 +777,23 @@
         }
     }
 
-    private bool IsVideo(string? url)
+    private bool IsVideoItem(HeroCarouselItemModel item)
+    {
+        if (string.Equals(item.Type, "video", StringComparison.OrdinalIgnoreCase)) return true;
+        if (string.Equals(item.Type, "image", StringComparison.OrdinalIgnoreCase)) return false;
+        return IsVideoUrl(item.Url);
+    }
+
+    private bool IsVideoUrl(string? url)
     {
         if (string.IsNullOrWhiteSpace(url)) return false;
-        var clean = url.ToLowerInvariant();
-        return clean.EndsWith(".mp4") || clean.EndsWith(".webm") || clean.EndsWith(".mov") || clean.Contains(".mp4") || clean.Contains(".webm") || clean.Contains("video") || clean.Contains("r2.dev");
+        var clean = url.Split('?')[0].ToLowerInvariant();
+        return clean.EndsWith(".mp4") || clean.EndsWith(".webm") || clean.EndsWith(".mov") || clean.EndsWith(".m4v") || clean.EndsWith(".ogv");
     }
 
     private string GetSlideImageUrl(HeroCarouselItemModel item)
     {
-        if (!string.IsNullOrWhiteSpace(item.Url) && !item.Url.StartsWith("/images/interio/") && !IsVideo(item.Url))
+        if (!string.IsNullOrWhiteSpace(item.Url) && !item.Url.StartsWith("/images/interio/") && !IsVideoItem(item))
         {
             return item.Url;
         }
@@ -574,6 +857,46 @@
         catch { }
     }
 
+    private bool _isLightboxOpen = false;
+    private int _lightboxIndex = 0;
+
+    private void OpenLightbox(int index)
+    {
+        if (EffectiveItems.Count > 0)
+        {
+            _lightboxIndex = Math.Clamp(index, 0, EffectiveItems.Count - 1);
+            _isLightboxOpen = true;
+        }
+        else
+        {
+            _lightboxIndex = 0;
+            _isLightboxOpen = true;
+        }
+    }
+
+    private void OpenFallbackLightbox()
+    {
+        _lightboxIndex = 0;
+        _isLightboxOpen = true;
+    }
+
+    private void CloseLightbox()
+    {
+        _isLightboxOpen = false;
+    }
+
+    private void NextLightboxSlide()
+    {
+        if (EffectiveItems.Count <= 1) return;
+        _lightboxIndex = (_lightboxIndex + 1) % EffectiveItems.Count;
+    }
+
+    private void PrevLightboxSlide()
+    {
+        if (EffectiveItems.Count <= 1) return;
+        _lightboxIndex = (_lightboxIndex - 1 + EffectiveItems.Count) % EffectiveItems.Count;
+    }
+
     private void StartAutoPlayTimer()
     {
         if (!AutoPlay || EffectiveItems.Count <= 1) return;
@@ -581,7 +904,7 @@
         _timer?.Dispose();
         _timer = new System.Threading.Timer(async _ =>
         {
-            if (!IsHovered && EffectiveItems.Count > 1)
+            if (!IsHovered && !_isLightboxOpen && EffectiveItems.Count > 1)
             {
                 await InvokeAsync(async () =>
                 {

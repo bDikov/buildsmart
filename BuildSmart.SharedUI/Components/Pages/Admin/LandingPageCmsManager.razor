@@ -221,39 +221,41 @@
                                                         <div class="placeholder-media">Image</div>
                                                     }
                                                 }
-                                                <div class="media-type-badge">@(item.Type.ToUpper()) #@(index + 1)</div>
+                                                <div class="card-media-actions">
+                                                    <button type="button" class="icon-btn" title="Move Up" disabled="@(index == 0)" @onclick="() => MoveHeroCarouselItemUp(index)">▲</button>
+                                                    <button type="button" class="icon-btn" title="Move Down" disabled="@(index == _heroCarouselItems.Count - 1)" @onclick="() => MoveHeroCarouselItemDown(index)">▼</button>
+                                                    <button type="button" class="icon-btn danger" title="Remove" @onclick="() => RemoveHeroCarouselItem(index)">✕ Remove</button>
+                                                </div>
                                             </div>
 
-                                            <div class="card-media-actions">
-                                                <button type="button" class="action-btn" title="Move Up" disabled="@(index == 0)" @onclick="() => MoveHeroCarouselItemUp(index)">▲</button>
-                                                <button type="button" class="action-btn" title="Move Down" disabled="@(index == _heroCarouselItems.Count - 1)" @onclick="() => MoveHeroCarouselItemDown(index)">▼</button>
-                                                <button type="button" class="action-btn remove" title="Remove" @onclick="() => RemoveHeroCarouselItem(index)">✕</button>
-                                            </div>
-
-                                            <div class="card-media-form">
-                                                <div class="form-group span-2">
+                                            <div class="card-inputs">
+                                                <div class="form-group">
                                                     <label class="form-label">Type</label>
-                                                    <select class="bs-input" @bind="item.Type">
-                                                        <option value="image">Image</option>
+                                                    <select class="bs-input form-select-sm" @bind="item.Type">
+                                                        <option value="image">Image (Picture)</option>
                                                         <option value="video">Video (MP4)</option>
                                                     </select>
                                                 </div>
 
-                                                <div class="form-group span-2">
+                                                <div class="form-group">
                                                     <label class="form-label">Media URL</label>
                                                     <div class="input-with-upload">
                                                         <input type="text" class="bs-input" @bind="item.Url" placeholder="https://..." />
-                                                        <button type="button" class="bs-btn-secondary" style="padding: 6px 10px; font-size: 0.8rem;" @onclick='() => OpenMediaPickerForTarget($"hero-carousel-item-{index}")'>Pick</button>
+                                                        <button type="button" class="bs-btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" @onclick='() => OpenMediaPickerForTarget($"hero-carousel-item-{index}")'>Library</button>
+                                                        <label class="bs-btn-upload" style="padding: 4px 8px; font-size: 0.75rem;">
+                                                            <span>Upload</span>
+                                                            <InputFile OnChange="@(e => UploadHeroCarouselItemFile(e, index))" accept="image/*,video/*" style="display:none;" />
+                                                        </label>
                                                     </div>
                                                 </div>
 
-                                                <div class="form-group span-2">
-                                                    <label class="form-label">Caption (BG)</label>
+                                                <div class="form-group">
+                                                    <label class="form-label">Caption (Bulgarian)</label>
                                                     <input type="text" class="bs-input" @bind="item.CaptionBg" placeholder="напр. Цялостен луксозен ремонт" />
                                                 </div>
 
-                                                <div class="form-group span-2">
-                                                    <label class="form-label">Caption (EN)</label>
+                                                <div class="form-group">
+                                                    <label class="form-label">Caption (English)</label>
                                                     <input type="text" class="bs-input" @bind="item.CaptionEn" placeholder="e.g. Turnkey Luxury Renovation" />
                                                 </div>
                                             </div>
@@ -333,6 +335,10 @@
                                                     <div class="input-with-upload">
                                                         <input type="text" class="bs-input" @bind="item.Url" placeholder="https://..." />
                                                         <button type="button" class="bs-btn-secondary" style="padding:4px 8px; font-size:0.75rem;" @onclick='() => OpenMediaPickerForTarget("gallery-item-" + index)'>Library</button>
+                                                        <label class="bs-btn-upload" style="padding: 4px 8px; font-size: 0.75rem;">
+                                                            <span>Upload</span>
+                                                            <InputFile OnChange="@(e => UploadGalleryItemFile(e, index))" accept="image/*,video/*" style="display:none;" />
+                                                        </label>
                                                     </div>
                                                 </div>
 
@@ -1388,6 +1394,8 @@
     {
         if (_selectedPage != null && !string.IsNullOrEmpty(_libraryPickerTarget))
         {
+            var resolvedType = string.Equals(asset.Type, "video", StringComparison.OrdinalIgnoreCase) ? "video" : "image";
+
             if (_libraryPickerTarget == "hero-image")
             {
                 _selectedPage.HeroImageUrl = asset.Url;
@@ -1401,7 +1409,7 @@
                 _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
                 {
                     Url = asset.Url,
-                    Type = asset.Type,
+                    Type = resolvedType,
                     Order = _heroCarouselItems.Count + 1
                 });
             }
@@ -1411,7 +1419,7 @@
                 if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _heroCarouselItems.Count)
                 {
                     _heroCarouselItems[idx].Url = asset.Url;
-                    _heroCarouselItems[idx].Type = asset.Type;
+                    _heroCarouselItems[idx].Type = resolvedType;
                 }
             }
             else if (_libraryPickerTarget == "gallery-add")
@@ -1419,7 +1427,7 @@
                 _galleryItems.Add(new MediaGalleryItemModel
                 {
                     Url = asset.Url,
-                    Type = asset.Type,
+                    Type = resolvedType,
                     Order = _galleryItems.Count + 1
                 });
             }
@@ -1429,7 +1437,7 @@
                 if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _galleryItems.Count)
                 {
                     _galleryItems[idx].Url = asset.Url;
-                    _galleryItems[idx].Type = asset.Type;
+                    _galleryItems[idx].Type = resolvedType;
                 }
             }
         }
@@ -1597,6 +1605,36 @@
         if (index >= 0 && index < _galleryItems.Count)
         {
             _galleryItems.RemoveAt(index);
+        }
+    }
+
+    private async Task UploadHeroCarouselItemFile(InputFileChangeEventArgs e, int index)
+    {
+        if (_selectedPage == null || e.File == null || index < 0 || index >= _heroCarouselItems.Count) return;
+        _statusMessage = "Uploading slide media...";
+        var url = await UploadFileToServerAsync(e.File);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var isVideo = e.File.ContentType.StartsWith("video", StringComparison.OrdinalIgnoreCase);
+            _heroCarouselItems[index].Url = url;
+            _heroCarouselItems[index].Type = isVideo ? "video" : "image";
+            _statusMessage = "Slide media uploaded successfully!";
+            _isError = false;
+        }
+    }
+
+    private async Task UploadGalleryItemFile(InputFileChangeEventArgs e, int index)
+    {
+        if (_selectedPage == null || e.File == null || index < 0 || index >= _galleryItems.Count) return;
+        _statusMessage = "Uploading gallery media...";
+        var url = await UploadFileToServerAsync(e.File);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var isVideo = e.File.ContentType.StartsWith("video", StringComparison.OrdinalIgnoreCase);
+            _galleryItems[index].Url = url;
+            _galleryItems[index].Type = isVideo ? "video" : "image";
+            _statusMessage = "Gallery media uploaded successfully!";
+            _isError = false;
         }
     }
 

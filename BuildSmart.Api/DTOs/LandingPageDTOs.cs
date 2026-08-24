@@ -44,3 +44,13 @@ public class MediaAssetDto
     public string Title { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
+
+public class MediaGalleryItemDto
+{
+    public string Url { get; set; } = string.Empty;
+    public string Type { get; set; } = "image";
+    public string CaptionBg { get; set; } = string.Empty;
+    public string CaptionEn { get; set; } = string.Empty;
+    public string Section { get; set; } = "gallery";
+    public int Order { get; set; } = 1;
+}
