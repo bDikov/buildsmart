@@ -1013,6 +1013,15 @@ type Mutation {
   updateLocalizationString(input: UpdateLocalizationInput!): LocalizationResource!
   upsertLandingPage(input: LandingPageInput!): LandingPageContent!
   deleteLandingPage(id: UUID!): Boolean!
+  createMediaFolder(name: String! parentId: UUID): MediaFolderDto!
+  renameMediaFolder(id: UUID! newName: String!): MediaFolderDto!
+  deleteMediaFolder(id: UUID!): Boolean!
+  requestFolderUploadUrl(folderPath: String! fileName: String! contentType: String!): String!
+  registerUploadedMedia(folderId: UUID r2Key: String! fileName: String! contentType: String! sizeBytes: Long! width: Int height: Int durationSeconds: Float): MediaAssetDto!
+  updateMediaAsset(id: UUID! altTextBg: String altTextEn: String fileName: String folderId: UUID): MediaAssetDto!
+  moveMediaAsset(id: UUID! targetFolderId: UUID): MediaAssetDto!
+  deleteMediaAsset(id: UUID!): Boolean!
+  uploadAndOptimizeMedia(file: Upload! folderId: UUID): MediaAssetDto!
 }
 
 type LandingPageContent {
@@ -1065,17 +1074,52 @@ input LandingPageInput {
   isPublished: Boolean!
 }
 
+type MediaFolderDto {
+  id: UUID!
+  parentId: UUID
+  name: String!
+  slug: String!
+  fullPath: String!
+  isSystem: Boolean!
+  itemCount: Int!
+  subFolderCount: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type MediaAssetDto {
   id: UUID!
+  folderId: UUID
+  folderPath: String
+  fileName: String!
+  r2Key: String!
+  publicUrl: String!
+  thumbnailUrl: String
+  mediaType: String!
+  contentType: String!
+  sizeBytes: Long!
+  width: Int
+  height: Int
+  durationSeconds: Float
+  altTextBg: String
+  altTextEn: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
   url: String!
-  thumbnailUrl: String!
   type: String!
   title: String!
-  createdAt: DateTime!
+}
+
+type MediaAssetsResultDto {
+  totalCount: Int!
+  items: [MediaAssetDto!]!
 }
 
 "The root query object."
 type Query {
+  mediaFolders(parentId: UUID): [MediaFolderDto!]!
+  mediaFolderByPath(fullPath: String!): MediaFolderDto
+  mediaAssets(folderId: UUID mediaType: String searchTerm: String skip: Int take: Int): MediaAssetsResultDto!
   mediaLibraryAssets: [MediaAssetDto!]!
   landingPages: [LandingPageContent!]!
   landingPageBySlug(slug: String!): LandingPageContent

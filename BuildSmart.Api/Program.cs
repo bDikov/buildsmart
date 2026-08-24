@@ -163,6 +163,8 @@ public partial class Program
 		builder.Services.AddScoped<IProjectChatService, ProjectChatService>();
 		builder.Services.AddScoped<IMultimediaStorageService, BuildSmart.Infrastructure.Services.LocalMultimediaStorageService>();
 		builder.Services.AddScoped<IMediaService, BuildSmart.Infrastructure.Services.CloudflareR2MediaService>();
+		builder.Services.AddScoped<IImageProcessingService, BuildSmart.Infrastructure.Services.ImageProcessingService>();
+		builder.Services.AddScoped<IUnifiedMediaService, BuildSmart.Infrastructure.Services.UnifiedMediaService>();
 		builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 		builder.Services.AddScoped<IPricingEngine, PricingEngine>();
 		builder.Services.AddScoped<IEmailService, EmailService>();
@@ -482,6 +484,8 @@ public partial class Program
 						context.ChangeTracker.Clear();
 						await context.SeedLandingPagesAsync();
 						context.ChangeTracker.Clear();
+						await context.SeedMediaFoldersAsync();
+						context.ChangeTracker.Clear();
 
 						await transaction.CommitAsync();
 					}
@@ -517,6 +521,8 @@ public partial class Program
 					await context.SeedBlogPostsAsync(builder.Environment.WebRootPath);
 					context.ChangeTracker.Clear();
 					await context.SeedLandingPagesAsync();
+					context.ChangeTracker.Clear();
+					await context.SeedMediaFoldersAsync();
 					context.ChangeTracker.Clear();
 				}
 

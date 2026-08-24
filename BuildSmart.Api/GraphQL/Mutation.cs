@@ -2562,6 +2562,249 @@ public class Mutation
 		string url = await storageService.SaveFileAsync(stream, file.Name, file.ContentType);
 		return url;
 	}
+
+	#region Unified Media Management Mutations
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<MediaFolderDto> CreateMediaFolder(
+		string name,
+		Guid? parentId,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		var folder = await mediaService.CreateFolderAsync(name, parentId, cancellationToken);
+		return new MediaFolderDto
+		{
+			Id = folder.Id,
+			ParentId = folder.ParentId,
+			Name = folder.Name,
+			Slug = folder.Slug,
+			FullPath = folder.FullPath,
+			IsSystem = folder.IsSystem,
+			ItemCount = 0,
+			SubFolderCount = 0,
+			CreatedAt = folder.CreatedAt,
+			UpdatedAt = folder.UpdatedAt
+		};
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	public async Task<MediaFolderDto> RenameMediaFolder(
+		Guid id,
+		string newName,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		var folder = await mediaService.RenameFolderAsync(id, newName, cancellationToken);
+		return new MediaFolderDto
+		{
+			Id = folder.Id,
+			ParentId = folder.ParentId,
+			Name = folder.Name,
+			Slug = folder.Slug,
+			FullPath = folder.FullPath,
+			IsSystem = folder.IsSystem,
+			ItemCount = folder.Assets.Count,
+			SubFolderCount = folder.SubFolders.Count,
+			CreatedAt = folder.CreatedAt,
+			UpdatedAt = folder.UpdatedAt
+		};
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	public async Task<bool> DeleteMediaFolder(
+		Guid id,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		return await mediaService.DeleteFolderAsync(id, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<string> RequestFolderUploadUrl(
+		string folderPath,
+		string fileName,
+		string contentType,
+		[Service] IUnifiedMediaService mediaService)
+	{
+		return await mediaService.GenerateFolderPresignedUploadUrlAsync(folderPath, fileName, contentType);
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<MediaAssetDto> RegisterUploadedMedia(
+		Guid? folderId,
+		string r2Key,
+		string fileName,
+		string contentType,
+		long sizeBytes,
+		int? width,
+		int? height,
+		double? durationSeconds,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnifiedMediaService mediaService,
+		[Service] IBackgroundJobClient backgroundJobs,
+		CancellationToken cancellationToken)
+	{
+		Guid? userId = null;
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
+		{
+			userId = parsedId;
+		}
+
+		var asset = await mediaService.RegisterUploadedAssetAsync(
+			folderId,
+			r2Key,
+			fileName,
+			contentType,
+			sizeBytes,
+			width,
+			height,
+			durationSeconds,
+			userId,
+			cancellationToken);
+
+		// If it's a raw video, enqueue background transcode job
+		if (asset.MediaType == "video")
+		{
+			backgroundJobs.Enqueue<BuildSmart.Api.Workers.VideoProcessingJob>(job => job.ProcessMediaAssetVideoAsync(asset.Id));
+		}
+
+		return new MediaAssetDto
+		{
+			Id = asset.Id,
+			FolderId = asset.FolderId,
+			FolderPath = asset.Folder?.FullPath,
+			FileName = asset.FileName,
+			R2Key = asset.R2Key,
+			PublicUrl = asset.PublicUrl,
+			ThumbnailUrl = asset.ThumbnailUrl,
+			MediaType = asset.MediaType,
+			ContentType = asset.ContentType,
+			SizeBytes = asset.SizeBytes,
+			Width = asset.Width,
+			Height = asset.Height,
+			DurationSeconds = asset.DurationSeconds,
+			AltTextBg = asset.AltTextBg,
+			AltTextEn = asset.AltTextEn,
+			CreatedAt = asset.CreatedAt,
+			UpdatedAt = asset.UpdatedAt
+		};
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<MediaAssetDto> UpdateMediaAsset(
+		Guid id,
+		string? altTextBg,
+		string? altTextEn,
+		string? fileName,
+		Guid? folderId,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		var asset = await mediaService.UpdateAssetMetadataAsync(id, altTextBg, altTextEn, fileName, folderId, cancellationToken);
+		return new MediaAssetDto
+		{
+			Id = asset.Id,
+			FolderId = asset.FolderId,
+			FolderPath = asset.Folder?.FullPath,
+			FileName = asset.FileName,
+			R2Key = asset.R2Key,
+			PublicUrl = asset.PublicUrl,
+			ThumbnailUrl = asset.ThumbnailUrl,
+			MediaType = asset.MediaType,
+			ContentType = asset.ContentType,
+			SizeBytes = asset.SizeBytes,
+			Width = asset.Width,
+			Height = asset.Height,
+			DurationSeconds = asset.DurationSeconds,
+			AltTextBg = asset.AltTextBg,
+			AltTextEn = asset.AltTextEn,
+			CreatedAt = asset.CreatedAt,
+			UpdatedAt = asset.UpdatedAt
+		};
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin" })]
+	public async Task<MediaAssetDto> MoveMediaAsset(
+		Guid id,
+		Guid? targetFolderId,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		var asset = await mediaService.MoveAssetAsync(id, targetFolderId, cancellationToken);
+		return new MediaAssetDto
+		{
+			Id = asset.Id,
+			FolderId = asset.FolderId,
+			FolderPath = asset.Folder?.FullPath,
+			FileName = asset.FileName,
+			R2Key = asset.R2Key,
+			PublicUrl = asset.PublicUrl,
+			ThumbnailUrl = asset.ThumbnailUrl,
+			MediaType = asset.MediaType,
+			ContentType = asset.ContentType,
+			SizeBytes = asset.SizeBytes,
+			Width = asset.Width,
+			Height = asset.Height,
+			DurationSeconds = asset.DurationSeconds,
+			AltTextBg = asset.AltTextBg,
+			AltTextEn = asset.AltTextEn,
+			CreatedAt = asset.CreatedAt,
+			UpdatedAt = asset.UpdatedAt
+		};
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<bool> DeleteMediaAsset(
+		Guid id,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		return await mediaService.DeleteAssetAsync(id, cancellationToken);
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<MediaAssetDto> UploadAndOptimizeMedia(
+		IFile file,
+		Guid? folderId,
+		ClaimsPrincipal claimsPrincipal,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		Guid? userId = null;
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
+		if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
+		{
+			userId = parsedId;
+		}
+
+		using var stream = file.OpenReadStream();
+		var asset = await mediaService.UploadAndOptimizeImageAsync(stream, file.Name, file.ContentType, folderId, userId, cancellationToken);
+
+		return new MediaAssetDto
+		{
+			Id = asset.Id,
+			FolderId = asset.FolderId,
+			FolderPath = asset.Folder?.FullPath,
+			FileName = asset.FileName,
+			R2Key = asset.R2Key,
+			PublicUrl = asset.PublicUrl,
+			ThumbnailUrl = asset.ThumbnailUrl,
+			MediaType = asset.MediaType,
+			ContentType = asset.ContentType,
+			SizeBytes = asset.SizeBytes,
+			Width = asset.Width,
+			Height = asset.Height,
+			DurationSeconds = asset.DurationSeconds,
+			AltTextBg = asset.AltTextBg,
+			AltTextEn = asset.AltTextEn,
+			CreatedAt = asset.CreatedAt,
+			UpdatedAt = asset.UpdatedAt
+		};
+	}
+
+	#endregion
 }
 
 public class UpdateLocalizationInput

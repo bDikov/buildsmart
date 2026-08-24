@@ -14,11 +14,16 @@ public class UploadController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMultimediaStorageService _storageService;
+    private readonly IMediaService _mediaService;
 
-    public UploadController(IUnitOfWork unitOfWork, IMultimediaStorageService storageService)
+    public UploadController(
+        IUnitOfWork unitOfWork,
+        IMultimediaStorageService storageService,
+        IMediaService mediaService)
     {
         _unitOfWork = unitOfWork;
         _storageService = storageService;
+        _mediaService = mediaService;
     }
 
     [HttpPost("portfolio")]
@@ -29,8 +34,17 @@ public class UploadController : ControllerBase
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user?.TradesmanProfile == null) return NotFound("Tradesman profile not found.");
 
-        using var stream = file.OpenReadStream();
-        var url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+        string url;
+        try
+        {
+            using var stream = file.OpenReadStream();
+            url = await _mediaService.UploadFileAsync(stream, file.FileName, file.ContentType ?? "image/jpeg");
+        }
+        catch
+        {
+            using var stream = file.OpenReadStream();
+            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType ?? "image/jpeg");
+        }
 
         var entry = new PortfolioEntry
         {
@@ -54,8 +68,17 @@ public class UploadController : ControllerBase
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user?.TradesmanProfile == null) return NotFound("Tradesman profile not found.");
 
-        using var stream = file.OpenReadStream();
-        var url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+        string url;
+        try
+        {
+            using var stream = file.OpenReadStream();
+            url = await _mediaService.UploadFileAsync(stream, file.FileName, file.ContentType ?? "application/pdf");
+        }
+        catch
+        {
+            using var stream = file.OpenReadStream();
+            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType ?? "application/pdf");
+        }
 
         var cert = new Certification
         {
@@ -83,11 +106,21 @@ public class UploadController : ControllerBase
 
         if (!string.IsNullOrEmpty(user.TradesmanProfile.VideoIntroductionUrl))
         {
-            await _storageService.DeleteFileAsync(user.TradesmanProfile.VideoIntroductionUrl);
+            try { await _mediaService.DeleteFileAsync(user.TradesmanProfile.VideoIntroductionUrl); } catch { }
+            try { await _storageService.DeleteFileAsync(user.TradesmanProfile.VideoIntroductionUrl); } catch { }
         }
 
-        using var stream = file.OpenReadStream();
-        var url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+        string url;
+        try
+        {
+            using var stream = file.OpenReadStream();
+            url = await _mediaService.UploadFileAsync(stream, file.FileName, file.ContentType ?? "video/mp4");
+        }
+        catch
+        {
+            using var stream = file.OpenReadStream();
+            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType ?? "video/mp4");
+        }
 
         user.TradesmanProfile.VideoIntroductionUrl = url;
         await _unitOfWork.SaveChangesAsync();
@@ -102,14 +135,24 @@ public class UploadController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
-        using var stream = file.OpenReadStream();
-        var url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+        string url;
+        try
+        {
+            using var stream = file.OpenReadStream();
+            url = await _mediaService.UploadFileAsync(stream, file.FileName, file.ContentType ?? "image/jpeg");
+        }
+        catch
+        {
+            using var stream = file.OpenReadStream();
+            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType ?? "image/jpeg");
+        }
+
         return Ok(new { Url = url });
     }
 
     [HttpPost("landing-media")]
     [Authorize(Roles = "Admin, ADMIN, admin")]
-    public async Task<IActionResult> UploadLandingMedia(IFormFile file, [FromServices] IMediaService mediaService)
+    public async Task<IActionResult> UploadLandingMedia(IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
@@ -118,15 +161,37 @@ public class UploadController : ControllerBase
         try
         {
             using var stream = file.OpenReadStream();
-            url = await mediaService.UploadFileAsync(stream, file.FileName, file.ContentType);
+            url = await _mediaService.UploadFileAsync(stream, file.FileName, file.ContentType ?? "image/jpeg");
         }
         catch
         {
             using var stream = file.OpenReadStream();
-            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
+            url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType ?? "image/jpeg");
         }
 
         return Ok(new { Url = url, Type = file.ContentType != null && file.ContentType.StartsWith("video") ? "video" : "image" });
+    }
+
+    [HttpPost("folder-upload")]
+    [Authorize(Roles = "Admin, ADMIN, admin, Tradesman, tradesman")]
+    public async Task<IActionResult> UploadToFolder(
+        IFormFile file,
+        [FromForm] Guid? folderId,
+        [FromServices] IUnifiedMediaService unifiedMediaService)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        var userId = GetUserId();
+        using var stream = file.OpenReadStream();
+        var asset = await unifiedMediaService.UploadAndOptimizeImageAsync(
+            stream,
+            file.FileName,
+            file.ContentType ?? "application/octet-stream",
+            folderId,
+            userId);
+
+        return Ok(asset);
     }
 
     private Guid GetUserId()

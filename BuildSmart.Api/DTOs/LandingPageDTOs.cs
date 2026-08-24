@@ -35,16 +35,6 @@ public class LandingPageInput
     public bool IsPublished { get; set; } = true;
 }
 
-public class MediaAssetDto
-{
-    public Guid Id { get; set; }
-    public string Url { get; set; } = string.Empty;
-    public string ThumbnailUrl { get; set; } = string.Empty;
-    public string Type { get; set; } = "image";
-    public string Title { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-}
-
 public class MediaGalleryItemDto
 {
     public string Url { get; set; } = string.Empty;

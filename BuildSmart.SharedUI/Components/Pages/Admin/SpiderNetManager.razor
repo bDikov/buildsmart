@@ -1,5 +1,8 @@
 @page "/admin/spider-net"
 @using BuildSmart.SharedUI.Services
+@using BuildSmart.SharedUI.Components.Common
+@using BuildSmart.SharedUI.GraphQL
+@using MediaAssetDto = BuildSmart.Core.Application.DTOs.MediaAssetDto
 @using Microsoft.AspNetCore.Authorization
 @using System.Text.Json
 @attribute [Authorize(Roles = "Admin, ADMIN, admin")]
@@ -941,27 +944,37 @@
 }
 
 <!-- SEARCHABLE ICON & IMAGE LIBRARY MODAL -->
+<MediaPickerModal 
+    IsOpen="showMediaPickerForIcon" 
+    InitialFolder="categories" 
+    AllowedType="image" 
+    OnAssetSelected="HandleMediaAssetPickedForIcon" 
+    OnClose="() => showMediaPickerForIcon = false" />
+
 @if (showIconPickerModal)
 {
     <div class="bs-modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;">
         <div class="bs-modal-content bs-card" style="width: 100%; max-width: 720px; max-height: 85vh; display: flex; flex-direction: column; background: #16171a; border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color);">
                 <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
-                    🎨 Vector Icon & Image Library
+                    Icon &amp; Image Library
                 </h3>
                 <button type="button" style="background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;" @onclick="CloseIconPickerModal">×</button>
             </div>
             
             <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
                 <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
-                    <input type="text" class="bs-input" style="flex: 1; padding: 8px 12px; font-size: 14px;" placeholder="Search 500+ icons by keyword (e.g. roof, tool, water, paint, sofa, bath)..." @bind="iconPickerSearch" @bind:event="oninput" />
+                    <input type="text" class="bs-input" style="flex: 1; padding: 8px 12px; font-size: 14px;" placeholder="Search icons by keyword..." @bind="iconPickerSearch" @bind:event="oninput" />
+                    <button type="button" class="bs-btn-secondary" style="padding: 8px 16px; font-size: 13px; white-space: nowrap;" @onclick="() => showMediaPickerForIcon = true">
+                        Media Library (R2)
+                    </button>
                 </div>
                 
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">📁 Upload Custom File:</span>
+                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Upload Custom File:</span>
                     <InputFile OnChange="HandleIconFileUpload" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;" id="iconFileInput" />
                     <label for="iconFileInput" class="bs-btn-primary" style="padding: 6px 14px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0; border-radius: 6px;">
-                        📁 Upload PNG/SVG from Computer
+                        Upload PNG/SVG/WebP
                     </label>
                 </div>
             </div>
@@ -2790,6 +2803,15 @@
             UpdateRichOptionIcon(iconPickerQuestion, iconPickerOption, iconKey);
         }
         CloseIconPickerModal();
+    }
+
+    private bool showMediaPickerForIcon = false;
+
+    private void HandleMediaAssetPickedForIcon(MediaAssetDto asset)
+    {
+        var url = !string.IsNullOrEmpty(asset.PublicUrl) ? asset.PublicUrl : asset.Url;
+        SelectIconFromPicker(url);
+        showMediaPickerForIcon = false;
     }
 
     private async Task<string> ProcessUploadedFileAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)

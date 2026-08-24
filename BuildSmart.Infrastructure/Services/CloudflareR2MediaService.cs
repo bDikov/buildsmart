@@ -53,10 +53,20 @@ public class CloudflareR2MediaService : IMediaService
 
     public string GeneratePreSignedUploadUrl(string fileName, string contentType, TimeSpan expiration)
     {
+        var rawName = Path.GetFileName(fileName);
+        var ext = Path.GetExtension(rawName);
+        var baseName = Path.GetFileNameWithoutExtension(rawName);
+        var sanitized = System.Text.RegularExpressions.Regex.Replace(baseName, @"[^a-zA-Z0-9_\-]", "_");
+        if (string.IsNullOrWhiteSpace(sanitized)) sanitized = "file";
+        
+        var safeKey = (Guid.TryParse(rawName.Split('_')[0], out _))
+            ? rawName
+            : $"{Guid.NewGuid()}_{sanitized}{ext}";
+
         var request = new GetPreSignedUrlRequest
         {
             BucketName = _bucketName,
-            Key = fileName,
+            Key = safeKey,
             Verb = HttpVerb.PUT,
             Expires = DateTime.UtcNow.Add(expiration),
             Protocol = Protocol.HTTPS
@@ -73,12 +83,22 @@ public class CloudflareR2MediaService : IMediaService
             throw new InvalidOperationException("Cloudflare R2 is not configured. ServiceUrl, AccessKey, and SecretKey must be set in configuration.");
         }
 
+        var rawName = Path.GetFileName(fileName);
+        var ext = Path.GetExtension(rawName);
+        var baseName = Path.GetFileNameWithoutExtension(rawName);
+        var sanitized = System.Text.RegularExpressions.Regex.Replace(baseName, @"[^a-zA-Z0-9_\-]", "_");
+        if (string.IsNullOrWhiteSpace(sanitized)) sanitized = "file";
+        
+        var safeKey = (Guid.TryParse(rawName.Split('_')[0], out _))
+            ? rawName
+            : $"{Guid.NewGuid()}_{sanitized}{ext}";
+
         var putRequest = new PutObjectRequest
         {
             BucketName = _bucketName,
-            Key = fileName,
+            Key = safeKey,
             InputStream = stream,
-            ContentType = contentType,
+            ContentType = string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType,
             DisablePayloadSigning = true, // CRITICAL: Cloudflare R2 does not support streaming signature payloads
             UseChunkEncoding = false // CRITICAL: Cloudflare R2 does not support streaming signature payloads (payload trailer)
         };
@@ -88,10 +108,10 @@ public class CloudflareR2MediaService : IMediaService
         var publicBaseUrl = _configuration["CloudflareR2:PublicUrl"];
         if (!string.IsNullOrEmpty(publicBaseUrl))
         {
-            return $"{publicBaseUrl.TrimEnd('/')}/{fileName}";
+            return $"{publicBaseUrl.TrimEnd('/')}/{safeKey}";
         }
 
-        return $"{_serviceUrl.TrimEnd('/')}/{_bucketName}/{fileName}";
+        return $"{_serviceUrl.TrimEnd('/')}/{_bucketName}/{safeKey}";
     }
 
     public async Task DeleteFileAsync(string fileUrl)

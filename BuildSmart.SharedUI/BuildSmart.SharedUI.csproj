@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GraphQL Include="GraphQL\*.graphql" />
+    <GraphQL Include="GraphQL\**\*.graphql" />
   </ItemGroup>
 
   <ItemGroup>

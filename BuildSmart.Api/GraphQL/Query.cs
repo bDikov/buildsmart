@@ -57,8 +57,149 @@ public class Query
 	}
 
 
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<List<MediaFolderDto>> GetMediaFolders(
+		Guid? parentId,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		var folders = await mediaService.GetFoldersAsync(parentId, cancellationToken);
+		return folders.Select(f => new MediaFolderDto
+		{
+			Id = f.Id,
+			ParentId = f.ParentId,
+			Name = f.Name,
+			Slug = f.Slug,
+			FullPath = f.FullPath,
+			IsSystem = f.IsSystem,
+			ItemCount = f.Assets.Count,
+			SubFolderCount = f.SubFolders.Count,
+			CreatedAt = f.CreatedAt,
+			UpdatedAt = f.UpdatedAt
+		}).ToList();
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<MediaFolderDto?> GetMediaFolderByPath(
+		string fullPath,
+		[Service] IUnifiedMediaService mediaService,
+		CancellationToken cancellationToken)
+	{
+		var folder = await mediaService.GetFolderByPathAsync(fullPath, cancellationToken);
+		if (folder == null) return null;
+
+		return new MediaFolderDto
+		{
+			Id = folder.Id,
+			ParentId = folder.ParentId,
+			Name = folder.Name,
+			Slug = folder.Slug,
+			FullPath = folder.FullPath,
+			IsSystem = folder.IsSystem,
+			ItemCount = folder.Assets.Count,
+			SubFolderCount = folder.SubFolders.Count,
+			CreatedAt = folder.CreatedAt,
+			UpdatedAt = folder.UpdatedAt
+		};
+	}
+
+	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]
+	public async Task<MediaAssetsResultDto> GetMediaAssets(
+		Guid? folderId,
+		string? mediaType,
+		string? searchTerm,
+		int? skip,
+		int? take,
+		[Service] IUnifiedMediaService mediaService,
+		[Service] AppDbContext context,
+		CancellationToken cancellationToken)
+	{
+		var (items, totalCount) = await mediaService.GetAssetsAsync(
+			folderId,
+			mediaType,
+			searchTerm,
+			skip ?? 0,
+			take ?? 50,
+			cancellationToken);
+
+		// If MediaAssets table is empty (e.g. initial setup before migration/upload), fetch from legacy records
+		if (totalCount == 0 && !folderId.HasValue && string.IsNullOrEmpty(searchTerm))
+		{
+			var legacyList = await GetMediaLibraryAssets(context, cancellationToken);
+			if (legacyList.Count > 0)
+			{
+				var filtered = legacyList.AsEnumerable();
+				if (!string.IsNullOrWhiteSpace(mediaType) && !string.Equals(mediaType, "all", StringComparison.OrdinalIgnoreCase))
+				{
+					filtered = filtered.Where(x => string.Equals(x.MediaType, mediaType, StringComparison.OrdinalIgnoreCase));
+				}
+				var paged = filtered.Skip(skip ?? 0).Take(take ?? 50).ToList();
+				return new MediaAssetsResultDto
+				{
+					TotalCount = legacyList.Count,
+					Items = paged
+				};
+			}
+		}
+
+		return new MediaAssetsResultDto
+		{
+			TotalCount = totalCount,
+			Items = items.Select(a => new MediaAssetDto
+			{
+				Id = a.Id,
+				FolderId = a.FolderId,
+				FolderPath = a.Folder?.FullPath,
+				FileName = a.FileName,
+				R2Key = a.R2Key,
+				PublicUrl = a.PublicUrl,
+				ThumbnailUrl = a.ThumbnailUrl,
+				MediaType = a.MediaType,
+				ContentType = a.ContentType,
+				SizeBytes = a.SizeBytes,
+				Width = a.Width,
+				Height = a.Height,
+				DurationSeconds = a.DurationSeconds,
+				AltTextBg = a.AltTextBg,
+				AltTextEn = a.AltTextEn,
+				CreatedAt = a.CreatedAt,
+				UpdatedAt = a.UpdatedAt
+			}).ToList()
+		};
+	}
+
 	public async Task<List<MediaAssetDto>> GetMediaLibraryAssets([Service] AppDbContext context, CancellationToken cancellationToken)
 	{
+		var directAssets = await context.MediaAssets
+			.Include(a => a.Folder)
+			.OrderByDescending(a => a.CreatedAt)
+			.Take(200)
+			.ToListAsync(cancellationToken);
+
+		if (directAssets.Count > 0)
+		{
+			return directAssets.Select(a => new MediaAssetDto
+			{
+				Id = a.Id,
+				FolderId = a.FolderId,
+				FolderPath = a.Folder?.FullPath,
+				FileName = a.FileName,
+				R2Key = a.R2Key,
+				PublicUrl = a.PublicUrl,
+				ThumbnailUrl = a.ThumbnailUrl,
+				MediaType = a.MediaType,
+				ContentType = a.ContentType,
+				SizeBytes = a.SizeBytes,
+				Width = a.Width,
+				Height = a.Height,
+				DurationSeconds = a.DurationSeconds,
+				AltTextBg = a.AltTextBg,
+				AltTextEn = a.AltTextEn,
+				CreatedAt = a.CreatedAt,
+				UpdatedAt = a.UpdatedAt
+			}).ToList();
+		}
+
 		var list = new List<MediaAssetDto>();
 
 		var feedMedia = await context.TradesmanMedia.AsNoTracking().ToListAsync(cancellationToken);
@@ -69,10 +210,10 @@ public class Query
 				list.Add(new MediaAssetDto
 				{
 					Id = m.Id,
-					Url = m.VideoUrl,
+					PublicUrl = m.VideoUrl,
 					ThumbnailUrl = m.ThumbnailUrl ?? m.ImageUrl ?? string.Empty,
-					Type = m.Type == Core.Domain.Enums.MediaType.Video ? "video" : "image",
-					Title = "Feed Video Asset",
+					MediaType = m.Type == Core.Domain.Enums.MediaType.Video ? "video" : "image",
+					FileName = "Feed Video Asset",
 					CreatedAt = m.CreatedAt
 				});
 			}
@@ -81,10 +222,10 @@ public class Query
 				list.Add(new MediaAssetDto
 				{
 					Id = Guid.NewGuid(),
-					Url = m.ImageUrl,
+					PublicUrl = m.ImageUrl,
 					ThumbnailUrl = m.ImageUrl,
-					Type = "image",
-					Title = "Feed Image Asset",
+					MediaType = "image",
+					FileName = "Feed Image Asset",
 					CreatedAt = m.CreatedAt
 				});
 			}
@@ -98,10 +239,10 @@ public class Query
 				list.Add(new MediaAssetDto
 				{
 					Id = Guid.NewGuid(),
-					Url = lp.HeroImageUrl,
+					PublicUrl = lp.HeroImageUrl,
 					ThumbnailUrl = lp.HeroImageUrl,
-					Type = "image",
-					Title = $"Hero Banner (/{lp.Slug})",
+					MediaType = "image",
+					FileName = $"Hero Banner (/{lp.Slug})",
 					CreatedAt = lp.CreatedAt
 				});
 			}
@@ -110,10 +251,10 @@ public class Query
 				list.Add(new MediaAssetDto
 				{
 					Id = Guid.NewGuid(),
-					Url = lp.HeroVideoUrl,
+					PublicUrl = lp.HeroVideoUrl,
 					ThumbnailUrl = string.Empty,
-					Type = "video",
-					Title = $"Hero Video (/{lp.Slug})",
+					MediaType = "video",
+					FileName = $"Hero Video (/{lp.Slug})",
 					CreatedAt = lp.CreatedAt
 				});
 			}
@@ -139,10 +280,10 @@ public class Query
 								list.Add(new MediaAssetDto
 								{
 									Id = Guid.NewGuid(),
-									Url = g.Url,
+									PublicUrl = g.Url,
 									ThumbnailUrl = isVid ? string.Empty : g.Url,
-									Type = isVid ? "video" : "image",
-									Title = title,
+									MediaType = isVid ? "video" : "image",
+									FileName = title,
 									CreatedAt = lp.CreatedAt
 								});
 							}
@@ -153,7 +294,7 @@ public class Query
 			}
 		}
 
-		return list.GroupBy(x => x.Url).Select(g => g.First()).OrderByDescending(x => x.CreatedAt).ToList();
+		return list.GroupBy(x => x.PublicUrl).Select(g => g.First()).OrderByDescending(x => x.CreatedAt).ToList();
 	}
 
 	[UseProjection]

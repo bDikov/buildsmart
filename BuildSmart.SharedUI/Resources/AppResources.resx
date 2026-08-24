@@ -2394,9 +2394,6 @@ Boncho | BuildSmart</value>
   <data name="ExitIntent_CloseBtn" xml:space="preserve">
     <value>Close</value>
   </data>
-  <data name="Lander_MostPopularBadge" xml:space="preserve">
-    <value>★ Most Popular</value>
-  </data>
   <data name="Lander_VerifyingStatus" xml:space="preserve">
     <value>Verifying...</value>
   </data>
@@ -2405,5 +2402,116 @@ Boncho | BuildSmart</value>
   </data>
   <data name="Lander_ItemizedKsBreakdown" xml:space="preserve">
     <value>Itemized КСС Breakdown</value>
+  </data>
+  <data name="Media_LibraryTitle" xml:space="preserve">
+    <value>Media Library</value>
+  </data>
+  <data name="Media_LibrarySubtitle" xml:space="preserve">
+    <value>Manage uploaded images, videos, and organized Cloudflare R2 assets</value>
+  </data>
+  <data name="Media_NewFolder" xml:space="preserve">
+    <value>New Folder</value>
+  </data>
+  <data name="Media_UploadFiles" xml:space="preserve">
+    <value>Upload Media</value>
+  </data>
+  <data name="Media_FolderName" xml:space="preserve">
+    <value>Folder Name</value>
+  </data>
+  <data name="Media_CreateFolder" xml:space="preserve">
+    <value>Create Folder</value>
+  </data>
+  <data name="Media_RenameFolder" xml:space="preserve">
+    <value>Rename Folder</value>
+  </data>
+  <data name="Media_DeleteFolder" xml:space="preserve">
+    <value>Delete Folder</value>
+  </data>
+  <data name="Media_DeleteFolderConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete this folder and all its contents?</value>
+  </data>
+  <data name="Media_SearchPlaceholder" xml:space="preserve">
+    <value>Search media assets by name or keyword...</value>
+  </data>
+  <data name="Media_FilterAll" xml:space="preserve">
+    <value>All Media</value>
+  </data>
+  <data name="Media_FilterImages" xml:space="preserve">
+    <value>Images Only</value>
+  </data>
+  <data name="Media_FilterVideos" xml:space="preserve">
+    <value>Videos Only</value>
+  </data>
+  <data name="Media_SortDate" xml:space="preserve">
+    <value>Newest First</value>
+  </data>
+  <data name="Media_SortName" xml:space="preserve">
+    <value>Name A-Z</value>
+  </data>
+  <data name="Media_SortSize" xml:space="preserve">
+    <value>File Size</value>
+  </data>
+  <data name="Media_SelectMedia" xml:space="preserve">
+    <value>Select Media</value>
+  </data>
+  <data name="Media_NoAssets" xml:space="preserve">
+    <value>No media assets found in this folder.</value>
+  </data>
+  <data name="Media_DropZoneText" xml:space="preserve">
+    <value>Drag and drop images or videos here, or click to browse</value>
+  </data>
+  <data name="Media_AssetDetails" xml:space="preserve">
+    <value>Asset Details</value>
+  </data>
+  <data name="Media_FileName" xml:space="preserve">
+    <value>File Name</value>
+  </data>
+  <data name="Media_Dimensions" xml:space="preserve">
+    <value>Dimensions</value>
+  </data>
+  <data name="Media_FileSize" xml:space="preserve">
+    <value>File Size</value>
+  </data>
+  <data name="Media_AltTextBg" xml:space="preserve">
+    <value>Alt Text (Bulgarian)</value>
+  </data>
+  <data name="Media_AltTextEn" xml:space="preserve">
+    <value>Alt Text (English)</value>
+  </data>
+  <data name="Media_PublicUrl" xml:space="preserve">
+    <value>Public URL</value>
+  </data>
+  <data name="Media_CopyUrl" xml:space="preserve">
+    <value>Copy URL</value>
+  </data>
+  <data name="Media_UrlCopied" xml:space="preserve">
+    <value>URL copied to clipboard!</value>
+  </data>
+  <data name="Media_MoveToFolder" xml:space="preserve">
+    <value>Move to Folder</value>
+  </data>
+  <data name="Media_DeleteAsset" xml:space="preserve">
+    <value>Delete Asset</value>
+  </data>
+  <data name="Media_DeleteAssetConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete this media asset?</value>
+  </data>
+  <data name="Media_PickerTitle" xml:space="preserve">
+    <value>Media Asset Picker</value>
+  </data>
+  <data name="Media_RootFolder" xml:space="preserve">
+    <value>All Folders</value>
+  </data>
+  <data name="Media_Uploading" xml:space="preserve">
+    <value>Uploading...</value>
+  </data>
+  <data name="Media_UploadSuccess" xml:space="preserve">
+    <value>Upload completed successfully!</value>
+  </data>
+  <data name="Media_UploadError" xml:space="preserve">
+    <value>Upload failed.</value>
+  </data>
+  <data name="Media_BrowseFiles" xml:space="preserve">
+    <value>Browse Files</value>
   </data>
 </root>

@@ -9,11 +9,19 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<AppResources> Loc
+@inject NavigationManager NavManager
 
 <div class="admin-page">
-    <div class="header">
-        <h1>Tradesman Video Upload</h1>
-        <p>Upload a high-quality, web-optimized MP4 directly to the CDN.</p>
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>Tradesman Video Upload</h1>
+            <p>Upload a high-quality, web-optimized MP4 directly to the CDN.</p>
+        </div>
+        <div>
+            <button type="button" class="bs-btn-secondary" @onclick='() => NavManager.NavigateTo("/admin/media-library")'>
+                @Loc["Media_LibraryTitle"]
+            </button>
+        </div>
     </div>
 
     <div class="bs-card form-card">

@@ -1,0 +1,1337 @@
+@page "/admin/media-library"
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.Core.Domain.Entities
+@using BuildSmart.Core.Application.DTOs
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using BuildSmart.SharedUI.Resources
+@attribute [Authorize(Roles = "Admin, ADMIN, admin")]
+@inject BuildSmartApiClient ApiClient
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<AppResources> Loc
+@inject NavigationManager NavManager
+
+<div class="admin-page">
+    <!-- Header -->
+    <div class="header-section">
+        <div class="title-group">
+            <h1 class="page-title">@Loc["Media_LibraryTitle"]</h1>
+            <p class="page-subtitle">@Loc["Media_LibrarySubtitle"]</p>
+        </div>
+        <div class="header-action-group">
+            <button class="bs-btn-secondary" @onclick="OpenNewFolderModal">
+                + @Loc["Media_NewFolder"]
+            </button>
+            <label class="bs-btn-primary bs-btn-upload">
+                <span>@Loc["Media_UploadFiles"]</span>
+                <InputFile OnChange="HandleMultiFileUpload" multiple accept="image/*,video/*" style="display:none;" />
+            </label>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div class="status-alert @(_isError ? "error" : "success")">
+            @_statusMessage
+        </div>
+    }
+
+    <!-- Main Explorer Layout -->
+    <div class="explorer-container">
+        <!-- Folders Sidebar -->
+        <div class="bs-card folders-sidebar">
+            <div class="sidebar-header">
+                <h3 class="card-section-title">Folders</h3>
+                <button type="button" class="icon-btn-small" title="@Loc["Media_NewFolder"]" @onclick="OpenNewFolderModal">+</button>
+            </div>
+
+            <div class="folder-tree">
+                <div class="folder-item @(_currentFolder == null ? "active" : "")" @onclick="() => SelectFolder(null)">
+                    <svg class="folder-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="folder-name">@Loc["Media_RootFolder"]</span>
+                    <span class="folder-count">@_allAssetsTotalCount</span>
+                </div>
+
+                @foreach (var rootFolder in _rootFolders)
+                {
+                    <div class="folder-node">
+                        <div class="folder-item @(_currentFolder?.Id == rootFolder.Id ? "active" : "")" @onclick="() => SelectFolder(rootFolder)">
+                            <svg class="folder-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <span class="folder-name">@rootFolder.Name</span>
+                            @if (rootFolder.ItemCount > 0)
+                            {
+                                <span class="folder-count">@rootFolder.ItemCount</span>
+                            }
+                        </div>
+
+                        <!-- Child Subfolders -->
+                        @if (GetSubFolders(rootFolder.Id).Count > 0)
+                        {
+                            <div class="subfolder-list">
+                                @foreach (var sub in GetSubFolders(rootFolder.Id))
+                                {
+                                    <div class="folder-item sub @(_currentFolder?.Id == sub.Id ? "active" : "")" @onclick="() => SelectFolder(sub)">
+                                        <svg class="folder-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        <span class="folder-name">@sub.Name</span>
+                                        @if (sub.ItemCount > 0)
+                                        {
+                                            <span class="folder-count">@sub.ItemCount</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="explorer-main">
+            <!-- Breadcrumbs & Actions Bar -->
+            <div class="bs-card toolbar-card">
+                <div class="breadcrumb-bar">
+                    <button type="button" class="crumb-btn @(_currentFolder == null ? "active" : "")" @onclick="() => SelectFolder(null)">
+                        @Loc["Media_RootFolder"]
+                    </button>
+                    @foreach (var crumb in _breadcrumbs)
+                    {
+                        <span class="crumb-separator">/</span>
+                        <button type="button" class="crumb-btn @(_currentFolder?.Id == crumb.Id ? "active" : "")" @onclick="() => SelectFolder(crumb)">
+                            @crumb.Name
+                        </button>
+                    }
+
+                    @if (_currentFolder != null && !_currentFolder.IsSystem)
+                    {
+                        <div class="folder-controls">
+                            <button type="button" class="btn-text" @onclick="OpenRenameFolderModal">@Loc["Media_RenameFolder"]</button>
+                            <button type="button" class="btn-text danger" @onclick="DeleteCurrentFolder">@Loc["Media_DeleteFolder"]</button>
+                        </div>
+                    }
+                </div>
+
+                <div class="filters-row">
+                    <div class="search-wrap">
+                        <input type="text" class="bs-input" placeholder="@Loc["Media_SearchPlaceholder"]" @bind="_searchTerm" @bind:event="oninput" @bind:after="OnSearchInputChanged" />
+                    </div>
+
+                    <div class="filter-controls">
+                        <select class="bs-input" @bind="_selectedType" @bind:after="LoadAssets">
+                            <option value="all">@Loc["Media_FilterAll"]</option>
+                            <option value="image">@Loc["Media_FilterImages"]</option>
+                            <option value="video">@Loc["Media_FilterVideos"]</option>
+                        </select>
+
+                        <select class="bs-input" @bind="_sortBy" @bind:after="ApplySorting">
+                            <option value="date">@Loc["Media_SortDate"]</option>
+                            <option value="name">@Loc["Media_SortName"]</option>
+                            <option value="size">@Loc["Media_SortSize"]</option>
+                        </select>
+
+                        <div class="view-toggle">
+                            <button type="button" class="toggle-btn @(_viewMode == "grid" ? "active" : "")" @onclick='() => _viewMode = "grid"'>Grid</button>
+                            <button type="button" class="toggle-btn @(_viewMode == "list" ? "active" : "")" @onclick='() => _viewMode = "list"'>List</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Dropzone -->
+            <div class="dropzone-box @(_isDragging ? "dragging" : "")"
+                 @ondragover="() => _isDragging = true"
+                 @ondragleave="() => _isDragging = false"
+                 @ondrop="() => _isDragging = false">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <div class="dropzone-text">
+                    <span>@Loc["Media_DropZoneText"]</span>
+                    <span class="subtext">(@(_currentFolder != null ? _currentFolder.FullPath : "/general"))</span>
+                </div>
+                <label class="bs-btn-secondary bs-btn-upload">
+                    <span>@Loc["Media_BrowseFiles"]</span>
+                    <InputFile OnChange="HandleMultiFileUpload" multiple accept="image/*,video/*" style="display:none;" />
+                </label>
+            </div>
+
+            <!-- Assets Grid / List -->
+            @if (_isLoading)
+            {
+                <div class="loading-state">@Loc["Common_Loading"]</div>
+            }
+            else if (_assets.Count == 0)
+            {
+                <div class="empty-state bs-card">
+                    <p>@Loc["Media_NoAssets"]</p>
+                </div>
+            }
+            else
+            {
+                @if (_viewMode == "grid")
+                {
+                    <div class="assets-grid">
+                        @foreach (var asset in _assets)
+                        {
+                            <div class="asset-card @(_selectedAsset?.Id == asset.Id ? "selected" : "")" @onclick="() => SelectAsset(asset)">
+                                <div class="thumb-container">
+                                    @if (asset.MediaType == "video")
+                                    {
+                                        @if (!string.IsNullOrEmpty(asset.ThumbnailUrl))
+                                        {
+                                            <img src="@asset.ThumbnailUrl" alt="@asset.FileName" class="thumb-img" />
+                                        }
+                                        else
+                                        {
+                                            <div class="video-placeholder">
+                                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                            </div>
+                                        }
+                                        <span class="type-pill video">MP4</span>
+                                    }
+                                    else
+                                    {
+                                        <img src="@(!string.IsNullOrEmpty(asset.ThumbnailUrl) ? asset.ThumbnailUrl : asset.PublicUrl)" alt="@asset.FileName" class="thumb-img" />
+                                        <span class="type-pill image">IMG</span>
+                                    }
+                                </div>
+
+                                <div class="card-details">
+                                    <span class="card-filename" title="@asset.FileName">@asset.FileName</span>
+                                    <div class="card-meta-row">
+                                        <span>@FormatBytes(asset.SizeBytes)</span>
+                                        <button type="button" class="copy-url-btn" title="@Loc["Media_CopyUrl"]" @onclick:stopPropagation="true" @onclick="() => CopyToClipboard(asset.PublicUrl)">
+                                            @Loc["Media_CopyUrl"]
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="assets-list-table bs-card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Loc["Media_FileName"]</th>
+                                    <th>@Loc["Media_Dimensions"]</th>
+                                    <th>@Loc["Media_FileSize"]</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var asset in _assets)
+                                {
+                                    <tr class="@(_selectedAsset?.Id == asset.Id ? "selected-row" : "")" @onclick="() => SelectAsset(asset)">
+                                        <td class="thumb-col">
+                                            @if (asset.MediaType == "video")
+                                            {
+                                                <div class="table-thumb video">MP4</div>
+                                            }
+                                            else
+                                            {
+                                                <img src="@(!string.IsNullOrEmpty(asset.ThumbnailUrl) ? asset.ThumbnailUrl : asset.PublicUrl)" class="table-thumb" alt="@asset.FileName" />
+                                            }
+                                        </td>
+                                        <td class="name-col">@asset.FileName</td>
+                                        <td>@(asset.Width.HasValue && asset.Height.HasValue ? $"{asset.Width}x{asset.Height}" : "-")</td>
+                                        <td>@FormatBytes(asset.SizeBytes)</td>
+                                        <td>@asset.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            <button type="button" class="bs-btn-secondary btn-sm" @onclick:stopPropagation="true" @onclick="() => CopyToClipboard(asset.PublicUrl)">
+                                                @Loc["Media_CopyUrl"]
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Asset Details Sidebar Pane -->
+        @if (_selectedAsset != null)
+        {
+            <div class="bs-card details-sidebar">
+                <div class="details-header">
+                    <h3 class="card-section-title">@Loc["Media_AssetDetails"]</h3>
+                    <button type="button" class="icon-btn-small" @onclick="() => _selectedAsset = null">✕</button>
+                </div>
+
+                <div class="details-preview">
+                    @if (_selectedAsset.MediaType == "video")
+                    {
+                        <video src="@_selectedAsset.PublicUrl" controls class="preview-media"></video>
+                    }
+                    else
+                    {
+                        <img src="@_selectedAsset.PublicUrl" alt="@_selectedAsset.FileName" class="preview-media" />
+                    }
+                </div>
+
+                <div class="details-form">
+                    <div class="form-group">
+                        <label class="form-label">@Loc["Media_FileName"]</label>
+                        <input type="text" class="bs-input" @bind="_selectedAsset.FileName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">@Loc["Media_AltTextBg"]</label>
+                        <input type="text" class="bs-input" @bind="_selectedAsset.AltTextBg" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">@Loc["Media_AltTextEn"]</label>
+                        <input type="text" class="bs-input" @bind="_selectedAsset.AltTextEn" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">@Loc["Media_MoveToFolder"]</label>
+                        <select class="bs-input" @bind="_selectedAsset.FolderId">
+                            <option value="">@Loc["Media_RootFolder"]</option>
+                            @foreach (var f in _allFolders)
+                            {
+                                <option value="@f.Id">@f.FullPath</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="meta-specs">
+                        <div class="spec-row">
+                            <span class="spec-label">@Loc["Media_Dimensions"]:</span>
+                            <span class="spec-val">@(_selectedAsset.Width.HasValue && _selectedAsset.Height.HasValue ? $"{_selectedAsset.Width} x {_selectedAsset.Height} px" : "N/A")</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">@Loc["Media_FileSize"]:</span>
+                            <span class="spec-val">@FormatBytes(_selectedAsset.SizeBytes)</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Type:</span>
+                            <span class="spec-val">@_selectedAsset.ContentType</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">R2 Key:</span>
+                            <span class="spec-val key-val" title="@_selectedAsset.R2Key">@_selectedAsset.R2Key</span>
+                        </div>
+                    </div>
+
+                    <div class="details-actions">
+                        <button type="button" class="bs-btn-primary" @onclick="SaveAssetDetails">
+                            @Loc["Common_Save"]
+                        </button>
+                        <button type="button" class="bs-btn-secondary" @onclick="() => CopyToClipboard(_selectedAsset.PublicUrl)">
+                            @Loc["Media_CopyUrl"]
+                        </button>
+                        <button type="button" class="bs-btn-danger" @onclick="DeleteSelectedAsset">
+                            @Loc["Media_DeleteAsset"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- NEW FOLDER MODAL -->
+@if (_showNewFolderModal)
+{
+    <div class="modal-backdrop" @onclick="() => _showNewFolderModal = false">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>@Loc["Media_NewFolder"]</h2>
+                <button type="button" class="close-btn" @onclick="() => _showNewFolderModal = false">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">@Loc["Media_FolderName"]</label>
+                    <input type="text" class="bs-input" @bind="_newFolderName" placeholder="e.g. remont-na-apartament" />
+                </div>
+                <div class="modal-actions" style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="bs-btn-secondary" @onclick="() => _showNewFolderModal = false">@Loc["Common_Cancel"]</button>
+                    <button type="button" class="bs-btn-primary" @onclick="CreateFolder">@Loc["Media_CreateFolder"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- RENAME FOLDER MODAL -->
+@if (_showRenameFolderModal && _currentFolder != null)
+{
+    <div class="modal-backdrop" @onclick="() => _showRenameFolderModal = false">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>@Loc["Media_RenameFolder"]</h2>
+                <button type="button" class="close-btn" @onclick="() => _showRenameFolderModal = false">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">@Loc["Media_FolderName"]</label>
+                    <input type="text" class="bs-input" @bind="_renameFolderName" />
+                </div>
+                <div class="modal-actions" style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="bs-btn-secondary" @onclick="() => _showRenameFolderModal = false">@Loc["Common_Cancel"]</button>
+                    <button type="button" class="bs-btn-primary" @onclick="RenameFolder">@Loc["Common_Save"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isLoading = false;
+    private bool _isError = false;
+    private string? _statusMessage;
+    private bool _isDragging = false;
+    private string _viewMode = "grid";
+    private string _searchTerm = string.Empty;
+    private string _selectedType = "all";
+    private string _sortBy = "date";
+
+    private MediaFolderDto? _currentFolder;
+    private List<MediaFolderDto> _allFolders = new();
+    private List<MediaFolderDto> _rootFolders = new();
+    private List<MediaFolderDto> _breadcrumbs = new();
+    private List<MediaAssetDto> _assets = new();
+    private MediaAssetDto? _selectedAsset;
+    private int _allAssetsTotalCount = 0;
+
+    private bool _showNewFolderModal = false;
+    private string _newFolderName = string.Empty;
+
+    private bool _showRenameFolderModal = false;
+    private string _renameFolderName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFolders();
+        await LoadAssets();
+    }
+
+    private async Task LoadFolders()
+    {
+        var result = await ApiClient.GetMediaFolders.ExecuteAsync(null);
+        if (result.Errors.Count == 0 && result.Data?.MediaFolders != null)
+        {
+            _allFolders = result.Data.MediaFolders.Select(f => new MediaFolderDto
+            {
+                Id = f.Id,
+                ParentId = f.ParentId,
+                Name = f.Name,
+                Slug = f.Slug,
+                FullPath = f.FullPath,
+                IsSystem = f.IsSystem,
+                ItemCount = f.ItemCount,
+                SubFolderCount = f.SubFolderCount,
+                CreatedAt = f.CreatedAt.UtcDateTime,
+                UpdatedAt = f.UpdatedAt.UtcDateTime
+            }).ToList();
+
+            _rootFolders = _allFolders.Where(f => f.ParentId == null).ToList();
+        }
+    }
+
+    private List<MediaFolderDto> GetSubFolders(Guid parentId)
+    {
+        return _allFolders.Where(f => f.ParentId == parentId).ToList();
+    }
+
+    private void SelectFolder(MediaFolderDto? folder)
+    {
+        _currentFolder = folder;
+        _selectedAsset = null;
+
+        _breadcrumbs.Clear();
+        if (folder != null)
+        {
+            var parts = folder.FullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            string acc = "";
+            foreach (var p in parts)
+            {
+                acc += "/" + p;
+                var match = _allFolders.FirstOrDefault(f => string.Equals(f.FullPath, acc, StringComparison.OrdinalIgnoreCase));
+                if (match != null) _breadcrumbs.Add(match);
+            }
+        }
+
+        _ = LoadAssets();
+    }
+
+    private async Task LoadAssets()
+    {
+        _isLoading = true;
+        try
+        {
+            var typeParam = _selectedType == "all" ? null : _selectedType;
+            var searchParam = string.IsNullOrWhiteSpace(_searchTerm) ? null : _searchTerm.Trim();
+
+            var result = await ApiClient.GetMediaAssets.ExecuteAsync(
+                folderId: _currentFolder?.Id,
+                mediaType: typeParam,
+                searchTerm: searchParam,
+                skip: 0,
+                take: 200);
+
+            if (result.Errors.Count == 0 && result.Data?.MediaAssets?.Items != null)
+            {
+                _allAssetsTotalCount = result.Data.MediaAssets.TotalCount;
+                _assets = result.Data.MediaAssets.Items.Select(a => new MediaAssetDto
+                {
+                    Id = a.Id,
+                    FolderId = a.FolderId,
+                    FolderPath = a.FolderPath,
+                    FileName = a.FileName,
+                    R2Key = a.R2Key,
+                    PublicUrl = a.PublicUrl,
+                    ThumbnailUrl = a.ThumbnailUrl,
+                    MediaType = a.MediaType,
+                    ContentType = a.ContentType,
+                    SizeBytes = a.SizeBytes,
+                    Width = a.Width,
+                    Height = a.Height,
+                    DurationSeconds = a.DurationSeconds,
+                    AltTextBg = a.AltTextBg,
+                    AltTextEn = a.AltTextEn,
+                    CreatedAt = a.CreatedAt.UtcDateTime,
+                    UpdatedAt = a.UpdatedAt.UtcDateTime
+                }).ToList();
+
+                ApplySorting();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = ex.Message;
+            _isError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ApplySorting()
+    {
+        if (_sortBy == "name")
+        {
+            _assets = _assets.OrderBy(a => a.FileName).ToList();
+        }
+        else if (_sortBy == "size")
+        {
+            _assets = _assets.OrderByDescending(a => a.SizeBytes).ToList();
+        }
+        else
+        {
+            _assets = _assets.OrderByDescending(a => a.CreatedAt).ToList();
+        }
+    }
+
+    private void OnSearchInputChanged()
+    {
+        _ = LoadAssets();
+    }
+
+    private void SelectAsset(MediaAssetDto asset)
+    {
+        _selectedAsset = asset;
+    }
+
+    private async Task SaveAssetDetails()
+    {
+        if (_selectedAsset == null) return;
+
+        try
+        {
+            var result = await ApiClient.UpdateMediaAsset.ExecuteAsync(
+                id: _selectedAsset.Id,
+                altTextBg: _selectedAsset.AltTextBg,
+                altTextEn: _selectedAsset.AltTextEn,
+                fileName: _selectedAsset.FileName,
+                folderId: _selectedAsset.FolderId);
+
+            if (result.Errors.Count == 0)
+            {
+                _statusMessage = Loc["Media_UploadSuccess"];
+                _isError = false;
+                await LoadAssets();
+            }
+            else
+            {
+                _statusMessage = string.Join(", ", result.Errors.Select(e => e.Message));
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = ex.Message;
+            _isError = true;
+        }
+    }
+
+    private async Task DeleteSelectedAsset()
+    {
+        if (_selectedAsset == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", Loc["Media_DeleteAssetConfirm"].Value);
+        if (!confirmed) return;
+
+        try
+        {
+            var result = await ApiClient.DeleteMediaAsset.ExecuteAsync(_selectedAsset.Id);
+            if (result.Errors.Count == 0 && result.Data?.DeleteMediaAsset == true)
+            {
+                _selectedAsset = null;
+                _statusMessage = "Asset deleted successfully.";
+                _isError = false;
+                await LoadAssets();
+                await LoadFolders();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = ex.Message;
+            _isError = true;
+        }
+    }
+
+    private void OpenNewFolderModal()
+    {
+        _newFolderName = string.Empty;
+        _showNewFolderModal = true;
+    }
+
+    private async Task CreateFolder()
+    {
+        if (string.IsNullOrWhiteSpace(_newFolderName)) return;
+
+        try
+        {
+            var result = await ApiClient.CreateMediaFolder.ExecuteAsync(_newFolderName, _currentFolder?.Id);
+            if (result.Errors.Count == 0)
+            {
+                _showNewFolderModal = false;
+                _newFolderName = string.Empty;
+                await LoadFolders();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = ex.Message;
+            _isError = true;
+        }
+    }
+
+    private void OpenRenameFolderModal()
+    {
+        if (_currentFolder == null) return;
+        _renameFolderName = _currentFolder.Name;
+        _showRenameFolderModal = true;
+    }
+
+    private async Task RenameFolder()
+    {
+        if (_currentFolder == null || string.IsNullOrWhiteSpace(_renameFolderName)) return;
+
+        try
+        {
+            var result = await ApiClient.RenameMediaFolder.ExecuteAsync(_currentFolder.Id, _renameFolderName);
+            if (result.Errors.Count == 0 && result.Data?.RenameMediaFolder != null)
+            {
+                _showRenameFolderModal = false;
+                await LoadFolders();
+                _currentFolder = _allFolders.FirstOrDefault(f => f.Id == _currentFolder.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = ex.Message;
+            _isError = true;
+        }
+    }
+
+    private async Task DeleteCurrentFolder()
+    {
+        if (_currentFolder == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", Loc["Media_DeleteFolderConfirm"].Value);
+        if (!confirmed) return;
+
+        try
+        {
+            var result = await ApiClient.DeleteMediaFolder.ExecuteAsync(_currentFolder.Id);
+            if (result.Errors.Count == 0 && result.Data?.DeleteMediaFolder == true)
+            {
+                _currentFolder = null;
+                await LoadFolders();
+                await LoadAssets();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = ex.Message;
+            _isError = true;
+        }
+    }
+
+    private async Task HandleMultiFileUpload(InputFileChangeEventArgs e)
+    {
+        _statusMessage = Loc["Media_Uploading"];
+        _isError = false;
+
+        try
+        {
+            var targetFolderPath = _currentFolder != null ? _currentFolder.FullPath : "/general";
+            var files = e.GetMultipleFiles(20).ToList();
+            var fileBuffers = new List<(string Name, string ContentType, long Size, byte[] Data)>();
+
+            // Read all streams immediately while the DOM element is active
+            foreach (var file in files)
+            {
+                using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024);
+                using var ms = new MemoryStream();
+                await rawStream.CopyToAsync(ms);
+                fileBuffers.Add((file.Name, file.ContentType ?? "application/octet-stream", file.Size, ms.ToArray()));
+            }
+
+            foreach (var fileData in fileBuffers)
+            {
+                var presignedResult = await ApiClient.RequestFolderUploadUrl.ExecuteAsync(
+                    folderPath: targetFolderPath,
+                    fileName: fileData.Name,
+                    contentType: fileData.ContentType);
+
+                if (presignedResult.Errors.Count == 0 && !string.IsNullOrEmpty(presignedResult.Data?.RequestFolderUploadUrl))
+                {
+                    var preSignedUrl = presignedResult.Data.RequestFolderUploadUrl;
+                    using var streamContent = new ByteArrayContent(fileData.Data);
+                    streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(string.IsNullOrWhiteSpace(fileData.ContentType) ? "application/octet-stream" : fileData.ContentType);
+
+                    using var uploadClient = new HttpClient();
+                    uploadClient.Timeout = TimeSpan.FromMinutes(30);
+
+                    var r2Response = await uploadClient.PutAsync(preSignedUrl, streamContent);
+                    if (r2Response.IsSuccessStatusCode)
+                    {
+                        var uri = new Uri(preSignedUrl);
+                        var r2Key = uri.AbsolutePath.TrimStart('/');
+
+                        await ApiClient.RegisterUploadedMedia.ExecuteAsync(
+                            folderId: _currentFolder?.Id,
+                            r2Key: r2Key,
+                            fileName: fileData.Name,
+                            contentType: fileData.ContentType,
+                            sizeBytes: fileData.Size,
+                            width: null,
+                            height: null,
+                            durationSeconds: null);
+                    }
+                }
+            }
+
+            _statusMessage = Loc["Media_UploadSuccess"];
+            _isError = false;
+            await LoadAssets();
+            await LoadFolders();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = Loc["Media_UploadError"] + ": " + ex.Message;
+            _isError = true;
+        }
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            _statusMessage = Loc["Media_UrlCopied"];
+            _isError = false;
+        }
+        catch
+        {
+            // Clipboard fallback
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}
+
+<style>
+.admin-page {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+.header-action-group {
+    display: flex;
+    gap: 12px;
+}
+
+.page-title {
+    font: var(--font-h4);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.page-subtitle {
+    font: var(--font-body-1);
+    color: var(--text-muted);
+    margin: 4px 0 0 0;
+}
+
+.status-alert {
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font: var(--font-body-1);
+}
+
+.status-alert.success {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+}
+
+.status-alert.error {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+}
+
+.explorer-container {
+    display: grid;
+    grid-template-columns: 260px 1fr auto;
+    gap: 20px;
+    align-items: start;
+}
+
+@@media (max-width: 1100px) {
+    .explorer-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bs-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: var(--shadow-main);
+}
+
+.folders-sidebar {
+    min-height: 400px;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.card-section-title {
+    font: var(--font-h6);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.icon-btn-small {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font: var(--font-h6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.folder-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font: var(--font-body-2);
+    transition: background 0.15s ease;
+}
+
+.folder-item:hover {
+    background: var(--bg-card-alt);
+}
+
+.folder-item.active {
+    background: var(--color-primary-subtle, var(--bg-card-alt));
+    color: var(--color-primary);
+    font: var(--font-h6);
+    font-size: 0.85rem;
+}
+
+.folder-item.sub {
+    padding-left: 28px;
+}
+
+.folder-icon {
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+
+.folder-item.active .folder-icon {
+    color: var(--color-primary);
+}
+
+.folder-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.folder-count {
+    background: var(--bg-card-alt);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.explorer-main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.toolbar-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.breadcrumb-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.crumb-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font: var(--font-body-2);
+    cursor: pointer;
+    padding: 0;
+}
+
+.crumb-btn:hover, .crumb-btn.active {
+    color: var(--color-primary);
+}
+
+.crumb-separator {
+    color: var(--text-muted);
+}
+
+.folder-controls {
+    margin-left: auto;
+    display: flex;
+    gap: 12px;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font: var(--font-body-2);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-text.danger {
+    color: var(--color-danger);
+}
+
+.filters-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-wrap {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-controls select {
+    min-width: 130px;
+}
+
+.view-toggle {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.toggle-btn {
+    background: var(--bg-card);
+    border: none;
+    padding: 8px 14px;
+    color: var(--text-muted);
+    font: var(--font-body-2);
+    cursor: pointer;
+}
+
+.toggle-btn.active {
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    font: var(--font-h6);
+    font-size: 0.8rem;
+}
+
+.dropzone-box {
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    background: var(--bg-card-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: var(--text-muted);
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dropzone-box.dragging {
+    border-color: var(--color-primary);
+    background: var(--bg-card);
+}
+
+.dropzone-text {
+    display: flex;
+    flex-direction: column;
+    font: var(--font-body-2);
+}
+
+.dropzone-text .subtext {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.assets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 18px;
+}
+
+.asset-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.asset-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.asset-card.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.thumb-container {
+    height: 140px;
+    background: var(--bg-card-alt);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.type-pill {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 6px;
+    border-radius: 6px;
+    font: var(--font-h6);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+
+.type-pill.image {
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+}
+
+.type-pill.video {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.card-details {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card-filename {
+    font: var(--font-h6);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.copy-url-btn {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    font: var(--font-body-2);
+    font-size: 0.75rem;
+    padding: 0;
+}
+
+.details-sidebar {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.details-preview {
+    width: 100%;
+    height: 180px;
+    background: var(--bg-card-alt);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.details-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.meta-specs {
+    background: var(--bg-card-alt);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font: var(--font-body-2);
+    font-size: 0.75rem;
+}
+
+.spec-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.spec-label {
+    color: var(--text-muted);
+}
+
+.spec-val {
+    color: var(--text-primary);
+}
+
+.spec-val.key-val {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.details-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.assets-list-table {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font: var(--font-body-2);
+}
+
+.data-table th, .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.data-table tr {
+    cursor: pointer;
+}
+
+.data-table tr:hover, .data-table tr.selected-row {
+    background: var(--bg-card-alt);
+}
+
+.table-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card-alt);
+    font-size: 0.7rem;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: var(--shadow-main);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-header h2 {
+    font: var(--font-h5);
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+</style>

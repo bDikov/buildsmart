@@ -27,7 +27,7 @@ public class CloudflareR2MediaServiceTests
         var mediaService = new CloudflareR2MediaService(mockConfig.Object);
 
         // Act
-        var fileName = "test-video.mp4";
+        var fileName = $"{Guid.NewGuid()}_test-video.mp4";
         var preSignedUrl = mediaService.GeneratePreSignedUploadUrl(fileName, "video/mp4", TimeSpan.FromMinutes(15));
 
         // Assert
@@ -35,7 +35,7 @@ public class CloudflareR2MediaServiceTests
         // It should NOT contain ".../buildsmart-media/buildsmart-media/..."
         
         var expectedPathSegment = $"/{bucketName}/{fileName}";
-        var invalidDuplicatePathSegment = $"/{bucketName}/{bucketName}/{fileName}";
+        var invalidDuplicatePathSegment = $"/{bucketName}/{bucketName}/";
         
         Assert.StartsWith(accountUrl, preSignedUrl);
         Assert.Contains(expectedPathSegment, preSignedUrl);

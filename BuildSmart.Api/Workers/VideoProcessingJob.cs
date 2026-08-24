@@ -1,11 +1,14 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Path = System.IO.Path;
 using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +35,7 @@ public class VideoProcessingJob
 
     public async Task ProcessVideoAsync(Guid mediaId)
     {
-        _logger.LogInformation("Starting video processing job for media: {MediaId}", mediaId);
+        _logger.LogInformation("Starting video processing job for TradesmanMedia: {MediaId}", mediaId);
 
         var media = await _context.TradesmanMedia.FindAsync(mediaId);
         if (media == null)
@@ -47,10 +50,65 @@ public class VideoProcessingJob
             return;
         }
 
+        await ProcessVideoUrlInternalAsync(
+            originalRawUrl: media.VideoUrl,
+            existingThumbnailUrl: media.ImageUrl,
+            folderKeyPrefix: $"feed/{media.TradesmanId}",
+            onSuccess: async (desktopUrl, mobileUrl, posterUrl) =>
+            {
+                media.VideoUrl = desktopUrl;
+                media.MobileVideoUrl = mobileUrl;
+                media.ImageUrl = posterUrl;
+                media.ThumbnailUrl = posterUrl;
+                media.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            });
+    }
+
+    public async Task ProcessMediaAssetVideoAsync(Guid assetId)
+    {
+        _logger.LogInformation("Starting video processing job for MediaAsset: {AssetId}", assetId);
+
+        var asset = await _context.MediaAssets
+            .Include(a => a.Folder)
+            .FirstOrDefaultAsync(a => a.Id == assetId);
+
+        if (asset == null)
+        {
+            _logger.LogWarning("MediaAsset record {AssetId} not found.", assetId);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(asset.PublicUrl))
+        {
+            _logger.LogWarning("MediaAsset record {AssetId} has no PublicUrl.", assetId);
+            return;
+        }
+
+        var folderPrefix = asset.Folder != null ? asset.Folder.FullPath.Trim('/') : "general";
+
+        await ProcessVideoUrlInternalAsync(
+            originalRawUrl: asset.PublicUrl,
+            existingThumbnailUrl: asset.ThumbnailUrl,
+            folderKeyPrefix: folderPrefix,
+            onSuccess: async (desktopUrl, mobileUrl, posterUrl) =>
+            {
+                asset.PublicUrl = desktopUrl;
+                asset.ThumbnailUrl = posterUrl;
+                asset.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            });
+    }
+
+    private async Task ProcessVideoUrlInternalAsync(
+        string originalRawUrl,
+        string? existingThumbnailUrl,
+        string folderKeyPrefix,
+        Func<string, string, string?, Task> onSuccess)
+    {
         await EnsureFfmpegBinaryAsync();
 
-        // Create a temporary workspace folder in the system temp directory
-        var tempRoot = System.IO.Path.GetTempPath();
+        var tempRoot = Path.GetTempPath();
         if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
         {
             if (tempRoot.Contains('\\') || tempRoot.Contains(':'))
@@ -59,18 +117,16 @@ public class VideoProcessingJob
             }
         }
 
-        var tempDir = System.IO.Path.Combine(tempRoot, "buildsmart_video_temp", Guid.NewGuid().ToString());
+        var tempDir = Path.Combine(tempRoot, "buildsmart_video_temp", Guid.NewGuid().ToString());
         if (!Directory.Exists(tempDir))
         {
             Directory.CreateDirectory(tempDir);
         }
 
-        var originalVideoPath = System.IO.Path.Combine(tempDir, "input.mp4");
-        var mobileVideoPath = System.IO.Path.Combine(tempDir, "mobile.mp4");
-        var desktopVideoPath = System.IO.Path.Combine(tempDir, "desktop.mp4");
-        var posterImagePath = System.IO.Path.Combine(tempDir, "poster.jpg");
-
-        var originalRawUrl = media.VideoUrl;
+        var originalVideoPath = Path.Combine(tempDir, "input.mp4");
+        var mobileVideoPath = Path.Combine(tempDir, "mobile.mp4");
+        var desktopVideoPath = Path.Combine(tempDir, "desktop.mp4");
+        var posterImagePath = Path.Combine(tempDir, "poster.jpg");
 
         try
         {
@@ -80,88 +136,77 @@ public class VideoProcessingJob
             {
                 using var response = await httpClient.GetAsync(originalRawUrl);
                 response.EnsureSuccessStatusCode();
-                using var fileStream = System.IO.File.Create(originalVideoPath);
+                using var fileStream = File.Create(originalVideoPath);
                 await response.Content.CopyToAsync(fileStream);
             }
 
             var ffmpegExe = GetFfmpegPath();
 
             // 2. Compress video for mobile (720p)
-            _logger.LogInformation("Compressing video for mobile...");
+            _logger.LogInformation("Compressing video for mobile 720p...");
             var compressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 28 -preset fast -filter:v \"scale=720:-2\" -acodec aac -b:a 128k -movflags +faststart -y \"{mobileVideoPath}\"";
             await RunProcessAsync(ffmpegExe, compressArgs);
 
             // 2.5 Compress video for desktop (1080p web-optimized)
-            _logger.LogInformation("Compressing video for desktop...");
+            _logger.LogInformation("Compressing video for desktop 1080p...");
             var desktopCompressArgs = $"-i \"{originalVideoPath}\" -vcodec libx264 -crf 23 -preset fast -filter:v \"scale='-2:trunc(min(1080,ih)/2)*2'\" -acodec aac -b:a 192k -movflags +faststart -y \"{desktopVideoPath}\"";
             await RunProcessAsync(ffmpegExe, desktopCompressArgs);
 
             // 3. Extract cover thumbnail (if not already uploaded)
             var generatedThumbnail = false;
-            if (string.IsNullOrEmpty(media.ImageUrl))
+            if (string.IsNullOrEmpty(existingThumbnailUrl))
             {
-                _logger.LogInformation("Extracting cover thumbnail frame...");
-                // Extract 1 frame at 1.0 second offset
+                _logger.LogInformation("Extracting cover thumbnail frame at 1.0s...");
                 var thumbnailArgs = $"-i \"{originalVideoPath}\" -ss 00:00:01 -vframes 1 -f image2 -y \"{posterImagePath}\"";
                 await RunProcessAsync(ffmpegExe, thumbnailArgs);
                 generatedThumbnail = true;
             }
 
-            // Extract filename and strip existing prefixes to prevent double-prefixing on re-queue
             var decodedUrl = System.Net.WebUtility.UrlDecode(originalRawUrl);
-            var rawFileName = System.IO.Path.GetFileName(decodedUrl);
+            var rawFileName = Path.GetFileName(decodedUrl);
             var cleanFileName = rawFileName;
-            if (cleanFileName.StartsWith("desktop_"))
-            {
-                cleanFileName = cleanFileName.Substring("desktop_".Length);
-            }
-            else if (cleanFileName.StartsWith("mobile_"))
-            {
-                cleanFileName = cleanFileName.Substring("mobile_".Length);
-            }
+            if (cleanFileName.StartsWith("desktop_")) cleanFileName = cleanFileName.Substring("desktop_".Length);
+            else if (cleanFileName.StartsWith("mobile_")) cleanFileName = cleanFileName.Substring("mobile_".Length);
+
+            var fileGuid = Guid.NewGuid().ToString("N");
+            var cleanPrefix = folderKeyPrefix.Trim('/');
 
             // 4. Upload mobile video to R2
             string mobileVideoUrl;
-            using (var mobileStream = System.IO.File.OpenRead(mobileVideoPath))
+            using (var mobileStream = File.OpenRead(mobileVideoPath))
             {
-                var mobileFileName = $"mobile_{mediaId}_{cleanFileName}";
-                _logger.LogInformation("Uploading mobile video to CDN...");
-                mobileVideoUrl = await _mediaService.UploadFileAsync(mobileStream, mobileFileName, "video/mp4");
+                var mobileKey = string.IsNullOrEmpty(cleanPrefix) ? $"mobile_{fileGuid}_{cleanFileName}" : $"{cleanPrefix}/mobile_{fileGuid}_{cleanFileName}";
+                _logger.LogInformation("Uploading mobile video to R2: {Key}", mobileKey);
+                mobileVideoUrl = await _mediaService.UploadFileAsync(mobileStream, mobileKey, "video/mp4");
             }
 
             // 4.5 Upload desktop video to R2
             string desktopVideoUrl;
-            using (var desktopStream = System.IO.File.OpenRead(desktopVideoPath))
+            using (var desktopStream = File.OpenRead(desktopVideoPath))
             {
-                var desktopFileName = $"desktop_{mediaId}_{cleanFileName}";
-                _logger.LogInformation("Uploading desktop video to CDN...");
-                desktopVideoUrl = await _mediaService.UploadFileAsync(desktopStream, desktopFileName, "video/mp4");
+                var desktopKey = string.IsNullOrEmpty(cleanPrefix) ? $"desktop_{fileGuid}_{cleanFileName}" : $"{cleanPrefix}/desktop_{fileGuid}_{cleanFileName}";
+                _logger.LogInformation("Uploading desktop video to R2: {Key}", desktopKey);
+                desktopVideoUrl = await _mediaService.UploadFileAsync(desktopStream, desktopKey, "video/mp4");
             }
 
             // 5. Upload thumbnail image to R2 (if generated)
-            string? posterImageUrl = media.ImageUrl;
+            string? posterImageUrl = existingThumbnailUrl;
             if (generatedThumbnail && File.Exists(posterImagePath))
             {
-                using (var imgStream = System.IO.File.OpenRead(posterImagePath))
+                using (var imgStream = File.OpenRead(posterImagePath))
                 {
-                    var posterFileName = $"poster_{mediaId}.jpg";
-                    _logger.LogInformation("Uploading extracted poster to CDN...");
-                    posterImageUrl = await _mediaService.UploadFileAsync(imgStream, posterFileName, "image/jpeg");
+                    var posterKey = string.IsNullOrEmpty(cleanPrefix) ? $"poster_{fileGuid}.jpg" : $"{cleanPrefix}/poster_{fileGuid}.jpg";
+                    _logger.LogInformation("Uploading extracted poster to R2: {Key}", posterKey);
+                    posterImageUrl = await _mediaService.UploadFileAsync(imgStream, posterKey, "image/jpeg");
                 }
             }
 
-            // 6. Update database record
-            media.VideoUrl = desktopVideoUrl;
-            media.MobileVideoUrl = mobileVideoUrl;
-            media.ImageUrl = posterImageUrl;
-            media.ThumbnailUrl = posterImageUrl;
-            media.UpdatedAt = DateTime.UtcNow;
+            // 6. Callback for database update
+            await onSuccess(desktopVideoUrl, mobileVideoUrl, posterImageUrl);
+            _logger.LogInformation("Video processing completed successfully. Desktop: {Desktop}, Mobile: {Mobile}, Poster: {Poster}", desktopVideoUrl, mobileVideoUrl, posterImageUrl);
 
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Video processing job complete. Desktop URL: {DesktopUrl}, Mobile URL: {MobileUrl}, Poster URL: {PosterUrl}", desktopVideoUrl, mobileVideoUrl, posterImageUrl);
-
-            // 7. Delete original raw video from R2 (only if it was not already a compressed version)
-            var originalFileName = System.IO.Path.GetFileName(decodedUrl).ToLower();
+            // 7. Delete original raw video from R2 (only if it was not already a processed file)
+            var originalFileName = Path.GetFileName(decodedUrl).ToLower();
             if (!originalFileName.StartsWith("desktop_") && !originalFileName.StartsWith("mobile_"))
             {
                 try
@@ -177,12 +222,11 @@ public class VideoProcessingJob
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to process video for media: {MediaId}", mediaId);
-            throw; // Rethrow to let Hangfire retry if needed
+            _logger.LogError(ex, "Failed to process video from URL: {Url}", originalRawUrl);
+            throw;
         }
         finally
         {
-            // Clean up temp files
             try
             {
                 if (Directory.Exists(tempDir))
@@ -205,7 +249,7 @@ public class VideoProcessingJob
         }
 
         var ffmpegDir = @"C:\Users\bonch\source\repos\BuildSmart\scratch\ffmpeg";
-        var ffmpegExePath = System.IO.Path.Combine(ffmpegDir, "ffmpeg.exe");
+        var ffmpegExePath = Path.Combine(ffmpegDir, "ffmpeg.exe");
 
         if (File.Exists(ffmpegExePath))
         {
@@ -220,7 +264,7 @@ public class VideoProcessingJob
         }
 
         var downloadUrl = "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip";
-        var zipPath = System.IO.Path.Combine(ffmpegDir, "ffmpeg.zip");
+        var zipPath = Path.Combine(ffmpegDir, "ffmpeg.zip");
 
         try
         {

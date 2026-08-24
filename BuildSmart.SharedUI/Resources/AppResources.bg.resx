@@ -2346,9 +2346,6 @@
   <data name="ExitIntent_CloseBtn" xml:space="preserve">
     <value>Затвори</value>
   </data>
-  <data name="Lander_MostPopularBadge" xml:space="preserve">
-    <value>★ Най-популярен</value>
-  </data>
   <data name="Lander_VerifyingStatus" xml:space="preserve">
     <value>Проверка...</value>
   </data>
@@ -2357,5 +2354,116 @@
   </data>
   <data name="Lander_ItemizedKsBreakdown" xml:space="preserve">
     <value>Подробна КСС Сметка</value>
+  </data>
+  <data name="Media_LibraryTitle" xml:space="preserve">
+    <value>Медийна Библиотека</value>
+  </data>
+  <data name="Media_LibrarySubtitle" xml:space="preserve">
+    <value>Управление на качени снимки, видеа и организирани Cloudflare R2 файлове</value>
+  </data>
+  <data name="Media_NewFolder" xml:space="preserve">
+    <value>Нова папка</value>
+  </data>
+  <data name="Media_UploadFiles" xml:space="preserve">
+    <value>Качи медия</value>
+  </data>
+  <data name="Media_FolderName" xml:space="preserve">
+    <value>Име на папка</value>
+  </data>
+  <data name="Media_CreateFolder" xml:space="preserve">
+    <value>Създай папка</value>
+  </data>
+  <data name="Media_RenameFolder" xml:space="preserve">
+    <value>Преименувай папка</value>
+  </data>
+  <data name="Media_DeleteFolder" xml:space="preserve">
+    <value>Изтрий папка</value>
+  </data>
+  <data name="Media_DeleteFolderConfirm" xml:space="preserve">
+    <value>Сигурни ли сте, че искате да изтриете тази папка и цялото ѝ съдържание?</value>
+  </data>
+  <data name="Media_SearchPlaceholder" xml:space="preserve">
+    <value>Търсене на медийни файлове по име или ключова дума...</value>
+  </data>
+  <data name="Media_FilterAll" xml:space="preserve">
+    <value>Всички</value>
+  </data>
+  <data name="Media_FilterImages" xml:space="preserve">
+    <value>Само снимки</value>
+  </data>
+  <data name="Media_FilterVideos" xml:space="preserve">
+    <value>Само видеа</value>
+  </data>
+  <data name="Media_SortDate" xml:space="preserve">
+    <value>Най-нови</value>
+  </data>
+  <data name="Media_SortName" xml:space="preserve">
+    <value>Име А-Я</value>
+  </data>
+  <data name="Media_SortSize" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="Media_SelectMedia" xml:space="preserve">
+    <value>Избери медия</value>
+  </data>
+  <data name="Media_NoAssets" xml:space="preserve">
+    <value>Няма намерени медийни файлове в тази папка.</value>
+  </data>
+  <data name="Media_DropZoneText" xml:space="preserve">
+    <value>Плъзнете снимки или видеа тук, или кликнете за избор</value>
+  </data>
+  <data name="Media_AssetDetails" xml:space="preserve">
+    <value>Детайли за файла</value>
+  </data>
+  <data name="Media_FileName" xml:space="preserve">
+    <value>Име на файл</value>
+  </data>
+  <data name="Media_Dimensions" xml:space="preserve">
+    <value>Размери</value>
+  </data>
+  <data name="Media_FileSize" xml:space="preserve">
+    <value>Размер на файл</value>
+  </data>
+  <data name="Media_AltTextBg" xml:space="preserve">
+    <value>Алтернативен текст (BG)</value>
+  </data>
+  <data name="Media_AltTextEn" xml:space="preserve">
+    <value>Алтернативен текст (EN)</value>
+  </data>
+  <data name="Media_PublicUrl" xml:space="preserve">
+    <value>Публичен URL</value>
+  </data>
+  <data name="Media_CopyUrl" xml:space="preserve">
+    <value>Копирай URL</value>
+  </data>
+  <data name="Media_UrlCopied" xml:space="preserve">
+    <value>URL адресът е копиран!</value>
+  </data>
+  <data name="Media_MoveToFolder" xml:space="preserve">
+    <value>Премести в папка</value>
+  </data>
+  <data name="Media_DeleteAsset" xml:space="preserve">
+    <value>Изтрий файл</value>
+  </data>
+  <data name="Media_DeleteAssetConfirm" xml:space="preserve">
+    <value>Сигурни ли сте, че искате да изтриете този медиен файл?</value>
+  </data>
+  <data name="Media_PickerTitle" xml:space="preserve">
+    <value>Избор на медиен файл</value>
+  </data>
+  <data name="Media_RootFolder" xml:space="preserve">
+    <value>Всички папки</value>
+  </data>
+  <data name="Media_Uploading" xml:space="preserve">
+    <value>Качване...</value>
+  </data>
+  <data name="Media_UploadSuccess" xml:space="preserve">
+    <value>Качването завърши успешно!</value>
+  </data>
+  <data name="Media_UploadError" xml:space="preserve">
+    <value>Грешка при качване.</value>
+  </data>
+  <data name="Media_BrowseFiles" xml:space="preserve">
+    <value>Избери файлове</value>
   </data>
 </root>

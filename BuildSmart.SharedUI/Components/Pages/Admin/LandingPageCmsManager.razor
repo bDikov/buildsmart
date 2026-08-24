@@ -1,6 +1,8 @@
 @page "/admin/landing-pages"
 @using BuildSmart.SharedUI.GraphQL
 @using BuildSmart.Core.Domain.Entities
+@using BuildSmart.Core.Application.DTOs
+@using BuildSmart.SharedUI.Components.Common
 @using BuildSmart.SharedUI.Components.Pages.Landing
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
@@ -23,8 +25,8 @@
             <p class="page-subtitle">@Loc["Cms_LandingPagesSubtitle"]</p>
         </div>
         <div class="header-action-group">
-            <button class="bs-btn-secondary" @onclick="OpenCentralMediaLibrary">
-                🖼️ Central Media Library
+            <button class="bs-btn-secondary" @onclick='() => NavManager.NavigateTo("/admin/media-library")'>
+                @Loc["Media_LibraryTitle"]
             </button>
             <button class="bs-btn-primary" @onclick="CreateNewLandingPage">
                 @Loc["Cms_CreateLandingPage"]
@@ -458,65 +460,13 @@
     }
 </div>
 
-<!-- CENTRAL MEDIA LIBRARY MODAL -->
-@if (_showMediaLibraryModal)
-{
-    <div class="modal-backdrop" @onclick="CloseMediaLibraryModal">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h2>🖼️ Central Media Library Collection</h2>
-                <button type="button" class="close-btn" @onclick="CloseMediaLibraryModal">✕</button>
-            </div>
-
-            <div class="modal-body">
-                <div class="library-filter-bar">
-                    <input type="text" class="bs-input search-input" placeholder="Search uploaded pictures &amp; videos by URL..." @bind="_librarySearchFilter" @bind:event="oninput" />
-                    <select class="bs-input" @bind="_libraryTypeFilter">
-                        <option value="all">All Media</option>
-                        <option value="image">Pictures Only</option>
-                        <option value="video">Videos Only (MP4)</option>
-                    </select>
-                </div>
-
-                @if (_isLibraryLoading)
-                {
-                    <div class="loading-state">Loading Central Media Collection...</div>
-                }
-                else if (FilteredLibraryAssets.Count == 0)
-                {
-                    <div class="empty-media-box">No matching uploaded media found. Upload pictures or videos to populate your collection!</div>
-                }
-                else
-                {
-                    <div class="library-grid">
-                        @foreach (var asset in FilteredLibraryAssets)
-                        {
-                            <div class="library-asset-card" @onclick="() => SelectAssetFromLibrary(asset)">
-                                <div class="asset-preview">
-                                    @if (asset.Type == "video")
-                                    {
-                                        <video src="@asset.Url" muted controls class="asset-element"></video>
-                                        <span class="type-pill video">VIDEO</span>
-                                    }
-                                    else
-                                    {
-                                        <img src="@asset.Url" alt="@asset.Title" class="asset-element" />
-                                        <span class="type-pill image">IMAGE</span>
-                                    }
-                                </div>
-                                <div class="asset-info">
-                                    <span class="asset-title">@asset.Title</span>
-                                    <span class="asset-url">@asset.Url</span>
-                                </div>
-                                <button type="button" class="bs-btn-primary select-btn">Select Media</button>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-}
+<!-- REUSABLE MEDIA PICKER MODAL -->
+<MediaPickerModal 
+    IsOpen="_showMediaPickerModal" 
+    InitialFolder="@(_selectedPage != null ? $"landing-pages/{_selectedPage.Slug}" : "landing-pages")" 
+    AllowedType="@_pickerAllowedType" 
+    OnAssetSelected="OnPickerAssetSelected" 
+    OnClose="() => _showMediaPickerModal = false" />
 
 <style>
 .admin-page {
@@ -1133,14 +1083,6 @@
     private List<MediaGalleryItemModel> _galleryItems = new();
     private List<FeatureItemModel> _featureItems = new();
 
-    // Central Media Library state
-    private bool _showMediaLibraryModal = false;
-    private bool _isLibraryLoading = false;
-    private string _libraryPickerTarget = string.Empty; // "hero-image", "hero-video", "hero-carousel-add", "hero-carousel-item-X", "gallery-add", "gallery-item-X"
-    private string _librarySearchFilter = string.Empty;
-    private string _libraryTypeFilter = "all";
-    private List<MediaAssetModel> _libraryAssets = new();
-
     public class LandingPageContentModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -1318,98 +1260,47 @@
         NavManager.NavigateTo("/" + slug, forceLoad: true);
     }
 
-    private async Task OpenCentralMediaLibrary()
+    private bool _showMediaPickerModal = false;
+    private string _pickerAllowedType = "all";
+    private string _libraryPickerTarget = string.Empty;
+
+    private void OpenCentralMediaLibrary()
     {
-        _libraryPickerTarget = string.Empty;
-        await LoadMediaLibraryAssets();
-        _showMediaLibraryModal = true;
+        NavManager.NavigateTo("/admin/media-library");
     }
 
-    private async Task OpenMediaPickerForTarget(string target)
+    private void OpenMediaPickerForTarget(string target, string allowedType = "all")
     {
         _libraryPickerTarget = target;
-        await LoadMediaLibraryAssets();
-        _showMediaLibraryModal = true;
+        _pickerAllowedType = allowedType;
+        _showMediaPickerModal = true;
     }
 
-    private void CloseMediaLibraryModal()
-    {
-        _showMediaLibraryModal = false;
-        _libraryPickerTarget = string.Empty;
-    }
-
-    private async Task LoadMediaLibraryAssets()
-    {
-        _isLibraryLoading = true;
-        try
-        {
-            var res = await ApiClient.GetMediaLibraryAssets.ExecuteAsync();
-            if (res.Errors.Count == 0 && res.Data?.MediaLibraryAssets != null)
-            {
-                _libraryAssets = res.Data.MediaLibraryAssets.Select(a => new MediaAssetModel
-                {
-                    Id = a.Id,
-                    Url = a.Url,
-                    ThumbnailUrl = a.ThumbnailUrl,
-                    Type = a.Type,
-                    Title = a.Title
-                }).ToList();
-            }
-        }
-        catch
-        {
-            _libraryAssets = new();
-        }
-        finally
-        {
-            _isLibraryLoading = false;
-        }
-    }
-
-    private List<MediaAssetModel> FilteredLibraryAssets
-    {
-        get
-        {
-            var query = _libraryAssets.AsEnumerable();
-            if (_libraryTypeFilter == "image")
-            {
-                query = query.Where(a => a.Type == "image");
-            }
-            else if (_libraryTypeFilter == "video")
-            {
-                query = query.Where(a => a.Type == "video");
-            }
-
-            if (!string.IsNullOrWhiteSpace(_librarySearchFilter))
-            {
-                var term = _librarySearchFilter.Trim().ToLowerInvariant();
-                query = query.Where(a => a.Url.ToLowerInvariant().Contains(term) || a.Title.ToLowerInvariant().Contains(term));
-            }
-
-            return query.ToList();
-        }
-    }
-
-    private void SelectAssetFromLibrary(MediaAssetModel asset)
+    private void OnPickerAssetSelected(MediaAssetDto asset)
     {
         if (_selectedPage != null && !string.IsNullOrEmpty(_libraryPickerTarget))
         {
-            var resolvedType = string.Equals(asset.Type, "video", StringComparison.OrdinalIgnoreCase) ? "video" : "image";
+            var resolvedType = string.Equals(asset.MediaType, "video", StringComparison.OrdinalIgnoreCase) ||
+                               (!string.IsNullOrEmpty(asset.PublicUrl) && asset.PublicUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+                                ? "video" : "image";
+            var assetUrl = !string.IsNullOrEmpty(asset.PublicUrl) ? asset.PublicUrl : asset.Url;
 
             if (_libraryPickerTarget == "hero-image")
             {
-                _selectedPage.HeroImageUrl = asset.Url;
+                _selectedPage.HeroImageUrl = assetUrl;
             }
             else if (_libraryPickerTarget == "hero-video")
             {
-                _selectedPage.HeroVideoUrl = asset.Url;
+                _selectedPage.HeroVideoUrl = assetUrl;
             }
             else if (_libraryPickerTarget == "hero-carousel-add")
             {
                 _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
                 {
-                    Url = asset.Url,
+                    Url = assetUrl,
                     Type = resolvedType,
+                    CaptionBg = asset.AltTextBg ?? "",
+                    CaptionEn = asset.AltTextEn ?? "",
                     Order = _heroCarouselItems.Count + 1
                 });
             }
@@ -1418,7 +1309,7 @@
                 var indexStr = _libraryPickerTarget.Replace("hero-carousel-item-", "");
                 if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _heroCarouselItems.Count)
                 {
-                    _heroCarouselItems[idx].Url = asset.Url;
+                    _heroCarouselItems[idx].Url = assetUrl;
                     _heroCarouselItems[idx].Type = resolvedType;
                 }
             }
@@ -1426,8 +1317,10 @@
             {
                 _galleryItems.Add(new MediaGalleryItemModel
                 {
-                    Url = asset.Url,
+                    Url = assetUrl,
                     Type = resolvedType,
+                    CaptionBg = asset.AltTextBg ?? "",
+                    CaptionEn = asset.AltTextEn ?? "",
                     Order = _galleryItems.Count + 1
                 });
             }
@@ -1436,26 +1329,30 @@
                 var indexStr = _libraryPickerTarget.Replace("gallery-item-", "");
                 if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _galleryItems.Count)
                 {
-                    _galleryItems[idx].Url = asset.Url;
+                    _galleryItems[idx].Url = assetUrl;
                     _galleryItems[idx].Type = resolvedType;
                 }
             }
         }
 
-        CloseMediaLibraryModal();
+        _showMediaPickerModal = false;
+        _libraryPickerTarget = string.Empty;
     }
 
     private async Task<string?> UploadFileToServerAsync(IBrowserFile file)
     {
         try
         {
-            var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(file.Name, file.ContentType);
+            var urlResult = await ApiClient.RequestVideoUploadUrl.ExecuteAsync(file.Name, file.ContentType ?? "application/octet-stream");
             if (urlResult.Errors.Count == 0 && !string.IsNullOrEmpty(urlResult.Data?.RequestVideoUploadUrl))
             {
                 var preSignedUrl = urlResult.Data.RequestVideoUploadUrl;
                 using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024);
                 using var streamContent = new StreamContent(rawStream);
-                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                if (!string.IsNullOrEmpty(file.ContentType))
+                {
+                    streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                }
 
                 using var uploadClient = new HttpClient();
                 uploadClient.Timeout = TimeSpan.FromMinutes(30);
@@ -1480,8 +1377,7 @@
             var uploadedUrl = await FileService.UploadAdminImageAsync(stream, file.Name);
             if (!string.IsNullOrEmpty(uploadedUrl))
             {
-                var fullUrl = uploadedUrl.StartsWith("http") ? uploadedUrl : BuildSmart.SharedUI.ApiConfig.GetBaseUrl().TrimEnd('/') + uploadedUrl;
-                return fullUrl;
+                return uploadedUrl;
             }
         }
         catch (Exception ex)

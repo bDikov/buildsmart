@@ -54,6 +54,8 @@ public partial class AppDbContext : DbContext
 	public DbSet<TaskComment> TaskComments { get; set; } = null!;
 	public DbSet<CategoryTradesmanAssignment> CategoryTradesmanAssignments { get; set; } = null!;
 	public DbSet<TaskPaymentRecord> TaskPaymentRecords { get; set; } = null!;
+	public DbSet<MediaFolder> MediaFolders { get; set; } = null!;
+	public DbSet<MediaAsset> MediaAssets { get; set; } = null!;
 
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
