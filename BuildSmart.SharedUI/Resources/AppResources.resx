@@ -2514,4 +2514,13 @@ Boncho | BuildSmart</value>
   <data name="Media_BrowseFiles" xml:space="preserve">
     <value>Browse Files</value>
   </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

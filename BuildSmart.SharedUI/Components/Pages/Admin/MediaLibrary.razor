@@ -192,11 +192,7 @@
                                         }
                                         else
                                         {
-                                            <div class="video-placeholder">
-                                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                                </svg>
-                                            </div>
+                                            <video src="@(asset.PublicUrl)#t=0.5" preload="metadata" muted playsinline class="thumb-img" style="object-fit:cover; pointer-events:none;"></video>
                                         }
                                         <span class="type-pill video">MP4</span>
                                     }
@@ -278,7 +274,7 @@
                 <div class="details-preview">
                     @if (_selectedAsset.MediaType == "video")
                     {
-                        <video src="@_selectedAsset.PublicUrl" controls class="preview-media"></video>
+                        <video src="@_selectedAsset.PublicUrl" poster="@_selectedAsset.ThumbnailUrl" preload="metadata" controls playsinline class="preview-media"></video>
                     }
                     else
                     {
@@ -453,7 +449,7 @@
         return _allFolders.Where(f => f.ParentId == parentId).ToList();
     }
 
-    private void SelectFolder(MediaFolderDto? folder)
+    private async Task SelectFolder(MediaFolderDto? folder)
     {
         _currentFolder = folder;
         _selectedAsset = null;
@@ -471,12 +467,13 @@
             }
         }
 
-        _ = LoadAssets();
+        await LoadAssets();
     }
 
     private async Task LoadAssets()
     {
         _isLoading = true;
+        StateHasChanged();
         try
         {
             var typeParam = _selectedType == "all" ? null : _selectedType;
@@ -515,15 +512,23 @@
 
                 ApplySorting();
             }
+            else if (result.Errors.Count > 0)
+            {
+                _statusMessage = string.Join(", ", result.Errors.Select(e => e.Message));
+                _isError = true;
+                _assets = new();
+            }
         }
         catch (Exception ex)
         {
             _statusMessage = ex.Message;
             _isError = true;
+            _assets = new();
         }
         finally
         {
             _isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

@@ -117,11 +117,7 @@
                                         }
                                         else
                                         {
-                                            <div class="video-placeholder">
-                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                                </svg>
-                                            </div>
+                                            <video src="@(asset.PublicUrl)#t=0.5" preload="metadata" muted playsinline class="thumb-img" style="object-fit:cover; pointer-events:none;"></video>
                                         }
                                         <span class="type-badge video">MP4</span>
                                     }
@@ -263,7 +259,7 @@
         }
     }
 
-    private void NavigateToFolder(MediaFolderDto? folder)
+    private async Task NavigateToFolder(MediaFolderDto? folder)
     {
         _currentFolder = folder;
         _selectedAsset = null;
@@ -292,12 +288,13 @@
             _currentSubFolders = _allFolders.Where(f => f.ParentId == folder.Id).ToList();
         }
 
-        _ = LoadAssets();
+        await LoadAssets();
     }
 
     private async Task LoadAssets()
     {
         _isLoading = true;
+        StateHasChanged();
         try
         {
             var typeParam = _selectedType == "all" ? null : _selectedType;
@@ -336,6 +333,11 @@
             else
             {
                 _assets = new List<MediaAssetDto>();
+                if (result.Errors.Count > 0)
+                {
+                    _uploadStatus = string.Join(", ", result.Errors.Select(e => e.Message));
+                    _isUploadError = true;
+                }
             }
         }
         catch (Exception ex)
@@ -346,6 +348,7 @@
         finally
         {
             _isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

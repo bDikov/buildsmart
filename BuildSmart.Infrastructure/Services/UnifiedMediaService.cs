@@ -521,7 +521,21 @@ public class UnifiedMediaService : IUnifiedMediaService
 
         if (folderId.HasValue)
         {
-            query = query.Where(a => a.FolderId == folderId.Value);
+            var folder = await _context.MediaFolders.FindAsync(new object[] { folderId.Value }, ct);
+            if (folder != null)
+            {
+                var targetPrefix = folder.FullPath.ToLower();
+                var matchingFolderIds = await _context.MediaFolders
+                    .Where(f => f.Id == folderId.Value || f.FullPath.ToLower().StartsWith(targetPrefix + "/"))
+                    .Select(f => f.Id)
+                    .ToListAsync(ct);
+
+                query = query.Where(a => a.FolderId.HasValue && matchingFolderIds.Contains(a.FolderId.Value));
+            }
+            else
+            {
+                query = query.Where(a => a.FolderId == folderId.Value);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(mediaType) && !string.Equals(mediaType, "all", StringComparison.OrdinalIgnoreCase))

@@ -2466,4 +2466,13 @@
   <data name="Media_BrowseFiles" xml:space="preserve">
     <value>Избери файлове</value>
   </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Зареждане...</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Запази</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Отказ</value>
+  </data>
 </root>
