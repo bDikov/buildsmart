@@ -594,25 +594,34 @@
     {
         if (_selectedAsset == null) return;
 
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", Loc["Media_DeleteAssetConfirm"].Value);
-        if (!confirmed) return;
+        var assetToDelete = _selectedAsset;
+        _selectedAsset = null;
 
         try
         {
-            var result = await ApiClient.DeleteMediaAsset.ExecuteAsync(_selectedAsset.Id);
-            if (result.Errors.Count == 0 && result.Data?.DeleteMediaAsset == true)
+            var result = await ApiClient.DeleteMediaAsset.ExecuteAsync(assetToDelete.Id);
+            if (result.Errors.Count == 0)
             {
-                _selectedAsset = null;
-                _statusMessage = "Asset deleted successfully.";
+                _statusMessage = Loc["Media_DeleteSuccess"] ?? "Asset deleted successfully.";
                 _isError = false;
+                _assets.RemoveAll(a => a.Id == assetToDelete.Id);
                 await LoadAssets();
                 await LoadFolders();
+            }
+            else
+            {
+                _statusMessage = string.Join(", ", result.Errors.Select(e => e.Message));
+                _isError = true;
             }
         }
         catch (Exception ex)
         {
             _statusMessage = ex.Message;
             _isError = true;
+        }
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
         }
     }
 

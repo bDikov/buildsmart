@@ -2523,4 +2523,7 @@ Boncho | BuildSmart</value>
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Media_DeleteSuccess" xml:space="preserve">
+    <value>Asset deleted successfully.</value>
+  </data>
 </root>

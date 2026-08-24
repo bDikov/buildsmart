@@ -122,26 +122,6 @@ public class Query
 			take ?? 50,
 			cancellationToken);
 
-		// If MediaAssets table is empty (e.g. initial setup before migration/upload), fetch from legacy records
-		if (totalCount == 0 && !folderId.HasValue && string.IsNullOrEmpty(searchTerm))
-		{
-			var legacyList = await GetMediaLibraryAssets(context, cancellationToken);
-			if (legacyList.Count > 0)
-			{
-				var filtered = legacyList.AsEnumerable();
-				if (!string.IsNullOrWhiteSpace(mediaType) && !string.Equals(mediaType, "all", StringComparison.OrdinalIgnoreCase))
-				{
-					filtered = filtered.Where(x => string.Equals(x.MediaType, mediaType, StringComparison.OrdinalIgnoreCase));
-				}
-				var paged = filtered.Skip(skip ?? 0).Take(take ?? 50).ToList();
-				return new MediaAssetsResultDto
-				{
-					TotalCount = legacyList.Count,
-					Items = paged
-				};
-			}
-		}
-
 		return new MediaAssetsResultDto
 		{
 			TotalCount = totalCount,

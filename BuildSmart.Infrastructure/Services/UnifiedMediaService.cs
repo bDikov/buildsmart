@@ -450,28 +450,40 @@ public class UnifiedMediaService : IUnifiedMediaService
     public async Task<bool> DeleteAssetAsync(Guid assetId, CancellationToken ct = default)
     {
         var asset = await _context.MediaAssets.FindAsync(new object[] { assetId }, ct);
-        if (asset == null) return false;
-
-        try
+        if (asset != null)
         {
-            await DeleteR2ObjectAsync(asset.R2Key);
-
-            if (!string.IsNullOrEmpty(asset.ThumbnailUrl) && asset.ThumbnailUrl != asset.PublicUrl)
+            try
             {
-                var thumbKey = ExtractKeyFromUrl(asset.ThumbnailUrl);
-                if (!string.IsNullOrEmpty(thumbKey))
+                await DeleteR2ObjectAsync(asset.R2Key);
+
+                if (!string.IsNullOrEmpty(asset.ThumbnailUrl) && asset.ThumbnailUrl != asset.PublicUrl)
                 {
-                    await DeleteR2ObjectAsync(thumbKey);
+                    var thumbKey = ExtractKeyFromUrl(asset.ThumbnailUrl);
+                    if (!string.IsNullOrEmpty(thumbKey))
+                    {
+                        await DeleteR2ObjectAsync(thumbKey);
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to delete R2 objects for asset {AssetId}", assetId);
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete R2 objects for asset {AssetId}", assetId);
+            }
+
+            _context.MediaAssets.Remove(asset);
+            await _context.SaveChangesAsync(ct);
+            return true;
         }
 
-        _context.MediaAssets.Remove(asset);
-        await _context.SaveChangesAsync(ct);
+        // If not in MediaAssets, check legacy TradesmanMedia
+        var tm = await _context.TradesmanMedia.FindAsync(new object[] { assetId }, ct);
+        if (tm != null)
+        {
+            _context.TradesmanMedia.Remove(tm);
+            await _context.SaveChangesAsync(ct);
+            return true;
+        }
+
         return true;
     }
 
