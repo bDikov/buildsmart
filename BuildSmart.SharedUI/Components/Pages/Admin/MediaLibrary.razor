@@ -488,7 +488,10 @@
 
             if (result.Errors.Count == 0 && result.Data?.MediaAssets?.Items != null)
             {
-                _allAssetsTotalCount = result.Data.MediaAssets.TotalCount;
+                if (_currentFolder == null && string.IsNullOrWhiteSpace(searchParam) && typeParam == null)
+                {
+                    _allAssetsTotalCount = result.Data.MediaAssets.TotalCount;
+                }
                 _assets = result.Data.MediaAssets.Items.Select(a => new MediaAssetDto
                 {
                     Id = a.Id,

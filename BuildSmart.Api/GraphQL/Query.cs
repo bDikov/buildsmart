@@ -61,22 +61,44 @@ public class Query
 	public async Task<List<MediaFolderDto>> GetMediaFolders(
 		Guid? parentId,
 		[Service] IUnifiedMediaService mediaService,
+		[Service] AppDbContext context,
 		CancellationToken cancellationToken)
 	{
 		var folders = await mediaService.GetFoldersAsync(parentId, cancellationToken);
-		return folders.Select(f => new MediaFolderDto
+		var allFolders = await context.MediaFolders.AsNoTracking().Include(f => f.Assets).ToListAsync(cancellationToken);
+
+		return folders.Select(f =>
 		{
-			Id = f.Id,
-			ParentId = f.ParentId,
-			Name = f.Name,
-			Slug = f.Slug,
-			FullPath = f.FullPath,
-			IsSystem = f.IsSystem,
-			ItemCount = f.Assets.Count,
-			SubFolderCount = f.SubFolders.Count,
-			CreatedAt = f.CreatedAt,
-			UpdatedAt = f.UpdatedAt
+			var descendantIds = GetDescendantFolderIds(f.Id, allFolders);
+			descendantIds.Add(f.Id);
+			var totalCount = allFolders.Where(af => descendantIds.Contains(af.Id)).Sum(af => af.Assets.Count);
+
+			return new MediaFolderDto
+			{
+				Id = f.Id,
+				ParentId = f.ParentId,
+				Name = f.Name,
+				Slug = f.Slug,
+				FullPath = f.FullPath,
+				IsSystem = f.IsSystem,
+				ItemCount = totalCount,
+				SubFolderCount = f.SubFolders.Count,
+				CreatedAt = f.CreatedAt,
+				UpdatedAt = f.UpdatedAt
+			};
 		}).ToList();
+	}
+
+	private static List<Guid> GetDescendantFolderIds(Guid parentId, List<MediaFolder> allFolders)
+	{
+		var result = new List<Guid>();
+		var directChildren = allFolders.Where(f => f.ParentId == parentId).Select(f => f.Id).ToList();
+		result.AddRange(directChildren);
+		foreach (var childId in directChildren)
+		{
+			result.AddRange(GetDescendantFolderIds(childId, allFolders));
+		}
+		return result;
 	}
 
 	[Authorize(Roles = new[] { "Admin", "ADMIN", "admin", "Tradesman", "tradesman" })]

@@ -1214,6 +1214,7 @@ public class Mutation
         BuildSmart.Core.Domain.Enums.MediaType type,
         Guid? serviceCategoryId,
 		[Service] IUnitOfWork unitOfWork,
+		[Service] BuildSmart.Infrastructure.Persistence.AppDbContext dbContext,
 		[Service] Microsoft.Extensions.Configuration.IConfiguration config,
 		[Service] Hangfire.IBackgroundJobClient backgroundJobs)
 	{
@@ -1244,6 +1245,45 @@ public class Mutation
 
 		await unitOfWork.TradesmanProfiles.AddMediaAsync(media);
 		await unitOfWork.SaveChangesAsync();
+
+		try
+		{
+			var feedFolder = await dbContext.MediaFolders.FirstOrDefaultAsync(f => f.Slug == "feed" && f.ParentId == null);
+			if (feedFolder != null)
+			{
+				var mainUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Video ? videoUrl : (imageUrl ?? videoUrl);
+				string fileName = "tradesman-feed-asset";
+				try
+				{
+					if (Uri.TryCreate(mainUrl, UriKind.Absolute, out var u))
+					{
+						var fn = System.IO.Path.GetFileName(u.AbsolutePath);
+						if (!string.IsNullOrWhiteSpace(fn)) fileName = fn;
+					}
+				}
+				catch { }
+
+				var asset = new MediaAsset
+				{
+					Id = Guid.NewGuid(),
+					FolderId = feedFolder.Id,
+					FileName = fileName,
+					R2Key = $"feed/{profile.Id}/{fileName}",
+					PublicUrl = mainUrl,
+					ThumbnailUrl = type == BuildSmart.Core.Domain.Enums.MediaType.Video ? imageUrl : mainUrl,
+					MediaType = type == BuildSmart.Core.Domain.Enums.MediaType.Video ? "video" : "image",
+					ContentType = type == BuildSmart.Core.Domain.Enums.MediaType.Video ? "video/mp4" : "image/jpeg",
+					SizeBytes = 5000000,
+					UploaderUserId = tradesmanUserId,
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				};
+
+				await dbContext.MediaAssets.AddAsync(asset);
+				await dbContext.SaveChangesAsync();
+			}
+		}
+		catch { }
 
 		if (type == BuildSmart.Core.Domain.Enums.MediaType.Video)
 		{
@@ -1335,6 +1375,14 @@ public class Mutation
 		if (!string.IsNullOrEmpty(media.ThumbnailUrl))
 		{
 			try { await storageService.DeleteFileAsync(media.ThumbnailUrl); } catch { /* ignore or log */ }
+		}
+
+		var linkedAssets = await dbContext.MediaAssets
+			.Where(a => a.PublicUrl == media.VideoUrl || a.PublicUrl == media.ImageUrl)
+			.ToListAsync();
+		if (linkedAssets.Count > 0)
+		{
+			dbContext.MediaAssets.RemoveRange(linkedAssets);
 		}
 
 		dbContext.TradesmanMedia.Remove(media);

@@ -56,11 +56,21 @@ public class VideoProcessingJob
             folderKeyPrefix: $"feed/{media.TradesmanId}",
             onSuccess: async (desktopUrl, mobileUrl, posterUrl) =>
             {
+                var oldVideoUrl = media.VideoUrl;
                 media.VideoUrl = desktopUrl;
                 media.MobileVideoUrl = mobileUrl;
                 media.ImageUrl = posterUrl;
                 media.ThumbnailUrl = posterUrl;
                 media.UpdatedAt = DateTime.UtcNow;
+
+                var matchingAsset = await _context.MediaAssets.FirstOrDefaultAsync(a => a.PublicUrl == oldVideoUrl || a.PublicUrl == desktopUrl);
+                if (matchingAsset != null)
+                {
+                    matchingAsset.PublicUrl = desktopUrl;
+                    matchingAsset.ThumbnailUrl = posterUrl;
+                    matchingAsset.UpdatedAt = DateTime.UtcNow;
+                }
+
                 await _context.SaveChangesAsync();
             });
     }
