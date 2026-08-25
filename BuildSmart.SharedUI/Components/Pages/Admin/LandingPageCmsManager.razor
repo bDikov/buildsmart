@@ -1357,10 +1357,9 @@
                 var preSignedUrl = urlResult.Data.RequestFolderUploadUrl;
                 using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024);
                 using var streamContent = new StreamContent(rawStream);
-                if (!string.IsNullOrEmpty(file.ContentType))
-                {
-                    streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
-                }
+                streamContent.Headers.ContentLength = file.Size;
+                var contentTypeHeader = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentTypeHeader);
 
                 using var uploadClient = new HttpClient();
                 uploadClient.Timeout = TimeSpan.FromMinutes(30);
