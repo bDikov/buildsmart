@@ -1,3 +1,5 @@
+<!-- CAROUSEL_JSON: [{"Url":"https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format\u0026fit=crop\u0026w=1920\u0026q=80","Type":"image","CaptionBg":"\u0428\u043F\u0430\u043A\u043B\u043E\u0432\u043A\u0430, \u0431\u043E\u044F\u0434\u0438\u0441\u0432\u0430\u043D\u0435 \u0438 \u0433\u0438\u043F\u0441\u043E\u043A\u0430\u0440\u0442\u043E\u043D","CaptionEn":"Plaster skimming, painting and drywall","TagBg":"","TagEn":"","Order":1},{"Url":"https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format\u0026fit=crop\u0026w=1920\u0026q=80","Type":"image","CaptionBg":"\u0415\u043B\u0435\u043A\u0442\u0440\u043E \u0438 \u0412\u0438\u041A \u0438\u043D\u0441\u0442\u0430\u043B\u0430\u0446\u0438\u0438 \u0421\u043E\u0444\u0438\u044F","CaptionEn":"Electrical and plumbing installations","TagBg":"","TagEn":"","Order":2},{"Url":"https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format\u0026fit=crop\u0026w=1920\u0026q=80","Type":"image","CaptionBg":"\u0410\u0440\u0445\u0438\u0442\u0435\u043A\u0442\u0443\u0440\u0435\u043D \u043F\u043B\u0430\u043D \u0438 \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u0435\u043D \u043F\u0440\u043E\u0435\u043A\u0442","CaptionEn":"Architectural blueprint and site plan","TagBg":"","TagEn":"","Order":3},{"Url":"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/video-ccfd02b25c81f822bb14ccb6cf4bec19-V.mp4","Type":"video","CaptionBg":"","CaptionEn":"","TagBg":"","TagEn":"","Order":4}] -->
+
 # Цени за Ремонт на Апартамент в София през 2026 г.: Колко Струва?
 
 Представете си следната ситуация: купувате мечтания апартамент в София. Викате майстор по препоръка на познат. Той оглежда жилището, усмихва се и ви казва: *"Няма проблеми, шефе! За 20 000 лева и 2 месеца ти го правя кукличка!"*
@@ -8,7 +10,7 @@
 
 В тази статия събрахме **безкомпромисните, реални цени за ремонт до ключ в София** – за да не дадете нито един излишен лев на вятъра.
 
-> Преди да приемате устни оферти на око, вижте точната сума за вашите квадрати в нашия [онлайн ценоразпис за ремонти](/renovation-estimator?scope=full) – с твърди цени по договор и без авансово плащане.
+> Преди да приемате устни оферти на око, вижте точната сума за вашите квадрати в нашия [онлайн ценоразпис за ремонти](/renovation-estimator) – с твърди цени по договор и без авансово плащане.
 
 ---
 
@@ -40,20 +42,20 @@
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/renovation-estimator?scope=full" class="spectrum-card">
+    <a href="/renovation-estimator" class="spectrum-card">
       <div class="card-tier-tag">Инвестиционен клас</div>
       <div class="card-price-main">€525 - €640 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Подходящ за отдаване под наем. Мебели от ПДЧ, устойчив ламинат, осветление и акцентни бои.</div>
       <div class="card-cta-btn">Сметнете вашия имот <span>→</span></div>
     </a>
-    <a href="/renovation-estimator?scope=full" class="spectrum-card active-card">
+    <a href="/renovation-estimator" class="spectrum-card active-card">
       <div class="card-badge-popular">Най-търсен в София</div>
       <div class="card-tier-tag text-primary">Основен семеен ремонт</div>
       <div class="card-price-main">€600 - €900 <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Пълна подмяна на ВиК и Ел., къртене, шпакловка, баня, гипскартон тавани, МДФ мебели и климатизация.</div>
       <div class="card-cta-btn btn-primary-style">Изчислете безплатно <span>→</span></div>
     </a>
-    <a href="/renovation-estimator?scope=full" class="spectrum-card">
+    <a href="/renovation-estimator" class="spectrum-card">
       <div class="card-tier-tag">Дизайнерски Лукс</div>
       <div class="card-price-main">€900+ <span class="unit">/ кв.м.</span></div>
       <div class="card-desc">Архитектурен проект, мрамор, Smart Home автоматизация, магнитни шини, естествен дъбов паркет.</div>
@@ -105,18 +107,11 @@
 
 Вижте с очите си какво означава безупречен ремонт на 100 кв.м. жилище в София:
 
-<div class="blog-video-container">
-<video controls playsinline preload="metadata" class="blog-video-player" poster="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/poster_88ad6ba3-3833-4846-bc21-ddafba74ab16.jpg">
-  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/mobile_88ad6ba3-3833-4846-bc21-ddafba74ab16_ok%29video.mp4" media="(max-width: 768px)" type="video/mp4" />
-  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/ok%29video.mp4" type="video/mp4" />
-</video>
-</div>
-
 <div class="blog-lead-gen-card">
   <h3 class="bs-lead-title">Готови ли сте да започнем вашия ремонт?</h3>
   <p class="bs-lead-desc">Не губете време в чудене. Вземете твърда оферта по договор с 0% капаро или ни пишете директно в чата:</p>
   <div class="bs-lead-actions">
-    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator" class="bs-btn-primary bs-btn-animated">
       Попълнете проект онлайн (2 мин)
     </a>
     <a href="/project-messages" class="bs-btn-outline">

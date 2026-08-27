@@ -2478,4 +2478,181 @@
   <data name="Media_DeleteSuccess" xml:space="preserve">
     <value>Файлът беше изтрит успешно.</value>
   </data>
+  <data name="Admin_AllProjects" xml:space="preserve">
+    <value>Всички Проекти</value>
+  </data>
+  <data name="Admin_CreateProject" xml:space="preserve">
+    <value>Създай Проект</value>
+  </data>
+  <data name="Nav_PdfOffers" xml:space="preserve">
+    <value>PDF Оферти</value>
+  </data>
+  <data name="Nav_VideoUpload" xml:space="preserve">
+    <value>Качване на Видео</value>
+  </data>
+  <data name="Nav_Localization" xml:space="preserve">
+    <value>Локализация</value>
+  </data>
+  <data name="Admin_BlogManager_Subtitle" xml:space="preserve">
+    <value>Управление на блог статии, медийна библиотека и интерактивни видео слайдери</value>
+  </data>
+  <data name="Admin_PhotoGallery" xml:space="preserve">
+    <value>Галерия Снимки</value>
+  </data>
+  <data name="Admin_LivePreview" xml:space="preserve">
+    <value>Преглед на Живо</value>
+  </data>
+  <data name="Admin_InteractiveSlider" xml:space="preserve">
+    <value>Интерактивен Слайдер в Началото (Снимки и Видеа)</value>
+  </data>
+  <data name="Admin_InteractiveSliderSubtitle" xml:space="preserve">
+    <value>Добавете снимки или видеа за интерактивния слайдер в началото на статията.</value>
+  </data>
+  <data name="Admin_BottomVideosCarousel" xml:space="preserve">
+    <value>Слайдер с видеа в края на статията</value>
+  </data>
+  <data name="Admin_BottomVideosCarouselSubtitle" xml:space="preserve">
+    <value>Добавете видео репортажи, огледи и видео резултати за визуализация в края на статията.</value>
+  </data>
+  <data name="Admin_AddSlide" xml:space="preserve">
+    <value>+ Добави Слайд</value>
+  </data>
+  <data name="Admin_UploadSlide" xml:space="preserve">
+    <value>+ Качи Слайд</value>
+  </data>
+  <data name="Admin_AddVideoSlide" xml:space="preserve">
+    <value>+ Добави Видео</value>
+  </data>
+  <data name="Admin_EmptySlide" xml:space="preserve">
+    <value>Празен Слайд</value>
+  </data>
+  <data name="Admin_MediaLibraryShort" xml:space="preserve">
+    <value>Библиотека</value>
+  </data>
+  <data name="Admin_Upload" xml:space="preserve">
+    <value>Качи</value>
+  </data>
+  <data name="Admin_Remove" xml:space="preserve">
+    <value>Премахни</value>
+  </data>
+  <data name="Admin_MoveUp" xml:space="preserve">
+    <value>Нагоре</value>
+  </data>
+  <data name="Admin_MoveDown" xml:space="preserve">
+    <value>Надолу</value>
+  </data>
+  <data name="Admin_SlideImage" xml:space="preserve">
+    <value>Снимка</value>
+  </data>
+  <data name="Admin_SlideVideo" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="Admin_CaptionBg" xml:space="preserve">
+    <value>Заглавие (BG)...</value>
+  </data>
+  <data name="Admin_CaptionEn" xml:space="preserve">
+    <value>Caption (EN)...</value>
+  </data>
+  <data name="Admin_Toolbar_InfoBox" xml:space="preserve">
+    <value>Инфо Каре</value>
+  </data>
+  <data name="Admin_Toolbar_WarningBox" xml:space="preserve">
+    <value>Внимание</value>
+  </data>
+  <data name="Admin_Toolbar_LibraryImage" xml:space="preserve">
+    <value>Снимка от Библ.</value>
+  </data>
+  <data name="Admin_Toolbar_UploadImage" xml:space="preserve">
+    <value>Качи Снимка</value>
+  </data>
+  <data name="Admin_Toolbar_CatalogVideo" xml:space="preserve">
+    <value>Каталог Видео</value>
+  </data>
+  <data name="Admin_Toolbar_UploadVideo" xml:space="preserve">
+    <value>Качи Видео</value>
+  </data>
+  <data name="Admin_Toolbar_CtaCalc" xml:space="preserve">
+    <value>CTA Калкулатор</value>
+  </data>
+  <data name="Admin_Mode_Write" xml:space="preserve">
+    <value>Писане</value>
+  </data>
+  <data name="Admin_Mode_Split" xml:space="preserve">
+    <value>Разделен Екран</value>
+  </data>
+  <data name="Admin_Mode_Preview" xml:space="preserve">
+    <value>Преглед</value>
+  </data>
+  <data name="Admin_Publishing" xml:space="preserve">
+    <value>Публикуване</value>
+  </data>
+  <data name="Admin_Status_Published" xml:space="preserve">
+    <value>Публикувана</value>
+  </data>
+  <data name="Admin_Status_Draft" xml:space="preserve">
+    <value>Чернова</value>
+  </data>
+  <data name="Admin_Status_IsPublished" xml:space="preserve">
+    <value>Статус: Публикувана в сайта</value>
+  </data>
+  <data name="Admin_CoverImage_Dropzone" xml:space="preserve">
+    <value>Изберете корична снимка от Библиотеката</value>
+  </data>
+  <data name="Admin_ArticleSettings" xml:space="preserve">
+    <value>Настройки на Статията</value>
+  </data>
+  <data name="Admin_SelectCategory_Default" xml:space="preserve">
+    <value>-- Изберете от наличните категории --</value>
+  </data>
+  <data name="Admin_CustomCategory_Placeholder" xml:space="preserve">
+    <value>или въведете категория...</value>
+  </data>
+  <data name="Admin_SeoGooglePreview" xml:space="preserve">
+    <value>SEO &amp; Google Преглед</value>
+  </data>
+  <data name="Admin_DeleteConfirm_Title" xml:space="preserve">
+    <value>Изтриване на Статия</value>
+  </data>
+  <data name="Admin_DeleteConfirm_Message" xml:space="preserve">
+    <value>Сигурни ли сте, че искате да изтриете статията '{0}'?</value>
+  </data>
+  <data name="Admin_SlugConflict_Warning" xml:space="preserve">
+    <value>Статия с URL адрес '{0}' вече съществува! Моля изберете уникален адрес.</value>
+  </data>
+  <data name="Admin_VideoSelector_Title" xml:space="preserve">
+    <value>Избор на видеа за статията</value>
+  </data>
+  <data name="Admin_VideoSelector_SingleOrMulti" xml:space="preserve">
+    <value>Изберете едно или повече видеа от каталога за вмъкване като видео плейър или интерактивен видео слайдер:</value>
+  </data>
+  <data name="Admin_VideoSelector_InsertSingle" xml:space="preserve">
+    <value>Вмъкни Видео Плейър</value>
+  </data>
+  <data name="Admin_VideoSelector_InsertCarousel" xml:space="preserve">
+    <value>Вмъкни Видео Слайдер ({0} видеа)</value>
+  </data>
+  <data name="Admin_VideoSelector_AddToBottom" xml:space="preserve">
+    <value>Добави към видеата в края ({0})</value>
+  </data>
+  <data name="Admin_VideoSelector_SelectedCount" xml:space="preserve">
+    <value>{0} избрани видеа</value>
+  </data>
+  <data name="Blog_VideoShowcaseTitle" xml:space="preserve">
+    <value>Видео репортажи и резултати от обекти</value>
+  </data>
+  <data name="Blog_BackToArticles" xml:space="preserve">
+    <value>Назад към всички статии</value>
+  </data>
+  <data name="Blog_NotFoundTitle" xml:space="preserve">
+    <value>Статията не е намерена</value>
+  </data>
+  <data name="Blog_NotFoundDesc" xml:space="preserve">
+    <value>Търсената статия не може да бъде намерена. Върнете се към блога.</value>
+  </data>
+  <data name="Blog_NoDepositBadge" xml:space="preserve">
+    <value>0% Капаро • Твърда Оферта</value>
+  </data>
+  <data name="Blog_ChatWithUs" xml:space="preserve">
+    <value>Пишете ни в Чата</value>
+  </data>
 </root>

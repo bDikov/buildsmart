@@ -1,3 +1,5 @@
+using BuildSmart.SharedUI.Components.Pages.Landing;
+
 namespace BuildSmart.Web.Models;
 
 public class BlogPostMetadata
@@ -15,6 +17,9 @@ public class BlogPostMetadata
     public string? ReadTimeEn { get; set; }
     public string? SeoKeywordsBg { get; set; }
     public string? SeoKeywordsEn { get; set; }
+    public List<HeroCarousel.HeroCarouselItemModel>? CarouselItems { get; set; }
+    public List<HeroCarousel.HeroCarouselItemModel>? BottomVideoItems { get; set; }
+    public bool IsPublished { get; set; } = true;
     public string? Title { get; set; }
     public string? Description { get; set; }
     public string? Category { get; set; }

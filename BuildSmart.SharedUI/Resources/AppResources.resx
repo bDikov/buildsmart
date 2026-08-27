@@ -2526,4 +2526,181 @@ Boncho | BuildSmart</value>
   <data name="Media_DeleteSuccess" xml:space="preserve">
     <value>Asset deleted successfully.</value>
   </data>
+  <data name="Admin_AllProjects" xml:space="preserve">
+    <value>All Projects</value>
+  </data>
+  <data name="Admin_CreateProject" xml:space="preserve">
+    <value>Create Project</value>
+  </data>
+  <data name="Nav_PdfOffers" xml:space="preserve">
+    <value>PDF Offers</value>
+  </data>
+  <data name="Nav_VideoUpload" xml:space="preserve">
+    <value>Video Upload</value>
+  </data>
+  <data name="Nav_Localization" xml:space="preserve">
+    <value>Localization</value>
+  </data>
+  <data name="Admin_BlogManager_Subtitle" xml:space="preserve">
+    <value>Manage blog articles, media library, and interactive video sliders</value>
+  </data>
+  <data name="Admin_PhotoGallery" xml:space="preserve">
+    <value>Photo Gallery</value>
+  </data>
+  <data name="Admin_LivePreview" xml:space="preserve">
+    <value>Live Preview</value>
+  </data>
+  <data name="Admin_InteractiveSlider" xml:space="preserve">
+    <value>Top Hero Carousel (Photos &amp; Videos)</value>
+  </data>
+  <data name="Admin_InteractiveSliderSubtitle" xml:space="preserve">
+    <value>Add photos or videos for the interactive hero carousel at the top of the article.</value>
+  </data>
+  <data name="Admin_BottomVideosCarousel" xml:space="preserve">
+    <value>Bottom Video Carousel (Showcase)</value>
+  </data>
+  <data name="Admin_BottomVideosCarouselSubtitle" xml:space="preserve">
+    <value>Add project walkthroughs, video reviews, and before/after showcases to render at the bottom of the article.</value>
+  </data>
+  <data name="Admin_AddSlide" xml:space="preserve">
+    <value>+ Add Slide</value>
+  </data>
+  <data name="Admin_UploadSlide" xml:space="preserve">
+    <value>+ Upload Slide</value>
+  </data>
+  <data name="Admin_AddVideoSlide" xml:space="preserve">
+    <value>+ Add Video</value>
+  </data>
+  <data name="Admin_EmptySlide" xml:space="preserve">
+    <value>Empty Slide</value>
+  </data>
+  <data name="Admin_MediaLibraryShort" xml:space="preserve">
+    <value>Library</value>
+  </data>
+  <data name="Admin_Upload" xml:space="preserve">
+    <value>Upload</value>
+  </data>
+  <data name="Admin_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Admin_MoveUp" xml:space="preserve">
+    <value>Move Up</value>
+  </data>
+  <data name="Admin_MoveDown" xml:space="preserve">
+    <value>Move Down</value>
+  </data>
+  <data name="Admin_SlideImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Admin_SlideVideo" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="Admin_CaptionBg" xml:space="preserve">
+    <value>Title / Caption (BG)...</value>
+  </data>
+  <data name="Admin_CaptionEn" xml:space="preserve">
+    <value>Caption (EN)...</value>
+  </data>
+  <data name="Admin_Toolbar_InfoBox" xml:space="preserve">
+    <value>Info Box</value>
+  </data>
+  <data name="Admin_Toolbar_WarningBox" xml:space="preserve">
+    <value>Warning Box</value>
+  </data>
+  <data name="Admin_Toolbar_LibraryImage" xml:space="preserve">
+    <value>Library Image</value>
+  </data>
+  <data name="Admin_Toolbar_UploadImage" xml:space="preserve">
+    <value>Upload Image</value>
+  </data>
+  <data name="Admin_Toolbar_CatalogVideo" xml:space="preserve">
+    <value>Video Catalog</value>
+  </data>
+  <data name="Admin_Toolbar_UploadVideo" xml:space="preserve">
+    <value>Upload Video</value>
+  </data>
+  <data name="Admin_Toolbar_CtaCalc" xml:space="preserve">
+    <value>CTA Calculator</value>
+  </data>
+  <data name="Admin_Mode_Write" xml:space="preserve">
+    <value>Write</value>
+  </data>
+  <data name="Admin_Mode_Split" xml:space="preserve">
+    <value>Split Screen</value>
+  </data>
+  <data name="Admin_Mode_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Admin_Publishing" xml:space="preserve">
+    <value>Publishing</value>
+  </data>
+  <data name="Admin_Status_Published" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Admin_Status_Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Admin_Status_IsPublished" xml:space="preserve">
+    <value>Status: Published on Site</value>
+  </data>
+  <data name="Admin_CoverImage_Dropzone" xml:space="preserve">
+    <value>Select cover photo from Media Library</value>
+  </data>
+  <data name="Admin_ArticleSettings" xml:space="preserve">
+    <value>Article Settings</value>
+  </data>
+  <data name="Admin_SelectCategory_Default" xml:space="preserve">
+    <value>-- Select from available categories --</value>
+  </data>
+  <data name="Admin_CustomCategory_Placeholder" xml:space="preserve">
+    <value>or enter custom category...</value>
+  </data>
+  <data name="Admin_SeoGooglePreview" xml:space="preserve">
+    <value>SEO &amp; Google Preview</value>
+  </data>
+  <data name="Admin_DeleteConfirm_Title" xml:space="preserve">
+    <value>Delete Article</value>
+  </data>
+  <data name="Admin_DeleteConfirm_Message" xml:space="preserve">
+    <value>Are you sure you want to permanently delete article '{0}'?</value>
+  </data>
+  <data name="Admin_SlugConflict_Warning" xml:space="preserve">
+    <value>An article with slug '{0}' already exists! Please choose a unique slug.</value>
+  </data>
+  <data name="Admin_VideoSelector_Title" xml:space="preserve">
+    <value>Select Videos for Article</value>
+  </data>
+  <data name="Admin_VideoSelector_SingleOrMulti" xml:space="preserve">
+    <value>Choose one or more videos from the catalog to insert as a player or video carousel:</value>
+  </data>
+  <data name="Admin_VideoSelector_InsertSingle" xml:space="preserve">
+    <value>Insert Video Player</value>
+  </data>
+  <data name="Admin_VideoSelector_InsertCarousel" xml:space="preserve">
+    <value>Insert Video Carousel ({0} videos)</value>
+  </data>
+  <data name="Admin_VideoSelector_AddToBottom" xml:space="preserve">
+    <value>Add to Bottom Videos ({0})</value>
+  </data>
+  <data name="Admin_VideoSelector_SelectedCount" xml:space="preserve">
+    <value>{0} video(s) selected</value>
+  </data>
+  <data name="Blog_VideoShowcaseTitle" xml:space="preserve">
+    <value>Project Video Walkthroughs &amp; Results</value>
+  </data>
+  <data name="Blog_BackToArticles" xml:space="preserve">
+    <value>Back to Articles</value>
+  </data>
+  <data name="Blog_NotFoundTitle" xml:space="preserve">
+    <value>Article Not Found</value>
+  </data>
+  <data name="Blog_NotFoundDesc" xml:space="preserve">
+    <value>The requested article could not be found. Go back to Blog.</value>
+  </data>
+  <data name="Blog_NoDepositBadge" xml:space="preserve">
+    <value>0% Deposit • Fixed Contract Offer</value>
+  </data>
+  <data name="Blog_ChatWithUs" xml:space="preserve">
+    <value>Chat with our team</value>
+  </data>
 </root>

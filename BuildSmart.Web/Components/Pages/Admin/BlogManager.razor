@@ -7,31 +7,38 @@
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
-@using SkiaSharp
 @using BuildSmart.Infrastructure.Persistence
 @using BuildSmart.Core.Domain.Entities
+@using BuildSmart.Core.Application.DTOs
+@using BuildSmart.SharedUI.GraphQL
+@using BuildSmart.SharedUI.Components.Common
+@using BuildSmart.SharedUI.Components.Pages.Landing
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbContextFactory
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject NavigationManager NavManager
-@inject BuildSmart.SharedUI.GraphQL.BuildSmartApiClient ApiClient
-@inject BuildSmart.Core.Application.Interfaces.IMediaService MediaService
+@inject BuildSmartApiClient ApiClient
 @inject IConfiguration Configuration
 
 <PageTitle>@Loc["Admin_BlogManager"] - BuildSmart</PageTitle>
 
 <div class="admin-blog-container container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h1 class="admin-page-title m-0">@Loc["Admin_BlogManager"]</h1>
+            <p class="text-muted small m-0">@Loc["Admin_BlogManager_Subtitle"]</p>
         </div>
         @if (!_isEditing)
         {
-            <div>
-                <button class="btn btn-outline-secondary me-2" @onclick="OpenImageGalleryModal">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Управление на Снимки
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-secondary" @onclick='() => NavManager.NavigateTo("/admin/media-library")'>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    @Loc["Media_LibraryTitle"]
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="OpenImageGalleryModal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    @Loc["Admin_PhotoGallery"]
                 </button>
                 <button class="btn btn-primary" @onclick="CreateNewPost">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -43,7 +50,7 @@
 
     @if (!string.IsNullOrEmpty(_statusMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <div class="alert @(_isStatusError ? "alert-danger" : "alert-success") alert-dismissible fade show mb-4" role="alert">
             @_statusMessage
             <button type="button" class="btn-close" @onclick='() => _statusMessage = null'></button>
         </div>
@@ -77,6 +84,7 @@
                                 <th>@Loc["Admin_Category"]</th>
                                 <th>@Loc["Admin_Date"]</th>
                                 <th>@Loc["Admin_ReadTime"]</th>
+                                <th>@Loc["Cms_Published"]</th>
                                 <th class="text-end">@Loc["Admin_Actions"]</th>
                             </tr>
                         </thead>
@@ -91,11 +99,19 @@
                                     <td><span class="badge bg-card-alt text-primary-custom">@GetDisplayCategory(post)</span></td>
                                     <td>@post.Date</td>
                                     <td>@GetDisplayReadTime(post)</td>
+                                    <td>
+                                        <span class="badge @(post.IsPublished ? "bg-success" : "bg-secondary")">
+                                            @(post.IsPublished ? Loc["Admin_Status_Published"] : Loc["Admin_Status_Draft"])
+                                        </span>
+                                    </td>
                                     <td class="text-end">
+                                        <a href="/blog/@post.Slug" target="_blank" class="btn btn-sm btn-outline-secondary me-2">
+                                            @Loc["Admin_Preview"]
+                                        </a>
                                         <button class="btn btn-sm btn-secondary me-2" @onclick="() => EditPost(post)">
                                             @Loc["Admin_EditPost"]
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePostAsync(post.Slug)">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptDeletePost(post.Slug)">
                                             @Loc["Admin_DeletePost"]
                                         </button>
                                     </td>
@@ -109,276 +125,572 @@
     }
     else
     {
-        <!-- EDITOR FORM -->
-        <div class="admin-card">
-            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                <h2 class="h5 fw-bold m-0">@(_isNew ? Loc["Admin_CreatePost"] : Loc["Admin_EditPost"])</h2>
-                <button class="btn btn-sm btn-secondary" @onclick="CancelEditing">
-                    @Loc["Admin_Cancel"]
-                </button>
-            </div>
-
-            <!-- MULTILINGUAL LANGUAGE SELECTION TABS -->
-            <div class="mb-4">
-                <div class="btn-group w-100" role="group">
-                    <button type="button" class="btn @(_formLang == "bg" ? "btn-primary" : "btn-outline-secondary") py-2" @onclick='() => _formLang = "bg"'>
-                        Български (BG)
-                    </button>
-                    <button type="button" class="btn @(_formLang == "en" ? "btn-primary" : "btn-outline-secondary") py-2" @onclick='() => _formLang = "en"'>
-                        English (EN)
-                    </button>
-                </div>
-            </div>
-
-            <EditForm Model="_activePost" OnValidSubmit="SavePostAsync">
-                <div class="row g-3">
-                    <!-- SHARED FIELDS -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">@Loc["Admin_Slug"] *</label>
-                        <input type="text" class="form-control" @bind="_activePost.Slug" required />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">@Loc["Admin_Date"]</label>
-                        <input type="text" class="form-control" @bind="_activePost.Date" placeholder="yyyy-MM-dd" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">@Loc["Admin_CoverImage"]</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" @bind="_activePost.Image" placeholder="/images/blog/cover.jpg" />
-                            <button class="btn btn-outline-secondary" type="button" @onclick="OpenImageGalleryModal" title="Галерия и Управление на Снимки">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <!-- MODERN 2-COLUMN CMS STUDIO -->
+        <div class="blog-studio-container">
+            <!-- Studio Top Action Bar -->
+            <div class="admin-card studio-top-bar mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" @onclick="CancelEditing">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            @Loc["Admin_Cancel"]
+                        </button>
+                        <div class="studio-lang-switch">
+                            <button type="button" class="lang-pill-btn @(_formLang == "bg" ? "active" : "")" @onclick='() => _formLang = "bg"'>
+                                Български (BG)
                             </button>
-                            <label class="btn btn-secondary mb-0">
-                                Upload
-                                <InputFile OnChange="UploadCoverImageAsync" accept="image/*" class="d-none" />
-                            </label>
+                            <button type="button" class="lang-pill-btn @(_formLang == "en" ? "active" : "")" @onclick='() => _formLang = "en"'>
+                                English (EN)
+                            </button>
                         </div>
                     </div>
 
-                    @if (_formLang == "bg")
-                    {
-                        <!-- BULGARIAN FORM FIELDS -->
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">@Loc["Admin_Title"] (BG) *</label>
-                            <input type="text" class="form-control" @bind="_activePost.TitleBg" @bind:after="OnTitleChanged" required />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">@Loc["Admin_Category"] (BG)</label>
-                            <input type="text" class="form-control" @bind="_activePost.CategoryBg" placeholder="e.g. Цени и Бюджет" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">@Loc["Admin_ReadTime"] (BG)</label>
-                            <input type="text" class="form-control" @bind="_activePost.ReadTimeBg" placeholder="e.g. 5 мин." />
-                        </div>
-
-                        <div class="col-12">
-                            <div class="p-3 border rounded bg-card-alt">
-                                <h3 class="h6 fw-bold mb-2">SEO Settings (BG)</h3>
-                                <label class="form-label font-body-1">@Loc["Admin_SeoKeywords"] (BG)</label>
-                                <input type="text" class="form-control" @bind="_activePost.SeoKeywordsBg" placeholder="ремонт на апартамент, цени София" />
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-bold">@Loc["Admin_Description"] (BG) *</label>
-                            <textarea class="form-control" rows="2" @bind="_activePost.DescriptionBg" required></textarea>
-                        </div>
-
-                        <!-- BG CONTENT TOOLBAR & EDITOR -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label fw-bold mb-0">@Loc["Admin_Content"] (BG) *</label>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn @(_activeTab == "write" ? "btn-primary" : "btn-secondary")" @onclick='() => _activeTab = "write"'>Write</button>
-                                    <button type="button" class="btn @(_activeTab == "preview" ? "btn-primary" : "btn-secondary")" @onclick='() => _activeTab = "preview"'>@Loc["Admin_Preview"]</button>
-                                </div>
-                            </div>
-
-                            @if (_activeTab == "write")
-                            {
-                                <div class="editor-toolbar p-2 border border-bottom-0 rounded-top bg-card-alt d-flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("## ", "bg")'>H2</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("### ", "bg")'>H3</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("**bold**", "bg")'>Bold</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("\n<div class=\"blog-callout blog-callout-info\">\nInfo box content\n</div>\n", "bg")'>Info Box</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("\n<div class=\"blog-callout blog-callout-warning\">\nWarning content\n</div>\n", "bg")'>Warning Box</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("<span class=\"text-accent\">Accent text</span>", "bg")'>Accent</button>
-                                    
-                                    <label class="btn btn-sm btn-outline-primary mb-0">
-                                        @Loc["Admin_InsertImage"]
-                                        <InputFile OnChange='e => UploadInlineImageAsync(e, "bg")' accept="image/*" class="d-none" />
-                                    </label>
-                                    <label class="btn btn-sm btn-outline-success mb-0 ms-auto">
-                                        Upload Video
-                                        <InputFile OnChange='e => UploadInlineVideoAsync(e, "bg")' accept="video/mp4,video/*" class="d-none" />
-                                    </label>
-                                    <button type="button" class="btn btn-sm btn-outline-info mb-0 ms-1" @onclick='() => OpenVideoSelectorModal("bg")'>Select Existing Video</button>
-                                </div>
-
-                                <textarea class="form-control rounded-top-0 font-monospace" rows="16" @bind="_activePost.ContentBg" required placeholder="Write Bulgarian article content in Markdown format..."></textarea>
-                            }
-                            else
-                            {
-                                <div class="preview-box p-4 border rounded bg-card min-vh-50">
-                                    @((MarkupString)RenderMarkdown(_activePost.ContentBg))
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <!-- ENGLISH FORM FIELDS -->
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">@Loc["Admin_Title"] (EN)</label>
-                            <input type="text" class="form-control" @bind="_activePost.TitleEn" placeholder="English Title" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">@Loc["Admin_Category"] (EN)</label>
-                            <input type="text" class="form-control" @bind="_activePost.CategoryEn" placeholder="e.g. Prices & Budget" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">@Loc["Admin_ReadTime"] (EN)</label>
-                            <input type="text" class="form-control" @bind="_activePost.ReadTimeEn" placeholder="e.g. 5 min." />
-                        </div>
-
-                        <div class="col-12">
-                            <div class="p-3 border rounded bg-card-alt">
-                                <h3 class="h6 fw-bold mb-2">SEO Settings (EN)</h3>
-                                <label class="form-label font-body-1">@Loc["Admin_SeoKeywords"] (EN)</label>
-                                <input type="text" class="form-control" @bind="_activePost.SeoKeywordsEn" placeholder="apartment renovation, Sofia prices" />
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-bold">@Loc["Admin_Description"] (EN)</label>
-                            <textarea class="form-control" rows="2" @bind="_activePost.DescriptionEn" placeholder="English short summary..."></textarea>
-                        </div>
-
-                        <!-- EN CONTENT TOOLBAR & EDITOR -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label fw-bold mb-0">@Loc["Admin_Content"] (EN)</label>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn @(_activeTab == "write" ? "btn-primary" : "btn-secondary")" @onclick='() => _activeTab = "write"'>Write</button>
-                                    <button type="button" class="btn @(_activeTab == "preview" ? "btn-primary" : "btn-secondary")" @onclick='() => _activeTab = "preview"'>@Loc["Admin_Preview"]</button>
-                                </div>
-                            </div>
-
-                            @if (_activeTab == "write")
-                            {
-                                <div class="editor-toolbar p-2 border border-bottom-0 rounded-top bg-card-alt d-flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("## ", "en")'>H2</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("### ", "en")'>H3</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("**bold**", "en")'>Bold</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("\n<div class=\"blog-callout blog-callout-info\">\nInfo box content\n</div>\n", "en")'>Info Box</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("\n<div class=\"blog-callout blog-callout-warning\">\nWarning content\n</div>\n", "en")'>Warning Box</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertSnippet("<span class=\"text-accent\">Accent text</span>", "en")'>Accent</button>
-                                    
-                                    <label class="btn btn-sm btn-outline-primary mb-0">
-                                        @Loc["Admin_InsertImage"]
-                                        <InputFile OnChange='e => UploadInlineImageAsync(e, "en")' accept="image/*" class="d-none" />
-                                    </label>
-                                    <label class="btn btn-sm btn-outline-success mb-0 ms-auto">
-                                        Upload Video
-                                        <InputFile OnChange='e => UploadInlineVideoAsync(e, "en")' accept="video/mp4,video/*" class="d-none" />
-                                    </label>
-                                    <button type="button" class="btn btn-sm btn-outline-info mb-0 ms-1" @onclick='() => OpenVideoSelectorModal("en")'>Select Existing Video</button>
-                                </div>
-
-                                <textarea class="form-control rounded-top-0 font-monospace" rows="16" @bind="_activePost.ContentEn" placeholder="Write English article content in Markdown format..."></textarea>
-                            }
-                            else
-                            {
-                                <div class="preview-box p-4 border rounded bg-card min-vh-50">
-                                    @((MarkupString)RenderMarkdown(_activePost.ContentEn))
-                                </div>
-                            }
-                        </div>
-                    }
-
-                    <div class="col-12 d-flex justify-content-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" @onclick="CancelEditing">@Loc["Admin_Cancel"]</button>
-                        <button type="submit" class="btn btn-primary px-4">@Loc["Admin_Save"]</button>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        @if (!_isNew && !string.IsNullOrEmpty(_activePost.Slug))
+                        {
+                            <a href="/blog/@_activePost.Slug" target="_blank" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                @Loc["Admin_LivePreview"]
+                            </a>
+                        }
+                        <button type="button" class="btn btn-sm btn-primary px-4 d-flex align-items-center gap-1" @onclick="SavePostAsync">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            @Loc["Admin_Save"]
+                        </button>
                     </div>
                 </div>
-            </EditForm>
+            </div>
+
+            <div class="blog-editor-grid">
+                <!-- LEFT MAIN COLUMN (70% Canvas) -->
+                <div class="editor-main-column">
+                    <!-- Distraction-Free Title & Excerpt -->
+                    <div class="admin-card canvas-card mb-4">
+                        <input type="text" 
+                               class="post-title-input" 
+                               placeholder="@(_formLang == "bg" ? "Въведете заглавие на статията тук..." : "Enter article title here...")" 
+                               @bind="CurrentTitle" 
+                               @bind:after="OnTitleChanged" 
+                               required />
+                        <textarea class="post-excerpt-input" 
+                                  rows="2" 
+                                  placeholder="@(_formLang == "bg" ? "Кратко въведение и резюме на статията..." : "Short excerpt and summary...")" 
+                                  @bind="CurrentDescription"></textarea>
+                    </div>
+
+                    <!-- Top Interactive Hero Carousel Builder Card -->
+                    <div class="admin-card carousel-builder-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <h3 class="h6 fw-bold m-0 text-primary d-flex align-items-center gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line></svg>
+                                    @Loc["Admin_InteractiveSlider"]
+                                </h3>
+                                <p class="text-muted small m-0">@Loc["Admin_InteractiveSliderSubtitle"]</p>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => OpenMediaPickerForTarget("carousel-add")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                    @Loc["Admin_MediaLibraryShort"]
+                                </button>
+                                <label class="btn btn-sm btn-primary mb-0">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    @Loc["Admin_UploadSlide"]
+                                    <InputFile OnChange="UploadCarouselSlideFile" accept="image/*,video/*" class="d-none" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="carousel-slide-grid">
+                            @for (int i = 0; i < _heroCarouselItems.Count; i++)
+                            {
+                                var index = i;
+                                var item = _heroCarouselItems[index];
+                                <div class="slide-card">
+                                    <div class="slide-preview-thumb">
+                                        @if (item.Type == "video" && !string.IsNullOrEmpty(item.Url))
+                                        {
+                                            <video src="@item.Url" muted playsinline></video>
+                                            <span class="slide-badge video">VIDEO</span>
+                                        }
+                                        else if (!string.IsNullOrEmpty(item.Url))
+                                        {
+                                            <img src="@item.Url" alt="Slide" />
+                                            <span class="slide-badge img">IMG</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="slide-placeholder">@Loc["Admin_EmptySlide"]</div>
+                                        }
+
+                                        <div class="slide-actions-overlay">
+                                            <button type="button" class="action-btn" disabled="@(index == 0)" @onclick="() => MoveCarouselItemUp(index)" title="@Loc["Admin_MoveUp"]">
+                                                ▲
+                                            </button>
+                                            <button type="button" class="action-btn" disabled="@(index == _heroCarouselItems.Count - 1)" @onclick="() => MoveCarouselItemDown(index)" title="@Loc["Admin_MoveDown"]">
+                                                ▼
+                                            </button>
+                                            <button type="button" class="action-btn danger" @onclick="() => RemoveCarouselItem(index)" title="@Loc["Admin_Remove"]">
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="slide-fields">
+                                        <div class="d-flex gap-1">
+                                            <select class="form-select form-select-sm" style="width: 90px;" @bind="item.Type">
+                                                <option value="image">@Loc["Admin_SlideImage"]</option>
+                                                <option value="video">@Loc["Admin_SlideVideo"]</option>
+                                            </select>
+                                            <div class="input-group input-group-sm flex-grow-1">
+                                                <input type="text" class="form-control" @bind="item.Url" placeholder="URL..." />
+                                                <button class="btn btn-outline-secondary" type="button" @onclick='() => OpenMediaPickerForTarget($"carousel-item-{index}", item.Type)'>@Loc["Admin_MediaLibraryShort"]</button>
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control form-control-sm" @bind="item.CaptionBg" placeholder="@Loc["Admin_CaptionBg"]" />
+                                        <input type="text" class="form-control form-control-sm" @bind="item.CaptionEn" placeholder="@Loc["Admin_CaptionEn"]" />
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Add Slide Dropzone Tile -->
+                            <div class="add-slide-dropzone" @onclick='() => OpenMediaPickerForTarget("carousel-add")'>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>@Loc["Admin_AddSlide"]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Video Carousel (Showcase) Builder Card -->
+                    <div class="admin-card carousel-builder-card mb-4" style="border-left: 4px solid var(--color-primary);">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <h3 class="h6 fw-bold m-0 text-primary d-flex align-items-center gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                                    @Loc["Admin_BottomVideosCarousel"]
+                                </h3>
+                                <p class="text-muted small m-0">@Loc["Admin_BottomVideosCarouselSubtitle"]</p>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => OpenVideoSelectorModal(_formLang)'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                                    @Loc["Admin_Toolbar_CatalogVideo"]
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => OpenMediaPickerForTarget("bottom-video-add", "video")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                    @Loc["Admin_MediaLibraryShort"]
+                                </button>
+                                <label class="btn btn-sm btn-primary mb-0">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    @Loc["Admin_AddVideoSlide"]
+                                    <InputFile OnChange="UploadBottomVideoSlideFile" accept="video/mp4,video/*" class="d-none" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="carousel-slide-grid">
+                            @for (int i = 0; i < _bottomVideoItems.Count; i++)
+                            {
+                                var index = i;
+                                var item = _bottomVideoItems[index];
+                                <div class="slide-card">
+                                    <div class="slide-preview-thumb">
+                                        @if (!string.IsNullOrEmpty(item.Url))
+                                        {
+                                            <video src="@item.Url" muted playsinline></video>
+                                            <span class="slide-badge video">VIDEO</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="slide-placeholder">@Loc["Admin_EmptySlide"]</div>
+                                        }
+
+                                        <div class="slide-actions-overlay">
+                                            <button type="button" class="action-btn" disabled="@(index == 0)" @onclick="() => MoveBottomVideoItemUp(index)" title="@Loc["Admin_MoveUp"]">
+                                                ▲
+                                            </button>
+                                            <button type="button" class="action-btn" disabled="@(index == _bottomVideoItems.Count - 1)" @onclick="() => MoveBottomVideoItemDown(index)" title="@Loc["Admin_MoveDown"]">
+                                                ▼
+                                            </button>
+                                            <button type="button" class="action-btn danger" @onclick="() => RemoveBottomVideoItem(index)" title="@Loc["Admin_Remove"]">
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="slide-fields">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" @bind="item.Url" placeholder="Video URL..." />
+                                            <button class="btn btn-outline-secondary" type="button" @onclick='() => OpenMediaPickerForTarget($"bottom-video-item-{index}", "video")'>@Loc["Admin_MediaLibraryShort"]</button>
+                                        </div>
+                                        <input type="text" class="form-control form-control-sm" @bind="item.CaptionBg" placeholder="@Loc["Admin_CaptionBg"]" />
+                                        <input type="text" class="form-control form-control-sm" @bind="item.CaptionEn" placeholder="@Loc["Admin_CaptionEn"]" />
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Add Bottom Video Dropzone Tile -->
+                            <div class="add-slide-dropzone" @onclick='() => OpenVideoSelectorModal(_formLang)'>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                </svg>
+                                <span>@Loc["Admin_AddVideoSlide"]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rich Visual Toolbar & Content Workspace -->
+                    <div class="admin-card editor-workspace-card">
+                        <div class="editor-toolbar-header">
+                            <div class="toolbar-group">
+                                <button type="button" class="toolbar-btn" title="Heading 2" @onclick='() => InsertSnippet("## ", _formLang)'>H2</button>
+                                <button type="button" class="toolbar-btn" title="Heading 3" @onclick='() => InsertSnippet("### ", _formLang)'>H3</button>
+                                <div class="toolbar-divider"></div>
+                                <button type="button" class="toolbar-btn" title="Bold" @onclick='() => InsertSnippet("**bold text**", _formLang)'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="Italic" @onclick='() => InsertSnippet("*italic text*", _formLang)'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="4" x2="10" y2="4"></line><line x1="14" y1="20" x2="5" y2="20"></line><line x1="15" y1="4" x2="9" y2="20"></line></svg>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="Quote" @onclick='() => InsertSnippet("> Цитат или важна бележка\n", _formLang)'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="Bullet List" @onclick='() => InsertSnippet("- Точка 1\n- Точка 2\n", _formLang)'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                </button>
+                            </div>
+
+                            <div class="toolbar-group">
+                                <button type="button" class="toolbar-pill-btn info" @onclick='() => InsertSnippet("\n<div class=\"blog-callout blog-callout-info\">\nИнформационен акцент\n</div>\n", _formLang)'>
+                                    @Loc["Admin_Toolbar_InfoBox"]
+                                </button>
+                                <button type="button" class="toolbar-pill-btn warning" @onclick='() => InsertSnippet("\n<div class=\"blog-callout blog-callout-warning\">\nВнимание / Предупреждение\n</div>\n", _formLang)'>
+                                    @Loc["Admin_Toolbar_WarningBox"]
+                                </button>
+                                <button type="button" class="toolbar-pill-btn" @onclick='() => OpenMediaPickerForTarget($"inline-image-{_formLang}", "image")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                    @Loc["Admin_Toolbar_LibraryImage"]
+                                </button>
+                                <label class="toolbar-pill-btn mb-0">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    @Loc["Admin_Toolbar_UploadImage"]
+                                    <InputFile OnChange='e => UploadInlineImageAsync(e, _formLang)' accept="image/*" class="d-none" />
+                                </label>
+                                <button type="button" class="toolbar-pill-btn" @onclick='() => OpenVideoSelectorModal(_formLang)'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                                    @Loc["Admin_Toolbar_CatalogVideo"]
+                                </button>
+                                <label class="toolbar-pill-btn mb-0">
+                                    @Loc["Admin_Toolbar_UploadVideo"]
+                                    <InputFile OnChange='e => UploadInlineVideoAsync(e, _formLang)' accept="video/mp4,video/*" class="d-none" />
+                                </label>
+                                <button type="button" class="toolbar-pill-btn cta" @onclick='() => InsertSnippet("\n<div class=\"blog-calc-cta\">\n### Искате точна оферта за вашия ремонт?\n[Изчислете точна оферта в нашия Калкулатор](/job-wizard)\n</div>\n", _formLang)'>
+                                    @Loc["Admin_Toolbar_CtaCalc"]
+                                </button>
+                            </div>
+
+                            <!-- View Mode Switcher -->
+                            <div class="view-mode-toggle">
+                                <button type="button" class="mode-btn @(_editorMode == "write" ? "active" : "")" @onclick='() => _editorMode = "write"'>
+                                    @Loc["Admin_Mode_Write"]
+                                </button>
+                                <button type="button" class="mode-btn @(_editorMode == "split" ? "active" : "")" @onclick='() => _editorMode = "split"'>
+                                    @Loc["Admin_Mode_Split"]
+                                </button>
+                                <button type="button" class="mode-btn @(_editorMode == "preview" ? "active" : "")" @onclick='() => _editorMode = "preview"'>
+                                    @Loc["Admin_Mode_Preview"]
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Content Workspace -->
+                        <div class="editor-pane-container mode-@_editorMode">
+                            @if (_editorMode == "write" || _editorMode == "split")
+                            {
+                                <div class="editor-input-pane">
+                                    <textarea class="content-raw-textarea" 
+                                              @bind="CurrentContent" 
+                                              placeholder="Пишете съдържанието на статията в Markdown формат..."></textarea>
+                                </div>
+                            }
+                            @if (_editorMode == "preview" || _editorMode == "split")
+                            {
+                                <div class="editor-preview-pane">
+                                    <div class="blog-article-preview">
+                                        @((MarkupString)RenderMarkdown(CurrentContent))
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT SIDEBAR (30% Settings Column) -->
+                <div class="editor-sidebar-column">
+                    <!-- Card 1: Publish Actions & Status Switch -->
+                    <div class="admin-card sidebar-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="h6 fw-bold m-0">@Loc["Admin_Publishing"]</h4>
+                            <span class="badge @(_activePost.IsPublished ? "bg-success" : "bg-secondary")">
+                                @(_activePost.IsPublished ? Loc["Admin_Status_Published"] : Loc["Admin_Status_Draft"])
+                            </span>
+                        </div>
+
+                        <div class="form-check form-switch mb-3 p-2 bg-card-alt rounded">
+                            <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="publishStateSwitch" @bind="_activePost.IsPublished" />
+                            <label class="form-check-label small fw-bold" for="publishStateSwitch">@Loc["Admin_Status_IsPublished"]</label>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <button type="button" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2" @onclick="SavePostAsync">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                @Loc["Admin_Save"]
+                            </button>
+
+                            @if (!_isNew && !string.IsNullOrEmpty(_activePost.Slug))
+                            {
+                                <a href="/blog/@_activePost.Slug" target="_blank" class="btn btn-outline-secondary w-100 text-center text-decoration-none">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    @Loc["Admin_LivePreview"]
+                                </a>
+                            }
+
+                            <button type="button" class="btn btn-secondary w-100" @onclick="CancelEditing">
+                                @Loc["Admin_Cancel"]
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Cover Photo Card with Dropzone & Library Picker -->
+                    <div class="admin-card sidebar-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="h6 fw-bold m-0">@Loc["Admin_CoverImage"]</h4>
+                        </div>
+
+                        <div class="cover-photo-container">
+                            @if (!string.IsNullOrEmpty(_activePost.Image))
+                            {
+                                <div class="cover-image-preview position-relative overflow-hidden rounded mb-2" style="height: 140px; background: #000;">
+                                    <img src="@_activePost.Image" alt="Cover" style="width: 100%; height: 100%; object-fit: cover;" />
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 py-0 px-2" @onclick="() => _activePost.Image = string.Empty" title="@Loc["Admin_Remove"]">
+                                        ✕
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="cover-dropzone mb-2" @onclick='() => OpenMediaPickerForTarget("cover-image", "image")'>
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                    <span class="small text-muted">@Loc["Admin_CoverImage_Dropzone"]</span>
+                                </div>
+                            }
+
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" @bind="_activePost.Image" placeholder="/images/blog/cover.jpg" />
+                                <button type="button" class="btn btn-outline-secondary" @onclick='() => OpenMediaPickerForTarget("cover-image", "image")' title="@Loc["Admin_MediaLibraryShort"]">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                </button>
+                                <label class="btn btn-secondary mb-0">
+                                    @Loc["Admin_Upload"]
+                                    <InputFile OnChange="UploadCoverImageAsync" accept="image/*" class="d-none" />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Document Metadata -->
+                    <div class="admin-card sidebar-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="h6 fw-bold m-0">@Loc["Admin_ArticleSettings"]</h4>
+                        </div>
+
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <label class="form-label small fw-bold mb-1">URL Адрес (@Loc["Admin_Slug"]) *</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">/blog/</span>
+                                    <input type="text" class="form-control" @bind="_activePost.Slug" required />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label small fw-bold mb-1">@Loc["Admin_Category"] (@_formLang.ToUpper())</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <select class="form-select form-select-sm" @onchange="OnCategoryDropdownSelected">
+                                        <option value="">@Loc["Admin_SelectCategory_Default"]</option>
+                                        @foreach (var cat in _availableCategories)
+                                        {
+                                            <option value="@cat" selected="@(CurrentCategory == cat)">@cat</option>
+                                        }
+                                    </select>
+                                    <input type="text" class="form-control form-control-sm" @bind="CurrentCategory" placeholder="@Loc["Admin_CustomCategory_Placeholder"]" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label small fw-bold mb-1">@Loc["Admin_ReadTime"] (@_formLang.ToUpper())</label>
+                                <input type="text" class="form-control form-control-sm" @bind="CurrentReadTime" placeholder="e.g. 5 мин." />
+                            </div>
+
+                            <div>
+                                <label class="form-label small fw-bold mb-1">@Loc["Admin_Date"]</label>
+                                <input type="text" class="form-control form-control-sm" @bind="_activePost.Date" placeholder="yyyy-MM-dd" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Collapsible SEO & Google SERP Preview Card -->
+                    <div class="admin-card sidebar-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center" @onclick="() => _seoExpanded = !_seoExpanded" style="cursor: pointer;">
+                            <h4 class="h6 fw-bold m-0">@Loc["Admin_SeoGooglePreview"]</h4>
+                            <span class="small text-muted">@(_seoExpanded ? "▲" : "▼")</span>
+                        </div>
+
+                        @if (_seoExpanded)
+                        {
+                            <div class="mt-3">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold mb-1">@Loc["Admin_SeoKeywords"] (@_formLang.ToUpper())</label>
+                                    <input type="text" class="form-control form-control-sm" @bind="CurrentSeoKeywords" placeholder="ремонт апартамент софия, цени" />
+                                </div>
+
+                                <!-- SERP Snippet Preview -->
+                                <div class="serp-preview-box p-3 rounded">
+                                    <span class="serp-url text-muted small d-block mb-1">https://buildsmart.bg > blog > @(_activePost.Slug)</span>
+                                    <h5 class="serp-title text-primary small fw-bold m-0 mb-1">@(string.IsNullOrEmpty(CurrentTitle) ? "Заглавие на статията" : CurrentTitle)</h5>
+                                    <p class="serp-desc text-muted small m-0">@(string.IsNullOrEmpty(CurrentDescription) ? "Кратко описание на статията, както ще се визуализира в резултатите на Google..." : CurrentDescription)</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     }
 </div>
 
+<!-- CENTRAL MEDIA PICKER MODAL -->
+<MediaPickerModal 
+    IsOpen="_showMediaPickerModal" 
+    InitialFolder="" 
+    AllowedType="@_pickerAllowedType" 
+    OnAssetSelected="OnPickerAssetSelected" 
+    OnClose="() => _showMediaPickerModal = false" />
+
+<!-- MULTI-VIDEO SELECTION MODAL -->
 @if (_showVideoSelectorModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); z-index: 1060;">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content bg-card border shadow-lg">
-                <div class="modal-header border-bottom">
-                    <h5 class="modal-title fw-bold">Select Existing Video for Article</h5>
+                <div class="modal-header border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="modal-title fw-bold text-primary m-0">@Loc["Admin_VideoSelector_Title"]</h5>
+                        <span class="text-muted small">@string.Format(Loc["Admin_VideoSelector_SelectedCount"], _selectedVideoUrls.Count)</span>
+                    </div>
                     <button type="button" class="btn-close" @onclick="CloseVideoSelectorModal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <!-- 1. DROPDOWN SELECTOR -->
-                    <div class="mb-4 p-3 border rounded bg-card-alt">
-                        <label class="form-label fw-bold text-primary">1. Choose Video from Dropdown List:</label>
-                        <select class="form-select form-select-lg" @onchange="OnDropdownVideoSelected">
-                            <option value="">-- Click here to select a video --</option>
-                            @foreach (var v in _blogVideoOptions)
-                            {
-                                <option value="@v.Url" selected="@(v.Url == _customVideoUrlInput)">@v.Title - [@v.Category]</option>
-                            }
-                        </select>
-                    </div>
+                    <p class="text-muted small mb-3">@Loc["Admin_VideoSelector_SingleOrMulti"]</p>
 
-                    <!-- 2. SELECTED VIDEO PREVIEW & INSERT ACTION -->
-                    @if (!string.IsNullOrEmpty(_customVideoUrlInput))
-                    {
-                        <div class="mb-4 p-3 border border-primary rounded bg-card text-center shadow-sm">
-                            <span class="d-block small text-muted mb-2 fw-bold">Selected Video Preview:</span>
-                            <video src="@_customVideoUrlInput" controls style="max-height: 220px; width: 100%; border-radius: 8px; background: #000;"></video>
-                            <div class="mt-2 text-truncate small font-monospace">@_customVideoUrlInput</div>
-                            <button type="button" class="btn btn-success btn-lg px-4 mt-3 shadow" @onclick="InsertCustomVideoUrl">
-                                Insert Selected Video into Article
+                    <!-- TOP ACTIONS BAR IN MODAL -->
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap p-2 bg-card-alt rounded">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="SelectAllVideos">
+                                Избери всички
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ClearVideoSelection">
+                                Изчисти избора
                             </button>
                         </div>
-                    }
+                        <div class="d-flex gap-2 flex-wrap">
+                            @if (_selectedVideoUrls.Count == 1)
+                            {
+                                <button type="button" class="btn btn-sm btn-success shadow-sm" @onclick="InsertSelectedSingleVideo">
+                                    @Loc["Admin_VideoSelector_InsertSingle"]
+                                </button>
+                            }
+                            @if (_selectedVideoUrls.Count > 0)
+                            {
+                                <button type="button" class="btn btn-sm btn-primary shadow-sm" @onclick="InsertSelectedVideosAsCarousel">
+                                    @string.Format(Loc["Admin_VideoSelector_InsertCarousel"], _selectedVideoUrls.Count)
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" @onclick="AddSelectedVideosToBottomCarousel">
+                                    @string.Format(Loc["Admin_VideoSelector_AddToBottom"], _selectedVideoUrls.Count)
+                                </button>
+                            }
+                        </div>
+                    </div>
 
-                    <hr />
-
-                    <!-- 3. VISUAL GALLERY CARDS -->
-                    <h6 class="fw-bold mb-3">2. Or Click any Video Card below to Insert:</h6>
+                    <!-- VISUAL MULTI-SELECT VIDEO CARDS GRID -->
                     @if (_blogVideoOptions == null || !_blogVideoOptions.Any())
                     {
-                        <div class="text-muted p-3 text-center border rounded bg-card-alt">
-                            No videos found. Upload a video using the "Upload Video" button above.
+                        <div class="text-muted p-4 text-center border rounded bg-card-alt">
+                            No videos found. Upload videos using the "Upload Video" button.
                         </div>
                     }
                     else
                     {
-                        <div class="row g-3" style="max-height: 360px; overflow-y: auto;">
+                        <div class="row g-3" style="max-height: 460px; overflow-y: auto;">
                             @foreach (var video in _blogVideoOptions)
                             {
-                                <div class="col-md-6">
-                                    <div class="card bg-card-alt border h-100 p-2 d-flex flex-column justify-content-between shadow-sm">
-                                        <video src="@video.Url" poster="@video.PosterUrl" controls style="max-height: 140px; width: 100%; border-radius: 8px; background: #000;"></video>
-                                        <div class="mt-2">
+                                var isSelected = _selectedVideoUrls.Contains(video.Url);
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card h-100 p-2 d-flex flex-column justify-content-between shadow-sm position-relative" 
+                                         style="background: var(--bg-card); border: 2px solid @(isSelected ? "var(--color-primary)" : "var(--border-color)"); cursor: pointer; border-radius: 12px;"
+                                         @onclick="() => ToggleVideoSelection(video.Url)">
+                                        
+                                        <!-- Selection Indicator Checkbox Badge -->
+                                        <div class="position-absolute top-0 start-0 m-3" style="z-index: 5;">
+                                            <input type="checkbox" class="form-check-input" checked="@isSelected" @onclick:stopPropagation="true" @onchange="() => ToggleVideoSelection(video.Url)" style="width: 20px; height: 20px; cursor: pointer;" />
+                                        </div>
+
+                                        <div class="position-relative overflow-hidden rounded mb-2" style="background: #000; height: 150px;">
+                                            <video src="@video.Url" poster="@video.PosterUrl" controls style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" @onclick:stopPropagation="true"></video>
+                                        </div>
+                                        <div>
                                             <span class="badge bg-secondary mb-1">@video.Category</span>
                                             <div class="small fw-bold text-truncate" title="@video.Title">@video.Title</div>
+                                            <div class="extra-small text-muted font-monospace text-truncate">@video.Url</div>
                                         </div>
-                                        <button type="button" class="btn btn-sm btn-success mt-2 w-100" @onclick='() => SelectVideoForArticle(video.Url)'>
-                                            Insert into Article
-                                        </button>
+
+                                        <div class="mt-2 d-flex gap-1">
+                                            <button type="button" class="btn btn-xs @(isSelected ? "btn-primary" : "btn-outline-primary") w-100" @onclick:stopPropagation="true" @onclick="() => ToggleVideoSelection(video.Url)">
+                                                @(isSelected ? "✓ Избрано" : "+ Избери")
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             }
                         </div>
                     }
                 </div>
-                <div class="modal-footer border-top">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseVideoSelectorModal">Close</button>
+                <div class="modal-footer border-top d-flex justify-content-between">
+                    <span class="small text-muted">@string.Format(Loc["Admin_VideoSelector_SelectedCount"], _selectedVideoUrls.Count)</span>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseVideoSelectorModal">@Loc["Admin_Cancel"]</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 }
+
+<!-- DELETE CONFIRMATION MODAL -->
+<BsConfirmationModal IsVisible="_showDeleteConfirmModal"
+                     Title="@Loc["Admin_DeleteConfirm_Title"]"
+                     Message="@string.Format(Loc["Admin_DeleteConfirm_Message"], _slugToDelete)"
+                     AcceptText="@Loc["Admin_DeletePost"]"
+                     CancelText="@Loc["Admin_Cancel"]"
+                     OnConfirmationChanged="OnDeleteConfirmationChanged" />
 
 <style>
     .admin-page-title {
@@ -409,103 +721,529 @@
         border-bottom-color: var(--border-color);
     }
 
-    .bg-card-alt {
-        background-color: var(--bg-card-alt) !important;
+    /* -------------------------------------------------------------
+       Blog Studio 2-Column Grid & Canvas
+       ------------------------------------------------------------- */
+    .blog-editor-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 
-    .text-primary-custom {
-        color: var(--text-primary) !important;
+    @@media (min-width: 992px) {
+        .blog-editor-grid {
+            grid-template-columns: 7fr 3fr;
+            align-items: start;
+        }
     }
 
-    .editor-toolbar {
-        border-color: var(--border-color) !important;
+    .studio-top-bar {
+        padding: 16px 24px;
     }
 
-    .preview-box {
-        border-color: var(--border-color) !important;
-        min-height: 350px;
+    .studio-lang-switch {
+        display: inline-flex;
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 2px;
+    }
+
+    .lang-pill-btn {
+        background: transparent;
+        border: none;
+        border-radius: 20px;
+        padding: 4px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .lang-pill-btn.active {
+        background: var(--color-primary);
+        color: #ffffff;
+    }
+
+    /* Distraction-Free Canvas Card */
+    .canvas-card {
+        padding: 24px;
+    }
+
+    .post-title-input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--text-primary);
+        font: var(--font-h1);
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1.3;
+        padding: 0;
+        margin-bottom: 12px;
+    }
+
+    .post-title-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .post-excerpt-input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font: var(--font-body-1);
+        resize: none;
+        padding: 0;
+        line-height: 1.5;
+    }
+
+    .post-excerpt-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Carousel Slide Grid */
+    .carousel-slide-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .slide-card {
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .slide-preview-thumb {
+        position: relative;
+        height: 120px;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #000;
+    }
+
+    .slide-preview-thumb img,
+    .slide-preview-thumb video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .slide-actions-overlay {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .action-btn {
+        background: rgba(0, 0, 0, 0.75);
+        border: none;
+        border-radius: 4px;
+        color: #ffffff;
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .action-btn.danger {
+        background: var(--color-danger, #ef4444);
+    }
+
+    .add-slide-dropzone {
+        border: 2px dashed var(--border-color);
+        border-radius: 10px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        background-color: var(--bg-card-alt);
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .add-slide-dropzone:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    /* Visual Editor Toolbar */
+    .editor-toolbar-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+    }
+
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .toolbar-btn:hover {
+        background: var(--bg-card-alt);
+        color: var(--text-primary);
+    }
+
+    .toolbar-divider {
+        width: 1px;
+        height: 18px;
+        background: var(--border-color);
+        margin: 0 4px;
+    }
+
+    .toolbar-pill-btn {
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        color: var(--text-primary);
+        padding: 3px 10px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+    }
+
+    .toolbar-pill-btn.info {
+        border-color: var(--color-info, #0284c7);
+        color: var(--color-info, #0284c7);
+    }
+
+    .toolbar-pill-btn.warning {
+        border-color: var(--color-warning, #f59e0b);
+        color: var(--color-warning, #f59e0b);
+    }
+
+    .toolbar-pill-btn.cta {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    .view-mode-toggle {
+        display: inline-flex;
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 2px;
+    }
+
+    .mode-btn {
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        padding: 3px 10px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .mode-btn.active {
+        background: var(--color-primary);
+        color: #ffffff;
+    }
+
+    /* Content Area */
+    .editor-pane-container.mode-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    .content-raw-textarea {
+        width: 100%;
+        min-height: 480px;
+        background-color: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        outline: none;
+    }
+
+    .editor-preview-pane {
+        min-height: 480px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.25rem;
+        background-color: var(--bg-card);
+        overflow-y: auto;
+    }
+
+    /* Sidebar Styling */
+    .editor-sidebar-column {
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 24px;
+    }
+
+    .cover-dropzone {
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        padding: 1.75rem 1rem;
+        text-align: center;
+        background: var(--bg-card-alt);
+        color: var(--text-secondary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .serp-preview-box {
+        background: var(--bg-card-alt);
+        border: 1px solid var(--border-color);
     }
 </style>
 
-    @if (_showImageGalleryModal)
-    {
-        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1060;">
-            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary); border-radius: 20px; border: 1px solid var(--border-color);">
-                    <div class="modal-header border-bottom border-color">
-                        <div class="d-flex align-items-center gap-2">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                            <h5 class="modal-title fw-bold m-0">Управление на Снимките (Галерия)</h5>
-                        </div>
-                        <button type="button" class="btn-close" @onclick="CloseImageGalleryModal"></button>
+@if (_showImageGalleryModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1060;">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary); border-radius: 20px; border: 1px solid var(--border-color);">
+                <div class="modal-header border-bottom border-color">
+                    <div class="d-flex align-items-center gap-2">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <h5 class="modal-title fw-bold m-0">Управление на Снимките (Галерия)</h5>
                     </div>
-                    <div class="modal-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                            <p class="text-secondary m-0">Всички качени снимки в <code>/images/blog/</code>. Можете да ги преглеждате, избирате или изтривате физически от сървъра.</p>
-                            <label class="btn btn-primary px-3 py-2 mb-0">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                Качи Нова Снимка
-                                <InputFile OnChange="UploadGalleryImageAsync" accept="image/*" class="d-none" />
-                            </label>
-                        </div>
+                    <button type="button" class="btn-close" @onclick="CloseImageGalleryModal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <p class="text-secondary m-0">Всички качени снимки в <code>/images/blog/</code>. Можете да ги преглеждате, избирате или изтривате физически от сървъра.</p>
+                        <label class="btn btn-primary px-3 py-2 mb-0">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            Качи Нова Снимка
+                            <InputFile OnChange="UploadGalleryImageAsync" accept="image/*" class="d-none" />
+                        </label>
+                    </div>
 
-                        @if (!_blogImageOptions.Any())
-                        {
-                            <div class="text-center py-5">
-                                <p class="text-muted m-0">Няма намерени снимки в папката.</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="row g-3">
-                                @foreach (var img in _blogImageOptions)
-                                {
-                                    <div class="col-6 col-md-4 col-lg-3">
-                                        <div class="card h-100 p-2" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 14px;">
-                                            <div class="position-relative overflow-hidden mb-2" style="height: 140px; border-radius: 10px; background: #000;">
-                                                <img src="@img.Url" alt="@img.FileName" style="width: 100%; height: 100%; object-fit: cover;" />
-                                            </div>
-                                            <div class="px-1 mb-2">
-                                                <div class="fw-bold text-truncate small" title="@img.FileName">@img.FileName</div>
-                                                <div class="text-muted small">@img.FileSizeFormatted</div>
-                                            </div>
-                                            <div class="d-flex gap-1 mt-auto">
-                                                @if (_isEditing)
-                                                {
-                                                    <button class="btn btn-sm btn-primary flex-grow-1 py-1" style="font-size: 0.8rem;" @onclick="() => SelectImageForCover(img.Url)">
-                                                        Избери
-                                                    </button>
-                                                }
-                                                <button class="btn btn-sm btn-outline-danger py-1" style="font-size: 0.8rem;" @onclick="() => DeleteImageFileAsync(img)" title="Изтрий файла от сървъра">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    @if (!_blogImageOptions.Any())
+                    {
+                        <div class="text-center py-5">
+                            <p class="text-muted m-0">Няма намерени снимки в папката.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            @foreach (var img in _blogImageOptions)
+                            {
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="card h-100 p-2" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 14px;">
+                                        <div class="position-relative overflow-hidden mb-2" style="height: 140px; border-radius: 10px; background: #000;">
+                                            <img src="@img.Url" alt="@img.FileName" style="width: 100%; height: 100%; object-fit: cover;" />
+                                        </div>
+                                        <div class="px-1 mb-2">
+                                            <div class="fw-bold text-truncate small" title="@img.FileName">@img.FileName</div>
+                                            <div class="text-muted small">@img.FileSizeFormatted</div>
+                                        </div>
+                                        <div class="d-flex gap-1 mt-auto">
+                                            @if (_isEditing)
+                                            {
+                                                <button class="btn btn-sm btn-primary flex-grow-1 py-1" style="font-size: 0.8rem;" @onclick="() => SelectImageForCover(img.Url)">
+                                                    Избери
                                                 </button>
-                                            </div>
+                                            }
+                                            <button class="btn btn-sm btn-outline-danger py-1" style="font-size: 0.8rem;" @onclick="() => DeleteImageFileAsync(img)" title="Изтрий файла от сървъра">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
                                         </div>
                                     </div>
-                                }
-                            </div>
-                        }
-                    </div>
-                    <div class="modal-footer border-top border-color py-2">
-                        <button type="button" class="btn btn-secondary" @onclick="CloseImageGalleryModal">Затвори</button>
-                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-top border-color py-2">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseImageGalleryModal">Затвори</button>
                 </div>
             </div>
         </div>
-    }
+    </div>
+}
 
 @code {
     private List<BlogPostModel>? _posts;
     private BlogPostModel _activePost = new();
+    private List<HeroCarousel.HeroCarouselItemModel> _heroCarouselItems = new();
+    private List<HeroCarousel.HeroCarouselItemModel> _bottomVideoItems = new();
+    private HashSet<string> _selectedVideoUrls = new();
+    private bool _showDeleteConfirmModal = false;
+    private string _slugToDelete = string.Empty;
     private bool _isEditing;
     private bool _isNew;
     private string _formLang = "bg";
-    private string _activeTab = "write";
+    private string _editorMode = "split";
+    private bool _seoExpanded = true;
     private string? _statusMessage;
+    private bool _isStatusError = false;
+
+    private string CurrentTitle
+    {
+        get => _formLang == "bg" ? (_activePost.TitleBg ?? "") : (_activePost.TitleEn ?? "");
+        set
+        {
+            if (_formLang == "bg") _activePost.TitleBg = value;
+            else _activePost.TitleEn = value;
+        }
+    }
+
+    private string CurrentDescription
+    {
+        get => _formLang == "bg" ? (_activePost.DescriptionBg ?? "") : (_activePost.DescriptionEn ?? "");
+        set
+        {
+            if (_formLang == "bg") _activePost.DescriptionBg = value;
+            else _activePost.DescriptionEn = value;
+        }
+    }
+
+    private string CurrentContent
+    {
+        get => _formLang == "bg" ? (_activePost.ContentBg ?? "") : (_activePost.ContentEn ?? "");
+        set
+        {
+            if (_formLang == "bg") _activePost.ContentBg = value;
+            else _activePost.ContentEn = value;
+        }
+    }
+
+    private string CurrentCategory
+    {
+        get => _formLang == "bg" ? (_activePost.CategoryBg ?? "") : (_activePost.CategoryEn ?? "");
+        set
+        {
+            if (_formLang == "bg") _activePost.CategoryBg = value;
+            else _activePost.CategoryEn = value;
+        }
+    }
+
+    private string CurrentReadTime
+    {
+        get => _formLang == "bg" ? (_activePost.ReadTimeBg ?? "") : (_activePost.ReadTimeEn ?? "");
+        set
+        {
+            if (_formLang == "bg") _activePost.ReadTimeBg = value;
+            else _activePost.ReadTimeEn = value;
+        }
+    }
+
+    private string CurrentSeoKeywords
+    {
+        get => _formLang == "bg" ? (_activePost.SeoKeywordsBg ?? "") : (_activePost.SeoKeywordsEn ?? "");
+        set
+        {
+            if (_formLang == "bg") _activePost.SeoKeywordsBg = value;
+            else _activePost.SeoKeywordsEn = value;
+        }
+    }
+
+    // Available Categories for selection
+    private List<string> _availableCategories = new()
+    {
+        "Цени & Бюджет",
+        "Баня & Санитария",
+        "Сухо строителство & Гипсокартон",
+        "Шпакловка & Боядисване",
+        "Електро & Осветление",
+        "ВиК Инсталации",
+        "Покриви & Изолации",
+        "Цялостен Ремонт",
+        "Интериорен Дизайн"
+    };
+
+    // Central Media Picker Modal state
+    private bool _showMediaPickerModal = false;
+    private string _pickerAllowedType = "all";
+    private string _libraryPickerTarget = string.Empty;
+
+    private static readonly System.Text.RegularExpressions.Regex CarouselRegex =
+        new(@"<!--\s*CAROUSEL_JSON:\s*(\[[\s\S]*?\])\s*-->", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex VideoCarouselRegex =
+        new(@"<!--\s*(?:VIDEO_CAROUSEL_JSON|BOTTOM_VIDEOS_JSON):\s*(\[[\s\S]*?\])\s*-->", System.Text.RegularExpressions.RegexOptions.Compiled);
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPostsAsync();
+        await LoadCategoriesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            await using var db = await DbContextFactory.CreateDbContextAsync();
+            var dbCategories = await db.ServiceCategories
+                .AsNoTracking()
+                .ToListAsync();
+
+            foreach (var cat in dbCategories)
+            {
+                var nameBg = cat.Name;
+                var nameEn = !string.IsNullOrWhiteSpace(cat.EnglishName) ? cat.EnglishName : cat.Name;
+                var name = _formLang == "bg" ? nameBg : nameEn;
+                if (!string.IsNullOrWhiteSpace(name) && !_availableCategories.Contains(name, StringComparer.OrdinalIgnoreCase))
+                {
+                    _availableCategories.Add(name);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+
+    private void OnCategoryDropdownSelected(ChangeEventArgs e)
+    {
+        var selected = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(selected))
+        {
+            CurrentCategory = selected;
+        }
     }
 
     private async Task LoadPostsAsync()
@@ -532,7 +1270,8 @@
                     SeoKeywordsBg = b.SeoKeywordsBg,
                     SeoKeywordsEn = b.SeoKeywordsEn,
                     ContentBg = b.ContentBg,
-                    ContentEn = b.ContentEn
+                    ContentEn = b.ContentEn,
+                    IsPublished = b.IsPublished
                 }).ToList();
             }
             else
@@ -569,16 +1308,24 @@
             CategoryBg = "Общи",
             CategoryEn = "General",
             ReadTimeBg = "5 мин.",
-            ReadTimeEn = "5 min."
+            ReadTimeEn = "5 min.",
+            IsPublished = true
         };
+        _heroCarouselItems = new List<HeroCarousel.HeroCarouselItemModel>();
+        _bottomVideoItems = new List<HeroCarousel.HeroCarouselItemModel>();
         _isNew = true;
         _isEditing = true;
         _formLang = "bg";
-        _activeTab = "write";
+        _editorMode = "split";
+        _statusMessage = null;
+        _isStatusError = false;
     }
 
     private async void EditPost(BlogPostModel post)
     {
+        _heroCarouselItems.Clear();
+        _bottomVideoItems.Clear();
+
         _activePost = new BlogPostModel
         {
             Slug = post.Slug,
@@ -593,23 +1340,78 @@
             ReadTimeBg = post.ReadTimeBg ?? post.ReadTime ?? "",
             ReadTimeEn = post.ReadTimeEn ?? "",
             SeoKeywordsBg = post.SeoKeywordsBg ?? post.SeoKeywords ?? "",
-            SeoKeywordsEn = post.SeoKeywordsEn ?? ""
+            SeoKeywordsEn = post.SeoKeywordsEn ?? "",
+            ContentBg = post.ContentBg ?? "",
+            ContentEn = post.ContentEn ?? "",
+            IsPublished = post.IsPublished
         };
 
-        // Load BG markdown content
+        // Load BG markdown content if not populated from DB
         var bgPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{post.Slug}.bg.md");
         var defaultPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{post.Slug}.md");
-        if (File.Exists(bgPath)) _activePost.ContentBg = await File.ReadAllTextAsync(bgPath);
-        else if (File.Exists(defaultPath)) _activePost.ContentBg = await File.ReadAllTextAsync(defaultPath);
+        if (string.IsNullOrWhiteSpace(_activePost.ContentBg))
+        {
+            if (File.Exists(bgPath)) _activePost.ContentBg = await File.ReadAllTextAsync(bgPath);
+            else if (File.Exists(defaultPath)) _activePost.ContentBg = await File.ReadAllTextAsync(defaultPath);
+        }
 
         // Load EN markdown content
         var enPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{post.Slug}.en.md");
-        if (File.Exists(enPath)) _activePost.ContentEn = await File.ReadAllTextAsync(enPath);
+        if (string.IsNullOrWhiteSpace(_activePost.ContentEn))
+        {
+            if (File.Exists(enPath)) _activePost.ContentEn = await File.ReadAllTextAsync(enPath);
+        }
+
+        // Extract top hero carousel items
+        var matchBg = CarouselRegex.Match(_activePost.ContentBg ?? "");
+        var matchEn = CarouselRegex.Match(_activePost.ContentEn ?? "");
+        var matchedGroup = matchBg.Success ? matchBg.Groups[1].Value : (matchEn.Success ? matchEn.Groups[1].Value : null);
+
+        if (!string.IsNullOrEmpty(matchedGroup))
+        {
+            try
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                _heroCarouselItems = JsonSerializer.Deserialize<List<HeroCarousel.HeroCarouselItemModel>>(matchedGroup, options) ?? new();
+            }
+            catch { }
+
+            _activePost.ContentBg = CarouselRegex.Replace(_activePost.ContentBg ?? "", "").TrimStart();
+            _activePost.ContentEn = CarouselRegex.Replace(_activePost.ContentEn ?? "", "").TrimStart();
+        }
+        else if (post.CarouselItems != null && post.CarouselItems.Count > 0)
+        {
+            _heroCarouselItems = post.CarouselItems.ToList();
+        }
+
+        // Extract bottom video carousel items
+        var matchVideoBg = VideoCarouselRegex.Match(_activePost.ContentBg ?? "");
+        var matchVideoEn = VideoCarouselRegex.Match(_activePost.ContentEn ?? "");
+        var matchedVideoGroup = matchVideoBg.Success ? matchVideoBg.Groups[1].Value : (matchVideoEn.Success ? matchVideoEn.Groups[1].Value : null);
+
+        if (!string.IsNullOrEmpty(matchedVideoGroup))
+        {
+            try
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                _bottomVideoItems = JsonSerializer.Deserialize<List<HeroCarousel.HeroCarouselItemModel>>(matchedVideoGroup, options) ?? new();
+            }
+            catch { }
+
+            _activePost.ContentBg = VideoCarouselRegex.Replace(_activePost.ContentBg ?? "", "").TrimEnd();
+            _activePost.ContentEn = VideoCarouselRegex.Replace(_activePost.ContentEn ?? "", "").TrimEnd();
+        }
+        else if (post.BottomVideoItems != null && post.BottomVideoItems.Count > 0)
+        {
+            _bottomVideoItems = post.BottomVideoItems.ToList();
+        }
 
         _isNew = false;
         _isEditing = true;
         _formLang = "bg";
-        _activeTab = "write";
+        _editorMode = "split";
+        _statusMessage = null;
+        _isStatusError = false;
         StateHasChanged();
     }
 
@@ -617,12 +1419,38 @@
     {
         if (_isNew && !string.IsNullOrEmpty(_activePost.TitleBg))
         {
-            _activePost.Slug = _activePost.TitleBg.ToLowerInvariant()
-                .Replace(" ", "-")
-                .Replace(":", "")
-                .Replace("?", "")
-                .Replace(",", "");
+            _activePost.Slug = GenerateSlug(_activePost.TitleBg);
         }
+    }
+
+    private string GenerateSlug(string phrase)
+    {
+        string str = phrase.ToLowerInvariant();
+        str = TransliterateCyrillicToLatin(str);
+        str = System.Text.RegularExpressions.Regex.Replace(str, @"[^a-z0-9\s-]", "");
+        str = System.Text.RegularExpressions.Regex.Replace(str, @"\s+", " ").Trim();
+        str = System.Text.RegularExpressions.Regex.Replace(str, @"\s", "-");
+        return str;
+    }
+
+    private string TransliterateCyrillicToLatin(string text)
+    {
+        var map = new Dictionary<char, string>
+        {
+            {'а', "a"}, {'б', "b"}, {'в', "v"}, {'г', "g"}, {'д', "d"},
+            {'е', "e"}, {'ж', "zh"}, {'з', "z"}, {'и', "i"}, {'й', "y"},
+            {'к', "k"}, {'л', "l"}, {'м', "m"}, {'н', "n"}, {'о', "o"},
+            {'п', "p"}, {'р', "r"}, {'с', "s"}, {'т', "t"}, {'у', "u"},
+            {'ф', "f"}, {'х', "h"}, {'ц', "ts"}, {'ч', "ch"}, {'ш', "sh"},
+            {'щ', "sht"}, {'ъ', "a"}, {'ь', "y"}, {'ю', "yu"}, {'я', "ya"}
+        };
+        var sb = new System.Text.StringBuilder();
+        foreach (char c in text)
+        {
+            if (map.TryGetValue(c, out var repl)) sb.Append(repl);
+            else sb.Append(c);
+        }
+        return sb.ToString();
     }
 
     private void InsertSnippet(string snippet, string lang)
@@ -637,51 +1465,96 @@
         }
     }
 
-    private async Task<(MemoryStream Stream, string ContentType, string WebpFileName)> OptimizeAndCompressImageAsync(IBrowserFile file, int maxWidth = 1200)
+    // Direct and R2 File Uploads
+    private async Task<string?> UploadFileToServerAsync(IBrowserFile file)
     {
-        using var rawStream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
-        using var tempMemStream = new MemoryStream();
-        await rawStream.CopyToAsync(tempMemStream);
-        tempMemStream.Position = 0;
-
-        using var originalBitmap = SKBitmap.Decode(tempMemStream);
-        if (originalBitmap == null)
+        try
         {
-            // If bitmap decode fails, fallback to original stream
-            tempMemStream.Position = 0;
-            var fallbackMs = new MemoryStream();
-            await tempMemStream.CopyToAsync(fallbackMs);
-            fallbackMs.Position = 0;
-            return (fallbackMs, file.ContentType, file.Name);
+            var folderPath = _activePost != null && !string.IsNullOrWhiteSpace(_activePost.Slug)
+                ? $"/blog/{_activePost.Slug}"
+                : "/blog";
+
+            var urlResult = await ApiClient.RequestFolderUploadUrl.ExecuteAsync(
+                folderPath: folderPath,
+                fileName: file.Name,
+                contentType: file.ContentType ?? "application/octet-stream");
+
+            if (urlResult.Errors.Count == 0 && !string.IsNullOrEmpty(urlResult.Data?.RequestFolderUploadUrl))
+            {
+                var preSignedUrl = urlResult.Data.RequestFolderUploadUrl;
+                using var rawStream = file.OpenReadStream(maxAllowedSize: 500 * 1024 * 1024);
+                using var streamContent = new StreamContent(rawStream);
+                streamContent.Headers.ContentLength = file.Size;
+                var contentTypeHeader = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentTypeHeader);
+
+                using var uploadClient = new HttpClient();
+                uploadClient.Timeout = TimeSpan.FromMinutes(30);
+
+                var r2Response = await uploadClient.PutAsync(preSignedUrl, streamContent);
+                if (r2Response.IsSuccessStatusCode)
+                {
+                    var uri = new Uri(preSignedUrl);
+                    var path = uri.AbsolutePath.TrimStart('/');
+                    var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                    var r2Key = segments.Length > 1 ? string.Join('/', segments.Skip(1)) : path;
+
+                    var regResult = await ApiClient.RegisterUploadedMedia.ExecuteAsync(
+                        folderId: null,
+                        r2Key: r2Key,
+                        fileName: file.Name,
+                        contentType: file.ContentType ?? "application/octet-stream",
+                        sizeBytes: file.Size,
+                        width: null,
+                        height: null,
+                        durationSeconds: null);
+
+                    if (regResult.Errors.Count == 0 && regResult.Data?.RegisterUploadedMedia != null)
+                    {
+                        return regResult.Data.RegisterUploadedMedia.PublicUrl;
+                    }
+
+                    return $"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/{r2Key}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[R2 Upload Warning] {ex.Message}. Falling back to local disk storage.");
         }
 
-        SKBitmap targetBitmap = originalBitmap;
-        bool wasResized = false;
-
-        if (originalBitmap.Width > maxWidth)
+        // Local storage fallback
+        try
         {
-            var newHeight = (int)((double)originalBitmap.Height / originalBitmap.Width * maxWidth);
-            var imageInfo = new SKImageInfo(maxWidth, newHeight, originalBitmap.ColorType, originalBitmap.AlphaType);
-            targetBitmap = originalBitmap.Resize(imageInfo, SKFilterQuality.High);
-            wasResized = true;
+            var isVideo = file.ContentType != null && file.ContentType.StartsWith("video", StringComparison.OrdinalIgnoreCase);
+            var subFolder = isVideo ? "videos/blog" : "images/blog";
+            var fileName = $"{Guid.NewGuid()}_{file.Name}";
+            var folder = Path.Combine(WebHostEnvironment.WebRootPath, subFolder.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(folder);
+            var path = Path.Combine(folder, fileName);
+
+            await using (var rawStream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024))
+            await using (var fs = new FileStream(path, FileMode.Create))
+            {
+                await rawStream.CopyToAsync(fs);
+            }
+
+            try
+            {
+                var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", subFolder.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(binFolder);
+                File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
+            }
+            catch { }
+
+            return $"/{subFolder}/{fileName}";
         }
-
-        using var image = SKImage.FromBitmap(targetBitmap ?? originalBitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Webp, 80);
-
-        var outputStream = new MemoryStream();
-        data.SaveTo(outputStream);
-        outputStream.Position = 0;
-
-        if (wasResized && targetBitmap != null)
+        catch (Exception ex)
         {
-            targetBitmap.Dispose();
+            _statusMessage = "Грешка при качване на файла: " + ex.Message;
+            _isStatusError = true;
+            return null;
         }
-
-        var nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
-        var webpFileName = $"{nameWithoutExt}.webp";
-
-        return (outputStream, "image/webp", webpFileName);
     }
 
     private async Task UploadCoverImageAsync(InputFileChangeEventArgs e)
@@ -689,61 +1562,223 @@
         var file = e.File;
         if (file == null) return;
 
-        try
+        var url = await UploadFileToServerAsync(file);
+        if (!string.IsNullOrEmpty(url))
         {
-            var (optStream, contentType, webpName) = await OptimizeAndCompressImageAsync(file, maxWidth: 1200);
-            await using (optStream)
-            {
-                var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
-                if (!string.IsNullOrEmpty(r2AccessKey))
-                {
-                    var keyName = $"images/blog/{Guid.NewGuid()}_{webpName}";
-                    var cdnUrl = await MediaService.UploadFileAsync(optStream, keyName, contentType);
-                    _activePost.Image = cdnUrl;
-                    _statusMessage = $"Снимката '{file.Name}' беше автоматично преоразмерена и компресирана в WebP ({optStream.Length / 1024} KB) и качена в Cloudflare R2!";
-                }
-                else
-                {
-                    var fileName = $"{Guid.NewGuid()}_{webpName}";
-                    var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
-                    Directory.CreateDirectory(folder);
-                    var path = Path.Combine(folder, fileName);
-
-                    await using (var fs = new FileStream(path, FileMode.Create))
-                    {
-                        await optStream.CopyToAsync(fs);
-                    }
-
-                    try
-                    {
-                        var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
-                        Directory.CreateDirectory(binFolder);
-                        File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-                    }
-                    catch { }
-
-                    _activePost.Image = $"/images/blog/{fileName}";
-                    _statusMessage = $"Снимката '{file.Name}' беше автоматично преоразмерена и компресирана в WebP ({optStream.Length / 1024} KB)!";
-                }
-            }
-
-            if (!_isNew && !string.IsNullOrEmpty(_activePost.Slug))
-            {
-                await SavePostAsync();
-            }
-            else
-            {
-                StateHasChanged();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error uploading cover image: {ex.Message}");
-            _statusMessage = $"Грешка при качване на снимката: {ex.Message}";
+            _activePost.Image = url;
+            _statusMessage = $"Снимката '{file.Name}' беше качена успешно!";
+            _isStatusError = false;
             StateHasChanged();
         }
     }
 
+    private async Task UploadInlineImageAsync(InputFileChangeEventArgs e, string lang)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        var url = await UploadFileToServerAsync(file);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var markdownImage = $"\n![{file.Name}]({url})\n";
+            InsertSnippet(markdownImage, lang);
+            _statusMessage = $"Снимката '{file.Name}' беше качена и поставена в текста!";
+            _isStatusError = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task UploadInlineVideoAsync(InputFileChangeEventArgs e, string lang)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        var url = await UploadFileToServerAsync(file);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var videoTag = $"\n<div class=\"blog-video-container\">\n  <video controls class=\"blog-video-player\" src=\"{url}\"></video>\n</div>\n";
+            InsertSnippet(videoTag, lang);
+            _statusMessage = $"Видеото беше качено и поставено в текста!";
+            _isStatusError = false;
+            StateHasChanged();
+        }
+    }
+
+    // Media Picker Dialog methods
+    private void OpenMediaPickerForTarget(string target, string allowedType = "all")
+    {
+        _libraryPickerTarget = target;
+        _pickerAllowedType = allowedType;
+        _showMediaPickerModal = true;
+    }
+
+    private void OnPickerAssetSelected(MediaAssetDto asset)
+    {
+        var resolvedType = string.Equals(asset.MediaType, "video", StringComparison.OrdinalIgnoreCase) ||
+                           (!string.IsNullOrEmpty(asset.PublicUrl) && asset.PublicUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+                            ? "video" : "image";
+        var assetUrl = !string.IsNullOrEmpty(asset.PublicUrl) ? asset.PublicUrl : asset.Url;
+
+        if (_libraryPickerTarget == "cover-image")
+        {
+            _activePost.Image = assetUrl;
+        }
+        else if (_libraryPickerTarget == "carousel-add")
+        {
+            _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = assetUrl,
+                Type = resolvedType,
+                CaptionBg = asset.AltTextBg ?? "",
+                CaptionEn = asset.AltTextEn ?? "",
+                Order = _heroCarouselItems.Count + 1
+            });
+        }
+        else if (_libraryPickerTarget.StartsWith("carousel-item-"))
+        {
+            var indexStr = _libraryPickerTarget.Replace("carousel-item-", "");
+            if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _heroCarouselItems.Count)
+            {
+                _heroCarouselItems[idx].Url = assetUrl;
+                _heroCarouselItems[idx].Type = resolvedType;
+            }
+        }
+        else if (_libraryPickerTarget == "bottom-video-add")
+        {
+            _bottomVideoItems.Add(new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = assetUrl,
+                Type = "video",
+                CaptionBg = asset.AltTextBg ?? "",
+                CaptionEn = asset.AltTextEn ?? "",
+                Order = _bottomVideoItems.Count + 1
+            });
+        }
+        else if (_libraryPickerTarget.StartsWith("bottom-video-item-"))
+        {
+            var indexStr = _libraryPickerTarget.Replace("bottom-video-item-", "");
+            if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx < _bottomVideoItems.Count)
+            {
+                _bottomVideoItems[idx].Url = assetUrl;
+                _bottomVideoItems[idx].Type = "video";
+            }
+        }
+        else if (_libraryPickerTarget == "inline-image-bg")
+        {
+            var markdownImage = $"\n![{asset.FileName}]({assetUrl})\n";
+            InsertSnippet(markdownImage, "bg");
+        }
+        else if (_libraryPickerTarget == "inline-image-en")
+        {
+            var markdownImage = $"\n![{asset.FileName}]({assetUrl})\n";
+            InsertSnippet(markdownImage, "en");
+        }
+
+        _showMediaPickerModal = false;
+        _libraryPickerTarget = string.Empty;
+        StateHasChanged();
+    }
+
+    // Top Hero Carousel Management Methods
+    private async Task UploadCarouselSlideFile(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        var url = await UploadFileToServerAsync(file);
+        if (!string.IsNullOrEmpty(url))
+        {
+            var isVideo = file.ContentType != null && file.ContentType.StartsWith("video", StringComparison.OrdinalIgnoreCase);
+            _heroCarouselItems.Add(new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = url,
+                Type = isVideo ? "video" : "image",
+                Order = _heroCarouselItems.Count + 1
+            });
+            _statusMessage = "Слайдът беше качен и добавен към карусела!";
+            _isStatusError = false;
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveCarouselItem(int index)
+    {
+        if (index >= 0 && index < _heroCarouselItems.Count)
+        {
+            _heroCarouselItems.RemoveAt(index);
+        }
+    }
+
+    private void MoveCarouselItemUp(int index)
+    {
+        if (index > 0 && index < _heroCarouselItems.Count)
+        {
+            var item = _heroCarouselItems[index];
+            _heroCarouselItems.RemoveAt(index);
+            _heroCarouselItems.Insert(index - 1, item);
+        }
+    }
+
+    private void MoveCarouselItemDown(int index)
+    {
+        if (index >= 0 && index < _heroCarouselItems.Count - 1)
+        {
+            var item = _heroCarouselItems[index];
+            _heroCarouselItems.RemoveAt(index);
+            _heroCarouselItems.Insert(index + 1, item);
+        }
+    }
+
+    // Bottom Video Carousel Management Methods
+    private async Task UploadBottomVideoSlideFile(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        var url = await UploadFileToServerAsync(file);
+        if (!string.IsNullOrEmpty(url))
+        {
+            _bottomVideoItems.Add(new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = url,
+                Type = "video",
+                Order = _bottomVideoItems.Count + 1
+            });
+            _statusMessage = "Видеото беше качено и добавено в крайния слайдер!";
+            _isStatusError = false;
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveBottomVideoItem(int index)
+    {
+        if (index >= 0 && index < _bottomVideoItems.Count)
+        {
+            _bottomVideoItems.RemoveAt(index);
+        }
+    }
+
+    private void MoveBottomVideoItemUp(int index)
+    {
+        if (index > 0 && index < _bottomVideoItems.Count)
+        {
+            var item = _bottomVideoItems[index];
+            _bottomVideoItems.RemoveAt(index);
+            _bottomVideoItems.Insert(index - 1, item);
+        }
+    }
+
+    private void MoveBottomVideoItemDown(int index)
+    {
+        if (index >= 0 && index < _bottomVideoItems.Count - 1)
+        {
+            var item = _bottomVideoItems[index];
+            _bottomVideoItems.RemoveAt(index);
+            _bottomVideoItems.Insert(index + 1, item);
+        }
+    }
+
+    // Legacy Gallery methods
     public class BlogImageOption
     {
         public string FileName { get; set; } = "";
@@ -766,18 +1801,11 @@
         _showImageGalleryModal = false;
     }
 
-    private async Task SelectImageForCover(string url)
+    private void SelectImageForCover(string url)
     {
         _activePost.Image = url;
         _showImageGalleryModal = false;
-        if (!_isNew && !string.IsNullOrEmpty(_activePost.Slug))
-        {
-            await SavePostAsync();
-        }
-        else
-        {
-            StateHasChanged();
-        }
+        StateHasChanged();
     }
 
     private void ScanBlogImages()
@@ -813,7 +1841,7 @@
         ScanBlogImages();
     }
 
-    private async Task DeleteImageFileAsync(BlogImageOption img)
+    private void DeleteImageFileAsync(BlogImageOption img)
     {
         try
         {
@@ -825,6 +1853,7 @@
 
             _blogImageOptions.Remove(img);
             _statusMessage = $"Снимката '{img.FileName}' беше изтрита успешно от диска!";
+            _isStatusError = false;
             StateHasChanged();
         }
         catch (Exception ex)
@@ -833,88 +1862,7 @@
         }
     }
 
-    private async Task UploadInlineImageAsync(InputFileChangeEventArgs e, string lang)
-    {
-        var file = e.File;
-        if (file == null) return;
-
-        try
-        {
-            string imageUrl = "";
-            var (optStream, contentType, webpName) = await OptimizeAndCompressImageAsync(file, maxWidth: 1200);
-            await using (optStream)
-            {
-                var r2AccessKey = Configuration["CloudflareR2:AccessKey"];
-                if (!string.IsNullOrEmpty(r2AccessKey))
-                {
-                    var keyName = $"images/blog/{Guid.NewGuid()}_{webpName}";
-                    imageUrl = await MediaService.UploadFileAsync(optStream, keyName, contentType);
-                }
-                else
-                {
-                    var fileName = $"{Guid.NewGuid()}_{webpName}";
-                    var folder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "blog");
-                    Directory.CreateDirectory(folder);
-                    var path = Path.Combine(folder, fileName);
-
-                    await using (var fs = new FileStream(path, FileMode.Create))
-                    {
-                        await optStream.CopyToAsync(fs);
-                    }
-
-                    try
-                    {
-                        var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
-                        Directory.CreateDirectory(binFolder);
-                        File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-                    }
-                    catch { }
-
-                    imageUrl = $"/images/blog/{fileName}";
-                }
-            }
-
-            var markdownImage = $"\n![image]({imageUrl})\n";
-            InsertSnippet(markdownImage, lang);
-            _statusMessage = $"Снимката беше автоматично компресирана в WebP и поставена в маркдаун текста!";
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error uploading inline image: {ex.Message}");
-            _statusMessage = $"Грешка при качване на снимката: {ex.Message}";
-            StateHasChanged();
-        }
-    }
-
-    private async Task UploadInlineVideoAsync(InputFileChangeEventArgs e, string lang)
-    {
-        var file = e.File;
-        if (file == null) return;
-
-        var fileName = $"{Guid.NewGuid()}_{file.Name}";
-        var folder = Path.Combine(WebHostEnvironment.WebRootPath, "videos", "blog");
-        Directory.CreateDirectory(folder);
-        var path = Path.Combine(folder, fileName);
-
-        await using (var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024))
-        await using (var fs = new FileStream(path, FileMode.Create))
-        {
-            await stream.CopyToAsync(fs);
-        }
-
-        try
-        {
-            var binFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "videos", "blog");
-            Directory.CreateDirectory(binFolder);
-            File.Copy(path, Path.Combine(binFolder, fileName), overwrite: true);
-        }
-        catch { }
-
-        var videoTag = $"\n<div class=\"blog-video-container\">\n  <video controls class=\"blog-video-player\" src=\"/videos/blog/{fileName}\"></video>\n</div>\n";
-        InsertSnippet(videoTag, lang);
-    }
-
+    // Video Catalog Selection Modal
     public class BlogVideoOption
     {
         public string Title { get; set; } = "";
@@ -926,16 +1874,14 @@
 
     private bool _showVideoSelectorModal = false;
     private string _videoSelectorTargetLang = "bg";
-    private string _customVideoUrlInput = "";
     private List<BlogVideoOption> _blogVideoOptions = new();
 
-    private async Task OpenVideoSelectorModal(string lang)
+    private void OpenVideoSelectorModal(string lang)
     {
         _videoSelectorTargetLang = lang;
-        _customVideoUrlInput = "";
+        _selectedVideoUrls.Clear();
         _blogVideoOptions.Clear();
 
-        // 1. Add Default Catalog / Seed Videos
         _blogVideoOptions.Add(new BlogVideoOption
         {
             Title = "100 sq.m. Apartment Full Renovation Walkthrough (Sofia)",
@@ -960,50 +1906,7 @@
             PosterUrl = ""
         });
 
-        _blogVideoOptions.Add(new BlogVideoOption
-        {
-            Title = "Custom Oak Kitchen & Synthetic Stone Countertop",
-            Url = "/videos/blog/oak-kitchen-installation.mp4",
-            Category = "Kitchen & Millwork",
-            PosterUrl = ""
-        });
-
-        // 2. Query Tradesmen Feed Videos via GraphQL API
-        try
-        {
-            var result = await ApiClient.GetTradesmanProfiles.ExecuteAsync();
-            if (result.Errors.Count == 0 && result.Data?.TradesmanProfiles != null)
-            {
-                foreach (var tradesman in result.Data.TradesmanProfiles)
-                {
-                    if (tradesman.Media != null)
-                    {
-                        foreach (var m in tradesman.Media)
-                        {
-                            if (!string.IsNullOrEmpty(m.VideoUrl) && !_blogVideoOptions.Any(v => v.Url.Equals(m.VideoUrl, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                var tradesmanName = $"{tradesman.User.FirstName} {tradesman.User.LastName}".Trim();
-                                var catName = m.ServiceCategory?.Name ?? "Feed Video";
-                                _blogVideoOptions.Add(new BlogVideoOption
-                                {
-                                    Title = $"Feed Video by {tradesmanName} ({m.CreatedAt.DateTime:g})",
-                                    Url = m.VideoUrl,
-                                    MobileUrl = m.MobileVideoUrl,
-                                    Category = catName,
-                                    PosterUrl = m.ImageUrl ?? ""
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching tradesman feed videos: {ex.Message}");
-        }
-
-        // 3. Scan Local Uploaded Video Files
+        // Scan Local Uploaded Video Files
         var folder = Path.Combine(WebHostEnvironment.WebRootPath, "videos", "blog");
         if (Directory.Exists(folder))
         {
@@ -1031,13 +1934,29 @@
         _showVideoSelectorModal = true;
     }
 
-    private void OnDropdownVideoSelected(ChangeEventArgs e)
+    private void ToggleVideoSelection(string videoUrl)
     {
-        var selectedUrl = e.Value?.ToString();
-        if (!string.IsNullOrEmpty(selectedUrl))
+        if (_selectedVideoUrls.Contains(videoUrl))
         {
-            _customVideoUrlInput = selectedUrl;
+            _selectedVideoUrls.Remove(videoUrl);
         }
+        else
+        {
+            _selectedVideoUrls.Add(videoUrl);
+        }
+    }
+
+    private void SelectAllVideos()
+    {
+        foreach (var v in _blogVideoOptions)
+        {
+            _selectedVideoUrls.Add(v.Url);
+        }
+    }
+
+    private void ClearVideoSelection()
+    {
+        _selectedVideoUrls.Clear();
     }
 
     private void CloseVideoSelectorModal()
@@ -1045,85 +1964,120 @@
         _showVideoSelectorModal = false;
     }
 
-    private void SelectVideoOptionForArticle(BlogVideoOption option)
+    private void InsertSelectedSingleVideo()
     {
-        if (option == null || string.IsNullOrWhiteSpace(option.Url)) return;
-
-        string posterAttr = !string.IsNullOrEmpty(option.PosterUrl) ? $" poster=\"{option.PosterUrl}\"" : "";
-        string sourcesTag = "";
-
-        if (!string.IsNullOrEmpty(option.MobileUrl))
+        var singleUrl = _selectedVideoUrls.FirstOrDefault();
+        if (!string.IsNullOrEmpty(singleUrl))
         {
-            sourcesTag = $"  <source src=\"{option.MobileUrl}\" media=\"(max-width: 768px)\" type=\"video/mp4\" />\n  <source src=\"{option.Url}\" type=\"video/mp4\" />";
+            var videoTag = $"\n<div class=\"blog-video-container\">\n  <video controls class=\"blog-video-player\" src=\"{singleUrl}\"></video>\n</div>\n";
+            InsertSnippet(videoTag, _videoSelectorTargetLang);
+            _showVideoSelectorModal = false;
+            _statusMessage = "Видеото беше поставено в текста!";
+            _isStatusError = false;
+            StateHasChanged();
         }
-        else
-        {
-            sourcesTag = $"  <source src=\"{option.Url}\" type=\"video/mp4\" />";
-        }
+    }
 
-        var newVideoTag = $"<div class=\"blog-video-container\">\n<video controls playsinline preload=\"metadata\" class=\"blog-video-player\"{posterAttr}>\n{sourcesTag}\n</video>\n</div>";
+    private void InsertSelectedVideosAsCarousel()
+    {
+        if (_selectedVideoUrls.Count == 0) return;
 
-        string content = _videoSelectorTargetLang == "bg" ? (_activePost.ContentBg ?? "") : (_activePost.ContentEn ?? "");
+        var items = _selectedVideoUrls.Select((url, idx) =>
+        {
+            var option = _blogVideoOptions.FirstOrDefault(v => v.Url == url);
+            return new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = url,
+                Type = "video",
+                CaptionBg = option?.Title ?? "",
+                CaptionEn = option?.Title ?? "",
+                Order = idx + 1
+            };
+        }).ToList();
 
-        var regexContainer = new System.Text.RegularExpressions.Regex(@"<div\s+class=[""']blog-video-container[""'][\s\S]*?</div>", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        var regexVideo = new System.Text.RegularExpressions.Regex(@"<video[\s\S]*?</video>", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-        if (regexContainer.IsMatch(content))
-        {
-            content = regexContainer.Replace(content, newVideoTag, 1);
-        }
-        else if (regexVideo.IsMatch(content))
-        {
-            content = regexVideo.Replace(content, newVideoTag, 1);
-        }
-        else
-        {
-            content = string.IsNullOrWhiteSpace(content) ? newVideoTag : $"{content}\n\n{newVideoTag}\n";
-        }
-
-        if (_videoSelectorTargetLang == "bg")
-        {
-            _activePost.ContentBg = content;
-        }
-        else
-        {
-            _activePost.ContentEn = content;
-        }
+        var jsonStr = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = false });
+        var carouselTag = $"\n<!-- VIDEO_CAROUSEL_JSON: {jsonStr} -->\n";
+        InsertSnippet(carouselTag, _videoSelectorTargetLang);
 
         _showVideoSelectorModal = false;
+        _statusMessage = $"Слайдерът с {_selectedVideoUrls.Count} видеа беше поставен в текста!";
+        _isStatusError = false;
         StateHasChanged();
     }
 
-    private void SelectVideoForArticle(string videoUrl)
+    private void AddSelectedVideosToBottomCarousel()
     {
-        var matchedOpt = _blogVideoOptions.FirstOrDefault(v => v.Url.Equals(videoUrl, StringComparison.OrdinalIgnoreCase));
-        if (matchedOpt != null)
+        if (_selectedVideoUrls.Count == 0) return;
+
+        foreach (var url in _selectedVideoUrls)
         {
-            SelectVideoOptionForArticle(matchedOpt);
+            var option = _blogVideoOptions.FirstOrDefault(v => v.Url == url);
+            _bottomVideoItems.Add(new HeroCarousel.HeroCarouselItemModel
+            {
+                Url = url,
+                Type = "video",
+                CaptionBg = option?.Title ?? "",
+                CaptionEn = option?.Title ?? "",
+                Order = _bottomVideoItems.Count + 1
+            });
         }
-        else
-        {
-            SelectVideoOptionForArticle(new BlogVideoOption { Url = videoUrl });
-        }
+
+        _showVideoSelectorModal = false;
+        _statusMessage = $"{_selectedVideoUrls.Count} видеа бяха добавени към крайния слайдер!";
+        _isStatusError = false;
+        StateHasChanged();
     }
 
-    private void InsertCustomVideoUrl()
-    {
-        if (!string.IsNullOrWhiteSpace(_customVideoUrlInput))
-        {
-            SelectVideoForArticle(_customVideoUrlInput.Trim());
-        }
-    }
-
+    // Save and Delete
     private async Task SavePostAsync()
     {
         if (string.IsNullOrWhiteSpace(_activePost.Slug))
             return;
 
+        _activePost.CarouselItems = _heroCarouselItems;
+        _activePost.BottomVideoItems = _bottomVideoItems;
+
+        // Serialize top hero carousel JSON if slides exist
+        string topCarouselComment = "";
+        if (_heroCarouselItems != null && _heroCarouselItems.Count > 0)
+        {
+            var jsonOptions = new JsonSerializerOptions { WriteIndented = false };
+            var jsonStr = JsonSerializer.Serialize(_heroCarouselItems, jsonOptions);
+            topCarouselComment = $"<!-- CAROUSEL_JSON: {jsonStr} -->\n\n";
+        }
+
+        // Serialize bottom video carousel JSON only if explicitly configured in bottom builder and not inline
+        string bottomVideoComment = "";
+        if (_bottomVideoItems != null && _bottomVideoItems.Count > 0)
+        {
+            var jsonOptions = new JsonSerializerOptions { WriteIndented = false };
+            var vJsonStr = JsonSerializer.Serialize(_bottomVideoItems, jsonOptions);
+            bottomVideoComment = $"\n\n<!-- BOTTOM_VIDEOS_JSON: {vJsonStr} -->";
+        }
+
+        var cleanContentBg = CarouselRegex.Replace(_activePost.ContentBg ?? "", "").Trim();
+        var cleanContentEn = CarouselRegex.Replace(_activePost.ContentEn ?? "", "").Trim();
+
+        var finalContentBg = (string.IsNullOrEmpty(topCarouselComment) ? cleanContentBg : topCarouselComment + cleanContentBg) + bottomVideoComment;
+        var finalContentEn = (string.IsNullOrEmpty(topCarouselComment) ? cleanContentEn : topCarouselComment + cleanContentEn) + bottomVideoComment;
+
         try
         {
             await using var db = await DbContextFactory.CreateDbContextAsync();
             var targetSlug = _activePost.Slug.Trim().ToLower();
+
+            // Slug Collision Guard for new articles
+            if (_isNew)
+            {
+                var existingSlug = await db.BlogPosts.AnyAsync(b => b.Slug.ToLower() == targetSlug);
+                if (existingSlug)
+                {
+                    _statusMessage = string.Format(Loc["Admin_SlugConflict_Warning"], _activePost.Slug);
+                    _isStatusError = true;
+                    return;
+                }
+            }
+
             var existing = await db.BlogPosts.FirstOrDefaultAsync(b => b.Slug.ToLower() == targetSlug);
             if (existing == null)
             {
@@ -1139,8 +2093,8 @@
             existing.TitleEn = _activePost.TitleEn;
             existing.DescriptionBg = _activePost.DescriptionBg;
             existing.DescriptionEn = _activePost.DescriptionEn;
-            existing.ContentBg = _activePost.ContentBg ?? "";
-            existing.ContentEn = _activePost.ContentEn ?? "";
+            existing.ContentBg = finalContentBg;
+            existing.ContentEn = finalContentEn;
             existing.CoverImageUrl = _activePost.Image ?? "";
             existing.CategoryBg = _activePost.CategoryBg;
             existing.CategoryEn = _activePost.CategoryEn;
@@ -1148,6 +2102,7 @@
             existing.ReadTimeEn = _activePost.ReadTimeEn;
             existing.SeoKeywordsBg = _activePost.SeoKeywordsBg;
             existing.SeoKeywordsEn = _activePost.SeoKeywordsEn;
+            existing.IsPublished = _activePost.IsPublished;
             existing.UpdatedAt = DateTime.UtcNow;
 
             if (DateTime.TryParse(_activePost.Date, out var dt))
@@ -1176,20 +2131,37 @@
             var jsonContent = JsonSerializer.Serialize(_posts, options);
             await File.WriteAllTextAsync(postsFilePath, jsonContent);
 
-            if (!string.IsNullOrWhiteSpace(_activePost.ContentBg))
+            if (!string.IsNullOrWhiteSpace(finalContentBg))
             {
-                await File.WriteAllTextAsync(Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.bg.md"), _activePost.ContentBg);
+                await File.WriteAllTextAsync(Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.bg.md"), finalContentBg);
             }
-            if (!string.IsNullOrWhiteSpace(_activePost.ContentEn))
+            if (!string.IsNullOrWhiteSpace(finalContentEn))
             {
-                await File.WriteAllTextAsync(Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.en.md"), _activePost.ContentEn);
+                await File.WriteAllTextAsync(Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{_activePost.Slug}.en.md"), finalContentEn);
             }
         }
         catch { }
 
-        _statusMessage = "Post saved successfully to PostgreSQL database!";
+        _statusMessage = "Статията беше запазена успешно!";
+        _isStatusError = false;
         _isEditing = false;
         await LoadPostsAsync();
+    }
+
+    private void PromptDeletePost(string slug)
+    {
+        _slugToDelete = slug;
+        _showDeleteConfirmModal = true;
+    }
+
+    private async Task OnDeleteConfirmationChanged(bool proceed)
+    {
+        _showDeleteConfirmModal = false;
+        if (proceed && !string.IsNullOrEmpty(_slugToDelete))
+        {
+            await DeletePostAsync(_slugToDelete);
+            _slugToDelete = string.Empty;
+        }
     }
 
     private async Task DeletePostAsync(string slug)
@@ -1232,7 +2204,8 @@
             }
             catch { }
 
-            _statusMessage = "Post deleted successfully from PostgreSQL!";
+            _statusMessage = "Статията беше изтрита успешно!";
+            _isStatusError = false;
             await LoadPostsAsync();
         }
     }
@@ -1240,10 +2213,15 @@
     private string RenderMarkdown(string? md)
     {
         if (string.IsNullOrEmpty(md)) return "";
+        var clean = CarouselRegex.Replace(md, "");
+        clean = VideoCarouselRegex.Replace(clean, match =>
+        {
+            return "\n<div class=\"p-3 my-3 rounded-3 text-center\" style=\"background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 600;\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"me-1\"><polygon points=\"23 7 16 12 23 17 23 7\"></polygon><rect x=\"1\" y=\"5\" width=\"15\" height=\"14\" rx=\"2\" ry=\"2\"></rect></svg> Интерактивен Видео Слайдер (Hero Carousel)</div>\n";
+        }).Trim();
         var pipeline = new Markdig.MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
             .Build();
-        return Markdig.Markdown.ToHtml(md, pipeline);
+        return Markdig.Markdown.ToHtml(clean, pipeline);
     }
 
     private void CancelEditing()
@@ -1266,9 +2244,12 @@
         public string ReadTimeEn { get; set; } = "5 min.";
         public string SeoKeywordsBg { get; set; } = "";
         public string SeoKeywordsEn { get; set; } = "";
+        public bool IsPublished { get; set; } = true;
         
         public string ContentBg { get; set; } = "";
         public string ContentEn { get; set; } = "";
+        public List<HeroCarousel.HeroCarouselItemModel> CarouselItems { get; set; } = new();
+        public List<HeroCarousel.HeroCarouselItemModel> BottomVideoItems { get; set; } = new();
 
         // Backward compatibility getters
         public string? Title { get; set; }

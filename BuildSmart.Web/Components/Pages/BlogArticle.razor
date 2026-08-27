@@ -8,10 +8,15 @@
 @using BuildSmart.Infrastructure.Persistence
 @using BuildSmart.Core.Domain.Entities
 @using Microsoft.EntityFrameworkCore
+@using BuildSmart.SharedUI.Components.Pages.Landing
+@using BuildSmart.SharedUI.Services
+@using BuildSmart.SharedUI.Components
 @inject IDbContextFactory<AppDbContext> DbContextFactory
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject NavigationManager NavManager
+@inject IAuthService AuthService
+@implements IDisposable
 
 @if (_meta != null)
 {
@@ -71,13 +76,14 @@
         </a>
     </div>
 
-    @if (_meta == null || string.IsNullOrEmpty(_htmlContent))
+    @if (_meta == null || ((_segments == null || _segments.Count == 0) && string.IsNullOrEmpty(_htmlContent)))
     {
         @if (_isNotFound)
         {
             <div class="text-center py-5">
-                <h2 class="text-danger">Article Not Found</h2>
-                <p class="text-secondary">The requested article could not be found. Go back to <a href="/blog">Blog</a>.</p>
+                <h2 class="text-danger">@Loc["Blog_NotFoundTitle"]</h2>
+                <p class="text-secondary">@Loc["Blog_NotFoundDesc"]</p>
+                <a href="/blog" class="btn btn-outline-primary mt-3">@Loc["Blog_BackToArticles"]</a>
             </div>
         }
         else
@@ -112,8 +118,14 @@
                         </div>
                     </div>
 
-                    <!-- Featured Image -->
-                    @if (!string.IsNullOrEmpty(_meta.Image))
+                    <!-- Featured Image or Multi-slide Hero Carousel -->
+                    @if (_carouselItems != null && _carouselItems.Count > 0)
+                    {
+                        <div class="article-carousel-wrapper mb-5">
+                            <HeroCarousel Items="_carouselItems" FallbackImageUrl="@GetCoverImage()" />
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(_meta.Image))
                     {
                         <div class="article-featured-img-wrapper mb-5">
                             <img src="@_meta.Image" alt="@GetTitle()" class="article-featured-img" />
@@ -124,6 +136,26 @@
                     <div class="blog-article-content">
                         @((MarkupString)_htmlContent)
                     </div>
+
+                    <!-- Bottom Video Showcase Carousel (Managed in CMS) -->
+                    @if (_bottomVideoCarouselItems != null && _bottomVideoCarouselItems.Count > 0)
+                    {
+                        <div class="article-bottom-video-carousel my-5 p-4 rounded-4" style="background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: var(--shadow-main);">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div style="width: 36px; height: 36px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--color-primary);">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="h5 fw-bold text-primary m-0">@Loc["Blog_VideoShowcaseTitle"]</h3>
+                                    <span class="text-muted extra-small">Реални видео резултати и репортажи от изпълнени обекти</span>
+                                </div>
+                            </div>
+                            <HeroCarousel Items="_bottomVideoCarouselItems" FallbackImageUrl="@GetCoverImage()" />
+                        </div>
+                    }
                 </article>
             </div>
 
@@ -134,7 +166,7 @@
                     <div class="blog-cta-widget p-4 text-center">
                         <div class="cta-live-badge mb-3">
                             <span class="pulse-dot"></span>
-                            <span>0% Капаро • Твърда Оферта</span>
+                            <span>@Loc["Blog_NoDepositBadge"]</span>
                         </div>
                         <div class="cta-widget-icon-wrapper mb-3">
                             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -146,17 +178,25 @@
                         </div>
                         <h4 class="cta-widget-title mb-2">@Loc["Blog_EstimatorCta"]</h4>
                         <p class="cta-widget-desc mb-4">@Loc["Blog_EstimatorDesc"]</p>
-                        <a href="@GetEstimatorUrl()" class="bs-btn-primary bs-btn-animated w-100 mb-2">
+                        <button type="button" class="bs-btn-primary bs-btn-animated w-100 mb-2" @onclick="() => HandleEstimatorClick(GetEstimatorUrl())">
                             @Loc["Blog_EstimatorCta"]
-                        </a>
+                        </button>
                         <a href="/project-messages" class="bs-btn-outline w-100">
-                            Пишете ни в Чата
+                            @Loc["Blog_ChatWithUs"]
                         </a>
                     </div>
                 </aside>
             </div>
         </div>
     }
+
+    <!-- Auth Prompt Confirmation Modal when not logged in -->
+    <BsConfirmationModal IsVisible="_showAuthModal"
+                         Title="@Loc["Feed_AuthAlert_Title"]"
+                         Message="@Loc["Feed_AuthAlert_Message"]"
+                         AcceptText="@Loc["Feed_AuthAlert_Accept"]"
+                         CancelText="@Loc["Feed_AuthAlert_Cancel"]"
+                         OnConfirmationChanged="OnAuthConfirmationChanged" />
 </div>
 
 <style>
@@ -1082,12 +1122,24 @@
     private string? _htmlContent;
     private bool _isNotFound;
     private string _currentLang = "bg";
+    private List<HeroCarousel.HeroCarouselItemModel>? _carouselItems;
+    private List<HeroCarousel.HeroCarouselItemModel>? _bottomVideoCarouselItems;
+    private bool _showAuthModal = false;
+    private string? _pendingEstimatorUrl;
+
+    private static readonly System.Text.RegularExpressions.Regex CarouselRegex =
+        new(@"<!--\s*CAROUSEL_JSON:\s*(\[[\s\S]*?\])\s*-->", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex VideoCarouselRegex =
+        new(@"<!--\s*(?:VIDEO_CAROUSEL_JSON|BOTTOM_VIDEOS_JSON):\s*(\[[\s\S]*?\])\s*-->", System.Text.RegularExpressions.RegexOptions.Compiled);
 
     protected override async Task OnParametersSetAsync()
     {
         _isNotFound = false;
         _meta = null;
         _htmlContent = null;
+        _carouselItems = null;
+        _bottomVideoCarouselItems = null;
         _currentLang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
 
         try
@@ -1161,12 +1213,31 @@
                     }
                 }
 
+                // Check for metadata in posts.json for carousel fallback
+                try
+                {
+                    var postsFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", "posts.json");
+                    if (File.Exists(postsFilePath))
+                    {
+                        var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        var posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
+                        var jsonMeta = posts?.FirstOrDefault(p => p.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
+                        if (jsonMeta?.CarouselItems != null && jsonMeta.CarouselItems.Count > 0)
+                        {
+                            _carouselItems = jsonMeta.CarouselItems;
+                        }
+                        if (jsonMeta?.BottomVideoItems != null && jsonMeta.BottomVideoItems.Count > 0)
+                        {
+                            _bottomVideoCarouselItems = jsonMeta.BottomVideoItems;
+                        }
+                    }
+                }
+                catch { }
+
                 if (!string.IsNullOrWhiteSpace(mdContent))
                 {
-                    var pipeline = new Markdig.MarkdownPipelineBuilder()
-                        .UseAdvancedExtensions()
-                        .Build();
-                    _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+                    ProcessMarkdownContent(mdContent);
                 }
                 else
                 {
@@ -1183,6 +1254,14 @@
                     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     var posts = JsonSerializer.Deserialize<List<BlogPostMetadata>>(jsonContent, options);
                     _meta = posts?.FirstOrDefault(p => p.Slug.Equals(Slug, StringComparison.OrdinalIgnoreCase));
+                    if (_meta?.CarouselItems != null && _meta.CarouselItems.Count > 0)
+                    {
+                        _carouselItems = _meta.CarouselItems;
+                    }
+                    if (_meta?.BottomVideoItems != null && _meta.BottomVideoItems.Count > 0)
+                    {
+                        _bottomVideoCarouselItems = _meta.BottomVideoItems;
+                    }
                 }
 
                 var localizedMdPath = Path.Combine(WebHostEnvironment.WebRootPath, "posts", $"{Slug}.{_currentLang}.md");
@@ -1193,10 +1272,7 @@
                 if (targetPath != null)
                 {
                     var mdContent = await File.ReadAllTextAsync(targetPath);
-                    var pipeline = new Markdig.MarkdownPipelineBuilder()
-                        .UseAdvancedExtensions()
-                        .Build();
-                    _htmlContent = Markdig.Markdown.ToHtml(mdContent, pipeline);
+                    ProcessMarkdownContent(mdContent);
                 }
                 else
                 {
@@ -1208,6 +1284,197 @@
         {
             Console.WriteLine($"Error reading article {Slug}: {ex.Message}");
             _isNotFound = true;
+        }
+    }
+
+    public class ArticleSegment
+    {
+        public string? Html { get; set; }
+        public List<HeroCarousel.HeroCarouselItemModel>? CarouselItems { get; set; }
+    }
+
+    private List<ArticleSegment> _segments = new();
+
+    private void ProcessMarkdownContent(string mdContent)
+    {
+        var newSegments = new List<ArticleSegment>();
+
+        // 1. Extract Top Carousel (at the very beginning of the document)
+        var matchTop = CarouselRegex.Match(mdContent);
+        if (matchTop.Success)
+        {
+            try
+            {
+                var json = matchTop.Groups[1].Value;
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var parsedCarousel = JsonSerializer.Deserialize<List<HeroCarousel.HeroCarouselItemModel>>(json, options);
+                if (parsedCarousel != null && parsedCarousel.Count > 0)
+                {
+                    _carouselItems = parsedCarousel;
+                }
+            }
+            catch { }
+            mdContent = CarouselRegex.Replace(mdContent, "").TrimStart();
+        }
+
+        var pipeline = new Markdig.MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .Build();
+
+        var cleanMd = VideoCarouselRegex.Replace(mdContent, "");
+        _htmlContent = Markdig.Markdown.ToHtml(cleanMd, pipeline);
+
+        // 2. Find all inline video carousels / showcases
+        var matches = VideoCarouselRegex.Matches(mdContent);
+        if (matches.Count == 0)
+        {
+            newSegments.Add(new ArticleSegment { Html = _htmlContent });
+            _segments = newSegments;
+            return;
+        }
+
+        int lastIndex = 0;
+        foreach (System.Text.RegularExpressions.Match m in matches)
+        {
+            if (m.Index > lastIndex)
+            {
+                var textBefore = mdContent.Substring(lastIndex, m.Index - lastIndex);
+                if (!string.IsNullOrEmpty(textBefore))
+                {
+                    var html = Markdig.Markdown.ToHtml(textBefore, pipeline);
+                    newSegments.Add(new ArticleSegment { Html = html });
+                }
+            }
+
+            try
+            {
+                var json = m.Groups[1].Value;
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var items = JsonSerializer.Deserialize<List<HeroCarousel.HeroCarouselItemModel>>(json, options);
+                if (items != null && items.Count > 0)
+                {
+                    newSegments.Add(new ArticleSegment { CarouselItems = items });
+                }
+            }
+            catch { }
+
+            lastIndex = m.Index + m.Length;
+        }
+
+        if (lastIndex < mdContent.Length)
+        {
+            var remainingText = mdContent.Substring(lastIndex);
+            if (!string.IsNullOrEmpty(remainingText))
+            {
+                var html = Markdig.Markdown.ToHtml(remainingText, pipeline);
+                newSegments.Add(new ArticleSegment { Html = html });
+            }
+        }
+
+        _segments = newSegments;
+    }
+
+    private IDisposable? _locationChangingRegistration;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _locationChangingRegistration = NavManager.RegisterLocationChangingHandler(OnLocationChanging);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BlogArticle] LocationChangingHandler registration: {ex.Message}");
+            }
+        }
+    }
+
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        try
+        {
+            var target = context.TargetLocation;
+            if (IsEstimatorOrWizardUrl(target))
+            {
+                bool isGuest = await CheckIsGuestAsync();
+                if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+                {
+                    context.PreventNavigation();
+                    _pendingEstimatorUrl = target;
+                    _showAuthModal = true;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[BlogArticle] OnLocationChanging error: {ex.Message}");
+        }
+    }
+
+    private bool IsEstimatorOrWizardUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        return url.Contains("/job-wizard", StringComparison.OrdinalIgnoreCase) ||
+               url.Contains("/renovation-estimator", StringComparison.OrdinalIgnoreCase) ||
+               url.Contains("/estimator", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            _locationChangingRegistration?.Dispose();
+        }
+        catch { }
+    }
+
+    private async Task HandleEstimatorClick(string? targetUrl = null)
+    {
+        var url = !string.IsNullOrEmpty(targetUrl) ? targetUrl : GetEstimatorUrl();
+        bool isGuest = await CheckIsGuestAsync();
+        if (AuthService != null && (!AuthService.IsAuthenticated || isGuest))
+        {
+            _pendingEstimatorUrl = url;
+            _showAuthModal = true;
+            StateHasChanged();
+        }
+        else
+        {
+            NavManager.NavigateTo(url);
+        }
+    }
+
+    private void OnAuthConfirmationChanged(bool proceed)
+    {
+        _showAuthModal = false;
+        if (proceed)
+        {
+            var dest = !string.IsNullOrEmpty(_pendingEstimatorUrl) ? _pendingEstimatorUrl : GetEstimatorUrl();
+            var returnUrl = Uri.EscapeDataString(dest);
+            NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
+        }
+    }
+
+    private async Task<bool> CheckIsGuestAsync()
+    {
+        try
+        {
+            if (AuthService == null) return false;
+            var token = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token)) return false;
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var email = jwtToken.Claims.FirstOrDefault(c =>
+                c.Type == "email" ||
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            return email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -1311,5 +1578,7 @@
         public string? Category { get; set; }
         public string? ReadTime { get; set; }
         public string? SeoKeywords { get; set; }
+        public List<HeroCarousel.HeroCarouselItemModel>? CarouselItems { get; set; } = new();
+        public List<HeroCarousel.HeroCarouselItemModel>? BottomVideoItems { get; set; } = new();
     }
 }

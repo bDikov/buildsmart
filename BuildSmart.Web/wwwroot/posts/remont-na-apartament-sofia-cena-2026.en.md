@@ -1,3 +1,5 @@
+<!-- CAROUSEL_JSON: [{"Url":"https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format\u0026fit=crop\u0026w=1920\u0026q=80","Type":"image","CaptionBg":"\u0428\u043F\u0430\u043A\u043B\u043E\u0432\u043A\u0430, \u0431\u043E\u044F\u0434\u0438\u0441\u0432\u0430\u043D\u0435 \u0438 \u0433\u0438\u043F\u0441\u043E\u043A\u0430\u0440\u0442\u043E\u043D","CaptionEn":"Plaster skimming, painting and drywall","TagBg":"","TagEn":"","Order":1},{"Url":"https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format\u0026fit=crop\u0026w=1920\u0026q=80","Type":"image","CaptionBg":"\u0415\u043B\u0435\u043A\u0442\u0440\u043E \u0438 \u0412\u0438\u041A \u0438\u043D\u0441\u0442\u0430\u043B\u0430\u0446\u0438\u0438 \u0421\u043E\u0444\u0438\u044F","CaptionEn":"Electrical and plumbing installations","TagBg":"","TagEn":"","Order":2},{"Url":"https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format\u0026fit=crop\u0026w=1920\u0026q=80","Type":"image","CaptionBg":"\u0410\u0440\u0445\u0438\u0442\u0435\u043A\u0442\u0443\u0440\u0435\u043D \u043F\u043B\u0430\u043D \u0438 \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u0435\u043D \u043F\u0440\u043E\u0435\u043A\u0442","CaptionEn":"Architectural blueprint and site plan","TagBg":"","TagEn":"","Order":3},{"Url":"https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/video-ccfd02b25c81f822bb14ccb6cf4bec19-V.mp4","Type":"video","CaptionBg":"","CaptionEn":"","TagBg":"","TagEn":"","Order":4}] -->
+
 # Apartment Renovation Prices in Sofia 2026: The Unfiltered Truth
 
 Picture this classic scenario: You buy your dream apartment in Sofia. You hire a contractor recommended by a friend. He inspects the place, smiles, and says: *"No worries, my friend! For €10,000 and 2 months, I'll make it look like a palace!"*
@@ -8,7 +10,7 @@ Six months later, your apartment is covered in dust, the workers disappeared aft
 
 In this guide, we reveal the **unfiltered, itemized turnkey renovation costs in Sofia for 2026** — so you never waste a single Euro.
 
-> Before accepting verbal estimates at face value, check exact itemized figures for your square footage in our [online cost calculator](/renovation-estimator?scope=full) — featuring fixed contract pricing and 0% advance deposit.
+> Before accepting verbal estimates at face value, check exact itemized figures for your square footage in our [online cost calculator](/renovation-estimator) — featuring fixed contract pricing and 0% advance deposit.
 
 ---
 
@@ -40,20 +42,20 @@ At BuildSmart.bg, we eliminate redundant intermediary fees, keeping prices **at 
     </div>
   </div>
   <div class="spectrum-cards-grid">
-    <a href="/renovation-estimator?scope=full" class="spectrum-card">
+    <a href="/renovation-estimator" class="spectrum-card">
       <div class="card-tier-tag">Investment Class</div>
       <div class="card-price-main">€525 - €640 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Ideal for rental properties. Chipboard furniture, durable laminate, lighting, and accent paints.</div>
       <div class="card-cta-btn">Calculate Online <span>→</span></div>
     </a>
-    <a href="/renovation-estimator?scope=full" class="spectrum-card active-card">
+    <a href="/renovation-estimator" class="spectrum-card active-card">
       <div class="card-badge-popular">Most Popular in Sofia</div>
       <div class="card-tier-tag text-primary">Full Turnkey Family Home</div>
       <div class="card-price-main">€600 - €900 <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Complete plumbing & electrical, demolition, plastering, bathroom, drywall ceilings, MDF furniture, HVAC.</div>
       <div class="card-cta-btn btn-primary-style">Calculate Free Quote <span>→</span></div>
     </a>
-    <a href="/renovation-estimator?scope=full" class="spectrum-card">
+    <a href="/renovation-estimator" class="spectrum-card">
       <div class="card-tier-tag">Designer Luxury</div>
       <div class="card-price-main">€900+ <span class="unit">/ sq.m.</span></div>
       <div class="card-desc">Architectural blueprint, natural marble, Smart Home automation, magnetic track lighting, oak parquet.</div>
@@ -103,18 +105,11 @@ To discover insider secrets for specific trades, explore our sub-guides:
 
 See with your own eyes what a flawless 100 sq.m. apartment renovation in Sofia looks like:
 
-<div class="blog-video-container">
-<video controls playsinline preload="metadata" class="blog-video-player" poster="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/poster_88ad6ba3-3833-4846-bc21-ddafba74ab16.jpg">
-  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/mobile_88ad6ba3-3833-4846-bc21-ddafba74ab16_ok%29video.mp4" media="(max-width: 768px)" type="video/mp4" />
-  <source src="https://pub-7c580f96b011420fb7163dccc8051790.r2.dev/ok%29video.mp4" type="video/mp4" />
-</video>
-</div>
-
 <div class="blog-lead-gen-card">
   <h3 class="bs-lead-title">Ready to start your project or have questions?</h3>
   <p class="bs-lead-desc">Get a fixed contract estimate with 0% advance deposit or chat with our team directly:</p>
   <div class="bs-lead-actions">
-    <a href="/renovation-estimator?scope=full" class="bs-btn-primary bs-btn-animated">
+    <a href="/renovation-estimator" class="bs-btn-primary bs-btn-animated">
       Start Your Project Online (2 min)
     </a>
     <a href="/project-messages" class="bs-btn-outline">
