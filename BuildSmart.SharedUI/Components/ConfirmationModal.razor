@@ -36,6 +36,9 @@
         justify-content: center;
         z-index: 10000;
         padding: 1rem;
+        box-sizing: border-box;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         animation: fadeIn 0.15s ease-out;
     }
 
@@ -46,6 +49,11 @@
         border-radius: 12px;
         width: 100%;
         max-width: 440px;
+        max-height: calc(100vh - 2rem);
+        max-height: calc(100dvh - 2rem);
+        overflow-y: auto;
+        margin: auto;
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.3));

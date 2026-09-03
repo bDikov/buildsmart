@@ -1464,6 +1464,9 @@ Boncho | BuildSmart</value>
   <data name="Lander_PhoneError" xml:space="preserve">
     <value>Please enter a valid phone number (at least 6 digits)</value>
   </data>
+  <data name="Lander_NameError" xml:space="preserve">
+    <value>Please enter your name</value>
+  </data>
   <data name="Lander_ProposalSentNotice" xml:space="preserve">
     <value>Official PDF Proposal dispatched to {0}</value>
   </data>

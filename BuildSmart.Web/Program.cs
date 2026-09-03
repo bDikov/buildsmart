@@ -71,8 +71,10 @@ else
 var apiUrl = builder.Configuration["ApiConfig:BaseUrlOverride"] ?? builder.Configuration["ApiConfig:BaseUrl"];
 BuildSmart.SharedUI.ApiConfig.BaseUrlOverride = !string.IsNullOrEmpty(apiUrl) ? apiUrl : "https://localhost:7212";
 BuildSmart.SharedUI.ApiConfig.EnableFacebookLogin = builder.Configuration.GetValue<bool>("Authentication:Facebook:EnableFacebookLogin", false);
+BuildSmart.SharedUI.ApiConfig.EnableExitIntentModal = builder.Configuration.GetValue<bool>("FeatureFlags:EnableExitIntentModal", false);
 BuildSmart.SharedUI.ApiConfig.ClarityProjectId = builder.Configuration["Clarity:ProjectId"];
 BuildSmart.SharedUI.ApiConfig.GoogleTagManagerId = builder.Configuration["GoogleTagManager:Id"];
+BuildSmart.SharedUI.ApiConfig.FacebookPixelId = builder.Configuration["Meta:PixelId"] ?? builder.Configuration["Authentication:Facebook:PixelId"] ?? "";
 BuildSmart.SharedUI.ApiConfig.PostHogApiKey = builder.Configuration["PostHog:ApiKey"];
 var postHogHost = builder.Configuration["PostHog:ApiHost"];
 if (!string.IsNullOrEmpty(postHogHost))

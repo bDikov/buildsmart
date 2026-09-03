@@ -24,6 +24,26 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-TD4X45RW');</script>
     <!-- End Google Tag Manager -->
+
+    <!-- Meta (Facebook) Pixel Base Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    @if (!string.IsNullOrEmpty(BuildSmart.SharedUI.ApiConfig.FacebookPixelId) && BuildSmart.SharedUI.ApiConfig.FacebookPixelId != "YOUR_META_PIXEL_ID")
+    {
+        <text>
+        fbq('init', '@BuildSmart.SharedUI.ApiConfig.FacebookPixelId');
+        fbq('track', 'PageView');
+        </text>
+    }
+    </script>
+    <!-- End Meta Pixel Base Code -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
@@ -108,6 +128,43 @@
                 window.dataLayer.push(eventData);
             };
 
+            // Comprehensive Lead Conversion Tracker (URL History, Facebook Pixel, GTM DataLayer, PostHog)
+            window.trackLeadConversion = function(newUrl, leadPayload) {
+                try {
+                    // 1. Update address bar URL seamlessly without page reload so Facebook Pixel & Ads URL-based custom conversions trigger
+                    if (newUrl && window.history && window.history.pushState) {
+                        window.history.pushState({ path: newUrl }, '', newUrl);
+                    }
+
+                    // 2. Dispatch custom DOM event
+                    window.dispatchEvent(new CustomEvent('leadSubmitted', { detail: leadPayload }));
+
+                    // 3. Facebook Pixel Standard & Custom Conversion Events
+                    if (typeof window.fbq === 'function') {
+                        window.fbq('track', 'Lead', {
+                            content_name: leadPayload.scope || 'Renovation Estimate',
+                            content_category: leadPayload.finish_tier || 'Estimate',
+                            value: leadPayload.price_min_eur || 0,
+                            currency: 'EUR'
+                        });
+                        window.fbq('trackCustom', 'RenovationLeadSubmitted', leadPayload);
+                    }
+
+                    // 4. Google Tag Manager / dataLayer push
+                    if (window.pushToDataLayer) {
+                        window.pushToDataLayer('lead_submitted', leadPayload);
+                        window.pushToDataLayer('estimator_lead_submitted', leadPayload);
+                    }
+
+                    // 5. PostHog Event Capture
+                    if (window.posthog && typeof window.posthog.capture === 'function') {
+                        window.posthog.capture('estimator_lead_submitted', leadPayload);
+                    }
+                } catch(e) {
+                    console.error("trackLeadConversion error:", e);
+                }
+            };
+
             // Capture UTM parameters and save them to sessionStorage
             (function() {
                 try {
@@ -190,6 +247,14 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TD4X45RW"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+    @if (!string.IsNullOrEmpty(BuildSmart.SharedUI.ApiConfig.FacebookPixelId) && BuildSmart.SharedUI.ApiConfig.FacebookPixelId != "YOUR_META_PIXEL_ID")
+    {
+        <!-- Meta Pixel (noscript) -->
+        <noscript><img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=@BuildSmart.SharedUI.ApiConfig.FacebookPixelId&ev=PageView&noscript=1"
+        /></noscript>
+        <!-- End Meta Pixel (noscript) -->
+    }
     <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     
     <div id="blazor-error-ui" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #ffc107; padding: 10px; z-index: 9999;">

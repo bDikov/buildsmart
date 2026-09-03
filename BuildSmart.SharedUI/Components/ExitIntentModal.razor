@@ -180,6 +180,9 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     animation: fadeIn 0.25s ease;
 }
 
@@ -191,6 +194,11 @@
     padding: 36px;
     max-width: 540px;
     width: 100%;
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    margin: auto;
+    box-sizing: border-box;
     box-shadow: var(--shadow-main);
     animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -379,7 +387,7 @@
 
 @code {
     [Parameter]
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; set; } = ApiConfig.EnableExitIntentModal;
 
     private bool _isVisible = false;
     private bool _hasTriggered = false;
@@ -396,7 +404,7 @@
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public int PropertyArea { get; set; } = 75;
+        public int? PropertyArea { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
@@ -474,7 +482,7 @@
                 Name = _leadModel.Name.Trim(),
                 Phone = _leadModel.Phone.Trim(),
                 Email = _leadModel.Email.Trim(),
-                SelectedArea = _leadModel.PropertyArea,
+                SelectedArea = _leadModel.PropertyArea ?? 0,
                 Scope = "exit_intent_lead",
                 BuildingStatus = "bds",
                 QualityTier = "standard",
@@ -499,7 +507,7 @@
             {
                 await JSRuntime.InvokeVoidAsync("posthog.capture", "exit_intent_lead_submitted", new
                 {
-                    area = _leadModel.PropertyArea,
+                    area = _leadModel.PropertyArea ?? 0,
                     email = _leadModel.Email,
                     phone = _leadModel.Phone
                 });
@@ -521,7 +529,7 @@
 
     private void HandleGoogleSocialAccess()
     {
-        var area = _leadModel.PropertyArea > 0 ? _leadModel.PropertyArea : 75;
+        var area = (_leadModel.PropertyArea.HasValue && _leadModel.PropertyArea.Value > 0) ? _leadModel.PropertyArea.Value : 75;
         var returnDest = $"/renovation-estimator?area={area}&proposalReady=true";
         var returnUrl = Uri.EscapeDataString(returnDest);
         NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");
@@ -529,7 +537,7 @@
 
     private void HandleFacebookSocialAccess()
     {
-        var area = _leadModel.PropertyArea > 0 ? _leadModel.PropertyArea : 75;
+        var area = (_leadModel.PropertyArea.HasValue && _leadModel.PropertyArea.Value > 0) ? _leadModel.PropertyArea.Value : 75;
         var returnDest = $"/renovation-estimator?area={area}&proposalReady=true";
         var returnUrl = Uri.EscapeDataString(returnDest);
         NavManager.NavigateTo($"/create-account?ReturnUrl={returnUrl}");

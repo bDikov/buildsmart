@@ -144,8 +144,8 @@
 
     @if (ShowAddCategoryModal)
     {
-        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-            <div class="modal-card bs-card" style="width: 100%; max-width: 480px; padding: 24px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
+        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+            <div class="modal-card bs-card" style="width: 100%; max-width: 480px; max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; margin: auto; box-sizing: border-box; padding: 24px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
                 <h3 style="margin-top: 0; margin-bottom: 12px; color: var(--text-primary);">Add Trade Category to Project</h3>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Select a trade category work package to append to this project with default SKUs.</p>
                 

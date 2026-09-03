@@ -392,6 +392,9 @@
     justify-content: center;
     z-index: 1050;
     padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .bs-modal-card {
@@ -400,6 +403,11 @@
     border-radius: 18px;
     max-width: 500px;
     width: 100%;
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    margin: auto;
+    box-sizing: border-box;
     box-shadow: var(--elevation-16dp);
     animation: modalFadeIn 0.25s ease-out;
 }

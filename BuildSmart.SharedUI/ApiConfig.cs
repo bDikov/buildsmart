@@ -11,6 +11,8 @@ public static class ApiConfig
 
     // --- FEATURE FLAGS & OAUTH TOGGLES ---
     public static bool EnableFacebookLogin { get; set; } = false;
+    public static bool EnableExitIntentModal { get; set; } = false;
+    public static string? FacebookPixelId { get; set; } = "";
 
     // --- LANDING PAGE CONFIGURABLE BUSINESS RULES ---
     public static string LandingPage_CityName { get; set; } = "София";

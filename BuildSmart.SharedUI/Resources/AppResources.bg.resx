@@ -1545,6 +1545,9 @@
   <data name="Lander_PhoneError" xml:space="preserve">
     <value>Моля въведете валиден телефонен номер (поне 6 цифри)</value>
   </data>
+  <data name="Lander_NameError" xml:space="preserve">
+    <value>Моля, въведете Вашето име</value>
+  </data>
   <data name="Lander_ProposalSentNotice" xml:space="preserve">
     <value>Официалната PDF оферта е изпратена на {0}</value>
   </data>

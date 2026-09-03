@@ -37,12 +37,19 @@
         justify-content: center;
         z-index: 10000;
         padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         animation: bsModalFadeIn 0.2s ease-out;
     }
 
     .bs-modal-card {
         width: 100%;
         max-width: 400px;
+        max-height: calc(100vh - 40px);
+        max-height: calc(100dvh - 40px);
+        overflow-y: auto;
+        margin: auto;
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 20px;

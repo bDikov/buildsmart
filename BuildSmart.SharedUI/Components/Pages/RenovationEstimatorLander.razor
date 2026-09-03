@@ -883,7 +883,7 @@
 
             <!-- Email Field -->
             <div class="mb-3">
-                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_EmailPlaceholder"]</label>
+                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_EmailPlaceholder"] <span class="text-danger">*</span></label>
                 <input type="email" 
                        class="form-control form-control-lg magazine-modal-input @((_isSubmitted && _isEmailInvalid) || !string.IsNullOrEmpty(_emailValidationError) ? "is-invalid" : "")" 
                        placeholder="name@domain.com" 
@@ -905,7 +905,7 @@
 
             <!-- Phone Field -->
             <div class="mb-3">
-                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_PhonePlaceholder"]</label>
+                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_PhonePlaceholder"] <span class="text-danger">*</span></label>
                 <input type="tel" 
                        class="form-control form-control-lg magazine-modal-input @(_isSubmitted && _isPhoneInvalid ? "is-invalid" : "")" 
                        placeholder="+359 88 123 4567" 
@@ -921,8 +921,18 @@
 
             <!-- Name Field -->
             <div class="mb-3">
-                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_NamePlaceholder"]</label>
-                <input type="text" class="form-control form-control-lg magazine-modal-input" placeholder="John Doe" @bind="_name" />
+                <label class="form-label magazine-modal-label mb-1">@Loc["Lander_NamePlaceholder"] <span class="text-danger">*</span></label>
+                <input type="text" 
+                       class="form-control form-control-lg magazine-modal-input @(_isSubmitted && _isNameInvalid ? "is-invalid" : "")" 
+                       placeholder="John Doe" 
+                       @bind="_name" 
+                       @bind:event="oninput" />
+                @if (_isSubmitted && _isNameInvalid)
+                {
+                    <div class="invalid-feedback d-block mt-1">
+                        @Loc["Lander_NameError"]
+                    </div>
+                }
             </div>
 
             <!-- Submit Button -->
@@ -949,7 +959,7 @@
     <SeoPriceTable />
 </div>
 
-<ExitIntentModal IsEnabled="true" />
+<ExitIntentModal />
 
 @code {
     [SupplyParameterFromQuery(Name = "scope")]
@@ -972,6 +982,9 @@
 
     [SupplyParameterFromQuery(Name = "proposalReady")]
     public bool? QueryProposalReady { get; set; }
+
+    [SupplyParameterFromQuery(Name = "leadSubmitted")]
+    public bool? QueryLeadSubmitted { get; set; }
 
     [SupplyParameterFromQuery(Name = "utm_source")]
     public string? UtmSource { get; set; }
@@ -1038,7 +1051,8 @@
     // Field-level validation states
     private bool _isSubmitted = false;
     private bool _isEmailInvalid => string.IsNullOrWhiteSpace(_email) || !IsValidEmail(_email);
-    private bool _isPhoneInvalid => !string.IsNullOrWhiteSpace(_phone) && _phone.Trim().Length < 6;
+    private bool _isPhoneInvalid => string.IsNullOrWhiteSpace(_phone) || _phone.Trim().Length < 6;
+    private bool _isNameInvalid => string.IsNullOrWhiteSpace(_name) || _name.Trim().Length < 2;
 
     private string _email = string.Empty;
     private string _phone = string.Empty;
@@ -1095,7 +1109,7 @@
             _bathroomCount = QueryBathrooms.Value;
         }
 
-        if (QueryProposalReady == true)
+        if (QueryProposalReady == true || QueryLeadSubmitted == true)
         {
             _isProposalReady = true;
         }
@@ -1294,7 +1308,7 @@
         _isSubmitted = true;
         _emailValidationError = null;
 
-        if (_isEmailInvalid || _isPhoneInvalid)
+        if (_isEmailInvalid || _isPhoneInvalid || _isNameInvalid)
         {
             return;
         }
@@ -1414,24 +1428,29 @@
             await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "lead_phone", _phone);
             await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "lead_name", _name);
 
-            await JSRuntime.InvokeVoidAsync("posthog.capture", "estimator_lead_submitted", new
+            // Construct conversion URL with parameters to reflect the completed state in address bar for Facebook Pixel & Ads URL-based tracking
+            var queryParams = new List<string>();
+            queryParams.Add($"scope={Uri.EscapeDataString(_activeScope)}");
+            queryParams.Add($"area={_selectedArea}");
+            queryParams.Add($"status={Uri.EscapeDataString(_buildingStatus)}");
+            queryParams.Add($"tier={Uri.EscapeDataString(_finishQualityTier)}");
+            if (_activeScope == "bathroom")
             {
-                lead_id = lead.Id,
-                email = _email,
-                phone = _phone,
-                name = _name,
-                scope = _activeScope,
-                area = _selectedArea,
-                building_status = _buildingStatus,
-                finish_tier = _finishQualityTier,
-                price_min_eur = minEur,
-                price_max_eur = maxEur,
-                utm_source = UtmSource,
-                utm_campaign = UtmCampaign,
-                utm_medium = UtmMedium
-            });
+                queryParams.Add($"bathrooms={_bathroomCount}");
+            }
+            queryParams.Add("proposalReady=true");
+            queryParams.Add("leadSubmitted=true");
 
-            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "estimator_lead_submitted", new
+            if (!string.IsNullOrEmpty(UtmSource)) queryParams.Add($"utm_source={Uri.EscapeDataString(UtmSource)}");
+            if (!string.IsNullOrEmpty(UtmMedium)) queryParams.Add($"utm_medium={Uri.EscapeDataString(UtmMedium)}");
+            if (!string.IsNullOrEmpty(UtmCampaign)) queryParams.Add($"utm_campaign={Uri.EscapeDataString(UtmCampaign)}");
+            if (!string.IsNullOrEmpty(UtmTerm)) queryParams.Add($"utm_term={Uri.EscapeDataString(UtmTerm)}");
+            if (!string.IsNullOrEmpty(UtmContent)) queryParams.Add($"utm_content={Uri.EscapeDataString(UtmContent)}");
+
+            var currentUri = new Uri(NavManager.Uri);
+            var conversionUrl = $"{currentUri.AbsolutePath}?{string.Join("&", queryParams)}";
+
+            var leadPayload = new
             {
                 lead_id = lead.Id,
                 email = _email,
@@ -1445,8 +1464,12 @@
                 price_max_eur = maxEur,
                 utm_source = UtmSource,
                 utm_campaign = UtmCampaign,
-                utm_medium = UtmMedium
-            });
+                utm_medium = UtmMedium,
+                conversion_url = conversionUrl
+            };
+
+            // Triggers window.trackLeadConversion which updates address bar URL, fires FB Pixel 'Lead' & custom events, GTM dataLayer, and PostHog
+            await JSRuntime.InvokeVoidAsync("trackLeadConversion", conversionUrl, leadPayload);
         }
         catch { }
     }
