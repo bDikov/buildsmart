@@ -31,6 +31,15 @@ public class CalculatorLeadConfiguration : IEntityTypeConfiguration<CalculatorLe
             .IsRequired()
             .HasMaxLength(50);
 
+        builder.Property(c => c.IsContacted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(c => c.ContactedAt);
+
+        builder.Property(c => c.AdminNotes)
+            .HasMaxLength(4000);
+
         builder.HasIndex(c => new { c.UtmSource, c.UtmCampaign });
         builder.HasIndex(c => c.CreatedAt);
     }

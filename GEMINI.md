@@ -91,9 +91,17 @@ If the update fails with `error HTTP_ERROR: No connection could be made because 
 3. **Update the Schema:** Once the API says "Now listening on: https://localhost:7212", open a new terminal in `BuildSmart.SharedUI` and run `dotnet graphql update`.
 4. **Compile:** Run `dotnet build` to ensure the new schema resolves all `SS0002` errors.
 
-### Manual Migrations
+### EF Core Migrations & Schema Architecture
 
-**IMPORTANT:** The Gemini agent is configured to **never** execute migration commands automatically.
+**STRICT RULES FOR DATABASE SCHEMA CHANGES:**
+1. **Entity Configuration**: Create or update `IEntityTypeConfiguration<T>` in `BuildSmart.Infrastructure/Persistence/Configurations/`.
+2. **DbSet Registration**: Register `DbSet<T>` in `AppDbContext.cs`.
+3. **No Runtime DDL**: Never use runtime raw SQL (`CREATE TABLE IF NOT EXISTS` or `ALTER TABLE ... ADD COLUMN`) in repositories or background workers.
+4. **Generate Migration**: Run `dotnet ef migrations add <Name> --project BuildSmart.Infrastructure --startup-project BuildSmart.Api`.
+5. **Snapshot Scope Validation**: Run `git diff` on `AppDbContextModelSnapshot.cs` and the generated migration to ensure **ONLY** changes affiliated with the current scope are present.
+6. **User Execution**: The AI assistant never runs `dotnet ef database update` automatically. The user runs migrations manually or lets the API apply them via `context.Database.Migrate()` on startup.
+
+**IMPORTANT:** The Gemini agent is configured to **never** execute live database migration commands automatically.
 
 ### 3rd Party API Keys & Secrets Policy
 

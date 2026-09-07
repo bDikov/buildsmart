@@ -2166,6 +2166,303 @@
   <data name="Admin_LeadDetails" xml:space="preserve">
     <value>Детайли за Запитването</value>
   </data>
+  <data name="Admin_Leads_Today" xml:space="preserve">
+    <value>Запитвания Днес</value>
+  </data>
+  <data name="Admin_Leads_ThisWeek" xml:space="preserve">
+    <value>Тази Седмица</value>
+  </data>
+  <data name="Admin_Leads_FacebookAds" xml:space="preserve">
+    <value>Facebook Реклами</value>
+  </data>
+  <data name="Admin_Leads_GoogleAds" xml:space="preserve">
+    <value>Google Реклами</value>
+  </data>
+  <data name="Admin_Leads_TotalPipeline" xml:space="preserve">
+    <value>Обща Стойност на Офертите</value>
+  </data>
+  <data name="Admin_Leads_BathroomQueries" xml:space="preserve">
+    <value>Запитвания за Баня</value>
+  </data>
+  <data name="Admin_Leads_FullQueries" xml:space="preserve">
+    <value>Цялостен Ремонт</value>
+  </data>
+  <data name="Admin_Leads_FlaggedEmails" xml:space="preserve">
+    <value>Фалшиви / Невалидни</value>
+  </data>
+  <data name="Admin_Leads_DateRange" xml:space="preserve">
+    <value>Период</value>
+  </data>
+  <data name="Admin_Leads_DateAll" xml:space="preserve">
+    <value>За целия период</value>
+  </data>
+  <data name="Admin_Leads_DateToday" xml:space="preserve">
+    <value>Днес</value>
+  </data>
+  <data name="Admin_Leads_DateYesterday" xml:space="preserve">
+    <value>Вчера</value>
+  </data>
+  <data name="Admin_Leads_Date7Days" xml:space="preserve">
+    <value>Последните 7 дни</value>
+  </data>
+  <data name="Admin_Leads_Date30Days" xml:space="preserve">
+    <value>Последните 30 дни</value>
+  </data>
+  <data name="Admin_Leads_SourceFilter" xml:space="preserve">
+    <value>Източник на трафик</value>
+  </data>
+  <data name="Admin_Leads_SourceAll" xml:space="preserve">
+    <value>Всички източници</value>
+  </data>
+  <data name="Admin_Leads_SourceFacebook" xml:space="preserve">
+    <value>Facebook Реклами</value>
+  </data>
+  <data name="Admin_Leads_SourceGoogle" xml:space="preserve">
+    <value>Google Реклами</value>
+  </data>
+  <data name="Admin_Leads_SourceDirect" xml:space="preserve">
+    <value>Директен / Органичен</value>
+  </data>
+  <data name="Admin_Leads_SourceExitIntent" xml:space="preserve">
+    <value>Exit-Intent Изскачащ Прозорец</value>
+  </data>
+  <data name="Admin_Leads_ScopeFilter" xml:space="preserve">
+    <value>Тип Ремонт</value>
+  </data>
+  <data name="Admin_Leads_ScopeAll" xml:space="preserve">
+    <value>Всички типове</value>
+  </data>
+  <data name="Admin_Leads_ScopeBathroom" xml:space="preserve">
+    <value>Баня</value>
+  </data>
+  <data name="Admin_Leads_ScopeFull" xml:space="preserve">
+    <value>Цялостен Ремонт</value>
+  </data>
+  <data name="Admin_Leads_ScopeFinishing" xml:space="preserve">
+    <value>Довършителни Работи</value>
+  </data>
+  <data name="Admin_Leads_VerificationFilter" xml:space="preserve">
+    <value>Имейл Статус</value>
+  </data>
+  <data name="Admin_Leads_VerificationAll" xml:space="preserve">
+    <value>Всички статуси</value>
+  </data>
+  <data name="Admin_Leads_VerificationValid" xml:space="preserve">
+    <value>Само валидни</value>
+  </data>
+  <data name="Admin_Leads_VerificationFlagged" xml:space="preserve">
+    <value>Фалшиви / Невалидни</value>
+  </data>
+  <data name="Admin_Leads_ColSubmitted" xml:space="preserve">
+    <value>Дата и час</value>
+  </data>
+  <data name="Admin_Leads_ColContact" xml:space="preserve">
+    <value>Контакт</value>
+  </data>
+  <data name="Admin_Leads_ColScope" xml:space="preserve">
+    <value>Тип Ремонт</value>
+  </data>
+  <data name="Admin_Leads_ColSpecs" xml:space="preserve">
+    <value>Квадратура и Детайли</value>
+  </data>
+  <data name="Admin_Leads_ColEstimate" xml:space="preserve">
+    <value>Оферта (EUR / BGN)</value>
+  </data>
+  <data name="Admin_Leads_ColVerification" xml:space="preserve">
+    <value>Имейл Статус</value>
+  </data>
+  <data name="Admin_Leads_ColSource" xml:space="preserve">
+    <value>Източник &amp; Кампания</value>
+  </data>
+  <data name="Admin_Leads_ColActions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="Admin_Leads_Call" xml:space="preserve">
+    <value>Обаждане</value>
+  </data>
+  <data name="Admin_Leads_WhatsApp" xml:space="preserve">
+    <value>WhatsApp</value>
+  </data>
+  <data name="Admin_Leads_Email" xml:space="preserve">
+    <value>Имейл</value>
+  </data>
+  <data name="Admin_Leads_Inspect" xml:space="preserve">
+    <value>Преглед</value>
+  </data>
+  <data name="Admin_Leads_Delete" xml:space="preserve">
+    <value>Изтрий</value>
+  </data>
+  <data name="Admin_Leads_DeleteConfirmTitle" xml:space="preserve">
+    <value>Изтриване на запитване</value>
+  </data>
+  <data name="Admin_Leads_DeleteConfirmMsg" xml:space="preserve">
+    <value>Сигурни ли сте, че искате окончателно да изтриете това запитване?</value>
+  </data>
+  <data name="Admin_Leads_Confirm" xml:space="preserve">
+    <value>Изтрий</value>
+  </data>
+  <data name="Admin_Leads_Cancel" xml:space="preserve">
+    <value>Отказ</value>
+  </data>
+  <data name="Admin_Leads_Copied" xml:space="preserve">
+    <value>Копирано!</value>
+  </data>
+  <data name="Admin_Leads_ExportCsv" xml:space="preserve">
+    <value>Експорт CSV</value>
+  </data>
+  <data name="Admin_Leads_Refresh" xml:space="preserve">
+    <value>Обнови</value>
+  </data>
+  <data name="Admin_Leads_PageSize" xml:space="preserve">
+    <value>На страница</value>
+  </data>
+  <data name="Admin_Leads_Showing" xml:space="preserve">
+    <value>Показване на {0}-{1} от {2} запитвания</value>
+  </data>
+  <data name="Admin_Leads_NoLeads" xml:space="preserve">
+    <value>Няма намерени запитвания по избраните критерии</value>
+  </data>
+  <data name="Admin_Leads_Prev" xml:space="preserve">
+    <value>Предишна</value>
+  </data>
+  <data name="Admin_Leads_Next" xml:space="preserve">
+    <value>Следваща</value>
+  </data>
+  <data name="Admin_Leads_SortDateDesc" xml:space="preserve">
+    <value>Най-нови първо</value>
+  </data>
+  <data name="Admin_Leads_SortDateAsc" xml:space="preserve">
+    <value>Най-стари първо</value>
+  </data>
+  <data name="Admin_Leads_SortPriceDesc" xml:space="preserve">
+    <value>Цена (Низходяща)</value>
+  </data>
+  <data name="Admin_Leads_SortPriceAsc" xml:space="preserve">
+    <value>Цена (Възходяща)</value>
+  </data>
+  <data name="Admin_Leads_SortAreaDesc" xml:space="preserve">
+    <value>Квадратура (Низходяща)</value>
+  </data>
+  <data name="Admin_Leads_SortAreaAsc" xml:space="preserve">
+    <value>Квадратура (Възходяща)</value>
+  </data>
+  <data name="Admin_Leads_DossierTitle" xml:space="preserve">
+    <value>Досие на запитването и изисквания</value>
+  </data>
+  <data name="Admin_Leads_ClientInfo" xml:space="preserve">
+    <value>Информация за клиента</value>
+  </data>
+  <data name="Admin_Leads_ProjectSpecs" xml:space="preserve">
+    <value>Параметри на проекта</value>
+  </data>
+  <data name="Admin_Leads_DualQuote" xml:space="preserve">
+    <value>Ценова оферта (Двойна валута)</value>
+  </data>
+  <data name="Admin_Leads_MarketingAttribution" xml:space="preserve">
+    <value>Маркетинг &amp; Източник на привличане</value>
+  </data>
+  <data name="Admin_Leads_EditAttribution" xml:space="preserve">
+    <value>Промени източник</value>
+  </data>
+  <data name="Admin_Leads_SaveAttribution" xml:space="preserve">
+    <value>Запази промените</value>
+  </data>
+  <data name="Admin_Leads_AttributionSaved" xml:space="preserve">
+    <value>Източникът е обновен успешно!</value>
+  </data>
+  <data name="Admin_Leads_Close" xml:space="preserve">
+    <value>Затвори</value>
+  </data>
+  <data name="Admin_Leads_Anonymous" xml:space="preserve">
+    <value>Анонимен клиент</value>
+  </data>
+  <data name="Admin_Leads_Included" xml:space="preserve">
+    <value>Включено</value>
+  </data>
+  <data name="Admin_Leads_NotIncluded" xml:space="preserve">
+    <value>Не е включено</value>
+  </data>
+  <data name="Admin_Leads_Furniture" xml:space="preserve">
+    <value>Обзавеждане</value>
+  </data>
+  <data name="Admin_Leads_Equipment" xml:space="preserve">
+    <value>Оборудване &amp; Уреди</value>
+  </data>
+  <data name="Admin_Leads_Bathrooms" xml:space="preserve">
+    <value>Брой бани</value>
+  </data>
+  <data name="Admin_Leads_Duration" xml:space="preserve">
+    <value>Очаквана продължителност</value>
+  </data>
+  <data name="Admin_Leads_Days" xml:space="preserve">
+    <value>дни</value>
+  </data>
+  <data name="Admin_Leads_Status_Bds" xml:space="preserve">
+    <value>БДС (Ново строителство)</value>
+  </data>
+  <data name="Admin_Leads_Status_Rough" xml:space="preserve">
+    <value>Груб строеж</value>
+  </data>
+  <data name="Admin_Leads_Status_Old" xml:space="preserve">
+    <value>Старо строителство</value>
+  </data>
+  <data name="Admin_Leads_Tier_Standard" xml:space="preserve">
+    <value>Стандарт</value>
+  </data>
+  <data name="Admin_Leads_Tier_Premium" xml:space="preserve">
+    <value>Премиум</value>
+  </data>
+  <data name="Admin_Leads_Tier_Luxury" xml:space="preserve">
+    <value>Лукс</value>
+  </data>
+  <data name="Admin_Leads_ColStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Admin_Leads_SpokenTo" xml:space="preserve">
+    <value>Проведен разговор</value>
+  </data>
+  <data name="Admin_Leads_Uncontacted" xml:space="preserve">
+    <value>Нов / Непотърсен</value>
+  </data>
+  <data name="Admin_Leads_MarkSpokenTo" xml:space="preserve">
+    <value>Маркирай като проведен разговор</value>
+  </data>
+  <data name="Admin_Leads_MarkUncontacted" xml:space="preserve">
+    <value>Маркирай като нов / непотърсен</value>
+  </data>
+  <data name="Admin_Leads_StatusUpdated" xml:space="preserve">
+    <value>Статусът на контакт е обновен</value>
+  </data>
+  <data name="Admin_Leads_NotesTitle" xml:space="preserve">
+    <value>CRM бележки и изисквания на клиента</value>
+  </data>
+  <data name="Admin_Leads_NotesPlaceholder" xml:space="preserve">
+    <value>Въведете детайли от разговора с клиента: Какво точно иска? Бюджет, срокове, специфични изисквания...</value>
+  </data>
+  <data name="Admin_Leads_SaveNotes" xml:space="preserve">
+    <value>Запази бележките</value>
+  </data>
+  <data name="Admin_Leads_NotesSaved" xml:space="preserve">
+    <value>Бележките са запазени успешно</value>
+  </data>
+  <data name="Admin_Leads_ContactFilter" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Admin_Leads_ContactAll" xml:space="preserve">
+    <value>Всички</value>
+  </data>
+  <data name="Admin_Leads_ContactNew" xml:space="preserve">
+    <value>Непотърсени</value>
+  </data>
+  <data name="Admin_Leads_ContactDone" xml:space="preserve">
+    <value>Проведен разговор</value>
+  </data>
+  <data name="Admin_Leads_HasNotes" xml:space="preserve">
+    <value>Има бележки</value>
+  </data>
+  <data name="Admin_Leads_AddNote" xml:space="preserve">
+    <value>Добави бележка</value>
+  </data>
   <data name="Login_FacebookButton" xml:space="preserve">
     <value>Продължи с Facebook</value>
   </data>
@@ -2183,6 +2480,48 @@
   </data>
   <data name="Admin_ReportingSubtitle" xml:space="preserve">
     <value>Следете конверсиите от Facebook/Meta Ads, източниците на трафик и прогнозните стойности.</value>
+  </data>
+  <data name="Admin_Reporting_ExportCsv" xml:space="preserve">
+    <value>Експорт CSV</value>
+  </data>
+  <data name="Admin_Reporting_Refresh" xml:space="preserve">
+    <value>Обнови</value>
+  </data>
+  <data name="Admin_Reporting_FacebookLeads" xml:space="preserve">
+    <value>Лийдове от Facebook Ads</value>
+  </data>
+  <data name="Admin_Reporting_GoogleLeads" xml:space="preserve">
+    <value>Лийдове от Google Ads</value>
+  </data>
+  <data name="Admin_Reporting_PipelineValue" xml:space="preserve">
+    <value>Прогнозна стойност</value>
+  </data>
+  <data name="Admin_Reporting_SourcePerformance" xml:space="preserve">
+    <value>Ефективност по източници и кампании</value>
+  </data>
+  <data name="Admin_Reporting_Loading" xml:space="preserve">
+    <value>Зареждане на данни за кампании...</value>
+  </data>
+  <data name="Admin_Reporting_NoData" xml:space="preserve">
+    <value>Все още няма регистрирани данни за кампании.</value>
+  </data>
+  <data name="Admin_Reporting_ColSource" xml:space="preserve">
+    <value>Източник</value>
+  </data>
+  <data name="Admin_Reporting_ColMedium" xml:space="preserve">
+    <value>Тип трафик</value>
+  </data>
+  <data name="Admin_Reporting_ColCampaign" xml:space="preserve">
+    <value>Кампания</value>
+  </data>
+  <data name="Admin_Reporting_ColLeads" xml:space="preserve">
+    <value>Брой лийдове</value>
+  </data>
+  <data name="Admin_Reporting_ColPipeline" xml:space="preserve">
+    <value>Прогнозен обем (€)</value>
+  </data>
+  <data name="Admin_Reporting_DirectOrganic" xml:space="preserve">
+    <value>Директен / Органичен</value>
   </data>
   <data name="Lander_SocialOrManualDivider" xml:space="preserve">
     <value>или попълнете данните си ръчно</value>
@@ -2348,6 +2687,12 @@
   </data>
   <data name="ExitIntent_CloseBtn" xml:space="preserve">
     <value>Затвори</value>
+  </data>
+  <data name="ExitIntent_RequiredFields" xml:space="preserve">
+    <value>Моля, попълнете име, телефон и имейл.</value>
+  </data>
+  <data name="ExitIntent_SubmitError" xml:space="preserve">
+    <value>Възникна грешка при изпращане. Моля, опитайте отново.</value>
   </data>
   <data name="Lander_VerifyingStatus" xml:space="preserve">
     <value>Проверка...</value>

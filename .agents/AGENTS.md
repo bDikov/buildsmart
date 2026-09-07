@@ -84,4 +84,16 @@
 - **Bucket Brigade Intrigue Loops**: Maintain reader momentum with punchy bridge phrases (*"Here's where 90% of homeowners get trapped...", "The dirty little secret..."*).
 - **Rhythm & Structure**: Keep paragraphs short (1-3 lines), use high-contrast formatting, itemized case study graphics, and seamless CTAs directing readers to the AI calculation wizard (`/job-wizard`) and video feed (`/feed`).
 
+## 15. Entity Framework Core Migrations & Schema Architecture
+- **Configuration-Driven Models**: Every entity in `BuildSmart.Core.Domain.Entities` must have a dedicated configuration class in `BuildSmart.Infrastructure/Persistence/Configurations/` implementing `IEntityTypeConfiguration<T>`. All table names, column lengths, required constraints, default values, and indexes must be explicitly defined here.
+- **DbSet Registration**: Aggregate roots and managed entities must be registered as a `DbSet<T>` in `AppDbContext.cs`.
+- **Zero Runtime Raw SQL DDL**: Never execute runtime raw SQL DDL statements (such as `CREATE TABLE IF NOT EXISTS` or `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`) inside repositories or application services. Schema management belongs strictly to EF Core migrations.
+- **Standard Migration Generation**: Whenever creating a new table or extending an existing one with new columns, generate an official EF Core migration using:
+  ```powershell
+  dotnet ef migrations add <DescriptiveMigrationName> --project BuildSmart.Infrastructure --startup-project BuildSmart.Api
+  ```
+- **Strict Snapshot & Migration Diff Validation**: Immediately after generating a migration, inspect `git diff BuildSmart.Infrastructure/Migrations/AppDbContextModelSnapshot.cs` and the generated migration `.cs` file. Verify that the changes bring **ONLY** the intended schema additions/modifications affiliated with your code, with zero unintended or out-of-scope model changes.
+- **User-Initiated Execution**: In accordance with Rule 1, the AI assistant must never automatically execute live database migrations. Provide the user with the update command (`dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api`) or explain that `BuildSmart.Api` automatically applies pending migrations via `context.Database.Migrate()` on startup.
+
+
 

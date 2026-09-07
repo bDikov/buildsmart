@@ -165,30 +165,120 @@
                 }
             };
 
-            // Capture UTM parameters and save them to sessionStorage
-            (function() {
+            // Capture UTM and ad attribution parameters and save them to localStorage + sessionStorage
+            window.captureAttribution = function() {
                 try {
                     var urlParams = new URLSearchParams(window.location.search);
                     var utms = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+                    var foundAny = false;
+
                     utms.forEach(function(utm) {
                         if (urlParams.has(utm)) {
-                            sessionStorage.setItem(utm, urlParams.get(utm));
+                            var val = urlParams.get(utm);
+                            sessionStorage.setItem(utm, val);
+                            localStorage.setItem(utm, val);
+                            foundAny = true;
                         }
                     });
-                } catch(e) {
-                    console.error("Failed to capture UTMs", e);
-                }
-            })();
 
-            // Helper to get saved UTM parameters
+                    // Check for Facebook Click ID (fbclid)
+                    if (urlParams.has('fbclid')) {
+                        var fbclid = urlParams.get('fbclid');
+                        sessionStorage.setItem('fbclid', fbclid);
+                        localStorage.setItem('fbclid', fbclid);
+                        // If no explicit utm_source was provided, attribute to Facebook Paid Ad
+                        if (!sessionStorage.getItem('utm_source')) {
+                            sessionStorage.setItem('utm_source', 'facebook');
+                            localStorage.setItem('utm_source', 'facebook');
+                            if (!sessionStorage.getItem('utm_medium')) {
+                                sessionStorage.setItem('utm_medium', 'paid');
+                                localStorage.setItem('utm_medium', 'paid');
+                            }
+                            foundAny = true;
+                        }
+                    }
+
+                    // Check for Google Click ID (gclid)
+                    if (urlParams.has('gclid')) {
+                        var gclid = urlParams.get('gclid');
+                        sessionStorage.setItem('gclid', gclid);
+                        localStorage.setItem('gclid', gclid);
+                        if (!sessionStorage.getItem('utm_source')) {
+                            sessionStorage.setItem('utm_source', 'google');
+                            localStorage.setItem('utm_source', 'google');
+                            if (!sessionStorage.getItem('utm_medium')) {
+                                sessionStorage.setItem('utm_medium', 'cpc');
+                                localStorage.setItem('utm_medium', 'cpc');
+                            }
+                            foundAny = true;
+                        }
+                    }
+
+                    // Check for TikTok Click ID (ttclid)
+                    if (urlParams.has('ttclid')) {
+                        var ttclid = urlParams.get('ttclid');
+                        sessionStorage.setItem('ttclid', ttclid);
+                        localStorage.setItem('ttclid', ttclid);
+                        if (!sessionStorage.getItem('utm_source')) {
+                            sessionStorage.setItem('utm_source', 'tiktok');
+                            localStorage.setItem('utm_source', 'tiktok');
+                            if (!sessionStorage.getItem('utm_medium')) {
+                                sessionStorage.setItem('utm_medium', 'cpc');
+                                localStorage.setItem('utm_medium', 'cpc');
+                            }
+                            foundAny = true;
+                        }
+                    }
+
+                    // Check Document Referrer if no utm_source is set yet
+                    if (!sessionStorage.getItem('utm_source') && !localStorage.getItem('utm_source') && document.referrer) {
+                        try {
+                            var refUrl = new URL(document.referrer);
+                            var host = refUrl.hostname.toLowerCase();
+                            if (host.indexOf('facebook.com') !== -1 || host.indexOf('fb.com') !== -1) {
+                                sessionStorage.setItem('utm_source', 'facebook');
+                                localStorage.setItem('utm_source', 'facebook');
+                                sessionStorage.setItem('utm_medium', 'social');
+                                localStorage.setItem('utm_medium', 'social');
+                                foundAny = true;
+                            } else if (host.indexOf('instagram.com') !== -1) {
+                                sessionStorage.setItem('utm_source', 'instagram');
+                                localStorage.setItem('utm_source', 'instagram');
+                                sessionStorage.setItem('utm_medium', 'social');
+                                localStorage.setItem('utm_medium', 'social');
+                                foundAny = true;
+                            } else if (host.indexOf('google.') !== -1) {
+                                sessionStorage.setItem('utm_source', 'google');
+                                localStorage.setItem('utm_source', 'google');
+                                sessionStorage.setItem('utm_medium', 'organic');
+                                localStorage.setItem('utm_medium', 'organic');
+                                foundAny = true;
+                            }
+                        } catch(e) {}
+                    }
+
+                    if (foundAny) {
+                        var now = new Date().toISOString();
+                        sessionStorage.setItem('buildsmart_attribution_time', now);
+                        localStorage.setItem('buildsmart_attribution_time', now);
+                    }
+                } catch(e) {
+                    console.error("Failed to capture attribution", e);
+                }
+            };
+
+            // Run immediately on page load
+            window.captureAttribution();
+
+            // Helper to get saved UTM parameters (checks sessionStorage first, falls back to localStorage)
             window.getSavedUtms = function() {
-                var utms = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+                var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid', 'ttclid'];
                 var result = {};
-                utms.forEach(function(utm) {
+                keys.forEach(function(key) {
                     try {
-                        var val = sessionStorage.getItem(utm);
+                        var val = sessionStorage.getItem(key) || localStorage.getItem(key);
                         if (val) {
-                            result[utm] = val;
+                            result[key] = val;
                         }
                     } catch(e) {}
                 });

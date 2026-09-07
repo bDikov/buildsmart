@@ -4,326 +4,2073 @@
 @using BuildSmart.SharedUI.Resources
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
 @attribute [Authorize(Roles = "Admin, ADMIN, admin")]
 @implements IDisposable
 @inject ICalculatorLeadRepository LeadRepository
 @inject IStringLocalizer<AppResources> Loc
 @inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 
-<div class="admin-page-container" style="padding: 24px; max-width: 1400px; margin: 0 auto; color: var(--text-primary); font-family: 'Outfit', sans-serif;">
-    
-    <!-- Page Header -->
-    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); padding-bottom: 20px;">
-        <div class="title-group">
-            <h1 class="page-title" style="font: var(--font-h1); margin: 0; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                @Loc["Admin_LeadsTitle"]
-            </h1>
-            <p class="page-subtitle" style="color: var(--text-muted); margin: 4px 0 0 0; font: var(--font-body-1);">
-                @Loc["Admin_LeadsSubtitle"]
-            </p>
+<PageTitle>@Loc["Admin_LeadsTitle"] | BuildSmart Admin</PageTitle>
+
+<div class="admin-leads-page">
+    <!-- Top Header Bar -->
+    <div class="leads-header-section">
+        <div class="header-title-block">
+            <h1 class="header-title">@Loc["Admin_LeadsTitle"]</h1>
+            <p class="header-subtitle">@Loc["Admin_LeadsSubtitle"]</p>
         </div>
-        <div class="header-actions" style="display: flex; gap: 12px;">
-            <button class="bs-btn-secondary" @onclick="RefreshLeadsAsync" style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+        <div class="header-actions-group">
+            <button class="bs-btn-secondary export-btn" @onclick="ExportToCsv" title="@Loc["Admin_Leads_ExportCsv"]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>@Loc["Admin_Leads_ExportCsv"]</span>
+            </button>
+            <button class="bs-btn-primary refresh-btn" @onclick="RefreshLeadsAsync" title="@Loc["Admin_Leads_Refresh"]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="@(_isLoading ? "spin-animation" : "")">
                     <polyline points="23 4 23 10 17 10"></polyline>
                     <polyline points="1 20 1 14 7 14"></polyline>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
-                Refresh
+                <span>@Loc["Admin_Leads_Refresh"]</span>
             </button>
         </div>
     </div>
 
-    <!-- Summary Metrics Cards -->
-    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_TotalLeads"]</div>
-            <div style="font: var(--font-h0); color: var(--text-primary); margin-top: 8px; font-weight: 700;">@_allLeads.Count</div>
-        </div>
-
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Запитвания за Баня</div>
-            <div style="font: var(--font-h0); color: #10b981; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "bathroom")</div>
-        </div>
-
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Цялостни Калкулатори</div>
-            <div style="font: var(--font-h0); color: #3b82f6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom"))</div>
-        </div>
-
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_ExitIntentLeads"]</div>
-            <div style="font: var(--font-h0); color: #8b5cf6; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.Scope == "exit_intent_lead")</div>
-        </div>
-
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Фалшиви / Невалидни</div>
-            <div style="font: var(--font-h0); color: #f59e0b; margin-top: 8px; font-weight: 700;">@_allLeads.Count(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified)</div>
-        </div>
-
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">@Loc["Admin_VerifiedEmailRate"]</div>
-            <div style="font: var(--font-h0); color: #10b981; margin-top: 8px; font-weight: 700;">
-                @(_allLeads.Count > 0 ? $"{(_allLeads.Count(l => l.VerificationStatus == "Valid" || l.IsEmailVerified) * 100 / _allLeads.Count)}%" : "0%")
-            </div>
-        </div>
-    </div>
-
-    <!-- Search & Filter Controls -->
-    <div class="controls-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
-            <!-- Scope Filter Tabs -->
-            <div class="tab-group" style="display: flex; flex-wrap: wrap; gap: 8px; background: var(--bg-card-alt); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <button class="tab-btn @(_activeScopeFilter == "all" ? "active" : "")" @onclick='() => SetScopeFilter("all")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "all" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "all" ? "#ffffff" : "var(--text-secondary)");">
-                    @Loc["Admin_FilterAll"] (@_allLeads.Count)
-                </button>
-                <button class="tab-btn @(_activeScopeFilter == "bathroom" ? "active" : "")" @onclick='() => SetScopeFilter("bathroom")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "bathroom" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "bathroom" ? "#ffffff" : "var(--text-secondary)");">
-                    Баня (@_allLeads.Count(l => l.Scope == "bathroom"))
-                </button>
-                <button class="tab-btn @(_activeScopeFilter == "full" ? "active" : "")" @onclick='() => SetScopeFilter("full")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "full" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "full" ? "#ffffff" : "var(--text-secondary)");">
-                    Цялостен (@_allLeads.Count(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom")))
-                </button>
-                <button class="tab-btn @(_activeScopeFilter == "exit_intent" ? "active" : "")" @onclick='() => SetScopeFilter("exit_intent")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "exit_intent" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "exit_intent" ? "#ffffff" : "var(--text-secondary)");">
-                    Exit Intent (@_allLeads.Count(l => l.Scope == "exit_intent_lead"))
-                </button>
-                <button class="tab-btn @(_activeScopeFilter == "valid_emails" ? "active" : "")" @onclick='() => SetScopeFilter("valid_emails")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "valid_emails" ? "var(--color-primary, #10b981)" : "transparent"); color: @(_activeScopeFilter == "valid_emails" ? "#ffffff" : "var(--text-secondary)");">
-                    ✓ Валидни (@_allLeads.Count(l => l.VerificationStatus == "Valid" || l.IsEmailVerified))
-                </button>
-                <button class="tab-btn @(_activeScopeFilter == "fake_emails" ? "active" : "")" @onclick='() => SetScopeFilter("fake_emails")'
-                        style="padding: 8px 16px; border-radius: 6px; border: none; font: var(--font-body-2); font-weight: 600; cursor: pointer; background: @(_activeScopeFilter == "fake_emails" ? "#ef4444" : "transparent"); color: @(_activeScopeFilter == "fake_emails" ? "#ffffff" : "var(--text-secondary)");">
-                    ⚠️ Фалшиви (@_allLeads.Count(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified))
-                </button>
-            </div>
-
-            <!-- Search Input & Campaign Filter -->
-            <div style="display: flex; gap: 12px; flex-grow: 1; max-width: 500px;">
-                <input type="text" class="bs-input" @bind="_searchQuery" @bind:event="oninput" placeholder="@Loc["Admin_SearchLeadsPlaceholder"]"
-                       style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card-alt); color: var(--text-primary); font: var(--font-body-2);" />
-            </div>
-        </div>
-    </div>
-
-    <!-- Leads Data Table -->
-    @if (_isLoading)
+    <!-- Notification Toast if Copied or Saved -->
+    @if (!string.IsNullOrEmpty(_toastMessage))
     {
-        <div style="display: flex; justify-content: center; align-items: center; padding: 60px 0;">
-            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+        <div class="leads-toast-notice">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>@_toastMessage</span>
         </div>
     }
-    else if (FilteredLeads.Count == 0)
+
+    <!-- KPI Summary Metrics Grid -->
+    <div class="metrics-grid">
+        <!-- Total Leads -->
+        <div class="metric-card">
+            <div class="metric-label">@Loc["Admin_TotalLeads"]</div>
+            <div class="metric-value">@_allLeads.Count</div>
+            <div class="metric-subtext">
+                <span>@Loc["Admin_Leads_ThisWeek"]: <strong>@_leadsThisWeekCount</strong></span>
+            </div>
+        </div>
+
+        <!-- Today's Leads -->
+        <div class="metric-card">
+            <div class="metric-label">@Loc["Admin_Leads_Today"]</div>
+            <div class="metric-value text-primary">@_leadsTodayCount</div>
+            <div class="metric-subtext">
+                <span>@DateTime.Now.ToString("dd MMM yyyy")</span>
+            </div>
+        </div>
+
+        <!-- Facebook Ads Attribution Card -->
+        <div class="metric-card highlight-fb">
+            <div class="metric-label fb-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>@Loc["Admin_Leads_FacebookAds"]</span>
+            </div>
+            <div class="metric-value">@_facebookLeadsCount</div>
+            <div class="metric-subtext">
+                <span>@(_allLeads.Count > 0 ? $"{(_facebookLeadsCount * 100 / _allLeads.Count)}% of total" : "0%")</span>
+            </div>
+        </div>
+
+        <!-- Google Ads Attribution Card -->
+        <div class="metric-card">
+            <div class="metric-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>@Loc["Admin_Leads_GoogleAds"]</span>
+            </div>
+            <div class="metric-value">@_googleLeadsCount</div>
+            <div class="metric-subtext">
+                <span>@(_allLeads.Count > 0 ? $"{(_googleLeadsCount * 100 / _allLeads.Count)}% of total" : "0%")</span>
+            </div>
+        </div>
+
+        <!-- Total Pipeline Quote Value -->
+        <div class="metric-card">
+            <div class="metric-label">@Loc["Admin_Leads_TotalPipeline"]</div>
+            <div class="metric-value text-success">€@_totalPipelineEur.ToString("N0")</div>
+            <div class="metric-subtext">
+                <span>(@_totalPipelineBgn.ToString("N0") BGN)</span>
+            </div>
+        </div>
+
+        <!-- Email Legitimacy Rate -->
+        <div class="metric-card">
+            <div class="metric-label">@Loc["Admin_VerifiedEmailRate"]</div>
+            <div class="metric-value text-success">
+                @(_allLeads.Count > 0 ? $"{(_allLeads.Count(l => l.VerificationStatus == "Valid" || l.IsEmailVerified) * 100 / _allLeads.Count)}%" : "0%")
+            </div>
+            <div class="metric-subtext">
+                <span>@_allLeads.Count(l => l.VerificationStatus == "Valid" || l.IsEmailVerified) valid / @_allLeads.Count</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Control Bar -->
+    <div class="controls-card">
+        <!-- Row 1: Search & Date Range -->
+        <div class="controls-row-primary">
+            <!-- Search Bar -->
+            <div class="search-input-wrapper">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="search-input" @bind="_searchQuery" @bind:event="oninput" placeholder="@Loc["Admin_SearchLeadsPlaceholder"]" />
+                @if (!string.IsNullOrEmpty(_searchQuery))
+                {
+                    <button class="clear-search-btn" @onclick='() => _searchQuery = string.Empty' aria-label="Clear Search">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                }
+            </div>
+
+            <!-- Date Range Selector -->
+            <div class="filter-dropdown-group">
+                <span class="filter-label-prefix">@Loc["Admin_Leads_DateRange"]:</span>
+                <select class="leads-select" @bind="_dateRangeFilter">
+                    <option value="all">@Loc["Admin_Leads_DateAll"]</option>
+                    <option value="today">@Loc["Admin_Leads_DateToday"]</option>
+                    <option value="yesterday">@Loc["Admin_Leads_DateYesterday"]</option>
+                    <option value="7days">@Loc["Admin_Leads_Date7Days"]</option>
+                    <option value="30days">@Loc["Admin_Leads_Date30Days"]</option>
+                </select>
+            </div>
+
+            <!-- Items per page -->
+            <div class="filter-dropdown-group">
+                <span class="filter-label-prefix">@Loc["Admin_Leads_PageSize"]:</span>
+                <select class="leads-select-sm" @bind="_pageSize">
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 2: Secondary Filter Pills (Source, Scope, Email) -->
+        <div class="controls-row-pills">
+            <!-- Channel / Source Tabs -->
+            <div class="filter-pill-container">
+                <button class="filter-pill @(_sourceFilter == "all" ? "active" : "")" @onclick='() => SetSourceFilter("all")'>
+                    @Loc["Admin_Leads_SourceAll"] (@_allLeads.Count)
+                </button>
+                <button class="filter-pill @(_sourceFilter == "facebook" ? "active" : "")" @onclick='() => SetSourceFilter("facebook")'>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span>@Loc["Admin_Leads_SourceFacebook"] (@_facebookLeadsCount)</span>
+                </button>
+                <button class="filter-pill @(_sourceFilter == "google" ? "active" : "")" @onclick='() => SetSourceFilter("google")'>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>@Loc["Admin_Leads_SourceGoogle"] (@_googleLeadsCount)</span>
+                </button>
+                <button class="filter-pill @(_sourceFilter == "direct" ? "active" : "")" @onclick='() => SetSourceFilter("direct")'>
+                    @Loc["Admin_Leads_SourceDirect"] (@_allLeads.Count(l => string.IsNullOrEmpty(l.UtmSource) && l.Scope != "exit_intent_lead"))
+                </button>
+                <button class="filter-pill @(_sourceFilter == "exit_intent" ? "active" : "")" @onclick='() => SetSourceFilter("exit_intent")'>
+                    @Loc["Admin_Leads_SourceExitIntent"] (@_allLeads.Count(l => l.Scope == "exit_intent_lead"))
+                </button>
+            </div>
+
+            <!-- Scope, Verification & Contact Status Selectors -->
+            <div class="filter-pill-secondary">
+                <select class="leads-select" @bind="_contactStatusFilter">
+                    <option value="all">@Loc["Admin_Leads_ContactAll"]</option>
+                    <option value="new">@Loc["Admin_Leads_ContactNew"]</option>
+                    <option value="spoken">@Loc["Admin_Leads_ContactDone"]</option>
+                </select>
+
+                <select class="leads-select" @bind="_scopeFilter">
+                    <option value="all">@Loc["Admin_Leads_ScopeAll"]</option>
+                    <option value="bathroom">@Loc["Admin_Leads_ScopeBathroom"]</option>
+                    <option value="full">@Loc["Admin_Leads_ScopeFull"]</option>
+                    <option value="exit_intent">@Loc["Admin_Leads_SourceExitIntent"]</option>
+                </select>
+
+                <select class="leads-select" @bind="_verificationFilter">
+                    <option value="all">@Loc["Admin_Leads_VerificationAll"]</option>
+                    <option value="valid">@Loc["Admin_Leads_VerificationValid"]</option>
+                    <option value="flagged">@Loc["Admin_Leads_VerificationFlagged"]</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Leads Table Container -->
+    @if (_isLoading)
     {
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 48px; text-align: center;">
-            <h3 style="font: var(--font-h3); color: var(--text-secondary); margin-bottom: 8px;">No leads found</h3>
-            <p style="font: var(--font-body-2); color: var(--text-muted);">Try adjusting your search query or filters.</p>
+        <div class="leads-loading-state">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="loading-subtext">@Loc["Admin_Leads_Refresh"]...</div>
+        </div>
+    }
+    else if (FilteredAndSortedLeads.Count == 0)
+    {
+        <div class="leads-empty-state">
+            <div class="empty-icon-wrapper">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+            <h3 class="empty-title">@Loc["Admin_Leads_NoLeads"]</h3>
+            <p class="empty-subtitle">Try adjusting your search criteria, date range, or channel filters.</p>
+            <button class="bs-btn-secondary mt-3" @onclick="ResetFilters">Reset Filters</button>
         </div>
     }
     else
     {
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font: var(--font-body-2);">
+        <div class="table-outer-card">
+            <div class="table-responsive">
+                <table class="leads-data-table">
                     <thead>
-                        <tr style="background: var(--bg-card-alt); border-bottom: 1px solid var(--border-color); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">
-                            <th style="padding: 14px 16px;">Submitted</th>
-                            <th style="padding: 14px 16px;">Contact</th>
-                            <th style="padding: 14px 16px;">Scope</th>
-                            <th style="padding: 14px 16px;">Specs / Area</th>
-                            <th style="padding: 14px 16px;">Estimated Total</th>
-                            <th style="padding: 14px 16px;">Email Verification</th>
-                            <th style="padding: 14px 16px;">Campaign / Source</th>
-                            <th style="padding: 14px 16px; text-align: right;">Action</th>
+                        <tr>
+                            <!-- Date Column (Sortable) -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("date")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColSubmitted"]</span>
+                                    @if (_sortColumn == "date")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Contact Profile -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("name")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColContact"]</span>
+                                    @if (_sortColumn == "name")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Project Scope -->
+                            <th>@Loc["Admin_Leads_ColScope"]</th>
+
+                            <!-- Area & Specs (Sortable) -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("area")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColSpecs"]</span>
+                                    @if (_sortColumn == "area")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Price Quote (Sortable) -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("price")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColEstimate"]</span>
+                                    @if (_sortColumn == "price")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Email Verification -->
+                            <th>@Loc["Admin_Leads_ColVerification"]</th>
+
+                            <!-- Traffic Attribution / Campaign -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("source")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColSource"]</span>
+                                    @if (_sortColumn == "source")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Contact Status (Sortable) -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("status")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColStatus"]</span>
+                                    @if (_sortColumn == "status")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Actions -->
+                            <th style="text-align: right;">@Loc["Admin_Leads_ColActions"]</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var lead in FilteredLeads)
+                        @foreach (var lead in PagedLeads)
                         {
-                            <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.15s ease;">
-                                <td style="padding: 14px 16px; color: var(--text-secondary); white-space: nowrap;">
-                                    @lead.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                            <tr class="lead-row">
+                                <!-- Submitted Date -->
+                                <td class="td-date">
+                                    <div class="date-main">@lead.CreatedAt.ToString("dd MMM yyyy")</div>
+                                    <div class="date-time">@lead.CreatedAt.ToString("HH:mm")</div>
                                 </td>
-                                <td style="padding: 14px 16px;">
-                                    <div style="font-weight: 600; color: var(--text-primary);">
-                                        @(string.IsNullOrWhiteSpace(lead.Name) ? "Anonymous Lead" : lead.Name)
+
+                                <!-- Contact Profile -->
+                                <td class="td-contact">
+                                    <div class="contact-name">
+                                        @(string.IsNullOrWhiteSpace(lead.Name) ? Loc["Admin_Leads_Anonymous"] : lead.Name)
                                     </div>
-                                    <div style="color: var(--text-muted); font-size: 0.85rem;">@lead.Email</div>
+                                    <div class="contact-email-row">
+                                        <a href="mailto:@lead.Email" class="contact-link" title="@Loc["Admin_Leads_Email"]">@lead.Email</a>
+                                        <button class="copy-tiny-btn" @onclick='() => CopyToClipboard(lead.Email, "Email")' title="Copy Email">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                        </button>
+                                    </div>
                                     @if (!string.IsNullOrWhiteSpace(lead.Phone))
                                     {
-                                        <div style="color: var(--text-muted); font-size: 0.85rem;">@lead.Phone</div>
+                                        <div class="contact-phone-row">
+                                            <a href="tel:@lead.Phone" class="contact-link" title="@Loc["Admin_Leads_Call"]">@lead.Phone</a>
+                                            <button class="copy-tiny-btn" @onclick='() => CopyToClipboard(lead.Phone, "Phone")' title="Copy Phone">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            </button>
+                                        </div>
                                     }
                                 </td>
-                                <td style="padding: 14px 16px;">
+
+                                <!-- Scope Badge -->
+                                <td class="td-scope">
                                     @if (lead.Scope == "exit_intent_lead")
                                     {
-                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3);">
-                                            Exit Intent Popup
+                                        <span class="scope-badge scope-exit">
+                                            @Loc["Admin_Leads_SourceExitIntent"]
                                         </span>
                                     }
                                     else if (lead.Scope == "bathroom")
                                     {
-                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
-                                            Баня Калкулатор
+                                        <span class="scope-badge scope-bathroom">
+                                            @Loc["Admin_Leads_ScopeBathroom"]
                                         </span>
                                     }
                                     else
                                     {
-                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
-                                            @(string.Equals(lead.Scope, "full", StringComparison.OrdinalIgnoreCase) ? "Цялостен Калкулатор" : $"{lead.Scope} Калкулатор")
+                                        <span class="scope-badge scope-full">
+                                            @Loc["Admin_Leads_ScopeFull"]
                                         </span>
                                     }
                                 </td>
-                                <td style="padding: 14px 16px; color: var(--text-secondary);">
+
+                                <!-- Area & Specs -->
+                                <td class="td-specs">
                                     @if (lead.SelectedArea > 0)
                                     {
-                                        <div>@lead.SelectedArea m²</div>
+                                        <div class="spec-area"><strong>@lead.SelectedArea m²</strong></div>
                                     }
-                                    <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                        Tier: @lead.QualityTier • Status: @lead.BuildingStatus
+                                    <div class="spec-details">
+                                        <span>@lead.QualityTier.ToUpper()</span> • <span>@lead.BuildingStatus.ToUpper()</span>
                                     </div>
                                 </td>
-                                <td style="padding: 14px 16px; font-weight: 600; color: var(--text-primary);">
+
+                                <!-- Estimated Quote -->
+                                <td class="td-price">
                                     @if (lead.MaxPriceEur > 0)
                                     {
-                                        <div>€@lead.MinPriceEur.ToString("N0") - €@lead.MaxPriceEur.ToString("N0")</div>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted);">(@lead.MinPriceBgn.ToString("N0") - @lead.MaxPriceBgn.ToString("N0") BGN)</div>
+                                        <div class="price-eur">€@lead.MinPriceEur.ToString("N0") – €@lead.MaxPriceEur.ToString("N0")</div>
+                                        <div class="price-bgn">(@lead.MinPriceBgn.ToString("N0") – @lead.MaxPriceBgn.ToString("N0") BGN)</div>
                                     }
                                     else
                                     {
-                                        <span style="color: var(--text-muted);">-</span>
+                                        <span class="text-muted">-</span>
                                     }
                                 </td>
-                                <td style="padding: 14px 16px;">
+
+                                <!-- Email Verification -->
+                                <td class="td-verification">
                                     @if (lead.VerificationStatus == "Valid" || lead.IsEmailVerified)
                                     {
-                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
-                                            Valid Email
+                                        <span class="status-badge status-valid">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            <span>Valid</span>
                                         </span>
                                     }
                                     else
                                     {
-                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);" title="@lead.VerificationReason">
-                                            @(string.IsNullOrEmpty(lead.VerificationStatus) ? "Unverified" : lead.VerificationStatus)
+                                        <span class="status-badge status-flagged" title="@lead.VerificationReason">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                            <span>@(string.IsNullOrEmpty(lead.VerificationStatus) ? "Unverified" : lead.VerificationStatus)</span>
                                         </span>
                                     }
                                 </td>
-                                <td style="padding: 14px 16px; color: var(--text-muted); font-size: 0.85rem;">
-                                    @if (!string.IsNullOrEmpty(lead.UtmCampaign) || !string.IsNullOrEmpty(lead.UtmSource))
+
+                                <!-- Traffic Attribution -->
+                                <td class="td-source">
+                                    @if (IsFacebookSource(lead.UtmSource))
                                     {
-                                        <div>Src: @(string.IsNullOrEmpty(lead.UtmSource) ? "Direct" : lead.UtmSource)</div>
-                                        <div>Cmp: @(string.IsNullOrEmpty(lead.UtmCampaign) ? "-" : lead.UtmCampaign)</div>
+                                        <div class="attribution-badge-group">
+                                            <span class="source-tag tag-facebook">
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                                </svg>
+                                                <span>Facebook Ads</span>
+                                            </span>
+                                            @if (!string.IsNullOrEmpty(lead.UtmCampaign))
+                                            {
+                                                <div class="campaign-name" title="@lead.UtmCampaign">@lead.UtmCampaign</div>
+                                            }
+                                        </div>
+                                    }
+                                    else if (IsGoogleSource(lead.UtmSource))
+                                    {
+                                        <div class="attribution-badge-group">
+                                            <span class="source-tag tag-google">
+                                                <span>Google Ads</span>
+                                            </span>
+                                            @if (!string.IsNullOrEmpty(lead.UtmCampaign))
+                                            {
+                                                <div class="campaign-name" title="@lead.UtmCampaign">@lead.UtmCampaign</div>
+                                            }
+                                        </div>
+                                    }
+                                    else if (!string.IsNullOrEmpty(lead.UtmSource))
+                                    {
+                                        <div class="attribution-badge-group">
+                                            <span class="source-tag tag-other">@lead.UtmSource</span>
+                                            @if (!string.IsNullOrEmpty(lead.UtmCampaign))
+                                            {
+                                                <div class="campaign-name">@lead.UtmCampaign</div>
+                                            }
+                                        </div>
+                                    }
+                                    else if (lead.Scope == "exit_intent_lead")
+                                    {
+                                        <span class="source-tag tag-exit">Exit Intent</span>
                                     }
                                     else
                                     {
-                                        <span>Direct / Organic</span>
+                                        <span class="source-tag tag-direct">Direct / Organic</span>
                                     }
                                 </td>
-                                <td style="padding: 14px 16px; text-align: right;">
-                                    <button class="bs-btn-secondary" @onclick="() => SelectLead(lead)" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;">
-                                        Inspect
+
+                                <!-- Contact Status -->
+                                <td class="td-status">
+                                    <button type="button" class="status-btn @(lead.IsContacted ? "status-btn-contacted" : "status-btn-new")" @onclick="() => ToggleLeadContacted(lead)" title="@(lead.IsContacted ? Loc["Admin_Leads_MarkUncontacted"] : Loc["Admin_Leads_MarkSpokenTo"])">
+                                        @if (lead.IsContacted)
+                                        {
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            <span>@Loc["Admin_Leads_SpokenTo"]</span>
+                                        }
+                                        else
+                                        {
+                                            <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>
+                                            <span>@Loc["Admin_Leads_Uncontacted"]</span>
+                                        }
                                     </button>
+                                </td>
+
+                                <!-- Actions Group (Notes, Preview, Delete) -->
+                                <td class="td-actions">
+                                    <div class="action-btn-row">
+                                        <button class="row-icon-btn btn-notes @(!string.IsNullOrWhiteSpace(lead.AdminNotes) ? "has-notes" : "")" @onclick="() => InspectLead(lead)" title="@(!string.IsNullOrWhiteSpace(lead.AdminNotes) ? Loc["Admin_Leads_HasNotes"] : Loc["Admin_Leads_AddNote"])">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        </button>
+                                        <button class="row-icon-btn btn-inspect" @onclick="() => InspectLead(lead)" title="@Loc["Admin_Leads_Inspect"]">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </button>
+                                        <button class="row-icon-btn btn-delete" @onclick="() => PromptDeleteLead(lead)" title="@Loc["Admin_Leads_Delete"]">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        </div>
-    }
 
-    <!-- Lead Detail Modal -->
-    @if (_selectedLead != null)
-    {
-        <div class="bs-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1100; backdrop-filter: blur(4px);" @onclick="CloseLeadModal">
-            <div class="bs-modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-width: 650px; width: 90%; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); color: var(--text-primary);" @onclick:stopPropagation="true">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
-                    <h2 style="font: var(--font-h2); margin: 0; font-weight: 700;">@Loc["Admin_LeadDetails"]</h2>
-                    <button type="button" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;" @onclick="CloseLeadModal">&times;</button>
+            <!-- Table Pagination Bar -->
+            <div class="table-pagination-bar">
+                <div class="pagination-info">
+                    @string.Format(Loc["Admin_Leads_Showing"], PaginationStart, PaginationEnd, FilteredAndSortedLeads.Count)
                 </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                    <div>
-                        <label style="font: var(--font-body-2); color: var(--text-muted);">Name</label>
-                        <div style="font: var(--font-h3); font-weight: 600;">@(string.IsNullOrWhiteSpace(_selectedLead.Name) ? "Anonymous" : _selectedLead.Name)</div>
-                    </div>
-                    <div>
-                        <label style="font: var(--font-body-2); color: var(--text-muted);">Created Date</label>
-                        <div style="font: var(--font-body-1);">@_selectedLead.CreatedAt.ToString("f")</div>
-                    </div>
-                    <div>
-                        <label style="font: var(--font-body-2); color: var(--text-muted);">Email</label>
-                        <div style="font: var(--font-body-1);"><a href="mailto:@_selectedLead.Email" style="color: #3b82f6; text-decoration: underline;">@_selectedLead.Email</a></div>
-                    </div>
-                    <div>
-                        <label style="font: var(--font-body-2); color: var(--text-muted);">Phone</label>
-                        <div style="font: var(--font-body-1);"><a href="tel:@_selectedLead.Phone" style="color: #3b82f6; text-decoration: underline;">@_selectedLead.Phone</a></div>
-                    </div>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;" />
-
-                <h4 style="font: var(--font-h4); margin-bottom: 12px; color: var(--text-secondary);">Project Requirements</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font: var(--font-body-2);">
-                    <div>Scope: <strong>@_selectedLead.Scope</strong></div>
-                    <div>Property Area: <strong>@_selectedLead.SelectedArea m²</strong></div>
-                    <div>Building Status: <strong>@_selectedLead.BuildingStatus</strong></div>
-                    <div>Quality Tier: <strong>@_selectedLead.QualityTier</strong></div>
-                    <div>Include Furniture: <strong>@(_selectedLead.IncludeFurniture ? "Yes" : "No")</strong></div>
-                    <div>Include Equipment: <strong>@(_selectedLead.IncludeEquipment ? "Yes" : "No")</strong></div>
-                    <div>Bathrooms: <strong>@_selectedLead.BathroomCount</strong></div>
-                    <div>Estimated Duration: <strong>@_selectedLead.EstimatedDays days</strong></div>
-                </div>
-
-                <div style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                    <div style="font: var(--font-body-2); color: var(--text-muted);">Estimated Price Quote</div>
-                    <div style="font: var(--font-h2); font-weight: 700; color: #10b981; margin-top: 4px;">
-                        €@_selectedLead.MinPriceEur.ToString("N0") - €@_selectedLead.MaxPriceEur.ToString("N0")
-                        <span style="font: var(--font-body-2); color: var(--text-muted); margin-left: 8px;">(@_selectedLead.MinPriceBgn.ToString("N0") - @_selectedLead.MaxPriceBgn.ToString("N0") BGN)</span>
-                    </div>
-                </div>
-
-                <h4 style="font: var(--font-h4); margin-bottom: 12px; color: var(--text-secondary);">Marketing & Attribution</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font: var(--font-body-2); color: var(--text-muted);">
-                    <div>UTM Source: <span style="color: var(--text-primary);">@(_selectedLead.UtmSource ?? "N/A")</span></div>
-                    <div>UTM Medium: <span style="color: var(--text-primary);">@(_selectedLead.UtmMedium ?? "N/A")</span></div>
-                    <div>UTM Campaign: <span style="color: var(--text-primary);">@(_selectedLead.UtmCampaign ?? "N/A")</span></div>
-                    <div>UTM Term: <span style="color: var(--text-primary);">@(_selectedLead.UtmTerm ?? "N/A")</span></div>
-                </div>
-
-                <div style="margin-top: 24px; text-align: right;">
-                    <button class="bs-btn-secondary" @onclick="CloseLeadModal" style="padding: 10px 20px; border-radius: 8px; background: var(--bg-card-alt); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;">
-                        Close
+                <div class="pagination-controls">
+                    <button class="pagination-btn" @onclick="PrevPage" disabled="@(_currentPage <= 1)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        <span>@Loc["Admin_Leads_Prev"]</span>
+                    </button>
+                    <span class="pagination-current-page">@_currentPage / @TotalPages</span>
+                    <button class="pagination-btn" @onclick="NextPage" disabled="@(_currentPage >= TotalPages)">
+                        <span>@Loc["Admin_Leads_Next"]</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </button>
                 </div>
             </div>
         </div>
     }
 
+    <!-- Lead Dossier Inspection Modal -->
+    @if (_selectedLead != null)
+    {
+        <div class="leads-modal-overlay" @onclick="CloseDossierModal">
+            <div class="leads-modal-card" @onclick:stopPropagation="true">
+                <!-- Modal Header -->
+                <div class="modal-header-row">
+                    <div class="modal-title-group">
+                        <span class="modal-tag">@Loc["Admin_Leads_DossierTitle"]</span>
+                        <h2 class="modal-title">@(string.IsNullOrWhiteSpace(_selectedLead.Name) ? Loc["Admin_Leads_Anonymous"] : _selectedLead.Name)</h2>
+                    </div>
+                    <button type="button" class="modal-close-btn" @onclick="CloseDossierModal" aria-label="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <!-- Client Contact Information -->
+                <div class="modal-section-card">
+                    <div class="section-title">@Loc["Admin_Leads_ClientInfo"]</div>
+                    <div class="info-grid-2col">
+                        <div>
+                            <span class="info-label">Email</span>
+                            <div class="info-val-row">
+                                <a href="mailto:@_selectedLead.Email" class="info-val-link">@_selectedLead.Email</a>
+                                <button class="copy-tiny-btn" @onclick='() => CopyToClipboard(_selectedLead.Email, "Email")' title="Copy">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="info-label">Phone</span>
+                            <div class="info-val-row">
+                                @if (!string.IsNullOrWhiteSpace(_selectedLead.Phone))
+                                {
+                                    <a href="tel:@_selectedLead.Phone" class="info-val-link">@_selectedLead.Phone</a>
+                                    <button class="copy-tiny-btn" @onclick='() => CopyToClipboard(_selectedLead.Phone, "Phone")' title="Copy">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <span class="info-label">Submitted On</span>
+                            <div class="info-val">@_selectedLead.CreatedAt.ToString("dd MMMM yyyy, HH:mm:ss") (UTC)</div>
+                        </div>
+                        <div>
+                            <span class="info-label">Verification Status</span>
+                            <div class="info-val">
+                                @if (_selectedLead.VerificationStatus == "Valid" || _selectedLead.IsEmailVerified)
+                                {
+                                    <span class="status-badge status-valid">Valid Email</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-flagged">@(_selectedLead.VerificationStatus ?? "Unverified")</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Estimate Box -->
+                <div class="modal-financial-banner">
+                    <div class="financial-header">
+                        <span class="financial-label">@Loc["Admin_Leads_DualQuote"]</span>
+                        @if (_selectedLead.EstimatedDays > 0)
+                        {
+                            <span class="financial-duration">@_selectedLead.EstimatedDays @Loc["Admin_Leads_Days"]</span>
+                        }
+                    </div>
+                    @if (_selectedLead.MaxPriceEur > 0)
+                    {
+                        <div class="financial-eur">€@_selectedLead.MinPriceEur.ToString("N0") – €@_selectedLead.MaxPriceEur.ToString("N0")</div>
+                        <div class="financial-bgn">(@_selectedLead.MinPriceBgn.ToString("N0") – @_selectedLead.MaxPriceBgn.ToString("N0") BGN)</div>
+                    }
+                    else
+                    {
+                        <div class="financial-eur text-muted">No pricing generated</div>
+                    }
+                </div>
+
+                <!-- CRM Follow-up & Client Notes Section -->
+                <div class="modal-section-card crm-notes-box">
+                    <div class="crm-notes-header">
+                        <div class="section-title">@Loc["Admin_Leads_NotesTitle"]</div>
+                        <div class="crm-status-toggle">
+                            <label class="status-checkbox-label">
+                                <input type="checkbox" @bind="_editIsContacted" />
+                                <span class="status-checkbox-text @(_editIsContacted ? "text-contacted" : "")">
+                                    @(_editIsContacted ? Loc["Admin_Leads_SpokenTo"] : Loc["Admin_Leads_Uncontacted"])
+                                </span>
+                            </label>
+                            @if (_selectedLead.ContactedAt.HasValue)
+                            {
+                                <span class="contacted-timestamp">(@_selectedLead.ContactedAt.Value.ToString("dd MMM yyyy, HH:mm"))</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="crm-notes-body">
+                        <textarea class="crm-notes-textarea" @bind="_editNotes" placeholder="@Loc["Admin_Leads_NotesPlaceholder"]" rows="4"></textarea>
+                        <div class="crm-notes-actions">
+                            @if (!string.IsNullOrEmpty(_notesErrorMessage))
+                            {
+                                <div class="crm-notes-error-msg">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                    <span>@_notesErrorMessage</span>
+                                </div>
+                            }
+                            @if (_notesSaveSuccess)
+                            {
+                                <div class="crm-notes-success-badge">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <span>@Loc["Admin_Leads_NotesSaved"]</span>
+                                </div>
+                            }
+                            <button type="button" class="bs-btn-primary" @onclick="SaveCrmNotesAsync" disabled="@_isSavingNotes">
+                                @if (_isSavingNotes)
+                                {
+                                    <span class="btn-spinner"></span>
+                                    <span>Saving...</span>
+                                }
+                                else
+                                {
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <span>@Loc["Admin_Leads_SaveNotes"]</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Specifications -->
+                <div class="modal-section-card">
+                    <div class="section-title">@Loc["Admin_Leads_ProjectSpecs"]</div>
+                    <div class="info-grid-3col">
+                        <div class="spec-tile">
+                            <span class="tile-label">Scope</span>
+                            <span class="tile-val">@_selectedLead.Scope</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">Area</span>
+                            <span class="tile-val">@_selectedLead.SelectedArea m²</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">Status</span>
+                            <span class="tile-val">@_selectedLead.BuildingStatus.ToUpper()</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">Tier</span>
+                            <span class="tile-val">@_selectedLead.QualityTier.ToUpper()</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">@Loc["Admin_Leads_Furniture"]</span>
+                            <span class="tile-val">@(_selectedLead.IncludeFurniture ? Loc["Admin_Leads_Included"] : Loc["Admin_Leads_NotIncluded"])</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">@Loc["Admin_Leads_Equipment"]</span>
+                            <span class="tile-val">@(_selectedLead.IncludeEquipment ? Loc["Admin_Leads_Included"] : Loc["Admin_Leads_NotIncluded"])</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">@Loc["Admin_Leads_Bathrooms"]</span>
+                            <span class="tile-val">@_selectedLead.BathroomCount</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketing & Attribution Section with Retroactive Edit Ability -->
+                <div class="modal-section-card attribution-box">
+                    <div class="attribution-header-row">
+                        <div class="section-title">@Loc["Admin_Leads_MarketingAttribution"]</div>
+                        <button type="button" class="btn-attribution-toggle" @onclick="ToggleAttributionEdit">
+                            @(_isEditingAttribution ? Loc["Admin_Leads_Cancel"] : Loc["Admin_Leads_EditAttribution"])
+                        </button>
+                    </div>
+
+                    @if (_isEditingAttribution)
+                    {
+                        <!-- Attribution Edit Mode Form -->
+                        <div class="attribution-edit-form">
+                            <div class="edit-fields-grid">
+                                <div class="edit-group">
+                                    <label class="edit-label">Traffic Source (e.g. facebook, google)</label>
+                                    <input type="text" class="edit-input" @bind="_editSource" placeholder="facebook" />
+                                </div>
+                                <div class="edit-group">
+                                    <label class="edit-label">Medium (e.g. paid, cpc, social)</label>
+                                    <input type="text" class="edit-input" @bind="_editMedium" placeholder="paid" />
+                                </div>
+                                <div class="edit-group">
+                                    <label class="edit-label">Campaign Name</label>
+                                    <input type="text" class="edit-input" @bind="_editCampaign" placeholder="spring_renovation_2026" />
+                                </div>
+                            </div>
+                            <div class="attribution-edit-actions">
+                                <button type="button" class="bs-btn-primary save-btn" @onclick="SaveAttributionChanges">
+                                    @Loc["Admin_Leads_SaveAttribution"]
+                                </button>
+                                <button type="button" class="bs-btn-secondary" @onclick="ToggleAttributionEdit">
+                                    @Loc["Admin_Leads_Cancel"]
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Attribution Display Mode -->
+                        <div class="info-grid-2col">
+                            <div>
+                                <span class="info-label">UTM Source</span>
+                                <div class="info-val font-semibold">
+                                    @if (IsFacebookSource(_selectedLead.UtmSource))
+                                    {
+                                        <span class="source-tag tag-facebook">Facebook Ads</span>
+                                    }
+                                    else if (IsGoogleSource(_selectedLead.UtmSource))
+                                    {
+                                        <span class="source-tag tag-google">Google Ads</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@(_selectedLead.UtmSource ?? "Direct / Organic")</span>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <span class="info-label">UTM Medium</span>
+                                <div class="info-val">@(_selectedLead.UtmMedium ?? "N/A")</div>
+                            </div>
+                            <div>
+                                <span class="info-label">UTM Campaign</span>
+                                <div class="info-val font-semibold">@(_selectedLead.UtmCampaign ?? "N/A")</div>
+                            </div>
+                            <div>
+                                <span class="info-label">UTM Term / Keyword</span>
+                                <div class="info-val">@(_selectedLead.UtmTerm ?? "N/A")</div>
+                            </div>
+                            <div>
+                                <span class="info-label">UTM Content</span>
+                                <div class="info-val">@(_selectedLead.UtmContent ?? "N/A")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer-row">
+                    <button type="button" class="bs-btn-secondary" @onclick="CloseDossierModal">
+                        @Loc["Admin_Leads_Close"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Delete Confirmation Modal -->
+    @if (_leadToDelete != null)
+    {
+        <div class="leads-modal-overlay" @onclick="CancelDeleteLead">
+            <div class="leads-modal-card modal-delete-card" @onclick:stopPropagation="true">
+                <div class="delete-icon-wrapper">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger, #ef4444)" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </div>
+                <h3 class="modal-delete-title">@Loc["Admin_Leads_DeleteConfirmTitle"]</h3>
+                <p class="modal-delete-msg">@Loc["Admin_Leads_DeleteConfirmMsg"]</p>
+                <div class="delete-target-info">
+                    <strong>@_leadToDelete.Email</strong> (@_leadToDelete.CreatedAt.ToString("dd MMM yyyy"))
+                </div>
+                <div class="modal-delete-actions">
+                    <button class="bs-btn-secondary" @onclick="CancelDeleteLead">@Loc["Admin_Leads_Cancel"]</button>
+                    <button class="delete-confirm-btn" @onclick="ExecuteDeleteLeadAsync">@Loc["Admin_Leads_Confirm"]</button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+<style>
+/* Base Page Container */
+.admin-leads-page {
+    padding: 24px;
+    max-width: 1440px;
+    margin: 0 auto;
+    color: var(--text-primary);
+    font-family: var(--font-primary, 'Outfit', -apple-system, sans-serif);
+    min-height: 100vh;
+}
+
+/* Header Section */
+.leads-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-title {
+    font: var(--font-h2);
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+}
+
+.header-subtitle {
+    color: var(--text-muted);
+    margin: 4px 0 0 0;
+    font: var(--font-body-1);
+}
+
+.header-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.export-btn, .refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font: var(--font-body-2);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.spin-animation {
+    animation: spin 1s linear infinite;
+}
+
+@@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Toast Notice */
+.leads-toast-notice {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    color: var(--color-primary);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font: var(--font-body-2);
+    font-weight: 600;
+    animation: fadeIn 0.2s ease;
+}
+
+/* KPI Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.metric-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.metric-card.highlight-fb {
+    border-left: 4px solid #1877F2;
+}
+
+.metric-label {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-label.fb-label {
+    color: #1877F2;
+}
+
+.metric-value {
+    font: var(--font-h5);
+    color: var(--text-primary);
+    margin-top: 8px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-subtext {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Filter Controls Card */
+.controls-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.controls-row-primary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex-grow: 1;
+    min-width: 280px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 36px 10px 38px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    font: var(--font-body-2);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+    border-color: var(--color-primary);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-dropdown-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label-prefix {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.leads-select {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font: var(--font-body-2);
+    outline: none;
+    cursor: pointer;
+}
+
+.leads-select-sm {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font: var(--font-body-2);
+    outline: none;
+    cursor: pointer;
+}
+
+.controls-row-pills {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filter-pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--bg-card-alt);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.filter-pill {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    font: var(--font-body-2);
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.filter-pill.active {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.filter-pill-secondary {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Loading & Empty States */
+.leads-loading-state, .leads-empty-state {
+    text-align: center;
+    padding: 64px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.loading-subtext {
+    margin-top: 12px;
+    color: var(--text-muted);
+    font: var(--font-body-2);
+}
+
+.empty-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-card-alt);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+}
+
+.empty-title {
+    font: var(--font-h3);
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+}
+
+.empty-subtitle {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Table Outer Card & Responsive Container */
+.table-outer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.leads-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font: var(--font-body-2);
+}
+
+.leads-data-table th {
+    background: var(--bg-card-alt);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 14px 16px;
+    white-space: nowrap;
+}
+
+.th-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sort-icon {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.lead-row {
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.15s ease;
+}
+
+.lead-row:hover {
+    background: var(--bg-card-alt);
+}
+
+.lead-row td {
+    padding: 14px 16px;
+    vertical-align: middle;
+}
+
+/* Column Specific Styling */
+.td-date {
+    white-space: nowrap;
+}
+
+.date-main {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.date-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.td-contact {
+    min-width: 180px;
+}
+
+.contact-name {
+    font-weight: 650;
+    color: var(--text-primary);
+}
+
+.contact-email-row, .contact-phone-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.contact-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.contact-link:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.copy-tiny-btn {
+    background: transparent;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.copy-tiny-btn:hover {
+    color: var(--color-primary);
+    background: var(--border-color);
+}
+
+/* Badges */
+.scope-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.scope-full {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--color-primary);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.scope-bathroom {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.scope-exit {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-valid {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-flagged {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-warning);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.spec-area {
+    color: var(--text-primary);
+}
+
+.spec-details {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.price-eur {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.price-bgn {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tag-facebook {
+    background: rgba(24, 119, 242, 0.12);
+    color: #1877F2;
+    border: 1px solid rgba(24, 119, 242, 0.25);
+}
+
+.tag-google {
+    background: rgba(234, 67, 53, 0.12);
+    color: var(--color-danger);
+    border: 1px solid rgba(234, 67, 53, 0.25);
+}
+
+.tag-direct {
+    background: var(--bg-card-alt);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.tag-exit {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.tag-other {
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.campaign-name {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Contact Status Column & Badges */
+.td-status {
+    vertical-align: middle;
+}
+
+.status-cell-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+}
+
+.status-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font: var(--font-body-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.status-btn-new {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-warning);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-btn-new:hover {
+    background: rgba(245, 158, 11, 0.22);
+    transform: translateY(-1px);
+}
+
+.status-btn-contacted {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-btn-contacted:hover {
+    background: rgba(16, 185, 129, 0.22);
+    transform: translateY(-1px);
+}
+
+.lead-note-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font: var(--font-body-2);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    padding: 2px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.lead-note-indicator:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* CRM Follow-up Notes Box inside Modal */
+.crm-notes-box {
+    border-left: 4px solid var(--color-primary);
+}
+
+.crm-notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.crm-status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font: var(--font-body-2);
+    font-weight: 600;
+}
+
+.status-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.status-checkbox-text {
+    color: var(--text-secondary);
+}
+
+.status-checkbox-text.text-contacted {
+    color: var(--color-success);
+}
+
+.contacted-timestamp {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.crm-notes-textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    font: var(--font-body-2);
+    outline: none;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.2s ease;
+}
+
+.crm-notes-textarea:focus {
+    border-color: var(--color-primary);
+}
+
+.crm-notes-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.crm-notes-success-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: var(--font-body-2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-success);
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    animation: fadeIn 0.2s ease;
+}
+
+.crm-notes-error-msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: var(--font-body-2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-danger, #ef4444);
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.btn-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 6px;
+}
+
+/* Row Action Buttons */
+.action-btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.row-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    position: relative;
+}
+
+.row-icon-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.row-icon-btn.btn-notes.has-notes {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.12);
+}
+
+.row-icon-btn.btn-notes.has-notes::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    background: var(--color-primary);
+    border-radius: 50%;
+}
+
+.row-icon-btn.btn-delete:hover {
+    border-color: var(--color-danger, #ef4444);
+    color: var(--color-danger, #ef4444);
+}
+
+/* Pagination Bar */
+.table-pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--bg-card-alt);
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pagination-info {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font: var(--font-body-2);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+    border-color: var(--color-primary);
+}
+
+.pagination-current-page {
+    font: var(--font-body-2);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Modals */
+.leads-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+    backdrop-filter: blur(4px);
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.leads-modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    max-width: 680px;
+    width: 100%;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    color: var(--text-primary);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+.modal-tag {
+    font: var(--font-body-2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.modal-title {
+    font: var(--font-h2);
+    margin: 4px 0 0 0;
+    color: var(--text-primary);
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s ease;
+}
+
+.modal-close-btn:hover {
+    color: var(--text-primary);
+}
+
+.modal-section-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.section-title {
+    font: var(--font-body-1);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.info-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    font: var(--font-body-2);
+}
+
+.info-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    font: var(--font-body-2);
+}
+
+.info-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.info-val {
+    color: var(--text-primary);
+}
+
+.info-val-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-val-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.info-val-link:hover {
+    text-decoration: underline;
+}
+
+.modal-financial-banner {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.financial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.financial-label {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.financial-duration {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.financial-eur {
+    font: var(--font-h2);
+    font-weight: 750;
+    color: var(--color-success);
+}
+
+.financial-bgn {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.spec-tile {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tile-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.tile-val {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.attribution-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-attribution-toggle {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-attribution-toggle:hover {
+    background: var(--border-color);
+}
+
+.attribution-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.edit-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+@@media (max-width: 600px) {
+    .edit-fields-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.edit-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.edit-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.edit-input {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font: var(--font-body-2);
+    outline: none;
+}
+
+.edit-input:focus {
+    border-color: var(--color-primary);
+}
+
+.attribution-edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.save-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font: var(--font-body-2);
+    font-weight: 600;
+}
+
+.modal-footer-row {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-color);
+    padding-top: 16px;
+}
+
+/* Delete Confirmation Modal Specifics */
+.modal-delete-card {
+    max-width: 440px;
+    text-align: center;
+    padding: 32px 24px;
+}
+
+.delete-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+}
+
+.modal-delete-title {
+    font: var(--font-h3);
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+}
+
+.modal-delete-msg {
+    font: var(--font-body-2);
+    color: var(--text-muted);
+    margin: 0 0 16px 0;
+}
+
+.delete-target-info {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    font: var(--font-body-2);
+    margin-bottom: 20px;
+}
+
+.modal-delete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.delete-confirm-btn {
+    background: var(--color-danger, #ef4444);
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font: var(--font-body-2);
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.delete-confirm-btn:hover {
+    opacity: 0.9;
+}
+</style>
 
 @code {
     private List<CalculatorLead> _allLeads = new();
     private bool _isLoading = true;
     private string _searchQuery = string.Empty;
-    private string _activeScopeFilter = "all";
+
+    // Filters
+    private string _dateRangeFilter = "all"; // all, today, yesterday, 7days, 30days
+    private string _sourceFilter = "all";    // all, facebook, google, direct, exit_intent
+    private string _scopeFilter = "all";     // all, bathroom, full, exit_intent
+    private string _verificationFilter = "all"; // all, valid, flagged
+    private string _contactStatusFilter = "all"; // all, new, spoken
+
+    // Sorting
+    private string _sortColumn = "date"; // date, name, price, area, source, status
+    private bool _sortDescending = true;
+
+    // Pagination
+    private int _currentPage = 1;
+    private int _pageSize = 25;
+
+    // Modal States
     private CalculatorLead? _selectedLead = null;
+    private CalculatorLead? _leadToDelete = null;
+
+    // CRM Notes & Contact State in Modal
+    private string _editNotes = string.Empty;
+    private bool _editIsContacted = false;
+
+    // Attribution Edit Mode
+    private bool _isEditingAttribution = false;
+    private string _editSource = string.Empty;
+    private string _editMedium = string.Empty;
+    private string _editCampaign = string.Empty;
+
+    // Toast Notice
+    private string? _toastMessage = null;
+
+    // Background Auto-Refresh Timer
     private System.Threading.Timer? _autoRefreshTimer = null;
+
+    // Aggregated KPI metrics
+    private int _leadsTodayCount = 0;
+    private int _leadsThisWeekCount = 0;
+    private int _facebookLeadsCount = 0;
+    private int _googleLeadsCount = 0;
+    private decimal _totalPipelineEur = 0m;
+    private decimal _totalPipelineBgn = 0m;
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshLeadsAsync();
+
         _autoRefreshTimer = new System.Threading.Timer(async _ =>
         {
             try
             {
                 await InvokeAsync(async () =>
                 {
-                    _allLeads = await LeadRepository.GetLeadsAsync();
-                    StateHasChanged();
+                    // Silent background sync without triggering full-page loading spinner
+                    var leads = await LeadRepository.GetLeadsAsync();
+                    if (leads != null)
+                    {
+                        _allLeads = leads;
+                        CalculateKpiMetrics();
+                        StateHasChanged();
+                    }
                 });
             }
             catch { }
@@ -340,7 +2087,9 @@
         _isLoading = true;
         try
         {
-            _allLeads = await LeadRepository.GetLeadsAsync();
+            var leads = await LeadRepository.GetLeadsAsync();
+            _allLeads = leads ?? new List<CalculatorLead>();
+            CalculateKpiMetrics();
         }
         catch (Exception ex)
         {
@@ -349,68 +2098,446 @@
         finally
         {
             _isLoading = false;
+            StateHasChanged();
         }
     }
 
-    private void SetScopeFilter(string scope)
+    private void CalculateKpiMetrics()
     {
-        _activeScopeFilter = scope;
+        var now = DateTime.UtcNow;
+        var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+        var sevenDaysAgo = now.AddDays(-7);
+
+        _leadsTodayCount = _allLeads.Count(l => l.CreatedAt >= todayStart);
+        _leadsThisWeekCount = _allLeads.Count(l => l.CreatedAt >= sevenDaysAgo);
+
+        _facebookLeadsCount = _allLeads.Count(l => IsFacebookSource(l.UtmSource));
+        _googleLeadsCount = _allLeads.Count(l => IsGoogleSource(l.UtmSource));
+
+        _totalPipelineEur = _allLeads.Sum(l => l.MaxPriceEur > 0 ? l.MaxPriceEur : (l.MaxPriceBgn > 0 ? Math.Round(l.MaxPriceBgn / 1.95583m, 2) : 0m));
+        _totalPipelineBgn = _allLeads.Sum(l => l.MaxPriceBgn > 0 ? l.MaxPriceBgn : (l.MaxPriceEur > 0 ? Math.Round(l.MaxPriceEur * 1.95583m, 0) : 0m));
     }
 
-    private List<CalculatorLead> FilteredLeads
+    private bool IsFacebookSource(string? source)
+    {
+        if (string.IsNullOrWhiteSpace(source)) return false;
+        var s = source.Trim().ToLowerInvariant();
+        return s.Contains("facebook") || s == "fb" || s.Contains("instagram") || s == "meta";
+    }
+
+    private bool IsGoogleSource(string? source)
+    {
+        if (string.IsNullOrWhiteSpace(source)) return false;
+        var s = source.Trim().ToLowerInvariant();
+        return s.Contains("google") || s == "gads";
+    }
+
+    private void SetSourceFilter(string source)
+    {
+        _sourceFilter = source;
+        _currentPage = 1;
+    }
+
+    private void ResetFilters()
+    {
+        _searchQuery = string.Empty;
+        _dateRangeFilter = "all";
+        _sourceFilter = "all";
+        _scopeFilter = "all";
+        _verificationFilter = "all";
+        _contactStatusFilter = "all";
+        _currentPage = 1;
+    }
+
+    private void ToggleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortDescending = !_sortDescending;
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortDescending = true;
+        }
+    }
+
+    private List<CalculatorLead> FilteredAndSortedLeads
     {
         get
         {
             var query = _allLeads.AsEnumerable();
 
-            if (_activeScopeFilter == "bathroom")
+            // Date Range Filter
+            var now = DateTime.UtcNow;
+            if (_dateRangeFilter == "today")
             {
-                query = query.Where(l => l.Scope == "bathroom");
+                var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(l => l.CreatedAt >= todayStart);
             }
-            else if (_activeScopeFilter == "full")
+            else if (_dateRangeFilter == "yesterday")
             {
-                query = query.Where(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom"));
+                var yesterdayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(-1);
+                var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+                query = query.Where(l => l.CreatedAt >= yesterdayStart && l.CreatedAt < todayStart);
             }
-            else if (_activeScopeFilter == "estimator")
+            else if (_dateRangeFilter == "7days")
             {
-                query = query.Where(l => l.Scope != "exit_intent_lead");
+                var cutoff = now.AddDays(-7);
+                query = query.Where(l => l.CreatedAt >= cutoff);
             }
-            else if (_activeScopeFilter == "exit_intent")
+            else if (_dateRangeFilter == "30days")
+            {
+                var cutoff = now.AddDays(-30);
+                query = query.Where(l => l.CreatedAt >= cutoff);
+            }
+
+            // Contact Status Filter (Spoken to / New)
+            if (_contactStatusFilter == "new")
+            {
+                query = query.Where(l => !l.IsContacted);
+            }
+            else if (_contactStatusFilter == "spoken")
+            {
+                query = query.Where(l => l.IsContacted);
+            }
+
+            // Traffic Source Filter
+            if (_sourceFilter == "facebook")
+            {
+                query = query.Where(l => IsFacebookSource(l.UtmSource));
+            }
+            else if (_sourceFilter == "google")
+            {
+                query = query.Where(l => IsGoogleSource(l.UtmSource));
+            }
+            else if (_sourceFilter == "direct")
+            {
+                query = query.Where(l => string.IsNullOrEmpty(l.UtmSource) && l.Scope != "exit_intent_lead");
+            }
+            else if (_sourceFilter == "exit_intent")
             {
                 query = query.Where(l => l.Scope == "exit_intent_lead");
             }
-            else if (_activeScopeFilter == "valid_emails")
+
+            // Scope Filter
+            if (_scopeFilter == "bathroom")
+            {
+                query = query.Where(l => l.Scope == "bathroom");
+            }
+            else if (_scopeFilter == "full")
+            {
+                query = query.Where(l => l.Scope == "full" || (l.Scope != "exit_intent_lead" && l.Scope != "bathroom"));
+            }
+            else if (_scopeFilter == "exit_intent")
+            {
+                query = query.Where(l => l.Scope == "exit_intent_lead");
+            }
+
+            // Verification Filter
+            if (_verificationFilter == "valid")
             {
                 query = query.Where(l => l.VerificationStatus == "Valid" || l.IsEmailVerified);
             }
-            else if (_activeScopeFilter == "fake_emails")
+            else if (_verificationFilter == "flagged")
             {
                 query = query.Where(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified);
             }
 
+            // Text Search Filter (includes Name, Email, Phone, Campaign, Source, Area, and CRM Notes)
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
                 var q = _searchQuery.Trim().ToLowerInvariant();
+                var qDigits = new string(q.Where(char.IsDigit).ToArray());
+
                 query = query.Where(l =>
                     (l.Name != null && l.Name.ToLowerInvariant().Contains(q)) ||
                     (l.Email != null && l.Email.ToLowerInvariant().Contains(q)) ||
-                    (l.Phone != null && l.Phone.ToLowerInvariant().Contains(q)) ||
+                    (l.Phone != null && (l.Phone.ToLowerInvariant().Contains(q) || (!string.IsNullOrEmpty(qDigits) && new string(l.Phone.Where(char.IsDigit).ToArray()).Contains(qDigits)))) ||
                     (l.UtmCampaign != null && l.UtmCampaign.ToLowerInvariant().Contains(q)) ||
-                    (l.UtmSource != null && l.UtmSource.ToLowerInvariant().Contains(q))
+                    (l.UtmSource != null && l.UtmSource.ToLowerInvariant().Contains(q)) ||
+                    (l.AdminNotes != null && l.AdminNotes.ToLowerInvariant().Contains(q)) ||
+                    l.SelectedArea.ToString().Contains(q)
                 );
             }
+
+            // Sorting
+            query = _sortColumn switch
+            {
+                "name" => _sortDescending ? query.OrderByDescending(l => l.Name ?? "") : query.OrderBy(l => l.Name ?? ""),
+                "price" => _sortDescending ? query.OrderByDescending(l => l.MaxPriceEur) : query.OrderBy(l => l.MaxPriceEur),
+                "area" => _sortDescending ? query.OrderByDescending(l => l.SelectedArea) : query.OrderBy(l => l.SelectedArea),
+                "source" => _sortDescending ? query.OrderByDescending(l => l.UtmSource ?? "") : query.OrderBy(l => l.UtmSource ?? ""),
+                "status" => _sortDescending ? query.OrderByDescending(l => l.IsContacted) : query.OrderBy(l => l.IsContacted),
+                _ => _sortDescending ? query.OrderByDescending(l => l.CreatedAt) : query.OrderBy(l => l.CreatedAt)
+            };
 
             return query.ToList();
         }
     }
 
-    private void SelectLead(CalculatorLead lead)
+    // Pagination Calculation
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredAndSortedLeads.Count / (double)_pageSize));
+    private int PaginationStart => FilteredAndSortedLeads.Count == 0 ? 0 : ((_currentPage - 1) * _pageSize) + 1;
+    private int PaginationEnd => Math.Min(_currentPage * _pageSize, FilteredAndSortedLeads.Count);
+
+    private List<CalculatorLead> PagedLeads
     {
-        _selectedLead = lead;
+        get
+        {
+            var list = FilteredAndSortedLeads;
+            if (_currentPage > TotalPages) _currentPage = TotalPages;
+            return list.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+        }
     }
 
-    private void CloseLeadModal()
+    private void PrevPage()
+    {
+        if (_currentPage > 1) _currentPage--;
+    }
+
+    private void NextPage()
+    {
+        if (_currentPage < TotalPages) _currentPage++;
+    }
+
+    // WhatsApp Link Formatter
+    private string GetWhatsAppUrl(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return "#";
+        var digits = new string(phone.Where(char.IsDigit).ToArray());
+        if (digits.StartsWith("0"))
+        {
+            digits = "359" + digits.Substring(1);
+        }
+        else if (!digits.StartsWith("359") && digits.Length == 9)
+        {
+            digits = "359" + digits;
+        }
+        return $"https://wa.me/{digits}";
+    }
+
+    // Copy to Clipboard with temporary toast
+    private async Task CopyToClipboard(string text, string label)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            ShowToast($"{label} {Loc["Admin_Leads_Copied"]}");
+        }
+        catch { }
+    }
+
+    private async void ShowToast(string message)
+    {
+        _toastMessage = message;
+        StateHasChanged();
+        await Task.Delay(2500);
+        _toastMessage = null;
+        StateHasChanged();
+    }
+
+    private bool _isSavingNotes = false;
+    private bool _notesSaveSuccess = false;
+    private string? _notesErrorMessage = null;
+
+    // Dossier Modal
+    private void InspectLead(CalculatorLead lead)
+    {
+        _selectedLead = lead;
+        _isEditingAttribution = false;
+        _editSource = lead.UtmSource ?? string.Empty;
+        _editMedium = lead.UtmMedium ?? string.Empty;
+        _editCampaign = lead.UtmCampaign ?? string.Empty;
+        _editNotes = lead.AdminNotes ?? string.Empty;
+        _editIsContacted = lead.IsContacted;
+        _isSavingNotes = false;
+        _notesSaveSuccess = false;
+        _notesErrorMessage = null;
+    }
+
+    private void CloseDossierModal()
     {
         _selectedLead = null;
+        _isEditingAttribution = false;
+        _editNotes = string.Empty;
+        _editIsContacted = false;
+        _isSavingNotes = false;
+        _notesSaveSuccess = false;
+        _notesErrorMessage = null;
+    }
+
+    private async Task ToggleLeadContacted(CalculatorLead lead)
+    {
+        try
+        {
+            lead.IsContacted = !lead.IsContacted;
+            lead.ContactedAt = lead.IsContacted ? DateTime.UtcNow : null;
+            await LeadRepository.UpdateLeadAsync(lead);
+            ShowToast(Loc["Admin_Leads_StatusUpdated"]);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating contact status: {ex.Message}");
+        }
+    }
+
+    private async Task SaveCrmNotesAsync()
+    {
+        if (_selectedLead == null) return;
+        _isSavingNotes = true;
+        _notesSaveSuccess = false;
+        _notesErrorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            _selectedLead.AdminNotes = string.IsNullOrWhiteSpace(_editNotes) ? null : _editNotes.Trim();
+            if (_editIsContacted && !_selectedLead.IsContacted)
+            {
+                _selectedLead.ContactedAt = DateTime.UtcNow;
+            }
+            else if (!_editIsContacted)
+            {
+                _selectedLead.ContactedAt = null;
+            }
+            _selectedLead.IsContacted = _editIsContacted;
+
+            await LeadRepository.UpdateLeadAsync(_selectedLead);
+
+            _notesSaveSuccess = true;
+            ShowToast(Loc["Admin_Leads_NotesSaved"]);
+            StateHasChanged();
+
+            await Task.Delay(2500);
+            _notesSaveSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving CRM notes: {ex.Message}");
+            _notesErrorMessage = ex.Message;
+            StateHasChanged();
+        }
+        finally
+        {
+            _isSavingNotes = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleAttributionEdit()
+    {
+        _isEditingAttribution = !_isEditingAttribution;
+        if (_selectedLead != null && _isEditingAttribution)
+        {
+            _editSource = _selectedLead.UtmSource ?? string.Empty;
+            _editMedium = _selectedLead.UtmMedium ?? string.Empty;
+            _editCampaign = _selectedLead.UtmCampaign ?? string.Empty;
+        }
+    }
+
+    private async Task SaveAttributionChanges()
+    {
+        if (_selectedLead == null) return;
+
+        try
+        {
+            _selectedLead.UtmSource = string.IsNullOrWhiteSpace(_editSource) ? null : _editSource.Trim();
+            _selectedLead.UtmMedium = string.IsNullOrWhiteSpace(_editMedium) ? null : _editMedium.Trim();
+            _selectedLead.UtmCampaign = string.IsNullOrWhiteSpace(_editCampaign) ? null : _editCampaign.Trim();
+
+            await LeadRepository.UpdateLeadAsync(_selectedLead);
+            _isEditingAttribution = false;
+            CalculateKpiMetrics();
+            ShowToast(Loc["Admin_Leads_AttributionSaved"]);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating attribution: {ex.Message}");
+        }
+    }
+
+    // Delete Operations
+    private void PromptDeleteLead(CalculatorLead lead)
+    {
+        _leadToDelete = lead;
+    }
+
+    private void CancelDeleteLead()
+    {
+        _leadToDelete = null;
+    }
+
+    private async Task ExecuteDeleteLeadAsync()
+    {
+        if (_leadToDelete == null) return;
+
+        try
+        {
+            var id = _leadToDelete.Id;
+            await LeadRepository.DeleteLeadAsync(id);
+            _allLeads.RemoveAll(l => l.Id == id);
+            if (_selectedLead?.Id == id) _selectedLead = null;
+            _leadToDelete = null;
+            CalculateKpiMetrics();
+            ShowToast("Lead deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting lead: {ex.Message}");
+        }
+    }
+
+    // CSV Export
+    private async Task ExportToCsv()
+    {
+        try
+        {
+            var leads = FilteredAndSortedLeads;
+            var sb = new System.Text.StringBuilder();
+
+            // UTF-8 BOM for Excel Cyrillic support
+            sb.Append('\uFEFF');
+
+            sb.AppendLine("SubmittedAt,Name,Email,Phone,Scope,SelectedAreaM2,BuildingStatus,QualityTier,IncludeFurniture,IncludeEquipment,Bathrooms,MinPriceEur,MaxPriceEur,MinPriceBgn,MaxPriceBgn,EstimatedDays,EmailVerificationStatus,IsEmailVerified,IsContacted,ContactedAt,AdminNotes,UtmSource,UtmMedium,UtmCampaign,UtmTerm,UtmContent");
+
+            foreach (var l in leads)
+            {
+                var name = SanitizeCsvField(l.Name);
+                var email = SanitizeCsvField(l.Email);
+                var phone = SanitizeCsvField(l.Phone);
+                var campaign = SanitizeCsvField(l.UtmCampaign);
+                var source = SanitizeCsvField(l.UtmSource);
+                var medium = SanitizeCsvField(l.UtmMedium);
+                var term = SanitizeCsvField(l.UtmTerm);
+                var content = SanitizeCsvField(l.UtmContent);
+                var notes = SanitizeCsvField(l.AdminNotes);
+                var contactedAtStr = l.ContactedAt.HasValue ? l.ContactedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : "";
+
+                sb.AppendLine($"\"{l.CreatedAt:yyyy-MM-dd HH:mm:ss}\",\"{name}\",\"{email}\",\"{phone}\",\"{l.Scope}\",{l.SelectedArea},\"{l.BuildingStatus}\",\"{l.QualityTier}\",{l.IncludeFurniture},{l.IncludeEquipment},{l.BathroomCount},{l.MinPriceEur:F2},{l.MaxPriceEur:F2},{l.MinPriceBgn:F2},{l.MaxPriceBgn:F2},{l.EstimatedDays},\"{l.VerificationStatus}\",{l.IsEmailVerified},{l.IsContacted},\"{contactedAtStr}\",\"{notes}\",\"{source}\",\"{medium}\",\"{campaign}\",\"{term}\",\"{content}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            var base64 = Convert.ToBase64String(bytes);
+            var filename = $"buildsmart_leads_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+            await JSRuntime.InvokeVoidAsync("eval", $"const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8;base64,{base64}'; a.download = '{filename}'; a.click();");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exporting leads CSV: {ex.Message}");
+        }
+    }
+
+    private static string SanitizeCsvField(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        var cleaned = value.Replace("\"", "\"\"");
+        if (cleaned.StartsWith("=") || cleaned.StartsWith("+") || cleaned.StartsWith("-") || cleaned.StartsWith("@"))
+        {
+            cleaned = "'" + cleaned;
+        }
+        return cleaned;
     }
 }

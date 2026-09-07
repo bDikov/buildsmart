@@ -1115,6 +1115,46 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await EnsureAttributionHydratedAsync();
+        }
+    }
+
+    private async Task EnsureAttributionHydratedAsync()
+    {
+        try
+        {
+            var utms = await JSRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+            if (utms != null)
+            {
+                if (string.IsNullOrWhiteSpace(UtmSource) && utms.TryGetValue("utm_source", out var src))
+                {
+                    UtmSource = src;
+                }
+                if (string.IsNullOrWhiteSpace(UtmMedium) && utms.TryGetValue("utm_medium", out var med))
+                {
+                    UtmMedium = med;
+                }
+                if (string.IsNullOrWhiteSpace(UtmCampaign) && utms.TryGetValue("utm_campaign", out var cmp))
+                {
+                    UtmCampaign = cmp;
+                }
+                if (string.IsNullOrWhiteSpace(UtmTerm) && utms.TryGetValue("utm_term", out var trm))
+                {
+                    UtmTerm = trm;
+                }
+                if (string.IsNullOrWhiteSpace(UtmContent) && utms.TryGetValue("utm_content", out var cnt))
+                {
+                    UtmContent = cnt;
+                }
+            }
+        }
+        catch { }
+    }
+
     private void ToggleCategory(int catId)
     {
         if (_expandedCategories.Contains(catId))
@@ -1345,6 +1385,9 @@
             }
             catch { }
         }
+
+        // Ensure Attribution is Hydrated from Stored State (Facebook Ads, UTMs, etc.)
+        await EnsureAttributionHydratedAsync();
 
         // Save CalculatorLead to Database
         decimal minEur = GetMinPriceEur();

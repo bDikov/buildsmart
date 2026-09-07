@@ -27,4 +27,7 @@ public class CalculatorLead : BaseEntity
     public string? UtmCampaign { get; set; }
     public string? UtmTerm { get; set; }
     public string? UtmContent { get; set; }
+    public bool IsContacted { get; set; } = false;
+    public DateTime? ContactedAt { get; set; }
+    public string? AdminNotes { get; set; }
 }

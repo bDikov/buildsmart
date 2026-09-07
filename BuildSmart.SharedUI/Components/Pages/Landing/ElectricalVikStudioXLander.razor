@@ -400,7 +400,19 @@
 
     private string GetEstimatorTargetUrl()
     {
-        return "/renovation-estimator?scope=finishing";
+        try
+        {
+            var uri = new Uri(NavManager.Uri);
+            var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query)
+                .ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value.ToString());
+
+            queryParams["scope"] = "finishing";
+            return Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("/renovation-estimator", queryParams);
+        }
+        catch
+        {
+            return "/renovation-estimator?scope=finishing";
+        }
     }
 
     private void OnAuthConfirmationChanged(bool proceed)

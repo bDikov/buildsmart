@@ -1709,7 +1709,20 @@ html {
             "mep-sofia" => "finishing",
             _ => "full"
         };
-        return $"/renovation-estimator?scope={scope}";
+
+        try
+        {
+            var uri = new Uri(NavManager.Uri);
+            var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query)
+                .ToDictionary(kvp => kvp.Key, kvp => (string?)kvp.Value.ToString());
+
+            queryParams["scope"] = scope;
+            return Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("/renovation-estimator", queryParams);
+        }
+        catch
+        {
+            return $"/renovation-estimator?scope={scope}";
+        }
     }
 
     private void OnAuthConfirmationChanged(bool proceed)

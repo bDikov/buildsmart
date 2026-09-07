@@ -13,7 +13,7 @@
 {
     <div class="bs-interio-modal-overlay" @onclick="CloseModal">
         <div class="bs-interio-modal-card" @onclick:stopPropagation="true">
-            <button class="bs-interio-modal-close" @onclick="CloseModal" aria-label="Затвори">
+            <button class="bs-interio-modal-close" @onclick="CloseModal" aria-label="@Loc["ExitIntent_CloseBtn"]">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -467,7 +467,7 @@
     {
         if (string.IsNullOrWhiteSpace(_leadModel.Name) || string.IsNullOrWhiteSpace(_leadModel.Phone) || string.IsNullOrWhiteSpace(_leadModel.Email))
         {
-            _errorMessage = "Моля, попълнете име, телефон и имейл.";
+            _errorMessage = Loc["ExitIntent_RequiredFields"];
             return;
         }
 
@@ -476,6 +476,25 @@
 
         try
         {
+            string? utmSource = null;
+            string? utmMedium = null;
+            string? utmCampaign = null;
+            string? utmTerm = null;
+            string? utmContent = null;
+            try
+            {
+                var utms = await JSRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+                if (utms != null)
+                {
+                    utms.TryGetValue("utm_source", out utmSource);
+                    utms.TryGetValue("utm_medium", out utmMedium);
+                    utms.TryGetValue("utm_campaign", out utmCampaign);
+                    utms.TryGetValue("utm_term", out utmTerm);
+                    utms.TryGetValue("utm_content", out utmContent);
+                }
+            }
+            catch { }
+
             var lead = new BuildSmart.Core.Domain.Entities.CalculatorLead
             {
                 Id = Guid.NewGuid(),
@@ -488,6 +507,11 @@
                 QualityTier = "standard",
                 IsEmailVerified = true,
                 VerificationStatus = "Valid",
+                UtmSource = utmSource,
+                UtmMedium = utmMedium,
+                UtmCampaign = utmCampaign,
+                UtmTerm = utmTerm,
+                UtmContent = utmContent,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -519,7 +543,7 @@
         }
         catch (Exception)
         {
-            _errorMessage = "Възникна грешка при изпращане. Моля, опитайте отново.";
+            _errorMessage = Loc["ExitIntent_SubmitError"];
         }
         finally
         {

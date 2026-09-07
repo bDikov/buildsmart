@@ -19,7 +19,7 @@
     <!-- Page Header -->
     <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); padding-bottom: 20px;">
         <div class="title-group">
-            <h1 class="page-title" style="font: var(--font-h1); margin: 0; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            <h1 class="page-title" style="font: var(--font-h2); font-weight: 700; margin: 0; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 @Loc["Admin_ReportingTitle"]
             </h1>
             <p class="page-subtitle" style="color: var(--text-muted); margin: 4px 0 0 0; font: var(--font-body-1);">
@@ -33,53 +33,53 @@
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                Export CSV
+                @Loc["Admin_Reporting_ExportCsv"]
             </button>
-            <button class="bs-btn-primary" @onclick="RefreshDataAsync" style="display: inline-flex; align-items: center; gap: 8px; background: #3b82f6; border: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+            <button class="bs-btn-primary" @onclick="RefreshDataAsync" style="display: inline-flex; align-items: center; gap: 8px; background: var(--color-primary); border: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"></polyline>
                     <polyline points="1 20 1 14 7 14"></polyline>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
-                Refresh
+                @Loc["Admin_Reporting_Refresh"]
             </button>
         </div>
     </div>
 
     <!-- Summary Metrics Cards -->
     <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Leads</div>
-            <div style="font: var(--font-h0); color: var(--text-primary); margin-top: 8px; font-weight: 700;">@_allLeads.Count</div>
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); min-width: 0; overflow: hidden;">
+            <div style="font: var(--font-body-2); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Loc["Admin_TotalLeads"]</div>
+            <div style="font: var(--font-h5); color: var(--text-primary); margin-top: 8px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@_allLeads.Count</div>
         </div>
 
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-            <div style="font: var(--font-body-2); color: #1877F2; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Facebook Ads Leads</div>
-            <div style="font: var(--font-h0); color: #1877F2; margin-top: 8px; font-weight: 700;">@_facebookLeadsCount</div>
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); min-width: 0; overflow: hidden;">
+            <div style="font: var(--font-body-2); color: #1877F2; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Loc["Admin_Reporting_FacebookLeads"]</div>
+            <div style="font: var(--font-h5); color: #1877F2; margin-top: 8px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@_facebookLeadsCount</div>
         </div>
 
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-            <div style="font: var(--font-body-2); color: #ea4335; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Google Ads Leads</div>
-            <div style="font: var(--font-h0); color: #ea4335; margin-top: 8px; font-weight: 700;">@_googleLeadsCount</div>
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); min-width: 0; overflow: hidden;">
+            <div style="font: var(--font-body-2); color: var(--color-danger); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Loc["Admin_Reporting_GoogleLeads"]</div>
+            <div style="font: var(--font-h5); color: var(--color-danger); margin-top: 8px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@_googleLeadsCount</div>
         </div>
 
-        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-            <div style="font: var(--font-body-2); color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Estimated Pipeline Value</div>
-            <div style="font: var(--font-h0); color: #10b981; margin-top: 8px; font-weight: 700;">€@_totalPipelineValue.ToString("N0")</div>
+        <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); min-width: 0; overflow: hidden;">
+            <div style="font: var(--font-body-2); color: var(--color-success); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Loc["Admin_Reporting_PipelineValue"]</div>
+            <div style="font: var(--font-h5); color: var(--color-success); margin-top: 8px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">€@_totalPipelineValue.ToString("N0")</div>
         </div>
     </div>
 
     <!-- Marketing Campaign Breakdown -->
     <div class="card-section" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-        <h3 style="font: var(--font-h3); margin: 0 0 16px 0; color: var(--text-primary);">Traffic & Campaign Source Performance</h3>
+        <h3 style="font: var(--font-h3); margin: 0 0 16px 0; color: var(--text-primary);">@Loc["Admin_Reporting_SourcePerformance"]</h3>
         
         @if (_isLoading)
         {
-            <div style="text-align: center; padding: 40px; color: var(--text-muted);">Loading campaign metrics...</div>
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">@Loc["Admin_Reporting_Loading"]</div>
         }
         else if (_campaignGroups.Count == 0)
         {
-            <div style="text-align: center; padding: 40px; color: var(--text-muted);">No campaign data captured yet.</div>
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">@Loc["Admin_Reporting_NoData"]</div>
         }
         else
         {
@@ -87,11 +87,11 @@
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font: var(--font-body-2);">
-                            <th style="padding: 12px;">Source (`utm_source`)</th>
-                            <th style="padding: 12px;">Medium (`utm_medium`)</th>
-                            <th style="padding: 12px;">Campaign (`utm_campaign`)</th>
-                            <th style="padding: 12px; text-align: right;">Total Leads</th>
-                            <th style="padding: 12px; text-align: right;">Est. Pipeline (€)</th>
+                            <th style="padding: 12px;">@Loc["Admin_Reporting_ColSource"]</th>
+                            <th style="padding: 12px;">@Loc["Admin_Reporting_ColMedium"]</th>
+                            <th style="padding: 12px;">@Loc["Admin_Reporting_ColCampaign"]</th>
+                            <th style="padding: 12px; text-align: right;">@Loc["Admin_Reporting_ColLeads"]</th>
+                            <th style="padding: 12px; text-align: right;">@Loc["Admin_Reporting_ColPipeline"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,20 +108,20 @@
                                     }
                                     else if (campaign.Source.Contains("google", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <span style="color: #ea4335; display: inline-flex; align-items: center; gap: 6px;">
+                                        <span style="color: var(--color-danger); display: inline-flex; align-items: center; gap: 6px;">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 15.987 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
                                             Google
                                         </span>
                                     }
                                     else
                                     {
-                                        <span>@(string.IsNullOrEmpty(campaign.Source) ? "Direct / Organic" : campaign.Source)</span>
+                                        <span>@(string.IsNullOrEmpty(campaign.Source) ? Loc["Admin_Reporting_DirectOrganic"].Value : campaign.Source)</span>
                                     }
                                 </td>
                                 <td style="padding: 14px 12px; color: var(--text-muted);">@(string.IsNullOrEmpty(campaign.Medium) ? "-" : campaign.Medium)</td>
                                 <td style="padding: 14px 12px;">@(string.IsNullOrEmpty(campaign.Campaign) ? "-" : campaign.Campaign)</td>
                                 <td style="padding: 14px 12px; text-align: right; font-weight: 700;">@campaign.LeadsCount</td>
-                                <td style="padding: 14px 12px; text-align: right; font-weight: 700; color: #10b981;">€@campaign.TotalValue.ToString("N0")</td>
+                                <td style="padding: 14px 12px; text-align: right; font-weight: 700; color: var(--color-success);">€@campaign.TotalValue.ToString("N0")</td>
                             </tr>
                         }
                     </tbody>
@@ -195,20 +195,35 @@
         try
         {
             var csvBuilder = new System.Text.StringBuilder();
+            csvBuilder.Append('\uFEFF'); // UTF-8 BOM for Excel Cyrillic support
             csvBuilder.AppendLine("Source,Medium,Campaign,LeadsCount,TotalValueEur");
             foreach (var group in _campaignGroups)
             {
-                csvBuilder.AppendLine($"\"{group.Source}\",\"{group.Medium}\",\"{group.Campaign}\",{group.LeadsCount},{group.TotalValue:F2}");
+                var src = SanitizeCsvField(group.Source);
+                var med = SanitizeCsvField(group.Medium);
+                var cmp = SanitizeCsvField(group.Campaign);
+                csvBuilder.AppendLine($"\"{src}\",\"{med}\",\"{cmp}\",{group.LeadsCount},{group.TotalValue:F2}");
             }
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvBuilder.ToString());
             var base64 = Convert.ToBase64String(bytes);
-            await JSRuntime.InvokeVoidAsync("eval", $"const a = document.createElement('a'); a.href = 'data:text/csv;base64,{base64}'; a.download = 'buildsmart_marketing_report.csv'; a.click();");
+            await JSRuntime.InvokeVoidAsync("eval", $"const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8;base64,{base64}'; a.download = 'buildsmart_marketing_report.csv'; a.click();");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[AdminReporting] CSV Export failed: {ex.Message}");
         }
+    }
+
+    private static string SanitizeCsvField(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        var cleaned = value.Replace("\"", "\"\"");
+        if (cleaned.StartsWith("=") || cleaned.StartsWith("+") || cleaned.StartsWith("-") || cleaned.StartsWith("@"))
+        {
+            cleaned = "'" + cleaned;
+        }
+        return cleaned;
     }
 
     public void Dispose()

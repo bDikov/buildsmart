@@ -1450,7 +1450,7 @@ Boncho | BuildSmart</value>
     <value>Calculate turnkey finishing costs (Screeds, Electrics, Plumbing &amp; Paint)</value>
   </data>
   <data name="Lander_PriceLocked" xml:space="preserve">
-    <value>🔒 Enter phone to unlock exact calculation</value>
+    <value>Enter phone to unlock exact calculation</value>
   </data>
   <data name="Lander_CtaUnlock" xml:space="preserve">
     <value>Unlock My Complete Calculation</value>
@@ -2214,6 +2214,303 @@ Boncho | BuildSmart</value>
   <data name="Admin_LeadDetails" xml:space="preserve">
     <value>Lead Details</value>
   </data>
+  <data name="Admin_Leads_Today" xml:space="preserve">
+    <value>Today's Leads</value>
+  </data>
+  <data name="Admin_Leads_ThisWeek" xml:space="preserve">
+    <value>This Week</value>
+  </data>
+  <data name="Admin_Leads_FacebookAds" xml:space="preserve">
+    <value>Facebook Ads</value>
+  </data>
+  <data name="Admin_Leads_GoogleAds" xml:space="preserve">
+    <value>Google Ads</value>
+  </data>
+  <data name="Admin_Leads_TotalPipeline" xml:space="preserve">
+    <value>Est. Pipeline Value</value>
+  </data>
+  <data name="Admin_Leads_BathroomQueries" xml:space="preserve">
+    <value>Bathroom Inquiries</value>
+  </data>
+  <data name="Admin_Leads_FullQueries" xml:space="preserve">
+    <value>Full Renovation</value>
+  </data>
+  <data name="Admin_Leads_FlaggedEmails" xml:space="preserve">
+    <value>Flagged / Invalid</value>
+  </data>
+  <data name="Admin_Leads_DateRange" xml:space="preserve">
+    <value>Date Range</value>
+  </data>
+  <data name="Admin_Leads_DateAll" xml:space="preserve">
+    <value>All Time</value>
+  </data>
+  <data name="Admin_Leads_DateToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Admin_Leads_DateYesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="Admin_Leads_Date7Days" xml:space="preserve">
+    <value>Last 7 Days</value>
+  </data>
+  <data name="Admin_Leads_Date30Days" xml:space="preserve">
+    <value>Last 30 Days</value>
+  </data>
+  <data name="Admin_Leads_SourceFilter" xml:space="preserve">
+    <value>Traffic Source</value>
+  </data>
+  <data name="Admin_Leads_SourceAll" xml:space="preserve">
+    <value>All Sources</value>
+  </data>
+  <data name="Admin_Leads_SourceFacebook" xml:space="preserve">
+    <value>Facebook Ads</value>
+  </data>
+  <data name="Admin_Leads_SourceGoogle" xml:space="preserve">
+    <value>Google Ads</value>
+  </data>
+  <data name="Admin_Leads_SourceDirect" xml:space="preserve">
+    <value>Direct / Organic</value>
+  </data>
+  <data name="Admin_Leads_SourceExitIntent" xml:space="preserve">
+    <value>Exit-Intent Popup</value>
+  </data>
+  <data name="Admin_Leads_ScopeFilter" xml:space="preserve">
+    <value>Project Scope</value>
+  </data>
+  <data name="Admin_Leads_ScopeAll" xml:space="preserve">
+    <value>All Scopes</value>
+  </data>
+  <data name="Admin_Leads_ScopeBathroom" xml:space="preserve">
+    <value>Bathroom</value>
+  </data>
+  <data name="Admin_Leads_ScopeFull" xml:space="preserve">
+    <value>Full Renovation</value>
+  </data>
+  <data name="Admin_Leads_ScopeFinishing" xml:space="preserve">
+    <value>Finishing Works</value>
+  </data>
+  <data name="Admin_Leads_VerificationFilter" xml:space="preserve">
+    <value>Email Status</value>
+  </data>
+  <data name="Admin_Leads_VerificationAll" xml:space="preserve">
+    <value>All Statuses</value>
+  </data>
+  <data name="Admin_Leads_VerificationValid" xml:space="preserve">
+    <value>Valid Only</value>
+  </data>
+  <data name="Admin_Leads_VerificationFlagged" xml:space="preserve">
+    <value>Flagged / Invalid</value>
+  </data>
+  <data name="Admin_Leads_ColSubmitted" xml:space="preserve">
+    <value>Submitted</value>
+  </data>
+  <data name="Admin_Leads_ColContact" xml:space="preserve">
+    <value>Contact Profile</value>
+  </data>
+  <data name="Admin_Leads_ColScope" xml:space="preserve">
+    <value>Scope</value>
+  </data>
+  <data name="Admin_Leads_ColSpecs" xml:space="preserve">
+    <value>Area &amp; Specs</value>
+  </data>
+  <data name="Admin_Leads_ColEstimate" xml:space="preserve">
+    <value>Estimated Total</value>
+  </data>
+  <data name="Admin_Leads_ColVerification" xml:space="preserve">
+    <value>Email Status</value>
+  </data>
+  <data name="Admin_Leads_ColSource" xml:space="preserve">
+    <value>Source / Campaign</value>
+  </data>
+  <data name="Admin_Leads_ColActions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Admin_Leads_Call" xml:space="preserve">
+    <value>Call</value>
+  </data>
+  <data name="Admin_Leads_WhatsApp" xml:space="preserve">
+    <value>WhatsApp</value>
+  </data>
+  <data name="Admin_Leads_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Admin_Leads_Inspect" xml:space="preserve">
+    <value>Inspect</value>
+  </data>
+  <data name="Admin_Leads_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Admin_Leads_DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete Lead</value>
+  </data>
+  <data name="Admin_Leads_DeleteConfirmMsg" xml:space="preserve">
+    <value>Are you sure you want to permanently delete this lead?</value>
+  </data>
+  <data name="Admin_Leads_Confirm" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Admin_Leads_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Admin_Leads_Copied" xml:space="preserve">
+    <value>Copied!</value>
+  </data>
+  <data name="Admin_Leads_ExportCsv" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+  <data name="Admin_Leads_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Admin_Leads_PageSize" xml:space="preserve">
+    <value>Per Page</value>
+  </data>
+  <data name="Admin_Leads_Showing" xml:space="preserve">
+    <value>Showing {0}-{1} of {2} leads</value>
+  </data>
+  <data name="Admin_Leads_NoLeads" xml:space="preserve">
+    <value>No leads match your filter criteria</value>
+  </data>
+  <data name="Admin_Leads_Prev" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Admin_Leads_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Admin_Leads_SortDateDesc" xml:space="preserve">
+    <value>Newest First</value>
+  </data>
+  <data name="Admin_Leads_SortDateAsc" xml:space="preserve">
+    <value>Oldest First</value>
+  </data>
+  <data name="Admin_Leads_SortPriceDesc" xml:space="preserve">
+    <value>Price (High to Low)</value>
+  </data>
+  <data name="Admin_Leads_SortPriceAsc" xml:space="preserve">
+    <value>Price (Low to High)</value>
+  </data>
+  <data name="Admin_Leads_SortAreaDesc" xml:space="preserve">
+    <value>Area (High to Low)</value>
+  </data>
+  <data name="Admin_Leads_SortAreaAsc" xml:space="preserve">
+    <value>Area (Low to High)</value>
+  </data>
+  <data name="Admin_Leads_DossierTitle" xml:space="preserve">
+    <value>Lead Dossier &amp; Project Requirements</value>
+  </data>
+  <data name="Admin_Leads_ClientInfo" xml:space="preserve">
+    <value>Client Information</value>
+  </data>
+  <data name="Admin_Leads_ProjectSpecs" xml:space="preserve">
+    <value>Project Specifications</value>
+  </data>
+  <data name="Admin_Leads_DualQuote" xml:space="preserve">
+    <value>Estimated Price Quote</value>
+  </data>
+  <data name="Admin_Leads_MarketingAttribution" xml:space="preserve">
+    <value>Marketing &amp; Attribution</value>
+  </data>
+  <data name="Admin_Leads_EditAttribution" xml:space="preserve">
+    <value>Edit Attribution</value>
+  </data>
+  <data name="Admin_Leads_SaveAttribution" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="Admin_Leads_AttributionSaved" xml:space="preserve">
+    <value>Attribution updated successfully!</value>
+  </data>
+  <data name="Admin_Leads_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Admin_Leads_Anonymous" xml:space="preserve">
+    <value>Anonymous Lead</value>
+  </data>
+  <data name="Admin_Leads_Included" xml:space="preserve">
+    <value>Included</value>
+  </data>
+  <data name="Admin_Leads_NotIncluded" xml:space="preserve">
+    <value>Not Included</value>
+  </data>
+  <data name="Admin_Leads_Furniture" xml:space="preserve">
+    <value>Include Furniture</value>
+  </data>
+  <data name="Admin_Leads_Equipment" xml:space="preserve">
+    <value>Include Equipment</value>
+  </data>
+  <data name="Admin_Leads_Bathrooms" xml:space="preserve">
+    <value>Bathrooms</value>
+  </data>
+  <data name="Admin_Leads_Duration" xml:space="preserve">
+    <value>Estimated Duration</value>
+  </data>
+  <data name="Admin_Leads_Days" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="Admin_Leads_Status_Bds" xml:space="preserve">
+    <value>BDS (New Construction)</value>
+  </data>
+  <data name="Admin_Leads_Status_Rough" xml:space="preserve">
+    <value>Rough Construction</value>
+  </data>
+  <data name="Admin_Leads_Status_Old" xml:space="preserve">
+    <value>Old Renovation</value>
+  </data>
+  <data name="Admin_Leads_Tier_Standard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Admin_Leads_Tier_Premium" xml:space="preserve">
+    <value>Premium</value>
+  </data>
+  <data name="Admin_Leads_Tier_Luxury" xml:space="preserve">
+    <value>Luxury</value>
+  </data>
+  <data name="Admin_Leads_ColStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Admin_Leads_SpokenTo" xml:space="preserve">
+    <value>Spoken To</value>
+  </data>
+  <data name="Admin_Leads_Uncontacted" xml:space="preserve">
+    <value>New / Not Contacted</value>
+  </data>
+  <data name="Admin_Leads_MarkSpokenTo" xml:space="preserve">
+    <value>Click to mark as Spoken To</value>
+  </data>
+  <data name="Admin_Leads_MarkUncontacted" xml:space="preserve">
+    <value>Click to mark as Not Contacted</value>
+  </data>
+  <data name="Admin_Leads_StatusUpdated" xml:space="preserve">
+    <value>Contact status updated</value>
+  </data>
+  <data name="Admin_Leads_NotesTitle" xml:space="preserve">
+    <value>CRM Follow-up Notes &amp; Client Requirements</value>
+  </data>
+  <data name="Admin_Leads_NotesPlaceholder" xml:space="preserve">
+    <value>Enter notes from your conversation with the client: What do they want? Key details, budget, timeline, preferences...</value>
+  </data>
+  <data name="Admin_Leads_SaveNotes" xml:space="preserve">
+    <value>Save Notes</value>
+  </data>
+  <data name="Admin_Leads_NotesSaved" xml:space="preserve">
+    <value>Notes saved successfully</value>
+  </data>
+  <data name="Admin_Leads_ContactFilter" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Admin_Leads_ContactAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Admin_Leads_ContactNew" xml:space="preserve">
+    <value>Not Contacted</value>
+  </data>
+  <data name="Admin_Leads_ContactDone" xml:space="preserve">
+    <value>Spoken To</value>
+  </data>
+  <data name="Admin_Leads_HasNotes" xml:space="preserve">
+    <value>Notes added</value>
+  </data>
+  <data name="Admin_Leads_AddNote" xml:space="preserve">
+    <value>Add note</value>
+  </data>
   <data name="Login_FacebookButton" xml:space="preserve">
     <value>Continue with Facebook</value>
   </data>
@@ -2231,6 +2528,48 @@ Boncho | BuildSmart</value>
   </data>
   <data name="Admin_ReportingSubtitle" xml:space="preserve">
     <value>Track Meta/Facebook Ads conversions, traffic sources, and pipeline values.</value>
+  </data>
+  <data name="Admin_Reporting_ExportCsv" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+  <data name="Admin_Reporting_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Admin_Reporting_FacebookLeads" xml:space="preserve">
+    <value>Facebook Ads Leads</value>
+  </data>
+  <data name="Admin_Reporting_GoogleLeads" xml:space="preserve">
+    <value>Google Ads Leads</value>
+  </data>
+  <data name="Admin_Reporting_PipelineValue" xml:space="preserve">
+    <value>Estimated Pipeline Value</value>
+  </data>
+  <data name="Admin_Reporting_SourcePerformance" xml:space="preserve">
+    <value>Traffic &amp; Campaign Source Performance</value>
+  </data>
+  <data name="Admin_Reporting_Loading" xml:space="preserve">
+    <value>Loading campaign metrics...</value>
+  </data>
+  <data name="Admin_Reporting_NoData" xml:space="preserve">
+    <value>No campaign data captured yet.</value>
+  </data>
+  <data name="Admin_Reporting_ColSource" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Admin_Reporting_ColMedium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Admin_Reporting_ColCampaign" xml:space="preserve">
+    <value>Campaign</value>
+  </data>
+  <data name="Admin_Reporting_ColLeads" xml:space="preserve">
+    <value>Total Leads</value>
+  </data>
+  <data name="Admin_Reporting_ColPipeline" xml:space="preserve">
+    <value>Est. Pipeline (€)</value>
+  </data>
+  <data name="Admin_Reporting_DirectOrganic" xml:space="preserve">
+    <value>Direct / Organic</value>
   </data>
   <data name="Lander_SocialOrManualDivider" xml:space="preserve">
     <value>or enter details manually</value>
@@ -2396,6 +2735,12 @@ Boncho | BuildSmart</value>
   </data>
   <data name="ExitIntent_CloseBtn" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="ExitIntent_RequiredFields" xml:space="preserve">
+    <value>Please fill in name, phone, and email.</value>
+  </data>
+  <data name="ExitIntent_SubmitError" xml:space="preserve">
+    <value>An error occurred while sending. Please try again.</value>
   </data>
   <data name="Lander_VerifyingStatus" xml:space="preserve">
     <value>Verifying...</value>

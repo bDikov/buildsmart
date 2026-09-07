@@ -58,6 +58,21 @@
                 document.cookie = name + "=" + (value || "") + expires + "; path=/";
             };
 
+            // Helper to get saved UTM parameters
+            window.getSavedUtms = function() {
+                var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid', 'ttclid'];
+                var result = {};
+                keys.forEach(function(key) {
+                    try {
+                        var val = sessionStorage.getItem(key) || localStorage.getItem(key);
+                        if (val) {
+                            result[key] = val;
+                        }
+                    } catch(e) {}
+                });
+                return result;
+            };
+
             // Microsoft Clarity Initializer
             window.initializeClarity = function (projectId) {
                 if (!projectId || window.clarityInitialized) return;
