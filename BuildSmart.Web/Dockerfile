@@ -25,4 +25,6 @@ RUN dotnet publish "BuildSmart.Web.csproj" -c Release -o /app/publish /p:UseAppH
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=publish /app/publish/wwwroot/posts /app/seed_posts
+COPY --from=publish /app/publish/wwwroot/images/blog /app/default_images_blog
 ENTRYPOINT ["dotnet", "BuildSmart.Web.dll"]

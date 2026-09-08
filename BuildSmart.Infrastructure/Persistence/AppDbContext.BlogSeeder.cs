@@ -16,52 +16,126 @@ public partial class AppDbContext
         try
         {
             Console.WriteLine("Checking for missing blog posts in PostgreSQL database...");
-            var possiblePaths = new[]
-            {
-                Path.Combine(webRootPath ?? "", "posts", "posts.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "posts", "posts.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "BuildSmart.Web", "wwwroot", "posts", "posts.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "BuildSmart.Web", "wwwroot", "posts", "posts.json")
-            };
 
-            var postsFilePath = possiblePaths.FirstOrDefault(File.Exists);
-            if (string.IsNullOrEmpty(postsFilePath))
+            var searchDirs = new List<string>();
+            var seedPostsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "seed_posts");
+            if (Directory.Exists(seedPostsDir)) searchDirs.Add(seedPostsDir);
+
+            if (!string.IsNullOrEmpty(webRootPath))
             {
-                Console.WriteLine("posts.json not found in any search path.");
+                var webPosts = Path.Combine(webRootPath, "posts");
+                if (Directory.Exists(webPosts) && !searchDirs.Contains(webPosts)) searchDirs.Add(webPosts);
+            }
+
+            var currentWwwrootPosts = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "posts");
+            if (Directory.Exists(currentWwwrootPosts) && !searchDirs.Contains(currentWwwrootPosts)) searchDirs.Add(currentWwwrootPosts);
+
+            var parentWwwrootPosts = Path.Combine(Directory.GetCurrentDirectory(), "..", "BuildSmart.Web", "wwwroot", "posts");
+            if (Directory.Exists(parentWwwrootPosts) && !searchDirs.Contains(parentWwwrootPosts)) searchDirs.Add(parentWwwrootPosts);
+
+            var buildsmartWebPosts = Path.Combine(Directory.GetCurrentDirectory(), "BuildSmart.Web", "wwwroot", "posts");
+            if (Directory.Exists(buildsmartWebPosts) && !searchDirs.Contains(buildsmartWebPosts)) searchDirs.Add(buildsmartWebPosts);
+
+            if (!searchDirs.Any())
+            {
+                Console.WriteLine("No posts directory found in any search path.");
                 return;
             }
 
-            var postsDir = Path.GetDirectoryName(postsFilePath)!;
-            var jsonContent = await File.ReadAllTextAsync(postsFilePath);
+            var mergedPosts = new Dictionary<string, JsonBlogPostSeedDto>(StringComparer.OrdinalIgnoreCase);
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var jsonPosts = JsonSerializer.Deserialize<List<JsonBlogPostSeedDto>>(jsonContent, options);
 
-            if (jsonPosts == null || !jsonPosts.Any())
+            foreach (var dir in searchDirs)
             {
+                var jsonPath = Path.Combine(dir, "posts.json");
+                if (File.Exists(jsonPath))
+                {
+                    try
+                    {
+                        var json = await File.ReadAllTextAsync(jsonPath);
+                        var list = JsonSerializer.Deserialize<List<JsonBlogPostSeedDto>>(json, options);
+                        if (list != null)
+                        {
+                            foreach (var p in list)
+                            {
+                                if (!string.IsNullOrWhiteSpace(p.Slug) && !mergedPosts.ContainsKey(p.Slug))
+                                {
+                                    mergedPosts[p.Slug] = p;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error reading posts.json in {dir}: {ex.Message}");
+                    }
+                }
+            }
+
+            if (!mergedPosts.Any())
+            {
+                Console.WriteLine("No valid posts found to seed.");
                 return;
             }
 
-            foreach (var dto in jsonPosts)
+            // Sync missing markdown and updated posts.json to web volume if applicable
+            if (!string.IsNullOrEmpty(webRootPath))
+            {
+                var targetWebPostsDir = Path.Combine(webRootPath, "posts");
+                if (Directory.Exists(targetWebPostsDir) && Directory.Exists(seedPostsDir))
+                {
+                    try
+                    {
+                        foreach (var srcFile in Directory.GetFiles(seedPostsDir, "*.md"))
+                        {
+                            var targetFile = Path.Combine(targetWebPostsDir, Path.GetFileName(srcFile));
+                            if (!File.Exists(targetFile))
+                            {
+                                File.Copy(srcFile, targetFile, overwrite: false);
+                            }
+                        }
+
+                        var targetJsonPath = Path.Combine(targetWebPostsDir, "posts.json");
+                        var writeOptions = new JsonSerializerOptions { WriteIndented = true };
+                        var serialized = JsonSerializer.Serialize(mergedPosts.Values.ToList(), writeOptions);
+                        await File.WriteAllTextAsync(targetJsonPath, serialized);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Note: Unable to sync files to web volume: {ex.Message}");
+                    }
+                }
+            }
+
+            foreach (var dto in mergedPosts.Values)
             {
                 if (string.IsNullOrWhiteSpace(dto.Slug)) continue;
 
-                var bgMdPath = Path.Combine(postsDir, $"{dto.Slug}.bg.md");
-                var defMdPath = Path.Combine(postsDir, $"{dto.Slug}.md");
-                var enMdPath = Path.Combine(postsDir, $"{dto.Slug}.en.md");
+                string? FindFile(string filename)
+                {
+                    foreach (var d in searchDirs)
+                    {
+                        var p = Path.Combine(d, filename);
+                        if (File.Exists(p)) return p;
+                    }
+                    return null;
+                }
+
+                var bgMdPath = FindFile($"{dto.Slug}.bg.md") ?? FindFile($"{dto.Slug}.md");
+                var enMdPath = FindFile($"{dto.Slug}.en.md");
 
                 var existing = await BlogPosts.FirstOrDefaultAsync(b => b.Slug == dto.Slug);
                 if (existing != null)
                 {
                     bool updated = false;
-                    if (string.IsNullOrWhiteSpace(existing.ContentBg))
+                    if (string.IsNullOrWhiteSpace(existing.ContentBg) && bgMdPath != null)
                     {
-                        if (File.Exists(bgMdPath)) existing.ContentBg = await File.ReadAllTextAsync(bgMdPath);
-                        else if (File.Exists(defMdPath)) existing.ContentBg = await File.ReadAllTextAsync(defMdPath);
+                        existing.ContentBg = await File.ReadAllTextAsync(bgMdPath);
                         updated = true;
                     }
-                    if (string.IsNullOrWhiteSpace(existing.ContentEn))
+                    if (string.IsNullOrWhiteSpace(existing.ContentEn) && enMdPath != null)
                     {
-                        if (File.Exists(enMdPath)) existing.ContentEn = await File.ReadAllTextAsync(enMdPath);
+                        existing.ContentEn = await File.ReadAllTextAsync(enMdPath);
                         updated = true;
                     }
                     if (string.IsNullOrWhiteSpace(existing.CoverImageUrl) && !string.IsNullOrWhiteSpace(dto.Image))
@@ -76,13 +150,8 @@ public partial class AppDbContext
                     continue;
                 }
 
-                string contentBg = "";
-                string contentEn = "";
-
-                if (File.Exists(bgMdPath)) contentBg = await File.ReadAllTextAsync(bgMdPath);
-                else if (File.Exists(defMdPath)) contentBg = await File.ReadAllTextAsync(defMdPath);
-
-                if (File.Exists(enMdPath)) contentEn = await File.ReadAllTextAsync(enMdPath);
+                string contentBg = bgMdPath != null ? await File.ReadAllTextAsync(bgMdPath) : "";
+                string contentEn = enMdPath != null ? await File.ReadAllTextAsync(enMdPath) : "";
 
                 var post = new BlogPost
                 {

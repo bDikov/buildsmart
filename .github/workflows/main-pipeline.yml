@@ -205,6 +205,13 @@ jobs:
             # Inject the SKUs
             docker compose -f docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d buildsmart_db < SeedLiveCategories.sql
             
+            # Sync posts and images to the web container volume so existing volumes are immediately updated
+            docker compose -f docker-compose.prod.yml cp posts/. web:/app/wwwroot/posts/ || true
+            docker compose -f docker-compose.prod.yml cp images/blog/. web:/app/wwwroot/images/blog/ || true
+
+            # Restart web container to trigger startup seeding with updated volume
+            docker compose -f docker-compose.prod.yml restart web
+
             # Clean up old images to save space
             docker image prune -f
 

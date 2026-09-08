@@ -9,6 +9,7 @@ using BuildSmart.SharedUI.ViewModels;
 using BuildSmart.SharedUI.ViewModels.Admin;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using BuildSmart.Infrastructure.Persistence;
 
 AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
 {
@@ -382,7 +383,9 @@ try
 	// Sync default blog images into wwwroot/images/blog if missing from volume
 	var webImagesDir = Path.Combine(app.Environment.WebRootPath, "images", "blog");
 	Directory.CreateDirectory(webImagesDir);
-	var baseImagesDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
+	var baseImagesDir = Directory.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default_images_blog"))
+		? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default_images_blog")
+		: Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", "blog");
 	if (Directory.Exists(baseImagesDir))
 	{
 		foreach (var file in Directory.GetFiles(baseImagesDir))
@@ -401,6 +404,7 @@ try
 	{
 		await using var db = await dbFactory.CreateDbContextAsync();
 		await db.SeedBlogPostsAsync(app.Environment.WebRootPath);
+		await db.SeedLandingPagesAsync();
 	}
 }
 catch (Exception ex)

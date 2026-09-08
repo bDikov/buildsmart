@@ -6,17 +6,34 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BuildSmart.Infrastructure.Persistence;
 
-public static class LandingPageSeeder
+public partial class AppDbContext
 {
-    public static async Task SeedLandingPagesAsync(this AppDbContext context)
+    public async Task SeedLandingPagesAsync()
     {
-        if (await context.LandingPages.AnyAsync())
-        {
-            return;
-        }
-
         var defaultPages = new[]
         {
+            new LandingPageContent
+            {
+                Id = Guid.NewGuid(),
+                Slug = "remonti-sofia",
+                PageType = "apartment",
+                TitleBg = "Цялостен Ремонт на Апартаменти в София",
+                TitleEn = "Turnkey Apartment Renovation in Sofia",
+                SubtitleBg = "Превърнете дома си в шедьовър с гарантирано качество, 3D визуализация, фиксиран бюджет по договор и 0 лв. аванс.",
+                SubtitleEn = "Transform your home with guaranteed quality, 3D design, fixed contract budget, and 0 BGN upfront.",
+                BadgeBg = "Премиум Изпълнение 2026",
+                BadgeEn = "Premium Execution 2026",
+                HeroImageUrl = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80",
+                HeroVideoUrl = "",
+                MediaGalleryJson = "[{\"url\":\"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80\",\"type\":\"image\",\"captionBg\":\"Цялостен ремонт на 3-стаен апартамент (92 кв.м) в комплекс Capital Residence\",\"captionEn\":\"Full Turnkey Renovation of a 3-Room Flat (92 sq.m) in Capital Residence\",\"locationBg\":\"София, Централна гара\",\"durationBg\":\"55 работни дни\",\"budgetBg\":\"38,000 € (74,300 лв.)\",\"order\":1,\"section\":\"gallery\"}]",
+                FeaturesJson = "[{\"titleBg\":\"0 лв. Аванс\",\"titleEn\":\"0 BGN Advance\",\"descBg\":\"Заплащате само приключени и приети етапи с протокол.\",\"descEn\":\"Pay only for completed milestones signed off by you.\",\"icon\":\"shield\"},{\"titleBg\":\"Фиксирана Цена\",\"titleEn\":\"Fixed Price Guarantee\",\"descBg\":\"Без скрити такси. Офертата е окончателна по договор.\",\"descEn\":\"Zero hidden fees. Contract price is 100% locked.\",\"icon\":\"lock\"},{\"titleBg\":\"3 Мин. AI Оферта\",\"titleEn\":\"3 Min Instant AI Estimate\",\"descBg\":\"Мълниеносно пресмятане на количествено-стойностна сметка.\",\"descEn\":\"Instant itemized estimation with our AI Pricing Engine.\",\"icon\":\"clock\"}]",
+                CtaTextBg = "Изчислете цена за Вашия ремонт",
+                CtaTextEn = "Calculate price for your renovation",
+                CtaLink = "/renovation-estimator",
+                IsPublished = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
             new LandingPageContent
             {
                 Id = Guid.NewGuid(),
@@ -107,7 +124,19 @@ public static class LandingPageSeeder
             }
         };
 
-        await context.LandingPages.AddRangeAsync(defaultPages);
-        await context.SaveChangesAsync();
+        bool hasChanges = false;
+        foreach (var page in defaultPages)
+        {
+            if (!await LandingPages.AnyAsync(p => p.Slug == page.Slug))
+            {
+                await LandingPages.AddAsync(page);
+                hasChanges = true;
+            }
+        }
+
+        if (hasChanges)
+        {
+            await SaveChangesAsync();
+        }
     }
 }
