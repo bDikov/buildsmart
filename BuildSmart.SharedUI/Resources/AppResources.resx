@@ -3171,4 +3171,10 @@ Boncho | BuildSmart</value>
   <data name="Comparison_Control_BS" xml:space="preserve">
     <value>24/7 live video monitoring and digital milestone reports</value>
   </data>
+  <data name="Offer_TimelineLabel" xml:space="preserve">
+    <value>Timeline</value>
+  </data>
+  <data name="Offers_EstPrice" xml:space="preserve">
+    <value>Est. Price</value>
+  </data>
 </root>

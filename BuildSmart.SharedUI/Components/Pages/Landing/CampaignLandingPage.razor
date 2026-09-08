@@ -1732,7 +1732,7 @@ html {
                         _carouselItems = allMedia.Where(m => string.Equals(m.Section, "hero", StringComparison.OrdinalIgnoreCase)).Select(m => new HeroCarousel.HeroCarouselItemModel
                         {
                             Url = m.Url,
-                            Type = string.IsNullOrWhiteSpace(m.Type) ? (m.Url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || m.Url.EndsWith(".webm", StringComparison.OrdinalIgnoreCase) ? "video" : "image") : m.Type,
+                            Type = string.IsNullOrWhiteSpace(m.Type) ? (!string.IsNullOrEmpty(m.Url) && (m.Url.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || m.Url.EndsWith(".webm", StringComparison.OrdinalIgnoreCase)) ? "video" : "image") : m.Type,
                             CaptionBg = m.CaptionBg,
                             CaptionEn = m.CaptionEn,
                             Order = m.Order

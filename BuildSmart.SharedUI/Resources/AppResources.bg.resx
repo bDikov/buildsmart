@@ -3123,4 +3123,10 @@
   <data name="Comparison_Control_BS" xml:space="preserve">
     <value>24/7 видеоконтрол и дигитални фото-отчети в профила на обекта</value>
   </data>
+  <data name="Offer_TimelineLabel" xml:space="preserve">
+    <value>Срок</value>
+  </data>
+  <data name="Offers_EstPrice" xml:space="preserve">
+    <value>Бюджет</value>
+  </data>
 </root>
