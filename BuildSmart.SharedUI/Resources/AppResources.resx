@@ -2040,6 +2040,66 @@ Boncho | BuildSmart</value>
   <data name="ExitModal_Success" xml:space="preserve">
     <value>Thank you! Your request has been received. We will contact you shortly.</value>
   </data>
+  <data name="Seo_Feed_Title" xml:space="preserve">
+    <value>Renovations Sofia | Quality Apartment Renovations with 0% Deposit | BuildSmart.bg</value>
+  </data>
+  <data name="Seo_Feed_Description" xml:space="preserve">
+    <value>Turnkey and finishing renovations in Sofia with 0% deposit and fixed contract price. Free online estimate in 3 minutes with BuildSmart!</value>
+  </data>
+  <data name="Seo_Estimator_Title" xml:space="preserve">
+    <value>Renovation Calculator Sofia | Accurate BOQ Estimate – BuildSmart</value>
+  </data>
+  <data name="Seo_Estimator_Description" xml:space="preserve">
+    <value>Calculate the exact cost of your home renovation in Sofia in 3 minutes. Free detailed bill of quantities (BOQ) for bathroom, drywall, painting, and turnkey projects.</value>
+  </data>
+  <data name="Seo_Faq_Title" xml:space="preserve">
+    <value>Frequently Asked Questions About Renovations in Sofia (FAQ) | BuildSmart.bg</value>
+  </data>
+  <data name="Seo_Faq_Description" xml:space="preserve">
+    <value>Answers to the most important questions about renovations in Sofia: pricing per sqm, milestone payments, warranty contracts, and hiring verified contractors.</value>
+  </data>
+  <data name="Lander_ReviewsTitle" xml:space="preserve">
+    <value>Verified Homeowner Reviews in Sofia</value>
+  </data>
+  <data name="Lander_ReviewsSubtitle" xml:space="preserve">
+    <value>Real projects completed on time with 0% deposit and contract warranty</value>
+  </data>
+  <data name="Lander_Review1_Author" xml:space="preserve">
+    <value>Dimitar K., Mladost district</value>
+  </data>
+  <data name="Lander_Review1_Role" xml:space="preserve">
+    <value>Full 3-room apartment renovation</value>
+  </data>
+  <data name="Lander_Review1_Text" xml:space="preserve">
+    <value>Exceptionally transparent execution. I loved paying zero advance deposit – only paying milestone tranches after inspecting and accepting each stage.</value>
+  </data>
+  <data name="Lander_Review2_Author" xml:space="preserve">
+    <value>Silvia M., Lozenets district</value>
+  </data>
+  <data name="Lander_Review2_Role" xml:space="preserve">
+    <value>Turnkey bathroom renovation</value>
+  </data>
+  <data name="Lander_Review2_Text" xml:space="preserve">
+    <value>The bathroom renovation was completed exactly within the 14-day schedule. The craftsmen were very neat with large-format tiling and left everything spotless.</value>
+  </data>
+  <data name="Lander_Review3_Author" xml:space="preserve">
+    <value>Ivan P., Krastova Vada district</value>
+  </data>
+  <data name="Lander_Review3_Role" xml:space="preserve">
+    <value>Drywall, plastering &amp; painting</value>
+  </data>
+  <data name="Lander_Review3_Text" xml:space="preserve">
+    <value>Their online estimator provided a realistic bill of quantities that matched our final budget with zero surprise charges.</value>
+  </data>
+  <data name="Landing_RemontiSofia_Title" xml:space="preserve">
+    <value>Home &amp; Apartment Renovations in Sofia – Contract Guarantee &amp; 0% Deposit</value>
+  </data>
+  <data name="Landing_RemontiSofia_Subtitle" xml:space="preserve">
+    <value>Turnkey and interior renovations in Sofia. Fixed budgets, live video monitoring, and 5-year workmanship warranty.</value>
+  </data>
+  <data name="Landing_RemontiSofia_MetaDesc" xml:space="preserve">
+    <value>Looking for a trusted renovation company in Sofia? BuildSmart delivers quality turnkey apartment renovations with 0% advance deposit and fixed contract pricing.</value>
+  </data>
   <data name="Landing_ApartmentTitle" xml:space="preserve">
     <value>Turnkey Apartment Renovation in Sofia</value>
   </data>
@@ -2053,7 +2113,7 @@ Boncho | BuildSmart</value>
     <value>2K Waterproofing, porcelain tiling, plumbing, and sanitary fitout with a 5-year written warranty.</value>
   </data>
   <data name="Landing_FinishingTitle" xml:space="preserve">
-    <value>Finishing Works, Plaster Skimming &amp; Painting</value>
+    <value>Finishing Works &amp; Renovations in Sofia | Plastering, Painting &amp; Drywall</value>
   </data>
   <data name="Landing_FinishingSubtitle" xml:space="preserve">
     <value>Flawless smooth walls, drywall ceilings, laminate flooring, and premium paint finish.</value>
@@ -3050,5 +3110,65 @@ Boncho | BuildSmart</value>
   </data>
   <data name="Blog_ChatWithUs" xml:space="preserve">
     <value>Chat with our team</value>
+  </data>
+  <data name="Comparison_Title" xml:space="preserve">
+    <value>Why Property Owners in Sofia Choose BuildSmart?</value>
+  </data>
+  <data name="Comparison_Subtitle" xml:space="preserve">
+    <value>Comparison between hiring traditional unregulated builders vs the secure BuildSmart platform</value>
+  </data>
+  <data name="Comparison_ColCriteria" xml:space="preserve">
+    <value>Evaluation Criteria</value>
+  </data>
+  <data name="Comparison_ColTraditional" xml:space="preserve">
+    <value>Traditional Builders &amp; Crews</value>
+  </data>
+  <data name="Comparison_ColBuildSmart" xml:space="preserve">
+    <value>BuildSmart Digital Platform</value>
+  </data>
+  <data name="Comparison_Deposit_Title" xml:space="preserve">
+    <value>Upfront Deposit (Advance)</value>
+  </data>
+  <data name="Comparison_Deposit_Trad" xml:space="preserve">
+    <value>30% to 50% upfront in cash – high risk of abandoned work</value>
+  </data>
+  <data name="Comparison_Deposit_BS" xml:space="preserve">
+    <value>0% Deposit: milestone payments only after stage approval</value>
+  </data>
+  <data name="Comparison_Price_Title" xml:space="preserve">
+    <value>Final Price &amp; Itemized Estimate</value>
+  </data>
+  <data name="Comparison_Price_Trad" xml:space="preserve">
+    <value>Lump-sum guesstimate with unexpected extra charges</value>
+  </data>
+  <data name="Comparison_Price_BS" xml:space="preserve">
+    <value>Fixed contract price with itemized software bill of quantities</value>
+  </data>
+  <data name="Comparison_Deadline_Title" xml:space="preserve">
+    <value>Deadlines &amp; Schedule</value>
+  </data>
+  <data name="Comparison_Deadline_Trad" xml:space="preserve">
+    <value>Verbal promises stretching into months of delays</value>
+  </data>
+  <data name="Comparison_Deadline_BS" xml:space="preserve">
+    <value>Guaranteed completion date with daily financial delay penalty</value>
+  </data>
+  <data name="Comparison_Warranty_Title" xml:space="preserve">
+    <value>Quality Warranty</value>
+  </data>
+  <data name="Comparison_Warranty_Trad" xml:space="preserve">
+    <value>Verbal word with zero legal liability for leaks or cracks</value>
+  </data>
+  <data name="Comparison_Warranty_BS" xml:space="preserve">
+    <value>Official written warranty up to 15 years on all work</value>
+  </data>
+  <data name="Comparison_Control_Title" xml:space="preserve">
+    <value>Oversight &amp; Monitoring</value>
+  </data>
+  <data name="Comparison_Control_Trad" xml:space="preserve">
+    <value>Daily site visits, stress, and constant contractor disputes</value>
+  </data>
+  <data name="Comparison_Control_BS" xml:space="preserve">
+    <value>24/7 live video monitoring and digital milestone reports</value>
   </data>
 </root>

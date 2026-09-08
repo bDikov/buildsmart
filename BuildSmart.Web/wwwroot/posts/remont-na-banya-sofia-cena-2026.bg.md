@@ -1,4 +1,4 @@
-# Колко Струва Ремонт на Баня в София през 2026 г.? (Труд, Плочки и Санитария)
+﻿# Колко Струва Ремонт на Баня в София през 2026 г.? (Труд, Плочки и Санитария)
 
 Ремонтът на банята е **най-скъпата и сложна част от ремонта на квадратен метър** в един апартамент. Грешките при хидроизолацията или неправилните наклони могат да доведат до течове към съседите и щети за хиляди левове.
 
@@ -18,7 +18,7 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
       <h4>Пазарен Ценови Спектър 2026: Лепене на плочки & Хидроизолация</h4>
     </div>
-    <span class="spectrum-location-badge">📍 София • Цени на кв.м.</span>
+    <span class="spectrum-location-badge">София • Цени на кв.м.</span>
   </div>
   <div class="spectrum-bar-wrapper">
     <div class="spectrum-bar-track">

@@ -246,75 +246,90 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(BuildSmart.SharedUI.Components.Layout.MainLayout).Assembly);
 
-app.MapGet("/sitemap.xml", async (HttpContext context) =>
+app.MapGet("/sitemap.xml", async (HttpContext context, IServiceProvider sp) =>
 {
-    context.Response.ContentType = "application/xml";
+    context.Response.ContentType = "application/xml; charset=utf-8";
     
-    var sitemapXml = $@"<?xml version=""1.0"" encoding=""UTF-8""?>
-<urlset xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">
-    <url>
-        <loc>https://buildsmart.bg/</loc>
-        <changefreq>daily</changefreq>
-        <priority>1.0</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/feed</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.9</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/faq</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/terms</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.3</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/privacy</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.3</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/request-consultation</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/blog</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.9</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/blog/remont-na-apartament-sofia-cena-2026</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.9</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/blog/remont-na-banya-sofia-cena-2026</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/blog/suho-stroitelstvo-gipskarton-sofia-cena</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/blog/maistori-red-flags-sofia-dogovor</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://buildsmart.bg/blog/remont-na-3-staen-apartament-realen-kazus</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-</urlset>";
+    var sb = new System.Text.StringBuilder();
+    sb.AppendLine(@"<?xml version=""1.0"" encoding=""UTF-8""?>");
+    sb.AppendLine(@"<urlset xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">");
     
-    await context.Response.WriteAsync(sitemapXml);
+    var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+    void AppendUrl(string url, string changefreq, string priority, string? lastmod = null)
+    {
+        sb.AppendLine("    <url>");
+        sb.AppendLine($"        <loc>{url}</loc>");
+        sb.AppendLine($"        <lastmod>{lastmod ?? today}</lastmod>");
+        sb.AppendLine($"        <changefreq>{changefreq}</changefreq>");
+        sb.AppendLine($"        <priority>{priority}</priority>");
+        sb.AppendLine("    </url>");
+    }
+
+    // Core Landing & Conversion Hubs
+    AppendUrl("https://buildsmart.bg/", "daily", "1.0");
+    AppendUrl("https://buildsmart.bg/remonti-sofia", "daily", "1.0");
+    AppendUrl("https://buildsmart.bg/remont-na-apartament-sofia", "weekly", "0.9");
+    AppendUrl("https://buildsmart.bg/remont-na-banya", "weekly", "0.9");
+    AppendUrl("https://buildsmart.bg/dovarshetelni-raboti", "weekly", "0.9");
+    AppendUrl("https://buildsmart.bg/el-i-vik-uslugi", "weekly", "0.9");
+    AppendUrl("https://buildsmart.bg/renovation-estimator", "daily", "0.9");
+
+    // Content Hub
+    AppendUrl("https://buildsmart.bg/blog", "daily", "0.8");
+
+    // Dynamic Blog Articles from Database
+    var addedSlugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    try
+    {
+        var dbFactory = sp.GetService<IDbContextFactory<BuildSmart.Infrastructure.Persistence.AppDbContext>>();
+        if (dbFactory != null)
+        {
+            await using var db = await dbFactory.CreateDbContextAsync();
+            var posts = await db.BlogPosts
+                .Where(p => p.IsPublished)
+                .Select(p => new { p.Slug, p.UpdatedAt, p.PublishedAt })
+                .ToListAsync();
+
+            foreach (var post in posts)
+            {
+                if (!string.IsNullOrWhiteSpace(post.Slug) && addedSlugs.Add(post.Slug))
+                {
+                    var postDate = post.UpdatedAt > post.PublishedAt ? post.UpdatedAt.ToString("yyyy-MM-dd") : post.PublishedAt.ToString("yyyy-MM-dd");
+                    AppendUrl($"https://buildsmart.bg/blog/{post.Slug}", "weekly", "0.8", postDate);
+                }
+            }
+        }
+    }
+    catch { /* Ignore and fallback to static list if DB unavailable */ }
+
+    // Fallback published blog articles if DB was empty or not initialized
+    var fallbackPosts = new[]
+    {
+        "remont-capital-residence-sofia-92kvm",
+        "maistori-vs-buildsmart-sravnenie-remont-sofia",
+        "remont-na-apartament-sofia-cena-2026",
+        "remont-na-banya-sofia-cena-2026",
+        "suho-stroitelstvo-gipskarton-sofia-cena",
+        "maistori-red-flags-sofia-dogovor",
+        "remont-na-3-staen-apartament-realen-kazus"
+    };
+    foreach (var slug in fallbackPosts)
+    {
+        if (addedSlugs.Add(slug))
+        {
+            AppendUrl($"https://buildsmart.bg/blog/{slug}", "weekly", "0.8", "2026-08-11");
+        }
+    }
+
+    // Utility & Trust Pages
+    AppendUrl("https://buildsmart.bg/faq", "weekly", "0.7");
+    AppendUrl("https://buildsmart.bg/request-consultation", "monthly", "0.7");
+    AppendUrl("https://buildsmart.bg/terms", "monthly", "0.3");
+    AppendUrl("https://buildsmart.bg/privacy", "monthly", "0.3");
+
+    sb.AppendLine("</urlset>");
+    await context.Response.WriteAsync(sb.ToString());
 });
 
 // Fetch and warm up localization cache from API

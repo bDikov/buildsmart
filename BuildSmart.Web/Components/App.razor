@@ -7,11 +7,11 @@
 
     var lang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
     var title = lang == "bg" 
-        ? "BuildSmart.bg - Умно Строителство с Гаранция и Прозрачност" 
-        : "BuildSmart.bg - Smart Construction with Guarantee & Transparency";
+        ? "Ремонти София | Строителство и Ремонт на Апартаменти | BuildSmart.bg" 
+        : "Renovations Sofia | Apartment & Home Renovation | BuildSmart.bg";
     var description = lang == "bg"
-        ? "BuildSmart.bg е революционна платформа за строителство и ремонти в България. Пресметнете цената на Вашия ремонт, гледайте видеоклипове в реално време от обектите ни, без излишно губене на време и пари за огледи!"
-        : "BuildSmart.bg is a revolutionary platform for construction and renovations in Bulgaria. Calculate the cost of your renovation, watch real-time videos of our projects, and save time and money on site visits!";
+        ? "BuildSmart.bg - професионални строителни и довършителни ремонти в София с 0% авансово капаро и гаранция по договор. Пресметнете цената на Вашия ремонт онлайн за 3 минути!"
+        : "BuildSmart.bg - professional home and apartment renovations in Sofia with 0% deposit and contract guarantee. Calculate your renovation cost online in 3 minutes!";
 }
 <!DOCTYPE html>
 <html lang="@lang" @((MarkupString)themeAttribute)>
@@ -329,7 +329,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <ImportMap />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: true)" />
 </head>
 
 <body>
@@ -345,7 +345,7 @@
         /></noscript>
         <!-- End Meta Pixel (noscript) -->
     }
-    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: true)" />
     
     <div id="blazor-error-ui" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #ffc107; padding: 10px; z-index: 9999;">
         An unhandled error has occurred.

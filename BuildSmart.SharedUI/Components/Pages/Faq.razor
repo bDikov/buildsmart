@@ -4,9 +4,21 @@
 @inject Microsoft.AspNetCore.Components.NavigationManager NavManager
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
-<PageTitle>BuildSmart - FAQ</PageTitle>
+<PageTitle>@Loc["Seo_Faq_Title"]</PageTitle>
 <HeadContent>
+    <meta name="description" content="@Loc["Seo_Faq_Description"]" />
     <link rel="canonical" href="https://buildsmart.bg/faq" />
+    <meta property="og:title" content="@Loc["Seo_Faq_Title"]" />
+    <meta property="og:description" content="@Loc["Seo_Faq_Description"]" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://buildsmart.bg/faq" />
+    <meta property="og:image" content="https://buildsmart.bg/images/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Loc["Seo_Faq_Title"]" />
+    <meta name="twitter:description" content="@Loc["Seo_Faq_Description"]" />
+    <script type="application/ld+json">
+        @((MarkupString)GetFaqSchemaJson())
+    </script>
 </HeadContent>
 
 <div class="legal-page-container">
@@ -491,4 +503,33 @@
             AnswerGeneralEn = "Yes, absolutely. The BuildSmart platform covers the entire construction spectrum in Bulgaria. From licensed architects, land surveyors, and structural engineers to specialized craftsmen (venetian plaster, smart HVAC systems, solar integrations, custom pools). You can filter by specific certifications and inspect portfolio details before hiring."
         }
     };
+
+    private string GetFaqSchemaJson()
+    {
+        var schema = new
+        {
+            context = "https://schema.org",
+            type = "FAQPage",
+            mainEntity = faqItems.Select(item => new Dictionary<string, object>
+            {
+                ["@type"] = "Question",
+                ["name"] = isBulgarian ? item.QuestionBg : item.QuestionEn,
+                ["acceptedAnswer"] = new Dictionary<string, object>
+                {
+                    ["@type"] = "Answer",
+                    ["text"] = isBulgarian
+                        ? (item.HasDualAnswers ? $"За клиенти: {item.AnswerClientBg} За изпълнители: {item.AnswerContractorBg}" : item.AnswerGeneralBg)
+                        : (item.HasDualAnswers ? $"For clients: {item.AnswerClientEn} For contractors: {item.AnswerContractorEn}" : item.AnswerGeneralEn)
+                }
+            }).ToArray()
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(new
+        {
+            @context = "https://schema.org",
+            @type = "FAQPage",
+            mainEntity = schema.mainEntity
+        });
+    }
 }
+

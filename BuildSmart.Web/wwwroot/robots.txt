@@ -1,5 +1,37 @@
+# AI Search & Generative Engine Crawlers
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: Google-Extended
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: Applebot-Extended
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: CCBot
+Allow: /
+
+# General Search Engine Crawlers
 User-agent: *
 Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
 Allow: /feed
 Allow: /faq
 Allow: /terms
@@ -10,6 +42,7 @@ Allow: /blog/
 Allow: /login
 Allow: /create-account
 Allow: /renovation-estimator
+Allow: /remonti-sofia
 Allow: /remont-na-apartament-sofia
 Allow: /remont-na-banya
 Allow: /dovarshetelni-raboti
@@ -30,3 +63,7 @@ Disallow: /job-wizard
 Disallow: /my-projects
 
 Sitemap: https://buildsmart.bg/sitemap.xml
+
+# LLM Manifest & Documentation
+# Context: https://buildsmart.bg/llms.txt
+# Full: https://buildsmart.bg/llms-full.txt

@@ -12,6 +12,77 @@
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 
+<PageTitle>@Loc["Seo_Feed_Title"]</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@Loc["Seo_Feed_Description"]" />
+    <meta name="keywords" content="ремонти софия, ремонт на апартаменти софия, строителни ремонти софия, довършителни работи софия, майстори софия, ценоразпис ремонти софия" />
+    <link rel="canonical" href="https://buildsmart.bg/" />
+    <meta property="og:title" content="@Loc["Seo_Feed_Title"]" />
+    <meta property="og:description" content="@Loc["Seo_Feed_Description"]" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://buildsmart.bg/" />
+    <meta property="og:site_name" content="BuildSmart" />
+    <meta property="og:image" content="https://buildsmart.bg/images/blog/remont-apartament-cover.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Loc["Seo_Feed_Title"]" />
+    <meta name="twitter:description" content="@Loc["Seo_Feed_Description"]" />
+    <meta name="twitter:image" content="https://buildsmart.bg/images/blog/remont-apartament-cover.jpg" />
+    
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "HomeAndConstructionBusiness",
+      "name": "BuildSmart",
+      "url": "https://buildsmart.bg",
+      "logo": "https://buildsmart.bg/favicon.svg",
+      "description": "@Loc["Seo_Feed_Description"]",
+      "telephone": "@Loc["Support_PhoneNumber"]",
+      "priceRange": "$$",
+      "address": {
+        "@@type": "PostalAddress",
+        "addressLocality": "Sofia",
+        "postalCode": "1000",
+        "addressCountry": "BG"
+      },
+      "geo": {
+        "@@type": "GeoCoordinates",
+        "latitude": 42.6977,
+        "longitude": 23.3219
+      },
+      "areaServed": [
+        {
+          "@@type": "City",
+          "name": "Sofia"
+        }
+      ],
+      "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "180",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61571407981329"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebSite",
+      "name": "BuildSmart.bg",
+      "url": "https://buildsmart.bg",
+      "potentialAction": {
+        "@@type": "SearchAction",
+        "target": "https://buildsmart.bg/blog?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+</HeadContent>
+
 <ErrorBoundary>
 	<ChildContent>
 		@if (ViewModel == null)
@@ -1553,15 +1624,6 @@
 			}
 
 			_isGuest = !AuthService.IsAuthenticated || await CheckIsGuestAsync();
-
-			_autoPlayTimer = new System.Threading.Timer(_ =>
-			{
-				if (ViewModel.IsHomeowner)
-				{
-					_activeSlideIndex = (_activeSlideIndex + 1) % 2;
-					InvokeAsync(StateHasChanged);
-				}
-			}, null, 7000, 7000);
 		}
 		catch (Exception ex)
 		{
@@ -1572,6 +1634,18 @@
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
+		if (firstRender)
+		{
+			_autoPlayTimer = new System.Threading.Timer(_ =>
+			{
+				if (ViewModel.IsHomeowner)
+				{
+					_activeSlideIndex = (_activeSlideIndex + 1) % 2;
+					InvokeAsync(StateHasChanged);
+				}
+			}, null, 7000, 7000);
+		}
+
 		if (ViewModel.IsHomeowner && ViewModel.FeedVideos != null && ViewModel.FeedVideos.Any())
 		{
 			try

@@ -2112,6 +2112,66 @@
   <data name="ExitModal_Success" xml:space="preserve">
     <value>Благодарим Ви! Вашата заявка е приета. Ще се свържем с Вас бързо.</value>
   </data>
+  <data name="Seo_Feed_Title" xml:space="preserve">
+    <value>Ремонти София | Качествен Ремонт на Апартаменти без Аванс | BuildSmart.bg</value>
+  </data>
+  <data name="Seo_Feed_Description" xml:space="preserve">
+    <value>Цялостни и довършителни строителни ремонти в София с 0% капаро и твърда цена по договор. Безплатна оферта онлайн за 3 минути с BuildSmart!</value>
+  </data>
+  <data name="Seo_Estimator_Title" xml:space="preserve">
+    <value>Калкулатор за Ремонт на Апартамент и Баня София | Точна КСС Оферта – BuildSmart</value>
+  </data>
+  <data name="Seo_Estimator_Description" xml:space="preserve">
+    <value>Изчислете точната цена за Вашия строителен ремонт в София за 3 минути. Безплатна подробна количествено-стойностна сметка (КСС) за баня, шпакловка, гипсокартон и ремонт до ключ.</value>
+  </data>
+  <data name="Seo_Faq_Title" xml:space="preserve">
+    <value>Често Задавани Въпроси за Ремонти в София (FAQ) | BuildSmart.bg</value>
+  </data>
+  <data name="Seo_Faq_Description" xml:space="preserve">
+    <value>Отговори на най-важните въпроси за строителни ремонти в София: цени на квадратен метър, етапи на плащане, договор с гаранция и избор на надеждни майстори.</value>
+  </data>
+  <data name="Lander_ReviewsTitle" xml:space="preserve">
+    <value>Отзиви от доволни клиенти в София</value>
+  </data>
+  <data name="Lander_ReviewsSubtitle" xml:space="preserve">
+    <value>Реални проекти, завършени в срок с 0% капаро и гаранция по договор</value>
+  </data>
+  <data name="Lander_Review1_Author" xml:space="preserve">
+    <value>Димитър К., кв. Младост</value>
+  </data>
+  <data name="Lander_Review1_Role" xml:space="preserve">
+    <value>Цялостен ремонт на 3-стаен апартамент</value>
+  </data>
+  <data name="Lander_Review1_Text" xml:space="preserve">
+    <value>Изключително коректно изпълнение. Най-много ми хареса, че не платих нито лев авансово – плащах на траншове едва след като приех свършената работа.</value>
+  </data>
+  <data name="Lander_Review2_Author" xml:space="preserve">
+    <value>Силвия М., кв. Лозенец</value>
+  </data>
+  <data name="Lander_Review2_Role" xml:space="preserve">
+    <value>Основен ремонт на баня</value>
+  </data>
+  <data name="Lander_Review2_Text" xml:space="preserve">
+    <value>Ремонтът на банята приключи точно в уговорения 14-дневен срок. Майсторите бяха прецизни с плочките и оставиха чисто след себе си.</value>
+  </data>
+  <data name="Lander_Review3_Author" xml:space="preserve">
+    <value>Иван П., кв. Кръстова вада</value>
+  </data>
+  <data name="Lander_Review3_Role" xml:space="preserve">
+    <value>Шпакловка, боядисване и гипсокартон</value>
+  </data>
+  <data name="Lander_Review3_Text" xml:space="preserve">
+    <value>Калкулаторът им даде реална количествено-стойностна сметка, която съвпадна с крайния бюджет без никакви скрити доплащания.</value>
+  </data>
+  <data name="Landing_RemontiSofia_Title" xml:space="preserve">
+    <value>Строителни Ремонти в София – Гаранция по Договор и 0% Аванс</value>
+  </data>
+  <data name="Landing_RemontiSofia_Subtitle" xml:space="preserve">
+    <value>Цялостни и довършителни ремонти на апартаменти и къщи в София. Фиксиран бюджет, онлайн видео контрол и 5 години гаранция.</value>
+  </data>
+  <data name="Landing_RemontiSofia_MetaDesc" xml:space="preserve">
+    <value>Търсите фирма за качествени строителни ремонти в София? BuildSmart предлага ремонти на апартаменти с 0% капаро, ясни срокове и договор с неустойки. Сметнете оферта сега!</value>
+  </data>
   <data name="Landing_ApartmentTitle" xml:space="preserve">
     <value>Цялостен Ремонт на Апартамент в София</value>
   </data>
@@ -2125,7 +2185,7 @@
     <value>Хидроизолация, лепене на плочки, подмяна на ВиК и монтаж на санитария с 5 години гаранция.</value>
   </data>
   <data name="Landing_FinishingTitle" xml:space="preserve">
-    <value>Довършителни Работи, Шпакловка &amp; Боядисване</value>
+    <value>Довършителни Ремонти в София | Шпакловка, Боядисване &amp; Гипсокартон</value>
   </data>
   <data name="Landing_FinishingSubtitle" xml:space="preserve">
     <value>Перфектно гладки стени, гипсокартон, ламинат и боядисване с висококачествени материали.</value>
@@ -3002,5 +3062,65 @@
   </data>
   <data name="Blog_ChatWithUs" xml:space="preserve">
     <value>Пишете ни в Чата</value>
+  </data>
+  <data name="Comparison_Title" xml:space="preserve">
+    <value>Защо собствениците на имоти в София избират BuildSmart?</value>
+  </data>
+  <data name="Comparison_Subtitle" xml:space="preserve">
+    <value>Сравнение между наемането на традиционни майстори на черно и сигурния ремонт с BuildSmart</value>
+  </data>
+  <data name="Comparison_ColCriteria" xml:space="preserve">
+    <value>Критерий за оценка</value>
+  </data>
+  <data name="Comparison_ColTraditional" xml:space="preserve">
+    <value>Традиционни Майстори / Бригади</value>
+  </data>
+  <data name="Comparison_ColBuildSmart" xml:space="preserve">
+    <value>Платформа BuildSmart</value>
+  </data>
+  <data name="Comparison_Deposit_Title" xml:space="preserve">
+    <value>Авансово плащане (Капаро)</value>
+  </data>
+  <data name="Comparison_Deposit_Trad" xml:space="preserve">
+    <value>30% до 50% предварително на ръка – висок риск от изоставяне на обекта</value>
+  </data>
+  <data name="Comparison_Deposit_BS" xml:space="preserve">
+    <value>0% Капаро: плащане на траншове едва след одобрен завършен етап</value>
+  </data>
+  <data name="Comparison_Price_Title" xml:space="preserve">
+    <value>Крайна цена и КСС сметка</value>
+  </data>
+  <data name="Comparison_Price_Trad" xml:space="preserve">
+    <value>Оферта „на око“, водеща до непредвидени доплащания и спорове</value>
+  </data>
+  <data name="Comparison_Price_BS" xml:space="preserve">
+    <value>Фиксирана цена по договор с точна софтуерна КСС сметка</value>
+  </data>
+  <data name="Comparison_Deadline_Title" xml:space="preserve">
+    <value>Срокове за предаване</value>
+  </data>
+  <data name="Comparison_Deadline_Trad" xml:space="preserve">
+    <value>Устни обещания, често проточващи се с месеци закъснение</value>
+  </data>
+  <data name="Comparison_Deadline_BS" xml:space="preserve">
+    <value>Гарантиран краен срок с финансова неустойка на ден забавяне</value>
+  </data>
+  <data name="Comparison_Warranty_Title" xml:space="preserve">
+    <value>Гаранция за качество</value>
+  </data>
+  <data name="Comparison_Warranty_Trad" xml:space="preserve">
+    <value>Устна дума без правна отговорност при теч или дефект</value>
+  </data>
+  <data name="Comparison_Warranty_BS" xml:space="preserve">
+    <value>Официална писмена гаранция до 15 години за всички СМР дейности</value>
+  </data>
+  <data name="Comparison_Control_Title" xml:space="preserve">
+    <value>Контрол и Мониторинг</value>
+  </data>
+  <data name="Comparison_Control_Trad" xml:space="preserve">
+    <value>Ежедневни посещения на обекта, загуба на време и постоянни спорове</value>
+  </data>
+  <data name="Comparison_Control_BS" xml:space="preserve">
+    <value>24/7 видеоконтрол и дигитални фото-отчети в профила на обекта</value>
   </data>
 </root>

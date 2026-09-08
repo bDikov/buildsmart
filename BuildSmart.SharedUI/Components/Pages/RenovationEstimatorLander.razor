@@ -17,6 +17,50 @@
 @inject BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository LeadRepository
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 
+<PageTitle>@Loc["Seo_Estimator_Title"]</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@Loc["Seo_Estimator_Description"]" />
+    <meta name="keywords" content="калкулатор за ремонт, цени за ремонт на апартамент софия, калкулатор за ремонт на баня, количествено стойностна сметка ремонт, ремонт цени 2026 софия" />
+    <link rel="canonical" href="https://buildsmart.bg/renovation-estimator" />
+    <meta property="og:title" content="@Loc["Seo_Estimator_Title"]" />
+    <meta property="og:description" content="@Loc["Seo_Estimator_Description"]" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://buildsmart.bg/renovation-estimator" />
+    <meta property="og:site_name" content="BuildSmart" />
+    <meta property="og:image" content="https://buildsmart.bg/images/blog/remont-apartament-cover.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Loc["Seo_Estimator_Title"]" />
+    <meta name="twitter:description" content="@Loc["Seo_Estimator_Description"]" />
+    <meta name="twitter:image" content="https://buildsmart.bg/images/blog/remont-apartament-cover.jpg" />
+
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebApplication",
+      "name": "BuildSmart Онлайн Калкулатор за Ремонти",
+      "url": "https://buildsmart.bg/renovation-estimator",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "description": "@Loc["Seo_Estimator_Description"]",
+      "offers": {
+        "@@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BGN",
+        "description": "Безплатно изчисляване на подробна оферта за строителен ремонт"
+      },
+      "provider": {
+        "@@type": "HomeAndConstructionBusiness",
+        "name": "BuildSmart",
+        "url": "https://buildsmart.bg",
+        "telephone": "@Loc["Support_PhoneNumber"]",
+        "areaServed": "Sofia"
+      }
+    }
+    </script>
+</HeadContent>
+
 <div class="project-detail-container magazine-theme-wrapper">
     @if (_isProposalReady)
     {

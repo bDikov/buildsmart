@@ -1,3 +1,4 @@
+@page "/remonti-sofia"
 @page "/remont-na-apartament-sofia"
 @page "/remont-na-banya"
 @page "/dovarshetelni-raboti"
@@ -23,25 +24,114 @@
 <HeadContent>
     <meta name="description" content="@GetMetaDescription()" />
     <meta name="keywords" content="@GetKeywords()" />
+    <link rel="canonical" href="@GetCanonicalUrl()" />
     <meta property="og:title" content="@GetTitle()" />
     <meta property="og:description" content="@GetMetaDescription()" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="@GetCanonicalUrl()" />
+    <meta property="og:site_name" content="BuildSmart" />
+    <meta property="og:image" content="@GetHeroImageUrl()" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@GetTitle()" />
+    <meta name="twitter:description" content="@GetMetaDescription()" />
+    <meta name="twitter:image" content="@GetHeroImageUrl()" />
     <script type="application/ld+json">
     {
       "@@context": "https://schema.org",
       "@@type": "HomeAndConstructionBusiness",
       "name": "BuildSmart Bulgaria",
       "description": "@GetMetaDescription()",
-      "url": "https://buildsmart.bg",
-      "telephone": "+359888888888",
+      "url": "@GetCanonicalUrl()",
+      "telephone": "@Loc["Support_PhoneNumber"]",
       "address": {
         "@@type": "PostalAddress",
         "addressLocality": "Sofia",
+        "postalCode": "1000",
         "addressCountry": "BG"
       },
+      "geo": {
+        "@@type": "GeoCoordinates",
+        "latitude": 42.6977,
+        "longitude": 23.3219
+      },
       "priceRange": "$$",
-      "areaServed": "Sofia",
-      "knowsAbout": ["Ремонт на апартаменти", "Ремонт на баня", "Довършителни работи", "Шпакловка и боядисване", "Ел и ВиК услуги"]
+      "areaServed": [
+        {
+          "@@type": "City",
+          "name": "Sofia"
+        }
+      ],
+      "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "180",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "review": [
+        {
+          "@@type": "Review",
+          "author": { "@@type": "Person", "name": "@Loc["Lander_Review1_Author"]" },
+          "datePublished": "2026-06-15",
+          "reviewBody": "@Loc["Lander_Review1_Text"]",
+          "reviewRating": { "@@type": "Rating", "ratingValue": "5" }
+        },
+        {
+          "@@type": "Review",
+          "author": { "@@type": "Person", "name": "@Loc["Lander_Review2_Author"]" },
+          "datePublished": "2026-07-02",
+          "reviewBody": "@Loc["Lander_Review2_Text"]",
+          "reviewRating": { "@@type": "Rating", "ratingValue": "5" }
+        },
+        {
+          "@@type": "Review",
+          "author": { "@@type": "Person", "name": "@Loc["Lander_Review3_Author"]" },
+          "datePublished": "2026-08-10",
+          "reviewBody": "@Loc["Lander_Review3_Text"]",
+          "reviewRating": { "@@type": "Rating", "ratingValue": "5" }
+        }
+      ],
+      "knowsAbout": ["Ремонти София", "Ремонт на апартаменти София", "Ремонт на баня", "Довършителни работи", "Шпакловка и боядисване", "Ел и ВиК услуги"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@@type": "Question",
+          "name": "@Loc["Lander_FaqQ1"]",
+          "acceptedAnswer": {
+            "@@type": "Answer",
+            "text": "@Loc["Lander_FaqA1"]"
+          }
+        },
+        {
+          "@@type": "Question",
+          "name": "@Loc["Lander_FaqQ2"]",
+          "acceptedAnswer": {
+            "@@type": "Answer",
+            "text": "@Loc["Lander_FaqA2"]"
+          }
+        },
+        {
+          "@@type": "Question",
+          "name": "@Loc["Lander_FaqQ3"]",
+          "acceptedAnswer": {
+            "@@type": "Answer",
+            "text": "@Loc["Lander_FaqA3"]"
+          }
+        },
+        {
+          "@@type": "Question",
+          "name": "@Loc["Lander_FaqQ4"]",
+          "acceptedAnswer": {
+            "@@type": "Answer",
+            "text": "@Loc["Lander_FaqA4"]"
+          }
+        }
+      ]
     }
     </script>
 </HeadContent>
@@ -209,100 +299,47 @@
         </div>
 
         <div class="portfolio-grid">
-            @if (_galleryItems.Any())
+            @for (int gIdx = 0; gIdx < _galleryItems.Count; gIdx++)
             {
-                @for (int gIdx = 0; gIdx < _galleryItems.Count; gIdx++)
-                {
-                    var mediaIndex = gIdx;
-                    var media = _galleryItems[mediaIndex];
-                    <div class="portfolio-card">
-                        <div class="card-img-wrapper" @onclick="() => OpenGalleryLightbox(mediaIndex)" style="cursor: pointer;" title="Click to view full size">
-                            @if (media.Type == "video")
-                            {
-                                <video src="@media.Url" playsinline preload="metadata" class="portfolio-img"></video>
-                                <span class="portfolio-tag video-tag">VIDEO</span>
-                            }
-                            else
-                            {
-                                <img src="@media.Url" alt="@media.CaptionBg" class="portfolio-img" />
-                                <span class="portfolio-tag">@Loc["Lander_Nav_Projects"] 2026</span>
-                            }
-                            <div class="portfolio-expand-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            @if (!string.IsNullOrEmpty(media.LocationBg))
-                            {
-                                <div class="card-location">@media.LocationBg</div>
-                            }
-                            <h3>@(string.IsNullOrEmpty(media.CaptionBg) ? Loc["Lander_Nav_Projects"] : media.CaptionBg)</h3>
-                            @if (!string.IsNullOrEmpty(media.DurationBg) || !string.IsNullOrEmpty(media.BudgetBg))
-                            {
-                                <div class="card-meta">
-                                    @if (!string.IsNullOrEmpty(media.DurationBg))
-                                    {
-                                        <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> @media.DurationBg</div>
-                                    }
-                                    @if (!string.IsNullOrEmpty(media.BudgetBg))
-                                    {
-                                        <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> @media.BudgetBg</div>
-                                    }
-                                </div>
-                            }
-                            <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
-                        </div>
-                    </div>
-                }
-            }
-            else
-            {
-                <!-- Default Fallback Cards -->
+                var mediaIndex = gIdx;
+                var media = _galleryItems[mediaIndex];
                 <div class="portfolio-card">
-                    <div class="card-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" alt="Full apartment renovation" class="portfolio-img" />
-                        <span class="portfolio-tag">2026</span>
+                    <div class="card-img-wrapper" @onclick="() => OpenGalleryLightbox(mediaIndex)" style="cursor: pointer;" title="Click to view full size">
+                        @if (media.Type == "video")
+                        {
+                            <video src="@media.Url" playsinline preload="metadata" class="portfolio-img"></video>
+                            <span class="portfolio-tag video-tag">VIDEO</span>
+                        }
+                        else
+                        {
+                            var imageUrl = !string.IsNullOrWhiteSpace(media.Url) ? media.Url : GetFallbackImageForCategory(media.CaptionBg);
+                            <img src="@imageUrl" 
+                                 alt="@media.CaptionBg" 
+                                 class="portfolio-img" 
+                                 onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80';" />
+                            <span class="portfolio-tag">@Loc["Lander_Nav_Projects"] 2026</span>
+                        }
+                        <div class="portfolio-expand-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                            </svg>
+                        </div>
                     </div>
                     <div class="card-content">
-                        <div class="card-location">София, кв. Манастирски Ливади</div>
-                        <h3>Цялостен ремонт на тристаен апартамент (88 кв.м)</h3>
+                        @if (!string.IsNullOrEmpty(media.LocationBg))
+                        {
+                            <div class="card-location">@media.LocationBg</div>
+                        }
+                        <h3>@(string.IsNullOrEmpty(media.CaptionBg) ? Loc["Lander_Nav_Projects"] : media.CaptionBg)</h3>
                         <div class="card-meta">
-                            <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> 42 работни дни</div>
-                            <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> 34,800 лв. (€17,793)</div>
-                        </div>
-                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
-                    </div>
-                </div>
-
-                <div class="portfolio-card">
-                    <div class="card-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80" alt="Luxury bathroom renovation" class="portfolio-img" />
-                        <span class="portfolio-tag">2026</span>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-location">София, кв. Лозенец</div>
-                        <h3>Модерен ремонт на баня с крупноформатен гранитогрес (6 кв.м)</h3>
-                        <div class="card-meta">
-                            <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> 11 работни дни</div>
-                            <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> 7,450 лв. (€3,809)</div>
-                        </div>
-                        <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
-                    </div>
-                </div>
-
-                <div class="portfolio-card">
-                    <div class="card-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" alt="Finishing works" class="portfolio-img" />
-                        <span class="portfolio-tag">2026</span>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-location">София, кв. Младост 4</div>
-                        <h3>Шпакловка, боядисване и гипсокартон на нов апартамент (65 кв.м)</h3>
-                        <div class="card-meta">
-                            <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> 18 работни дни</div>
-                            <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> 14,200 лв. (€7,260)</div>
+                            @if (!string.IsNullOrEmpty(media.DurationBg))
+                            {
+                                <div class="meta-item"><strong>@Loc["Offer_TimelineLabel"]:</strong> @media.DurationBg</div>
+                            }
+                            @if (!string.IsNullOrEmpty(media.BudgetBg))
+                            {
+                                <div class="meta-item price"><strong>@Loc["Offers_EstPrice"]:</strong> @media.BudgetBg</div>
+                            }
                         </div>
                         <button class="bs-btn-primary card-btn" @onclick="HandleCreateProjectClick">@Loc["Lander_SeeSimilarOffer"]</button>
                     </div>
@@ -322,6 +359,174 @@
             <h2>@Loc["Lander_FinancingTitle"]</h2>
             <p>@Loc["Lander_FinancingSub"]</p>
             <button class="bs-btn-primary cta-banner-btn py-3 px-5" @onclick="HandleCreateProjectClick">@Loc["Lander_CalculateNowBtn"]</button>
+        </div>
+    </section>
+
+    <!-- Verified Customer Reviews Section -->
+    <section id="reviews" class="interio-section-wrapper reviews-section">
+        <div class="section-title-box text-center mb-4">
+            <div class="d-inline-flex align-items-center gap-1 mb-2 px-3 py-1 rounded-pill" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--color-primary); font-size: 0.85rem; font-weight: 700;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>4.9 / 5.0 (180+ @Loc["ProjectDetail_RatingReviews"])</span>
+            </div>
+            <h2 style="font: var(--font-h3); color: var(--text-primary); margin-bottom: 8px;">@Loc["Lander_ReviewsTitle"]</h2>
+            <p style="font: var(--font-body-1); color: var(--text-muted); max-width: 600px; margin: 0 auto;">@Loc["Lander_ReviewsSubtitle"]</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <div class="p-4 rounded-4 h-100 d-flex flex-column justify-content-between shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+                    <div>
+                        <div class="d-flex align-items-center gap-1 mb-3" style="color: var(--color-warning);">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            }
+                        </div>
+                        <p class="mb-4" style="font: var(--font-body-2); color: var(--text-primary); line-height: 1.6;">"@Loc["Lander_Review1_Text"]"</p>
+                    </div>
+                    <div class="pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <strong class="d-block" style="font: var(--font-h6); color: var(--text-primary);">@Loc["Lander_Review1_Author"]</strong>
+                        <span class="small" style="color: var(--text-muted);">@Loc["Lander_Review1_Role"]</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="p-4 rounded-4 h-100 d-flex flex-column justify-content-between shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+                    <div>
+                        <div class="d-flex align-items-center gap-1 mb-3" style="color: var(--color-warning);">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            }
+                        </div>
+                        <p class="mb-4" style="font: var(--font-body-2); color: var(--text-primary); line-height: 1.6;">"@Loc["Lander_Review2_Text"]"</p>
+                    </div>
+                    <div class="pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <strong class="d-block" style="font: var(--font-h6); color: var(--text-primary);">@Loc["Lander_Review2_Author"]</strong>
+                        <span class="small" style="color: var(--text-muted);">@Loc["Lander_Review2_Role"]</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="p-4 rounded-4 h-100 d-flex flex-column justify-content-between shadow-sm" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+                    <div>
+                        <div class="d-flex align-items-center gap-1 mb-3" style="color: var(--color-warning);">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            }
+                        </div>
+                        <p class="mb-4" style="font: var(--font-body-2); color: var(--text-primary); line-height: 1.6;">"@Loc["Lander_Review3_Text"]"</p>
+                    </div>
+                    <div class="pt-3 border-top" style="border-color: var(--border-color) !important;">
+                        <strong class="d-block" style="font: var(--font-h6); color: var(--text-primary);">@Loc["Lander_Review3_Author"]</strong>
+                        <span class="small" style="color: var(--text-muted);">@Loc["Lander_Review3_Role"]</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Matrix Section (Traditional Contractors vs BuildSmart) -->
+    <section id="comparison" class="interio-section-wrapper comparison-section my-5">
+        <div class="section-title-box text-center mb-4">
+            <h2 style="font: var(--font-h3); color: var(--text-primary); margin-bottom: 8px;">@Loc["Comparison_Title"]</h2>
+            <p style="font: var(--font-body-1); color: var(--text-muted); max-width: 650px; margin: 0 auto;">@Loc["Comparison_Subtitle"]</p>
+        </div>
+        <div class="comparison-card-wrapper shadow-sm">
+            <div class="table-responsive">
+                <table class="comparison-matrix-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 28%; font: var(--font-h6);">@Loc["Comparison_ColCriteria"]</th>
+                            <th style="width: 36%; font: var(--font-h6); color: var(--text-secondary) !important;">@Loc["Comparison_ColTraditional"]</th>
+                            <th class="col-bs" style="width: 36%; font: var(--font-h6);">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <span style="color: var(--color-primary); font-weight: 800;">@Loc["Comparison_ColBuildSmart"]</span>
+                                    <span class="badge rounded-pill" style="background: var(--color-primary); color: var(--bg-card); font-size: 0.72rem; padding: 4px 8px; font-weight: 700;">@Loc["Blog_NoDepositBadge"]</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="comparison-criteria-title">@Loc["Comparison_Deposit_Title"]</td>
+                            <td class="comparison-trad-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <span>@Loc["Comparison_Deposit_Trad"]</span>
+                                </div>
+                            </td>
+                            <td class="col-bs comparison-bs-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><polyline points="16 8 10 14 8 12"></polyline></svg>
+                                    <span>@Loc["Comparison_Deposit_BS"]</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="comparison-criteria-title">@Loc["Comparison_Price_Title"]</td>
+                            <td class="comparison-trad-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <span>@Loc["Comparison_Price_Trad"]</span>
+                                </div>
+                            </td>
+                            <td class="col-bs comparison-bs-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><polyline points="16 8 10 14 8 12"></polyline></svg>
+                                    <span>@Loc["Comparison_Price_BS"]</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="comparison-criteria-title">@Loc["Comparison_Deadline_Title"]</td>
+                            <td class="comparison-trad-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <span>@Loc["Comparison_Deadline_Trad"]</span>
+                                </div>
+                            </td>
+                            <td class="col-bs comparison-bs-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><polyline points="16 8 10 14 8 12"></polyline></svg>
+                                    <span>@Loc["Comparison_Deadline_BS"]</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="comparison-criteria-title">@Loc["Comparison_Warranty_Title"]</td>
+                            <td class="comparison-trad-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <span>@Loc["Comparison_Warranty_Trad"]</span>
+                                </div>
+                            </td>
+                            <td class="col-bs comparison-bs-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><polyline points="16 8 10 14 8 12"></polyline></svg>
+                                    <span>@Loc["Comparison_Warranty_BS"]</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="comparison-criteria-title">@Loc["Comparison_Control_Title"]</td>
+                            <td class="comparison-trad-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <span>@Loc["Comparison_Control_Trad"]</span>
+                                </div>
+                            </td>
+                            <td class="col-bs comparison-bs-text">
+                                <div class="d-flex align-items-start gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="10"></circle><polyline points="16 8 10 14 8 12"></polyline></svg>
+                                    <span>@Loc["Comparison_Control_BS"]</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
@@ -452,7 +657,8 @@
                     {
                         <img src="@currentItem.Url"
                              alt="@(caption ?? "Full size preview")"
-                             class="lightbox-media-element" />
+                             class="lightbox-media-element"
+                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80';" />
                     }
                 </div>
 
@@ -925,8 +1131,9 @@ html {
 }
 
 .portfolio-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 28px;
 }
 
@@ -961,6 +1168,9 @@ html {
     overflow: hidden;
     box-shadow: var(--shadow-main);
     transition: transform 0.2s ease;
+    flex: 1 1 340px;
+    max-width: 390px;
+    width: 100%;
 }
 
 .portfolio-card:hover {
@@ -1385,6 +1595,65 @@ html {
     backdrop-filter: blur(12px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+
+/* Comparison Matrix Table Styles */
+.comparison-card-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.comparison-matrix-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    background: var(--bg-card);
+}
+
+.comparison-matrix-table th {
+    padding: 18px 20px;
+    background: var(--bg-card-alt) !important;
+    color: var(--text-primary) !important;
+    border-bottom: 2px solid var(--border-color);
+    text-align: left;
+}
+
+.comparison-matrix-table td {
+    padding: 18px 20px;
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.comparison-matrix-table tr:last-child td {
+    border-bottom: none;
+}
+
+.comparison-matrix-table td.col-bs,
+.comparison-matrix-table th.col-bs {
+    background: var(--bg-card-alt) !important;
+}
+
+.comparison-criteria-title {
+    font: var(--font-body-2);
+    font-weight: 700;
+    color: var(--text-primary) !important;
+}
+
+.comparison-trad-text {
+    font: var(--font-body-2);
+    color: var(--text-secondary) !important;
+    line-height: 1.5;
+}
+
+.comparison-bs-text {
+    font: var(--font-body-2);
+    font-weight: 600;
+    color: var(--text-primary) !important;
+    line-height: 1.5;
+}
 </style>
 
 @code {
@@ -1486,6 +1755,109 @@ html {
         {
             // Silently fall back to default resource content
         }
+
+        // If CMS has NO gallery items configured for this specific page, use defaults matching this page's type
+        if (_galleryItems == null || !_galleryItems.Any())
+        {
+            _galleryItems = GetDefaultPortfolioForSlug(GetSlug());
+        }
+    }
+
+    private string GetFallbackImageForCategory(string? text)
+    {
+        var s = (text ?? "").ToLowerInvariant();
+        if (s.Contains("баня") || s.Contains("плочки") || s.Contains("гранитогрес"))
+        {
+            return "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80";
+        }
+        if (s.Contains("боя") || s.Contains("шпакловка") || s.Contains("гипсокартон"))
+        {
+            return "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80";
+        }
+        if (s.Contains("ел") || s.Contains("вик") || s.Contains("инсталаци"))
+        {
+            return "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80";
+        }
+        return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80";
+    }
+
+    private List<MediaGalleryItemModel> GetDefaultPortfolioForSlug(string slug)
+    {
+        return slug switch
+        {
+            "bathroom-sofia" => new List<MediaGalleryItemModel>
+            {
+                new MediaGalleryItemModel
+                {
+                    Url = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+                    Type = "image",
+                    CaptionBg = "Модерен ремонт на баня с крупноформатен гранитогрес (6 кв.м)",
+                    CaptionEn = "Modern Bathroom Porcelain Renovation (6 sqm)",
+                    LocationBg = "София, кв. Лозенец",
+                    DurationBg = "11 работни дни",
+                    BudgetBg = "7,450 лв. (€3,809)"
+                }
+            },
+            "finishing-sofia" => new List<MediaGalleryItemModel>
+            {
+                new MediaGalleryItemModel
+                {
+                    Url = "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
+                    Type = "image",
+                    CaptionBg = "Шпакловка, боядисване и гипсокартон на нов апартамент (65 кв.м)",
+                    CaptionEn = "Plaster Skimming, Painting & Drywall (65 sqm)",
+                    LocationBg = "София, кв. Младост 4",
+                    DurationBg = "18 работни дни",
+                    BudgetBg = "14,200 лв. (€7,260)"
+                }
+            },
+            "mep-sofia" => new List<MediaGalleryItemModel>
+            {
+                new MediaGalleryItemModel
+                {
+                    Url = "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+                    Type = "image",
+                    CaptionBg = "Подмяна на електро и ВиК инсталации в тристаен апартамент",
+                    CaptionEn = "Complete MEP Replacement in 3-Room Apartment",
+                    LocationBg = "София, кв. Изток",
+                    DurationBg = "14 работни дни",
+                    BudgetBg = "8,600 лв. (€4,397)"
+                }
+            },
+            _ => new List<MediaGalleryItemModel>
+            {
+                new MediaGalleryItemModel
+                {
+                    Url = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+                    Type = "image",
+                    CaptionBg = "Цялостен ремонт на тристаен ново строителство (92 кв.м)",
+                    CaptionEn = "Turnkey 3-Room Apartment Renovation (92 sqm)",
+                    LocationBg = "София, Централна гара (Capital Residence)",
+                    DurationBg = "65 работни дни (3 месеца)",
+                    BudgetBg = "74,321 лв. (€38,000 труд и материали)"
+                },
+                new MediaGalleryItemModel
+                {
+                    Url = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+                    Type = "image",
+                    CaptionBg = "Модерен ремонт на баня с крупноформатен гранитогрес (6 кв.м)",
+                    CaptionEn = "Modern Bathroom Porcelain Renovation (6 sqm)",
+                    LocationBg = "София, кв. Лозенец",
+                    DurationBg = "11 работни дни",
+                    BudgetBg = "7,450 лв. (€3,809)"
+                },
+                new MediaGalleryItemModel
+                {
+                    Url = "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
+                    Type = "image",
+                    CaptionBg = "Шпакловка, скрито LED осветление и гипсокартон (65 кв.м)",
+                    CaptionEn = "Plaster Skimming, Concealed LED & Drywall (65 sqm)",
+                    LocationBg = "София, кв. Младост 4",
+                    DurationBg = "18 работни дни",
+                    BudgetBg = "14,200 лв. (€7,260)"
+                }
+            }
+        };
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1511,6 +1883,7 @@ html {
     private string GetSlug()
     {
         var relativePath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+        if (relativePath.Contains("remonti-sofia")) return "remonti-sofia";
         if (relativePath.Contains("remont-na-apartament-sofia")) return "apartment-sofia";
         if (relativePath.Contains("remont-na-banya")) return "bathroom-sofia";
         if (relativePath.Contains("dovarshetelni-raboti")) return "finishing-sofia";
@@ -1519,6 +1892,18 @@ html {
     }
 
     private bool IsEnglish => System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase);
+
+    private string GetCanonicalUrl()
+    {
+        return GetSlug() switch
+        {
+            "remonti-sofia" => "https://buildsmart.bg/remonti-sofia",
+            "bathroom-sofia" => "https://buildsmart.bg/remont-na-banya",
+            "finishing-sofia" => "https://buildsmart.bg/dovarshetelni-raboti",
+            "mep-sofia" => "https://buildsmart.bg/el-i-vik-uslugi",
+            _ => "https://buildsmart.bg/remont-na-apartament-sofia"
+        };
+    }
 
     private string GetTitle()
     {
@@ -1531,6 +1916,7 @@ html {
 
             return GetSlug() switch
             {
+                "remonti-sofia" => Loc["Landing_RemontiSofia_Title"],
                 "bathroom-sofia" => Loc["Landing_BathroomTitle"],
                 "finishing-sofia" => Loc["Landing_FinishingTitle"],
                 "mep-sofia" => Loc["Landing_MepTitle"],
@@ -1545,6 +1931,7 @@ html {
 
         return GetSlug() switch
         {
+            "remonti-sofia" => Loc["Landing_RemontiSofia_Title"],
             "bathroom-sofia" => Loc["Landing_BathroomTitle"],
             "finishing-sofia" => Loc["Landing_FinishingTitle"],
             "mep-sofia" => Loc["Landing_MepTitle"],
@@ -1563,6 +1950,7 @@ html {
 
             return GetSlug() switch
             {
+                "remonti-sofia" => Loc["Landing_RemontiSofia_Subtitle"],
                 "bathroom-sofia" => Loc["Landing_BathroomSubtitle"],
                 "finishing-sofia" => Loc["Landing_FinishingSubtitle"],
                 "mep-sofia" => Loc["Landing_MepSubtitle"],
@@ -1577,6 +1965,7 @@ html {
 
         return GetSlug() switch
         {
+            "remonti-sofia" => Loc["Landing_RemontiSofia_Subtitle"],
             "bathroom-sofia" => Loc["Landing_BathroomSubtitle"],
             "finishing-sofia" => Loc["Landing_FinishingSubtitle"],
             "mep-sofia" => Loc["Landing_MepSubtitle"],
@@ -1602,12 +1991,23 @@ html {
 
     private string GetMetaDescription()
     {
+        if (GetSlug() == "remonti-sofia")
+        {
+            return Loc["Landing_RemontiSofia_MetaDesc"];
+        }
         return $"{GetTitle()} - {GetSubtitle()} Получете подробна КСС оферта за 3 минути.";
     }
 
     private string GetKeywords()
     {
-        return "ремонт на апартамент софия, ремонт на баня софия, довършителни работи цени, шпакловка боядисване, лепене на плочки софия";
+        return GetSlug() switch
+        {
+            "remonti-sofia" => "ремонти софия, строителни ремонти софия, цялостен ремонт софия, довършителни ремонти софия, майстори софия цени, фирма за ремонти софия",
+            "bathroom-sofia" => "ремонт на баня софия, лепене на плочки софия, хидроизолация на баня цена, ВиК услуги софия баня",
+            "finishing-sofia" => "довършителни ремонти софия, шпакловка и боядисване софия, гипсокартон софия цени, монтаж на ламинат",
+            "mep-sofia" => "ел услуги софия, вик услуги софия, смяна на щрангове софия, подмяна на ел табло софия",
+            _ => "ремонт на апартамент софия, цялостен ремонт на апартамент софия цени, ремонт на жилище софия, фирма за ремонт на апартаменти"
+        };
     }
 
     private string GetCategoryFilter()

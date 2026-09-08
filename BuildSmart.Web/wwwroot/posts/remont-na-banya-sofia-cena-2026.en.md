@@ -1,4 +1,4 @@
-# Bathroom Renovation Prices in Sofia 2026: Complete Cost Guide
+﻿# Bathroom Renovation Prices in Sofia 2026: Complete Cost Guide
 
 A bathroom renovation is **the most complex and expensive area per square meter** in any property. Waterproofing errors or improper screed slopes can cause leaks and thousands of Euros in damage.
 
@@ -18,7 +18,7 @@ For a standard bathroom (**4 to 6 sq.m. floor space**), total average costs brea
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
       <h4>Market Cost Spectrum 2026: Tiling & Waterproofing</h4>
     </div>
-    <span class="spectrum-location-badge">📍 Sofia • Prices per sq.m.</span>
+    <span class="spectrum-location-badge">Sofia • Prices per sq.m.</span>
   </div>
   <div class="spectrum-bar-wrapper">
     <div class="spectrum-bar-track">
