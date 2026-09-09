@@ -3195,4 +3195,10 @@ Boncho | BuildSmart</value>
   <data name="Lander_Footer_MepSofia" xml:space="preserve">
     <value>Electrical &amp; Plumbing</value>
   </data>
+  <data name="Nav_RenovationEstimator" xml:space="preserve">
+    <value>Renovation Calculator</value>
+  </data>
+  <data name="Lander_Footer_Calculator" xml:space="preserve">
+    <value>Renovation Calculator</value>
+  </data>
 </root>

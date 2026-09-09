@@ -74,11 +74,28 @@
       "@@type": "WebSite",
       "name": "BuildSmart.bg",
       "url": "https://buildsmart.bg",
-      "potentialAction": {
-        "@@type": "SearchAction",
-        "target": "https://buildsmart.bg/blog?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "potentialAction": [
+        {
+          "@@type": "SearchAction",
+          "target": "https://buildsmart.bg/blog?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        },
+        {
+          "@@type": "Action",
+          "name": "Калкулатор за Ремонти на Апартаменти и Бани София",
+          "target": "https://buildsmart.bg/renovation-estimator",
+          "description": "Онлайн изчисляване на подробна количествено-стойностна сметка (КСС) за строителен ремонт за 3 минути."
+        }
+      ],
+      "hasPart": [
+        {
+          "@@type": "WebApplication",
+          "name": "Онлайн Калкулатор за Ремонти BuildSmart",
+          "url": "https://buildsmart.bg/renovation-estimator",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "All"
+        }
+      ]
     }
     </script>
 </HeadContent>

@@ -3147,4 +3147,10 @@
   <data name="Lander_Footer_MepSofia" xml:space="preserve">
     <value>Ел и ВиК услуги</value>
   </data>
+  <data name="Nav_RenovationEstimator" xml:space="preserve">
+    <value>Калкулатор за ремонти</value>
+  </data>
+  <data name="Lander_Footer_Calculator" xml:space="preserve">
+    <value>Калкулатор за ремонти</value>
+  </data>
 </root>
