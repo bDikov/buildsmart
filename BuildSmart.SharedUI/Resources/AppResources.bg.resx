@@ -3129,4 +3129,22 @@
   <data name="Offers_EstPrice" xml:space="preserve">
     <value>Бюджет</value>
   </data>
+  <data name="Nav_RemontiSofia" xml:space="preserve">
+    <value>Ремонти София</value>
+  </data>
+  <data name="Lander_Footer_RemontiSofia" xml:space="preserve">
+    <value>Ремонти София</value>
+  </data>
+  <data name="Lander_Footer_ApartmentSofia" xml:space="preserve">
+    <value>Ремонт на апартамент</value>
+  </data>
+  <data name="Lander_Footer_BathroomSofia" xml:space="preserve">
+    <value>Ремонт на баня</value>
+  </data>
+  <data name="Lander_Footer_FinishingSofia" xml:space="preserve">
+    <value>Довършителни ремонти</value>
+  </data>
+  <data name="Lander_Footer_MepSofia" xml:space="preserve">
+    <value>Ел и ВиК услуги</value>
+  </data>
 </root>

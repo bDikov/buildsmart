@@ -247,9 +247,13 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(BuildSmart.SharedUI.Components.Layout.MainLayout).Assembly);
 
-app.MapGet("/sitemap.xml", async (HttpContext context, IServiceProvider sp) =>
+app.MapMethods("/sitemap.xml", new[] { "GET", "HEAD" }, async (HttpContext context, IServiceProvider sp) =>
 {
     context.Response.ContentType = "application/xml; charset=utf-8";
+    if (HttpMethods.IsHead(context.Request.Method))
+    {
+        return;
+    }
     
     var sb = new System.Text.StringBuilder();
     sb.AppendLine(@"<?xml version=""1.0"" encoding=""UTF-8""?>");

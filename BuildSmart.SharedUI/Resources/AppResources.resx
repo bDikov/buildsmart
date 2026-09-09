@@ -3177,4 +3177,22 @@ Boncho | BuildSmart</value>
   <data name="Offers_EstPrice" xml:space="preserve">
     <value>Est. Price</value>
   </data>
+  <data name="Nav_RemontiSofia" xml:space="preserve">
+    <value>Renovations Sofia</value>
+  </data>
+  <data name="Lander_Footer_RemontiSofia" xml:space="preserve">
+    <value>Renovations Sofia</value>
+  </data>
+  <data name="Lander_Footer_ApartmentSofia" xml:space="preserve">
+    <value>Apartment Renovation</value>
+  </data>
+  <data name="Lander_Footer_BathroomSofia" xml:space="preserve">
+    <value>Bathroom Renovation</value>
+  </data>
+  <data name="Lander_Footer_FinishingSofia" xml:space="preserve">
+    <value>Finishing Works</value>
+  </data>
+  <data name="Lander_Footer_MepSofia" xml:space="preserve">
+    <value>Electrical &amp; Plumbing</value>
+  </data>
 </root>
