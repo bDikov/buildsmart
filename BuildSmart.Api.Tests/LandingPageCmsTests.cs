@@ -32,7 +32,8 @@ public class LandingPageCmsTests
 
         // Assert
         var pages = await context.LandingPages.ToListAsync();
-        Assert.Equal(4, pages.Count);
+        Assert.Equal(5, pages.Count);
+        Assert.Contains(pages, p => p.Slug == "remonti-sofia");
         Assert.Contains(pages, p => p.Slug == "remont-na-apartament-sofia");
         Assert.Contains(pages, p => p.Slug == "remont-na-banya");
         Assert.Contains(pages, p => p.Slug == "dovarshetelni-raboti");
