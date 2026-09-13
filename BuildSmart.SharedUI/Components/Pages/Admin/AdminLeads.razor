@@ -215,6 +215,12 @@
                     <option value="exit_intent">@Loc["Admin_Leads_SourceExitIntent"]</option>
                 </select>
 
+                <select class="leads-select" @bind="_customizationFilter">
+                    <option value="all">@Loc["Admin_Leads_FilterStandard"] &amp; @Loc["Admin_Leads_FilterCustomized"]</option>
+                    <option value="customized">@Loc["Admin_Leads_FilterCustomized"]</option>
+                    <option value="standard">@Loc["Admin_Leads_FilterStandard"]</option>
+                </select>
+
                 <select class="leads-select" @bind="_verificationFilter">
                     <option value="all">@Loc["Admin_Leads_VerificationAll"]</option>
                     <option value="valid">@Loc["Admin_Leads_VerificationValid"]</option>
@@ -332,6 +338,7 @@
                     <tbody>
                         @foreach (var lead in PagedLeads)
                         {
+                            var custInfo = ParseCustomizationInfo(lead);
                             <tr class="lead-row">
                                 <!-- Submitted Date -->
                                 <td class="td-date">
@@ -400,6 +407,19 @@
                                     {
                                         <div class="price-eur">€@lead.MinPriceEur.ToString("N0") – €@lead.MaxPriceEur.ToString("N0")</div>
                                         <div class="price-bgn">(@lead.MinPriceBgn.ToString("N0") – @lead.MaxPriceBgn.ToString("N0") BGN)</div>
+                                        @if (custInfo.HasCustomization)
+                                        {
+                                            <div class="customization-pill-badge customized" title="@custInfo.SummaryText">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                                <span>@Loc["Admin_Leads_CustomizedBadge"] (@custInfo.ExcludedProcessIds.Count)</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="customization-pill-badge standard">
+                                                <span>@Loc["Admin_Leads_StandardBadge"]</span>
+                                            </div>
+                                        }
                                     }
                                     else
                                     {
@@ -614,6 +634,118 @@
                         <div class="financial-eur text-muted">No pricing generated</div>
                     }
                 </div>
+
+                <!-- Work Scope Configuration & Customization Section -->
+                @if (_selectedLead.Scope != "exit_intent_lead" && _selectedLead.MaxPriceEur > 0)
+                {
+                    var selCust = ParseCustomizationInfo(_selectedLead);
+                    <div class="modal-section-card scope-customization-card">
+                        <div class="scope-customization-header">
+                            <div class="section-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                                <span>@Loc["Admin_Leads_ScopeCustomizationTitle"]</span>
+                            </div>
+                            <div class="scope-action-buttons">
+                                <button type="button" class="scope-quick-action-btn primary" @onclick="() => OpenClientProposalView(_selectedLead, selCust)" title="@Loc["Admin_Leads_OpenClientView"]">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                    <span>@Loc["Admin_Leads_OpenClientView"]</span>
+                                </button>
+                                <button type="button" class="scope-quick-action-btn secondary" @onclick="() => CopyWhatsAppSummaryAsync(_selectedLead, selCust)" title="@Loc["Admin_Leads_CopyWhatsApp"]">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span>@Loc["Admin_Leads_CopyWhatsApp"]</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Financial Comparison Stats -->
+                        <div class="scope-stats-banner">
+                            <div class="scope-stat-item">
+                                <span class="stat-label">@Loc["Admin_Leads_InitialQuote"]</span>
+                                <span class="stat-val">€@selCust.InitialMinEur.ToString("N0") – €@selCust.InitialMaxEur.ToString("N0")</span>
+                            </div>
+                            <div class="scope-stat-item highlight">
+                                <span class="stat-label">@Loc["Admin_Leads_CustomizedQuote"]</span>
+                                <span class="stat-val">€@_selectedLead.MinPriceEur.ToString("N0") – €@_selectedLead.MaxPriceEur.ToString("N0")</span>
+                            </div>
+                            @if (selCust.SavedMaxEur > 0)
+                            {
+                                <div class="scope-stat-item savings">
+                                    <span class="stat-label">@Loc["Admin_Leads_SavedAmount"]</span>
+                                    <span class="stat-val savings-text">-€@selCust.SavedMaxEur.ToString("N0")</span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Scope Breakdown Grid -->
+                        <div class="scope-categories-grid">
+                            @foreach (var cat in GetAdminCategories())
+                            {
+                                if (_selectedLead.Scope == "bathroom" && cat.CatId != 1) continue;
+                                if (cat.CatId == 9 && !_selectedLead.IncludeFurniture && !selCust.ExcludedProcessIds.Any(id => id.StartsWith("cat9_"))) continue;
+
+                                var excludedInCat = cat.Processes.Where(p => selCust.ExcludedProcessIds.Contains(p.Id)).ToList();
+                                bool isFullyExcluded = excludedInCat.Count == cat.Processes.Count;
+                                bool isPartiallyExcluded = excludedInCat.Any() && !isFullyExcluded;
+
+                                <div class="scope-cat-card @(isFullyExcluded ? "cat-fully-excluded" : (isPartiallyExcluded ? "cat-partially-excluded" : "cat-fully-included"))">
+                                    <div class="scope-cat-card-header">
+                                        <div class="cat-card-title">@Loc[cat.TitleKey]</div>
+                                        <div class="cat-card-badge">
+                                            @if (isFullyExcluded)
+                                            {
+                                                <span class="cat-badge badge-red">@Loc["Lander_Scope_Excluded"]</span>
+                                            }
+                                            else if (isPartiallyExcluded)
+                                            {
+                                                <span class="cat-badge badge-amber">@(cat.Processes.Count - excludedInCat.Count)/@cat.Processes.Count</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="cat-badge badge-green">@Loc["Admin_Leads_StandardBadge"]</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="scope-cat-card-processes">
+                                        @foreach (var proc in cat.Processes)
+                                        {
+                                            bool isExcluded = selCust.ExcludedProcessIds.Contains(proc.Id);
+                                            <div class="cat-proc-row @(isExcluded ? "proc-excluded" : "proc-included")">
+                                                <span class="proc-icon">
+                                                    @if (isExcluded)
+                                                    {
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                    }
+                                                    else
+                                                    {
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                    }
+                                                </span>
+                                                <span class="proc-title">@Loc[proc.TitleKey]</span>
+                                                @if (isExcluded)
+                                                {
+                                                    <span class="proc-excluded-tag">@Loc["Lander_Scope_Excluded"]</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
 
                 <!-- CRM Follow-up & Client Notes Section -->
                 <div class="modal-section-card crm-notes-box">
@@ -2003,6 +2135,253 @@
 .delete-confirm-btn:hover {
     opacity: 0.9;
 }
+
+/* Customization Table Pill Badge */
+.customization-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font: var(--font-body-2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-top: 4px;
+    width: fit-content;
+}
+
+.customization-pill-badge.customized {
+    background: rgba(99, 102, 241, 0.12);
+    color: var(--color-primary);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.customization-pill-badge.standard {
+    background: var(--bg-card-alt);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+/* Work Scope & Customization Dossier Card */
+.scope-customization-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.scope-customization-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.scope-customization-header .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: var(--font-h4);
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.scope-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.scope-quick-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font: var(--font-body-2);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.scope-quick-action-btn.primary {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.scope-quick-action-btn.primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.scope-quick-action-btn.secondary {
+    background: var(--bg-card-alt);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.scope-quick-action-btn.secondary:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+/* Scope Stats Banner */
+.scope-stats-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+.scope-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.scope-stat-item .stat-label {
+    font: var(--font-body-2);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.scope-stat-item .stat-val {
+    font: var(--font-body-1);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.scope-stat-item.highlight .stat-val {
+    color: var(--color-primary);
+}
+
+.scope-stat-item.savings .savings-text {
+    color: var(--color-success, #10b981);
+}
+
+/* Scope Categories Grid */
+.scope-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+}
+
+.scope-cat-card {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: all 0.15s ease;
+}
+
+.scope-cat-card.cat-partially-excluded {
+    border-left: 3px solid var(--color-warning, #f59e0b);
+}
+
+.scope-cat-card.cat-fully-excluded {
+    border-left: 3px solid var(--color-danger, #ef4444);
+    opacity: 0.75;
+}
+
+.scope-cat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+}
+
+.cat-card-title {
+    font: var(--font-body-2);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.cat-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.2px;
+}
+
+.cat-badge.badge-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success, #10b981);
+}
+
+.cat-badge.badge-amber {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning, #f59e0b);
+}
+
+.cat-badge.badge-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-danger, #ef4444);
+}
+
+.scope-cat-card-processes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cat-proc-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font: var(--font-body-2);
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+.cat-proc-row.proc-included {
+    color: var(--text-primary);
+}
+
+.cat-proc-row.proc-included .proc-icon {
+    color: var(--color-success, #10b981);
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.cat-proc-row.proc-excluded {
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.cat-proc-row.proc-excluded .proc-icon {
+    color: var(--color-danger, #ef4444);
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.proc-excluded-tag {
+    margin-left: auto;
+    font-size: 0.68rem;
+    padding: 1px 5px;
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger, #ef4444);
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    flex-shrink: 0;
+}
 </style>
 
 @code {
@@ -2014,6 +2393,7 @@
     private string _dateRangeFilter = "all"; // all, today, yesterday, 7days, 30days
     private string _sourceFilter = "all";    // all, facebook, google, direct, exit_intent
     private string _scopeFilter = "all";     // all, bathroom, full, exit_intent
+    private string _customizationFilter = "all"; // all, customized, standard
     private string _verificationFilter = "all"; // all, valid, flagged
     private string _contactStatusFilter = "all"; // all, new, spoken
 
@@ -2144,6 +2524,7 @@
         _dateRangeFilter = "all";
         _sourceFilter = "all";
         _scopeFilter = "all";
+        _customizationFilter = "all";
         _verificationFilter = "all";
         _contactStatusFilter = "all";
         _currentPage = 1;
@@ -2232,6 +2613,16 @@
             else if (_scopeFilter == "exit_intent")
             {
                 query = query.Where(l => l.Scope == "exit_intent_lead");
+            }
+
+            // Customization Filter
+            if (_customizationFilter == "customized")
+            {
+                query = query.Where(l => ParseCustomizationInfo(l).HasCustomization);
+            }
+            else if (_customizationFilter == "standard")
+            {
+                query = query.Where(l => !ParseCustomizationInfo(l).HasCustomization);
             }
 
             // Verification Filter
@@ -2349,7 +2740,8 @@
         _editSource = lead.UtmSource ?? string.Empty;
         _editMedium = lead.UtmMedium ?? string.Empty;
         _editCampaign = lead.UtmCampaign ?? string.Empty;
-        _editNotes = lead.AdminNotes ?? string.Empty;
+        var custInfo = ParseCustomizationInfo(lead);
+        _editNotes = custInfo.CrmNotesText;
         _editIsContacted = lead.IsContacted;
         _isSavingNotes = false;
         _notesSaveSuccess = false;
@@ -2393,7 +2785,41 @@
 
         try
         {
-            _selectedLead.AdminNotes = string.IsNullOrWhiteSpace(_editNotes) ? null : _editNotes.Trim();
+            var rawNotes = _selectedLead.AdminNotes ?? string.Empty;
+            string configPart = string.Empty;
+            const string configMarker = "[CONFIG]:";
+            int cfgIdx = rawNotes.IndexOf(configMarker, StringComparison.OrdinalIgnoreCase);
+            if (cfgIdx >= 0)
+            {
+                int endOfLine = rawNotes.IndexOf('\n', cfgIdx);
+                configPart = endOfLine >= 0 ? rawNotes.Substring(cfgIdx, endOfLine - cfgIdx) : rawNotes.Substring(cfgIdx);
+            }
+
+            string summaryPart = string.Empty;
+            const string sumMarker = "[SUMMARY]:";
+            int sIdx = rawNotes.IndexOf(sumMarker, StringComparison.OrdinalIgnoreCase);
+            if (sIdx >= 0)
+            {
+                int endOfLine = rawNotes.IndexOf('\n', sIdx);
+                summaryPart = endOfLine >= 0 ? rawNotes.Substring(sIdx, endOfLine - sIdx) : rawNotes.Substring(sIdx);
+            }
+            else if (rawNotes.StartsWith("[Клиентът"))
+            {
+                int endOfLine = rawNotes.IndexOf('\n');
+                summaryPart = endOfLine >= 0 ? rawNotes.Substring(0, endOfLine) : rawNotes;
+            }
+
+            var sb = new System.Text.StringBuilder();
+            if (!string.IsNullOrWhiteSpace(configPart)) sb.AppendLine(configPart.Trim());
+            if (!string.IsNullOrWhiteSpace(summaryPart)) sb.AppendLine(summaryPart.Trim());
+            if (!string.IsNullOrWhiteSpace(_editNotes))
+            {
+                sb.AppendLine("[CRM_NOTES]:");
+                sb.Append(_editNotes.Trim());
+            }
+
+            _selectedLead.AdminNotes = sb.Length > 0 ? sb.ToString().Trim() : null;
+
             if (_editIsContacted && !_selectedLead.IsContacted)
             {
                 _selectedLead.ContactedAt = DateTime.UtcNow;
@@ -2540,4 +2966,235 @@
         }
         return cleaned;
     }
+
+    // Sales Enablement & Customization Helpers
+    private async Task OpenClientProposalView(CalculatorLead lead, LeadCustomizationInfo info)
+    {
+        var scope = string.IsNullOrWhiteSpace(lead.Scope) ? "full" : lead.Scope;
+        var url = $"/renovation-estimator?scope={scope}&area={lead.SelectedArea}&status={lead.BuildingStatus}&tier={lead.QualityTier}&bathrooms={lead.BathroomCount}&proposalReady=true";
+        if (info.ExcludedProcessIds.Any())
+        {
+            url += $"&excluded={string.Join(",", info.ExcludedProcessIds)}";
+        }
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task CopyWhatsAppSummaryAsync(CalculatorLead lead, LeadCustomizationInfo info)
+    {
+        var name = string.IsNullOrWhiteSpace(lead.Name) ? "Клиент" : lead.Name.Trim();
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Здравейте, {name}!");
+        sb.AppendLine($"Във връзка с Вашата оферта за ремонт на апартамент ({lead.SelectedArea} кв.м, ниво {lead.QualityTier?.ToUpper()}):");
+        sb.AppendLine();
+        sb.AppendLine($"• Първоначална прогнозна стойност: €{info.InitialMinEur:N0} – €{info.InitialMaxEur:N0}");
+        sb.AppendLine($"• Актуализирана стойност: €{lead.MinPriceEur:N0} – €{lead.MaxPriceEur:N0} ({lead.MinPriceBgn:N0} – {lead.MaxPriceBgn:N0} лв.)");
+        if (info.SavedMaxEur > 0)
+        {
+            sb.AppendLine($"• Спестени от промяна на обхвата: €{info.SavedMaxEur:N0}");
+        }
+        sb.AppendLine();
+
+        if (info.ExcludedProcessIds.Any())
+        {
+            sb.AppendLine("Изключени СМР пера от обхвата:");
+            var allCats = GetAdminCategories();
+            foreach (var cat in allCats)
+            {
+                var excludedInCat = cat.Processes.Where(p => info.ExcludedProcessIds.Contains(p.Id)).ToList();
+                if (excludedInCat.Count == cat.Processes.Count)
+                {
+                    sb.AppendLine($"- {Loc[cat.TitleKey]}: Цялата категория е изключена");
+                }
+                else if (excludedInCat.Any())
+                {
+                    var procNames = excludedInCat.Select(p => Loc[p.TitleKey]);
+                    sb.AppendLine($"- {Loc[cat.TitleKey]}: {string.Join(", ", procNames)}");
+                }
+            }
+            sb.AppendLine();
+        }
+
+        var scope = string.IsNullOrWhiteSpace(lead.Scope) ? "full" : lead.Scope;
+        var proposalUrl = $"{NavManager.BaseUri}renovation-estimator?scope={scope}&area={lead.SelectedArea}&status={lead.BuildingStatus}&tier={lead.QualityTier}&bathrooms={lead.BathroomCount}&proposalReady=true";
+        if (info.ExcludedProcessIds.Any())
+        {
+            proposalUrl += $"&excluded={string.Join(",", info.ExcludedProcessIds)}";
+        }
+        sb.AppendLine($"Линк към интерактивната Ви оферта: {proposalUrl}");
+
+        await CopyToClipboard(sb.ToString(), Loc["Admin_Leads_CopiedSuccess"]);
+    }
+
+    public class LeadCustomizationInfo
+    {
+        public bool HasCustomization { get; set; }
+        public List<string> ExcludedProcessIds { get; set; } = new();
+        public decimal InitialMinEur { get; set; }
+        public decimal InitialMaxEur { get; set; }
+        public decimal CustomizedMinEur { get; set; }
+        public decimal CustomizedMaxEur { get; set; }
+        public decimal SavedMinEur { get; set; }
+        public decimal SavedMaxEur { get; set; }
+        public string SummaryText { get; set; } = string.Empty;
+        public string CrmNotesText { get; set; } = string.Empty;
+    }
+
+    private static LeadCustomizationInfo ParseCustomizationInfo(CalculatorLead lead)
+    {
+        var info = new LeadCustomizationInfo
+        {
+            CustomizedMinEur = lead.MinPriceEur,
+            CustomizedMaxEur = lead.MaxPriceEur
+        };
+
+        if (string.IsNullOrWhiteSpace(lead.AdminNotes))
+        {
+            info.InitialMinEur = lead.MinPriceEur;
+            info.InitialMaxEur = lead.MaxPriceEur;
+            return info;
+        }
+
+        var notes = lead.AdminNotes;
+
+        // Parse [CONFIG]:{...}
+        const string configMarker = "[CONFIG]:";
+        int configIdx = notes.IndexOf(configMarker, StringComparison.OrdinalIgnoreCase);
+        if (configIdx >= 0)
+        {
+            int endOfLine = notes.IndexOf('\n', configIdx);
+            string json = endOfLine >= 0
+                ? notes.Substring(configIdx + configMarker.Length, endOfLine - (configIdx + configMarker.Length)).Trim()
+                : notes.Substring(configIdx + configMarker.Length).Trim();
+
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("excludedProcessIds", out var idsEl) && idsEl.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    foreach (var item in idsEl.EnumerateArray())
+                    {
+                        var id = item.GetString();
+                        if (!string.IsNullOrEmpty(id)) info.ExcludedProcessIds.Add(id);
+                    }
+                }
+                if (root.TryGetProperty("initialMinEur", out var imin)) info.InitialMinEur = imin.GetDecimal();
+                if (root.TryGetProperty("initialMaxEur", out var imax)) info.InitialMaxEur = imax.GetDecimal();
+                if (root.TryGetProperty("customizedMinEur", out var cmin)) info.CustomizedMinEur = cmin.GetDecimal();
+                if (root.TryGetProperty("customizedMaxEur", out var cmax)) info.CustomizedMaxEur = cmax.GetDecimal();
+                if (root.TryGetProperty("savedMinEur", out var smin)) info.SavedMinEur = smin.GetDecimal();
+                if (root.TryGetProperty("savedMaxEur", out var smax)) info.SavedMaxEur = smax.GetDecimal();
+
+                info.HasCustomization = info.ExcludedProcessIds.Count > 0;
+            }
+            catch { }
+        }
+        else if (notes.Contains("[Клиентът коригира офертата]") || notes.Contains("Изключени пера:"))
+        {
+            info.HasCustomization = true;
+        }
+
+        // Parse [SUMMARY]:...
+        const string summaryMarker = "[SUMMARY]:";
+        int sumIdx = notes.IndexOf(summaryMarker, StringComparison.OrdinalIgnoreCase);
+        if (sumIdx >= 0)
+        {
+            int nextMarker = notes.IndexOf("[CRM_NOTES]:", sumIdx, StringComparison.OrdinalIgnoreCase);
+            info.SummaryText = nextMarker >= 0
+                ? notes.Substring(sumIdx + summaryMarker.Length, nextMarker - (sumIdx + summaryMarker.Length)).Trim()
+                : notes.Substring(sumIdx + summaryMarker.Length).Trim();
+        }
+        else if (notes.StartsWith("[Клиентът"))
+        {
+            int endOfLine = notes.IndexOf('\n');
+            info.SummaryText = endOfLine >= 0 ? notes.Substring(0, endOfLine) : notes;
+        }
+
+        // Parse [CRM_NOTES]:...
+        const string crmMarker = "[CRM_NOTES]:";
+        int crmIdx = notes.IndexOf(crmMarker, StringComparison.OrdinalIgnoreCase);
+        if (crmIdx >= 0)
+        {
+            info.CrmNotesText = notes.Substring(crmIdx + crmMarker.Length).Trim();
+        }
+        else if (!notes.StartsWith("[CONFIG]:") && !notes.StartsWith("[SUMMARY]:") && !notes.StartsWith("[Клиентът"))
+        {
+            info.CrmNotesText = notes.Trim();
+        }
+
+        if (info.InitialMaxEur == 0 && lead.MaxPriceEur > 0)
+        {
+            info.InitialMinEur = lead.MinPriceEur;
+            info.InitialMaxEur = lead.MaxPriceEur;
+        }
+
+        return info;
+    }
+
+    private record AdminProcessItem(string Id, string TitleKey, string Subtitle);
+    private record AdminCategoryGroup(int CatId, string TitleKey, List<AdminProcessItem> Processes);
+
+    private static List<AdminCategoryGroup> GetAdminCategories() => new()
+    {
+        new(1, "Lander_Trade_Bathroom", new()
+        {
+            new("cat1_p1", "Lander_Item_Waterproofing", "2K мембрана с хидроизолационни ленти по ъгли"),
+            new("cat1_p2", "Lander_Item_TilingStandard", "Крупноформатен гранитогрес / фаянс с 45° жоли"),
+            new("cat1_p3", "Lander_Item_Cistern", "Вградена структура, линеен сифон & санитарен фаянс"),
+            new("cat1_p4", "Lander_Full_Item_PlumbingPoints", "Водопроводни и канализационни трасета за баня"),
+            new("cat1_p5", "Lander_Item_CeilingLed", "Влагоустойчив окачен таван с вентилация и LED")
+        }),
+        new(2, "Lander_Trade_Plaster", new()
+        {
+            new("cat2_p1", "Lander_Full_Item_ChannelFilling", "Запълване на канали след ел/ВиК + мрежа"),
+            new("cat2_p2", "Lander_Full_Item_CornerBeads", "Перфорирани алуминиеви ъглохранители за 90° ъгли"),
+            new("cat2_p3", "Lander_Full_Item_SkimmingQ4", "Шпакловка Sheetrock (2-3 ръце) с безпрахово шлайфане")
+        }),
+        new(3, "Lander_Trade_Painting", new()
+        {
+            new("cat3_p1", "Lander_Full_Item_DeepPrimer", "Дълбокопроникващ грунд за уеднаквена основа"),
+            new("cat3_p2", "Lander_Full_Item_LatexPaint", "2 ръце високоустойчив миещ се интериорен латекс")
+        }),
+        new(4, "Lander_Trade_Drywall", new()
+        {
+            new("cat4_p1", "Lander_Full_Item_Ceilings_Standard", "Окачени тавани Knauf с шумоизолационна каменна вата"),
+            new("cat4_p2", "Lander_Full_Item_WallNiches", "Куфари с ревизионни вратички и вградени ниши"),
+            new("cat4_p3", "Lander_Full_Item_CurtainTracks", "Скрити корнизи за пердета & контурни LED профили")
+        }),
+        new(5, "Lander_Trade_Flooring", new()
+        {
+            new("cat5_p1", "Lander_Full_Item_SelfLeveling", "Саморазливна нивелираща замазка с контактен грунд"),
+            new("cat5_p2", "Lander_Full_Item_Laminate", "Трислоен паркет / гранитогрес / ламинат с первази")
+        }),
+        new(6, "Lander_Trade_Electrical", new()
+        {
+            new("cat6_p1", "Lander_Full_Item_ElecBoard_Standard", "Апартаментно табло с автоматични прекъсвачи & ДТЗ"),
+            new("cat6_p2", "Lander_Full_Item_Wiring", "Окабеляване с мостови/СВТ кабели, кръгове & кутии"),
+            new("cat6_p3", "Lander_Full_Item_Switches", "Монтаж на ключове, контакти и осветителни тела")
+        }),
+        new(7, "Lander_Trade_Plumbing_Kitchen", new()
+        {
+            new("cat7_p1", "Lander_Full_Item_PlumbingNewPoints", "PPR тръби с изолация за кухня, пералня, миялна"),
+            new("cat7_p2", "Lander_Full_Item_PlumbingDrainage", "PVC канализационно трасе с точни наклони & сифони"),
+            new("cat7_p3", "Lander_Full_Item_PlumbingValves", "Спирателни кранове, редуцир-вентил и филтри")
+        }),
+        new(8, "Lander_Trade_Doors", new()
+        {
+            new("cat8_p1", "Lander_Full_Item_DoorInstall", "Лазерна нивелация & монтаж с регулируеми первази"),
+            new("cat8_p2", "Lander_Full_Item_DoorHardware", "Магнитен обков, брави, розетки и уплътнения")
+        }),
+        new(9, "Lander_Trade_Furniture", new()
+        {
+            new("cat9_p1", "Lander_Full_Item_Kitchen_Standard", "Кухня по проект с Blum механизми & камък/HPL плот"),
+            new("cat9_p2", "Lander_Full_Item_Wardrobes_Standard", "Гардероби до тавана за спалня & портманто с LED"),
+            new("cat9_p3", "Lander_Full_Item_BedTvUnit", "Спалня с тапицирана табла & ТВ секция/ламперия"),
+            new("cat9_p4", "Lander_Full_Item_BathroomVanity", "Влагозащитен шкаф с мивка & огледало с подгряване")
+        }),
+        new(10, "Lander_Trade_Logistics", new()
+        {
+            new("cat10_p1", "Lander_Full_Item_ProtectionCleanup", "Защитно опаковане на общи части, асансьор & почистване"),
+            new("cat10_p2", "Lander_Full_Item_Logistics", "Къртене на стари настилки/мазилки и качване"),
+            new("cat10_p3", "Lander_Full_Item_WasteTransport", "Транспорт, контейнери за отпадък & депониране")
+        })
+    };
 }

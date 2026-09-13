@@ -3198,7 +3198,211 @@ Boncho | BuildSmart</value>
   <data name="Nav_RenovationEstimator" xml:space="preserve">
     <value>Renovation Calculator</value>
   </data>
-  <data name="Lander_Footer_Calculator" xml:space="preserve">
-    <value>Renovation Calculator</value>
+  <data name="Lander_CostComp_Title" xml:space="preserve">
+    <value>Structure of Your Investment</value>
+  </data>
+  <data name="Lander_CostComp_Subtitle" xml:space="preserve">
+    <value>Transparent price distribution between labor, rough materials, and finishes</value>
+  </data>
+  <data name="Lander_CostComp_Badge" xml:space="preserve">
+    <value>100% Transparency</value>
+  </data>
+  <data name="Lander_CostComp_Labor_Title" xml:space="preserve">
+    <value>Labor &amp; Site Supervision</value>
+  </data>
+  <data name="Lander_CostComp_Labor_Pct" xml:space="preserve">
+    <value>48% of budget</value>
+  </data>
+  <data name="Lander_CostComp_Labor_Desc" xml:space="preserve">
+    <value>Certified tradesmen for all tasks, dedicated site manager, milestone sign-offs, and 5-year written warranty.</value>
+  </data>
+  <data name="Lander_CostComp_Rough_Title" xml:space="preserve">
+    <value>Rough Construction Materials</value>
+  </data>
+  <data name="Lander_CostComp_Rough_Pct" xml:space="preserve">
+    <value>27% of budget</value>
+  </data>
+  <data name="Lander_CostComp_Rough_Desc" xml:space="preserve">
+    <value>100% included: C2TE adhesives, 2K waterproofing, Knauf drywall &amp; profiles, PPR pipes, wiring, screeds &amp; skim coats.</value>
+  </data>
+  <data name="Lander_CostComp_Finish_Title" xml:space="preserve">
+    <value>Finishes, Fixtures &amp; Fitout</value>
+  </data>
+  <data name="Lander_CostComp_Finish_Pct" xml:space="preserve">
+    <value>25% of budget</value>
+  </data>
+  <data name="Lander_CostComp_Finish_Desc" xml:space="preserve">
+    <value>All installations are free and included. Finish materials estimated by market standard with up to 20% trade discount.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Title" xml:space="preserve">
+    <value>What does the offer cover and how is the price formed?</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q1" xml:space="preserve">
+    <value>Is this the final and locked price?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A1" xml:space="preserve">
+    <value>The price is finalized and locked in a written contract after a free on-site survey. We guarantee zero hidden surcharges during works.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q2" xml:space="preserve">
+    <value>Are rough construction materials included?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A2" xml:space="preserve">
+    <value>Yes, 100% of all rough construction materials (waterproofing, adhesives, screeds, wiring, piping, drywall profiles, skim coats) are fully included.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q3" xml:space="preserve">
+    <value>Can I supply my own tiles, laminate, and fixtures?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A3" xml:space="preserve">
+    <value>Yes, absolutely! You can choose your own finish materials or leverage our trade discounts (up to 20%). All installation work remains completely free and included.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q4" xml:space="preserve">
+    <value>How does the 0% upfront advance work?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A4" xml:space="preserve">
+    <value>You pay milestone by milestone — only after each trade phase is completed and approved by you with a bilateral sign-off protocol.</value>
+  </data>
+  <data name="Lander_ScopeBadge_LaborAndRough" xml:space="preserve">
+    <value>Labor + Rough Materials</value>
+  </data>
+  <data name="Lander_ScopeBadge_LaborAndInstall" xml:space="preserve">
+    <value>Labor + Free Installation</value>
+  </data>
+  <data name="Lander_ScopeBadge_EquipAndInstall" xml:space="preserve">
+    <value>Fixture + Installation</value>
+  </data>
+  <data name="Lander_ScopeBadge_Logistics" xml:space="preserve">
+    <value>Labor + Transport &amp; Landfill</value>
+  </data>
+  <data name="Lander_Trade_Plaster" xml:space="preserve">
+    <value>Wall Plastering &amp; Skimming</value>
+  </data>
+  <data name="Lander_Full_Item_DeepPrimer" xml:space="preserve">
+    <value>Deep penetrating primer &amp; corner joint tape reinforcement</value>
+  </data>
+  <data name="Lander_Full_Item_SkimmingQ4" xml:space="preserve">
+    <value>Complete fine Sheetrock Q4 skimming (walls and ceilings)</value>
+  </data>
+  <data name="Lander_Trade_Painting" xml:space="preserve">
+    <value>Interior Painting</value>
+  </data>
+  <data name="Lander_Full_Item_LatexPaint" xml:space="preserve">
+    <value>Machine/hand application of washable interior latex paint (2 coats)</value>
+  </data>
+  <data name="Lander_Trade_Flooring" xml:space="preserve">
+    <value>Floor Coverings</value>
+  </data>
+  <data name="Lander_Full_Item_SelfLeveling" xml:space="preserve">
+    <value>Self-leveling screed for ideal horizontal leveling</value>
+  </data>
+  <data name="Lander_Full_Item_Laminate" xml:space="preserve">
+    <value>Laying laminate / porcelain tile flooring with baseboards</value>
+  </data>
+  <data name="Lander_Trade_Plumbing_Kitchen" xml:space="preserve">
+    <value>Plumbing (Kitchen &amp; Utility Room)</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingPoints" xml:space="preserve">
+    <value>PPR water supply, drain &amp; connections for dishwasher, washer, sink</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingFittings" xml:space="preserve">
+    <value>Installation of shutoff valves, traps, and kitchen mixer</value>
+  </data>
+  <data name="Lander_Trade_Doors" xml:space="preserve">
+    <value>Interior Doors</value>
+  </data>
+  <data name="Lander_Full_Item_DoorInstall" xml:space="preserve">
+    <value>Delivery, precision leveling, and installation of interior doors with hardware</value>
+  </data>
+  <data name="Lander_Scope_FullyOutfitted" xml:space="preserve">
+    <value>Fully Outfitted &amp; Fixtures</value>
+  </data>
+  <data name="Lander_Scope_Excluded" xml:space="preserve">
+    <value>Excluded from scope</value>
+  </data>
+  <data name="Lander_Full_Item_ChannelFilling" xml:space="preserve">
+    <value>Chasing/channel filling after MEP installations &amp; mesh reinforcement</value>
+  </data>
+  <data name="Lander_Full_Item_CornerBeads" xml:space="preserve">
+    <value>Installation of aluminum corner beads for 90° corners &amp; deep primer</value>
+  </data>
+  <data name="Lander_Full_Item_WallNiches" xml:space="preserve">
+    <value>Shaft enclosures with inspection doors &amp; built-in wall niches with LED</value>
+  </data>
+  <data name="Lander_Full_Item_CurtainTracks" xml:space="preserve">
+    <value>Concealed curtain tracks &amp; contour lighting channels</value>
+  </data>
+  <data name="Lander_Full_Item_FlooringNotice" xml:space="preserve">
+    <value>The offer includes 100% free installation labor for any flooring type (parquet, porcelain tiles, microcement, or laminate) with no extra charge.</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingNewPoints" xml:space="preserve">
+    <value>Installation and modification of new plumbing points (insulated PPR pipes)</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingDrainage" xml:space="preserve">
+    <value>New PVC drainage piping with precise slopes &amp; anti-odor traps</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingValves" xml:space="preserve">
+    <value>Shutoff valves, pressure reducing valve &amp; water filter unit</value>
+  </data>
+  <data name="Lander_Full_Item_DoorHardware" xml:space="preserve">
+    <value>Installation of magnetic hardware, locks, handles &amp; seals</value>
+  </data>
+  <data name="Lander_Full_Item_BedTvUnit" xml:space="preserve">
+    <value>Bedroom set (bed with upholstered headboard &amp; nightstands) / TV wall unit</value>
+  </data>
+  <data name="Lander_Full_Item_BathroomVanity" xml:space="preserve">
+    <value>Custom moisture-resistant bathroom vanity with sink &amp; anti-fog heated mirror</value>
+  </data>
+  <data name="Lander_Full_Item_ProtectionCleanup" xml:space="preserve">
+    <value>Protective wrapping of common areas, elevator, windows &amp; intermediate/final cleanup</value>
+  </data>
+  <data name="Lander_Full_Item_WasteTransport" xml:space="preserve">
+    <value>Transportation, landfill fees &amp; construction waste dumpsters</value>
+  </data>
+  <data name="Lander_Full_Item_Wiring" xml:space="preserve">
+    <value>Wiring with CBT/bridge cables, new electrical circuits &amp; back boxes</value>
+  </data>
+  <data name="Admin_Leads_CustomizedBadge" xml:space="preserve">
+    <value>Customized</value>
+  </data>
+  <data name="Admin_Leads_StandardBadge" xml:space="preserve">
+    <value>Full Scope</value>
+  </data>
+  <data name="Admin_Leads_ScopeCustomizationTitle" xml:space="preserve">
+    <value>Work Scope Configuration &amp; Customization</value>
+  </data>
+  <data name="Admin_Leads_InitialQuote" xml:space="preserve">
+    <value>Initial Estimate</value>
+  </data>
+  <data name="Admin_Leads_CustomizedQuote" xml:space="preserve">
+    <value>Customized Estimate</value>
+  </data>
+  <data name="Admin_Leads_SavedAmount" xml:space="preserve">
+    <value>Client Savings</value>
+  </data>
+  <data name="Admin_Leads_OpenClientView" xml:space="preserve">
+    <value>Open Client Proposal</value>
+  </data>
+  <data name="Admin_Leads_CopyWhatsApp" xml:space="preserve">
+    <value>Copy Message Summary</value>
+  </data>
+  <data name="Admin_Leads_CopiedSuccess" xml:space="preserve">
+    <value>Summary copied to clipboard</value>
+  </data>
+  <data name="Admin_Leads_FilterCustomized" xml:space="preserve">
+    <value>Customized</value>
+  </data>
+  <data name="Admin_Leads_FilterStandard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Admin_Leads_ExcludedCount" xml:space="preserve">
+    <value>{0} excluded items</value>
+  </data>
+  <data name="Admin_Leads_AllIncluded" xml:space="preserve">
+    <value>All tasks are included</value>
+  </data>
+  <data name="Admin_Leads_ExcludedItems" xml:space="preserve">
+    <value>Excluded Tasks</value>
+  </data>
+  <data name="Admin_Leads_ActiveCategories" xml:space="preserve">
+    <value>Active Categories</value>
   </data>
 </root>

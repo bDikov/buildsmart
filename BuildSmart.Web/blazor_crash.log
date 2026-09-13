@@ -2939,3 +2939,30 @@ POSITION: 444
    at BuildSmart.SharedUI.GraphQL.GetLocalizationStringsQuery.ExecuteAsync(String culture, CancellationToken cancellationToken) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.SharedUI\obj\Debug\net9.0\berry\BuildSmartApiClient.Client.cs:line 80908
    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
 
+[13.09.2026 г. 18:59:01 ч.] SmtpException: The client or server is only configured for E-mail addresses with ASCII local-parts: жгх@абж.бг.
+   at System.Net.Mail.MailAddress.GetUser(Boolean allowUnicode)
+   at System.Net.Mail.SmtpClient.ValidateUnicodeRequirement(MailMessage message, MailAddressCollection recipients, Boolean allowUnicode)
+   at System.Net.Mail.SmtpClient.SendMailAsync(Object state)
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at BuildSmart.Infrastructure.Services.EmailService.SendGenericEmailAsync(String toEmail, String subject, String body) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Infrastructure\Services\EmailService.cs:line 190
+
+[13.09.2026 г. 18:59:01 ч.] SmtpException: The client or server is only configured for E-mail addresses with ASCII local-parts: жгх@абж.бг.
+   at System.Net.Mail.MailAddress.GetUser(Boolean allowUnicode)
+   at System.Net.Mail.SmtpClient.ValidateUnicodeRequirement(MailMessage message, MailAddressCollection recipients, Boolean allowUnicode)
+   at System.Net.Mail.SmtpClient.SendMailAsync(Object state)
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at BuildSmart.Infrastructure.Services.EmailService.SendGenericEmailAsync(String toEmail, String subject, String body) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Infrastructure\Services\EmailService.cs:line 190
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+[13.09.2026 г. 18:59:02 ч.] SmtpException: The client or server is only configured for E-mail addresses with ASCII local-parts: жгх@абж.бг.
+   at System.Net.Mail.MailAddress.GetUser(Boolean allowUnicode)
+   at System.Net.Mail.SmtpClient.ValidateUnicodeRequirement(MailMessage message, MailAddressCollection recipients, Boolean allowUnicode)
+   at System.Net.Mail.SmtpClient.SendMailAsync(Object state)
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at BuildSmart.Infrastructure.Services.EmailService.SendGenericEmailAsync(String toEmail, String subject, String body) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Infrastructure\Services\EmailService.cs:line 190
+   at BuildSmart.Infrastructure.Services.EmailService.SendCalculatorLeadOfferEmailAsync(CalculatorLead lead) in C:\Users\bonch\source\repos\BuildSmart\BuildSmart.Infrastructure\Services\EmailService.cs:line 478
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+

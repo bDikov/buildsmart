@@ -3150,7 +3150,211 @@
   <data name="Nav_RenovationEstimator" xml:space="preserve">
     <value>Калкулатор за ремонти</value>
   </data>
-  <data name="Lander_Footer_Calculator" xml:space="preserve">
-    <value>Калкулатор за ремонти</value>
+  <data name="Lander_CostComp_Title" xml:space="preserve">
+    <value>Структура на Вашата инвестиция</value>
+  </data>
+  <data name="Lander_CostComp_Subtitle" xml:space="preserve">
+    <value>Прозрачно разпределение на цената между труд, чернови материали и чистови елементи</value>
+  </data>
+  <data name="Lander_CostComp_Badge" xml:space="preserve">
+    <value>100% Прозрачност</value>
+  </data>
+  <data name="Lander_CostComp_Labor_Title" xml:space="preserve">
+    <value>Труд &amp; Инженерен надзор</value>
+  </data>
+  <data name="Lander_CostComp_Labor_Pct" xml:space="preserve">
+    <value>48% от бюджета</value>
+  </data>
+  <data name="Lander_CostComp_Labor_Desc" xml:space="preserve">
+    <value>Квалифицирани майстори за всички СМР етапи, личен технически ръководител, етапни протоколи и 5г. писмена гаранция.</value>
+  </data>
+  <data name="Lander_CostComp_Rough_Title" xml:space="preserve">
+    <value>Чернови строителни материали</value>
+  </data>
+  <data name="Lander_CostComp_Rough_Pct" xml:space="preserve">
+    <value>27% от бюджета</value>
+  </data>
+  <data name="Lander_CostComp_Rough_Desc" xml:space="preserve">
+    <value>100% включени в офертата: лепила C2TE, 2K хидроизолация, Knauf гипсокартон и профили, тръби PPR, кабели, замазки и шпакловки.</value>
+  </data>
+  <data name="Lander_CostComp_Finish_Title" xml:space="preserve">
+    <value>Чистови покрития &amp; Оборудване</value>
+  </data>
+  <data name="Lander_CostComp_Finish_Pct" xml:space="preserve">
+    <value>25% от бюджета</value>
+  </data>
+  <data name="Lander_CostComp_Finish_Desc" xml:space="preserve">
+    <value>Всички монтажи са безплатни и включени. Чистовите материали са остойностени по пазарен стандарт с опция за до 20% търговска отстъпка.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Title" xml:space="preserve">
+    <value>Какво покрива офертата и как се формира цената?</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q1" xml:space="preserve">
+    <value>Това крайна и окончателна цена ли е?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A1" xml:space="preserve">
+    <value>Цената се фиксира окончателно в писмен договор след безплатен наземен оглед. Гарантираме 0% непредвидени оскъпявания по време на ремонта.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q2" xml:space="preserve">
+    <value>Черновите строителни материали включени ли са?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A2" xml:space="preserve">
+    <value>Да, 100% от черновите строителни материали (хидроизолации, лепила, замазки, кабели, тръби, профили, шпакловка) са изцяло включени в калкулацията.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q3" xml:space="preserve">
+    <value>Мога ли да купя сам плочките, ламината и санитарията?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A3" xml:space="preserve">
+    <value>Да, абсолютно! Можете да изберете Ваши чистови материали или да ползвате нашите търговски отстъпки (до 20%). Всички монтажи остават безплатни и включени в офертата.</value>
+  </data>
+  <data name="Lander_ScopeFaq_Q4" xml:space="preserve">
+    <value>Как работи 0% авансово плащане?</value>
+  </data>
+  <data name="Lander_ScopeFaq_A4" xml:space="preserve">
+    <value>Заплащате ремонта поетапно — едва след като съответният СМР етап е напълно завършен и приет от Вас с двустранен констативен протокол.</value>
+  </data>
+  <data name="Lander_ScopeBadge_LaborAndRough" xml:space="preserve">
+    <value>Труд + Чернови материали</value>
+  </data>
+  <data name="Lander_ScopeBadge_LaborAndInstall" xml:space="preserve">
+    <value>Труд + Безплатен монтаж</value>
+  </data>
+  <data name="Lander_ScopeBadge_EquipAndInstall" xml:space="preserve">
+    <value>Оборудване + Монтаж</value>
+  </data>
+  <data name="Lander_ScopeBadge_Logistics" xml:space="preserve">
+    <value>Труд + Транспорт &amp; Сметище</value>
+  </data>
+  <data name="Lander_Trade_Plaster" xml:space="preserve">
+    <value>Шпакловка и подготовка на стени</value>
+  </data>
+  <data name="Lander_Full_Item_DeepPrimer" xml:space="preserve">
+    <value>Дълбокопроникващ грунд и армиране с ленти по ъгли и фуги</value>
+  </data>
+  <data name="Lander_Full_Item_SkimmingQ4" xml:space="preserve">
+    <value>Цялостна фина шпакловка Sheetrock Q4 (стени и тавани)</value>
+  </data>
+  <data name="Lander_Trade_Painting" xml:space="preserve">
+    <value>Интериорно боядисване</value>
+  </data>
+  <data name="Lander_Full_Item_LatexPaint" xml:space="preserve">
+    <value>Машинно/ръчно боядисване с миещ се интериорен латекс (2 ръце)</value>
+  </data>
+  <data name="Lander_Trade_Flooring" xml:space="preserve">
+    <value>Подови настилки</value>
+  </data>
+  <data name="Lander_Full_Item_SelfLeveling" xml:space="preserve">
+    <value>Саморазливна изравнителна замазка за идеална нивелация</value>
+  </data>
+  <data name="Lander_Full_Item_Laminate" xml:space="preserve">
+    <value>Полагане на ламиниран паркет / гранитогрес с первази</value>
+  </data>
+  <data name="Lander_Trade_Plumbing_Kitchen" xml:space="preserve">
+    <value>ВиК инсталация (Кухня &amp; мокро помещение)</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingPoints" xml:space="preserve">
+    <value>Водопровод PPR, канал и изводи за миялна, пералня и мивка</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingFittings" xml:space="preserve">
+    <value>Монтаж на спирателни кранове, сифони и кухненски смесител</value>
+  </data>
+  <data name="Lander_Trade_Doors" xml:space="preserve">
+    <value>Интериорни врати</value>
+  </data>
+  <data name="Lander_Full_Item_DoorInstall" xml:space="preserve">
+    <value>Доставка, прецизна нивелация и монтаж на интериорни врати с обков</value>
+  </data>
+  <data name="Lander_Scope_FullyOutfitted" xml:space="preserve">
+    <value>Пълно чистово оборудване</value>
+  </data>
+  <data name="Lander_Scope_Excluded" xml:space="preserve">
+    <value>Изключено от обхвата</value>
+  </data>
+  <data name="Lander_Full_Item_ChannelFilling" xml:space="preserve">
+    <value>Запълване на канали (штробове) след инсталации и армиране с мрежа</value>
+  </data>
+  <data name="Lander_Full_Item_CornerBeads" xml:space="preserve">
+    <value>Монтаж на перфорирани алуминиеви ъглохранители за 90° ъгли и грундиране</value>
+  </data>
+  <data name="Lander_Full_Item_WallNiches" xml:space="preserve">
+    <value>Куфари за щрангове с ревизии и вградени стенни ниши с LED осветление</value>
+  </data>
+  <data name="Lander_Full_Item_CurtainTracks" xml:space="preserve">
+    <value>Скрити корнизи за пердета и контурни светлинни канали</value>
+  </data>
+  <data name="Lander_Full_Item_FlooringNotice" xml:space="preserve">
+    <value>Офертата включва 100% безплатен труд за монтаж на всякакъв тип настилка (паркет, гранитогрес, микроцимент или ламинат) без оскъпяване.</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingNewPoints" xml:space="preserve">
+    <value>Изграждане и преработка на нови ВиК точки (PPR тръби с изолация)</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingDrainage" xml:space="preserve">
+    <value>Ново PVC канално трасе с точни наклони и антимирисни сифони</value>
+  </data>
+  <data name="Lander_Full_Item_PlumbingValves" xml:space="preserve">
+    <value>Спирателни кранове, редуцир-вентил за налягане и филтърна група</value>
+  </data>
+  <data name="Lander_Full_Item_DoorHardware" xml:space="preserve">
+    <value>Монтаж на магнитен обков, брави, дръжки и уплътнения</value>
+  </data>
+  <data name="Lander_Full_Item_BedTvUnit" xml:space="preserve">
+    <value>Спален комплект (легло с тапицирана табла и нощни шкафчета) / ТВ модул</value>
+  </data>
+  <data name="Lander_Full_Item_BathroomVanity" xml:space="preserve">
+    <value>Влагозащитен шкаф за баня по поръчка с мивка и огледало с подгряване</value>
+  </data>
+  <data name="Lander_Full_Item_ProtectionCleanup" xml:space="preserve">
+    <value>Защитно опаковане на общи части, асансьор, дограма и междинно/крайно почистване</value>
+  </data>
+  <data name="Lander_Full_Item_WasteTransport" xml:space="preserve">
+    <value>Транспорт, такса депо и контейнери за строителен отпадък</value>
+  </data>
+  <data name="Lander_Full_Item_Wiring" xml:space="preserve">
+    <value>Окабеляване с мостови/СВТ кабели, нови токови кръгове и конзоли</value>
+  </data>
+  <data name="Admin_Leads_CustomizedBadge" xml:space="preserve">
+    <value>Персонализирана</value>
+  </data>
+  <data name="Admin_Leads_StandardBadge" xml:space="preserve">
+    <value>Пълен обхват</value>
+  </data>
+  <data name="Admin_Leads_ScopeCustomizationTitle" xml:space="preserve">
+    <value>Конфигурация на СМР обхвата &amp; Персонализация</value>
+  </data>
+  <data name="Admin_Leads_InitialQuote" xml:space="preserve">
+    <value>Първоначална стойност</value>
+  </data>
+  <data name="Admin_Leads_CustomizedQuote" xml:space="preserve">
+    <value>Стойност след корекция</value>
+  </data>
+  <data name="Admin_Leads_SavedAmount" xml:space="preserve">
+    <value>Спестени от клиента</value>
+  </data>
+  <data name="Admin_Leads_OpenClientView" xml:space="preserve">
+    <value>Отвори клиентската оферта</value>
+  </data>
+  <data name="Admin_Leads_CopyWhatsApp" xml:space="preserve">
+    <value>Копирай резюме за съобщение</value>
+  </data>
+  <data name="Admin_Leads_CopiedSuccess" xml:space="preserve">
+    <value>Резюмето е копирано</value>
+  </data>
+  <data name="Admin_Leads_FilterCustomized" xml:space="preserve">
+    <value>Персонализирани</value>
+  </data>
+  <data name="Admin_Leads_FilterStandard" xml:space="preserve">
+    <value>Стандартни</value>
+  </data>
+  <data name="Admin_Leads_ExcludedCount" xml:space="preserve">
+    <value>{0} изключени пера</value>
+  </data>
+  <data name="Admin_Leads_AllIncluded" xml:space="preserve">
+    <value>Всички СМР пера са включени</value>
+  </data>
+  <data name="Admin_Leads_ExcludedItems" xml:space="preserve">
+    <value>Изключени позиции</value>
+  </data>
+  <data name="Admin_Leads_ActiveCategories" xml:space="preserve">
+    <value>Активни категории</value>
   </data>
 </root>

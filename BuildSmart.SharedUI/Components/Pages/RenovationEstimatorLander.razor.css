@@ -754,3 +754,239 @@
     color: var(--color-success, #10b981) !important;
     font-size: 0.92rem;
 }
+
+/* Cost Composition Card & Visualizer */
+.proposal-cost-composition-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.proposal-comp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-success);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.proposal-comp-bar {
+    display: flex;
+    height: 10px;
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+}
+
+.comp-segment {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.comp-segment-labor {
+    background: var(--color-primary);
+}
+
+.comp-segment-rough {
+    background: var(--color-warning, #f59e0b);
+}
+
+.comp-segment-finish {
+    background: var(--color-success);
+}
+
+.proposal-comp-item {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.proposal-comp-item:hover {
+    border-color: var(--color-primary);
+}
+
+.comp-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.dot-labor { background: var(--color-primary); }
+.dot-rough { background: var(--color-warning, #f59e0b); }
+.dot-finish { background: var(--color-success); }
+
+.comp-pct-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.comp-pct-pill.labor {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.comp-pct-pill.rough {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.comp-pct-pill.finish {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success);
+    border: 1px solid var(--border-color);
+}
+
+.comp-est-amount {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+/* Scope & Contract Guarantees FAQ Card */
+.proposal-faq-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.faq-icon-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+
+.proposal-faq-item {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    transition: border-color 0.2s ease;
+}
+
+.proposal-faq-item:hover {
+    border-color: var(--color-primary);
+}
+
+/* Line Item Scope Badges */
+.proposal-item-scope-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.proposal-item-scope-badge.labor-rough {
+    border-left: 3px solid var(--color-primary);
+}
+
+.proposal-item-scope-badge.equip {
+    border-left: 3px solid var(--color-success);
+}
+
+.proposal-item-scope-badge.install {
+    border-left: 3px solid var(--color-warning, #f59e0b);
+}
+
+.proposal-item-scope-badge.logistics {
+    border-left: 3px solid var(--text-secondary);
+}
+
+/* Interactive Category Inclusion Toggles & Excluded Cards */
+.proposal-task-card.excluded {
+    opacity: 0.6;
+    background: var(--bg-card-alt);
+    border: 1px dashed var(--border-color);
+}
+
+.proposal-task-card.excluded .proposal-task-header {
+    background: transparent;
+}
+
+.proposal-toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+}
+
+.proposal-toggle-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    accent-color: var(--color-primary);
+    transition: transform 0.15s ease;
+}
+
+.proposal-toggle-checkbox:hover {
+    transform: scale(1.1);
+}
+
+.proposal-excluded-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+/* Item-level Process Toggles */
+.proposal-task-item.excluded {
+    opacity: 0.55;
+    background: var(--bg-card-alt);
+    border: 1px dashed var(--border-color);
+}
+
+.proposal-item-toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+}
+
+.proposal-item-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    accent-color: var(--color-primary);
+    transition: transform 0.15s ease;
+}
+
+.proposal-item-checkbox:hover {
+    transform: scale(1.15);
+}
