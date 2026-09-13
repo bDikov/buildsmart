@@ -78,6 +78,17 @@ namespace BuildSmart.Api.Controllers
                 // Clean up the temporary cookie
                 await HttpContext.SignOutAsync("ExternalCookie");
 
+                // Append the auth_token cookie to the response so that browser clients (Blazor Web)
+                // receive the authenticated session immediately at the HTTP transport level.
+                Response.Cookies.Append("auth_token", token, new Microsoft.AspNetCore.Http.CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = Request.IsHttps,
+                    SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddDays(365),
+                    Path = "/"
+                });
+
                 // Redirect back to the MAUI or Blazor Web App with the token
                 var separator = returnUrl.Contains("?") ? "&" : "?";
                 var redirectUrl = $"{returnUrl}{separator}token={token}";

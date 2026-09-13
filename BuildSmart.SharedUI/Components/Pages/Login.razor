@@ -26,7 +26,16 @@
             <span class="logo-text">BuildSmart</span>
         </div>
 
-        <h1 class="login-title">@Loc["Login_TitleMain"]</h1>
+        @if (_isProcessingToken || !string.IsNullOrEmpty(_incomingToken))
+        {
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; gap: 16px;">
+                <div class="spinner-border" role="status" style="width: 2.5rem; height: 2.5rem; color: var(--color-primary); border-width: 0.25em;"></div>
+                <span style="font: var(--font-body-1); color: var(--text-secondary);">@Loc["Common_Loading"]</span>
+            </div>
+        }
+        else
+        {
+            <h1 class="login-title">@Loc["Login_TitleMain"]</h1>
         <p class="login-subtitle">@Loc["Login_Subtitle"]</p>
 
         <button class="google-btn" @onclick="HandleGoogleLogin" disabled="@isBusy">
@@ -135,6 +144,7 @@
         <div class="signup-prompt">
             <span>@Loc["Login_NoAccountPrompt"]<a href="#" @onclick="() => ViewModel.CreateAccountCommand.Execute(null)" @onclick:preventDefault class="register-link">@Loc["Login_SignUp"]</a></span>
         </div>
+        }
 
     </div>
 </div>
@@ -503,8 +513,16 @@
     [SupplyParameterFromQuery(Name = "ReturnUrl")]
     public string? ReturnUrl { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorParam { get; set; }
+
     private bool showPassword = false;
     private bool isBusy = false;
+    private string? _incomingToken;
+    private bool _incomingIsNewUser;
+    private string? _oauthErrorMessage;
+    private bool _isProcessingToken = false;
 
     private void TogglePasswordVisibility()
     {
@@ -643,19 +661,31 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        // Check for incoming OAuth error parameter
+        if (!string.IsNullOrEmpty(ErrorParam))
+        {
+            _oauthErrorMessage = ErrorParam;
+        }
+        else if (queryParams.TryGetValue("error", out var errorValues))
+        {
+            _oauthErrorMessage = errorValues.FirstOrDefault();
+        }
+
         // Extract token safely
         string? actualToken = Token;
-        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
         
         bool isNewUser = false;
-        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("isNewUser", out var isNewUserValues))
+        if (queryParams.TryGetValue("isNewUser", out var isNewUserValues))
         {
             bool.TryParse(isNewUserValues.FirstOrDefault(), out isNewUser);
         }
         
         if (string.IsNullOrEmpty(actualToken))
         {
-            if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var tokenValues))
+            if (queryParams.TryGetValue("token", out var tokenValues))
             {
                 actualToken = tokenValues.FirstOrDefault();
             }
@@ -679,61 +709,109 @@
 
         if (!string.IsNullOrEmpty(actualToken))
         {
+            _incomingToken = actualToken;
+            _incomingIsNewUser = isNewUser;
+            _isProcessingToken = true;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!string.IsNullOrEmpty(_oauthErrorMessage))
+            {
+                var errorMsg = _oauthErrorMessage;
+                _oauthErrorMessage = null;
+                await BuildSmart.SharedUI.Services.AppServiceLocator.Alerts.DisplayAlert(
+                    "Error",
+                    errorMsg,
+                    "OK"
+                );
+            }
+
+            if (!string.IsNullOrEmpty(_incomingToken))
+            {
+                var tokenToProcess = _incomingToken;
+                var isNew = _incomingIsNewUser;
+                _incomingToken = null;
+                await ProcessIncomingTokenAsync(tokenToProcess, isNew);
+            }
+        }
+    }
+
+    private async Task ProcessIncomingTokenAsync(string actualToken, bool isNewUser)
+    {
+        try
+        {
+            // Save the token securely in local storage and document cookie
+            await AuthService.SaveTokenAsync(actualToken);
+
+            // Identify the user in PostHog
             try
             {
-                // Save the token securely
-                await AuthService.SaveTokenAsync(actualToken);
-
-                // Identify the user in PostHog
-                try
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(actualToken);
+                var userId = jwtToken.Claims.FirstOrDefault(c => 
+                    c.Type == "sub" || 
+                    c.Type == "id" || 
+                    c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-                    var jwtToken = handler.ReadJwtToken(actualToken);
-                    var userId = jwtToken.Claims.FirstOrDefault(c => 
-                        c.Type == "sub" || 
-                        c.Type == "id" || 
-                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                    if (!string.IsNullOrEmpty(userId))
+                    var email = jwtToken.Claims.FirstOrDefault(c => 
+                        c.Type == "email" || 
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                    var name = jwtToken.Claims.FirstOrDefault(c => 
+                        c.Type == "name" || 
+                        c.Type == "unique_name" || 
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+                    var properties = new Dictionary<string, object>();
+                    if (!string.IsNullOrEmpty(email)) properties["email"] = email;
+                    if (!string.IsNullOrEmpty(name)) properties["name"] = name;
+
+                    if (properties.Count > 0)
                     {
-                        var email = jwtToken.Claims.FirstOrDefault(c => 
-                            c.Type == "email" || 
-                            c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-                        var name = jwtToken.Claims.FirstOrDefault(c => 
-                            c.Type == "name" || 
-                            c.Type == "unique_name" || 
-                            c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+                        await JSRuntime.InvokeVoidAsync("posthog.identify", userId, properties);
+                    }
+                    else
+                    {
+                        await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
+                    }
 
-                        var properties = new Dictionary<string, object>();
-                        if (!string.IsNullOrEmpty(email)) properties["email"] = email;
-                        if (!string.IsNullOrEmpty(name)) properties["name"] = name;
-
-                        if (properties.Count > 0)
+                    try
+                    {
+                        if (isNewUser)
                         {
-                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId, properties);
-                        }
-                        else
-                        {
-                            await JSRuntime.InvokeVoidAsync("posthog.identify", userId);
-                        }
-
-                        try
-                        {
-                            if (isNewUser)
+                            var utms = new Dictionary<string, string>();
+                            try
                             {
-                                var utms = new Dictionary<string, string>();
-                                try
-                                {
-                                    utms = await JSRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
-                                }
-                                catch { }
+                                utms = await JSRuntime.InvokeAsync<Dictionary<string, string>>("getSavedUtms");
+                            }
+                            catch { }
 
-                                string? utmSource = utms.TryGetValue("utm_source", out var s) ? s : null;
-                                string? utmMedium = utms.TryGetValue("utm_medium", out var m) ? m : null;
-                                string? utmCampaign = utms.TryGetValue("utm_campaign", out var c) ? c : null;
-                                string? utmContent = utms.TryGetValue("utm_content", out var co) ? co : null;
-                                string? utmTerm = utms.TryGetValue("utm_term", out var t) ? t : null;
+                            string? utmSource = utms.TryGetValue("utm_source", out var s) ? s : null;
+                            string? utmMedium = utms.TryGetValue("utm_medium", out var m) ? m : null;
+                            string? utmCampaign = utms.TryGetValue("utm_campaign", out var c) ? c : null;
+                            string? utmContent = utms.TryGetValue("utm_content", out var co) ? co : null;
+                            string? utmTerm = utms.TryGetValue("utm_term", out var t) ? t : null;
 
-                                await JSRuntime.InvokeVoidAsync("pushToDataLayer", "registration_success", new
+                            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "registration_success", new
+                            {
+                                userId = userId,
+                                method = "social",
+                                utm_source = utmSource,
+                                utm_medium = utmMedium,
+                                utm_campaign = utmCampaign,
+                                utm_content = utmContent,
+                                utm_term = utmTerm
+                            });
+
+                            try
+                            {
+                                await JSRuntime.InvokeVoidAsync("posthog.capture", "registration_success", new
                                 {
                                     userId = userId,
                                     method = "social",
@@ -743,104 +821,93 @@
                                     utm_content = utmContent,
                                     utm_term = utmTerm
                                 });
+                            }
+                            catch { }
 
+                            if (!string.IsNullOrEmpty(utmSource) && !string.IsNullOrEmpty(utmMedium) && !string.IsNullOrEmpty(utmCampaign))
+                            {
                                 try
                                 {
-                                    await JSRuntime.InvokeVoidAsync("posthog.capture", "registration_success", new
-                                    {
-                                        userId = userId,
-                                        method = "social",
-                                        utm_source = utmSource,
-                                        utm_medium = utmMedium,
-                                        utm_campaign = utmCampaign,
-                                        utm_content = utmContent,
-                                        utm_term = utmTerm
-                                    });
+                                    await ApiClient.SaveUserCampaignMetadata.ExecuteAsync(
+                                        Guid.Parse(userId),
+                                        utmSource,
+                                        utmMedium,
+                                        utmCampaign,
+                                        utmContent,
+                                        utmTerm);
                                 }
-                                catch { }
-
-                                if (!string.IsNullOrEmpty(utmSource) && !string.IsNullOrEmpty(utmMedium) && !string.IsNullOrEmpty(utmCampaign))
+                                catch (Exception ex)
                                 {
-                                    try
-                                    {
-                                        await ApiClient.SaveUserCampaignMetadata.ExecuteAsync(
-                                            Guid.Parse(userId),
-                                            utmSource,
-                                            utmMedium,
-                                            utmCampaign,
-                                            utmContent,
-                                            utmTerm);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine($"[Login] Failed to save campaign metadata: {ex.Message}");
-                                    }
+                                    Console.WriteLine($"[Login] Failed to save campaign metadata: {ex.Message}");
                                 }
                             }
-                            else
-                            {
-                                await JSRuntime.InvokeVoidAsync("pushToDataLayer", "login_success", new { userId = userId });
-                            }
                         }
-                        catch { }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Login] Failed to identify user in PostHog: {ex.Message}");
-                }
-
-                // Notify the application that the user is now logged in
-                var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
-                authStateProvider?.NotifyAuthenticationStateChanged();
-
-                string destination = "/";
-                if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
-                {
-                    destination = returnUrlValues.FirstOrDefault() ?? "/";
-                }
-                else if (!string.IsNullOrEmpty(ReturnUrl))
-                {
-                    destination = ReturnUrl;
-                }
-
-                // If token was nested inside the destination ReturnUrl, strip it out to avoid infinite loops or page reload issues
-                if (destination.Contains("token="))
-                {
-                    var cleanDest = destination;
-                    var tokenQueryIdx = cleanDest.IndexOf("?token=", StringComparison.OrdinalIgnoreCase);
-                    if (tokenQueryIdx >= 0)
-                    {
-                        destination = cleanDest.Substring(0, tokenQueryIdx);
-                    }
-                    else
-                    {
-                        var tokenAmpIdx = cleanDest.IndexOf("&token=", StringComparison.OrdinalIgnoreCase);
-                        if (tokenAmpIdx >= 0)
+                        else
                         {
-                            destination = cleanDest.Substring(0, tokenAmpIdx);
+                            await JSRuntime.InvokeVoidAsync("pushToDataLayer", "login_success", new { userId = userId });
                         }
                     }
+                    catch { }
                 }
-
-                // Prevent open redirect vulnerabilities
-                if (!destination.StartsWith("/") || destination.StartsWith("//"))
-                {
-                    destination = "/";
-                }
-
-                // Force load to ensure the browser sends the new cookie to the server
-                NavManager.NavigateTo(destination, forceLoad: true);
-            }
-            catch (Microsoft.AspNetCore.Components.NavigationException)
-            {
-                // Blazor uses this exception to execute the redirect, we MUST rethrow it!
-                throw;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Login] Failed to process token: {ex.Message}");
+                Console.WriteLine($"[Login] Failed to identify user in PostHog: {ex.Message}");
             }
+
+            // Notify the application that the user is now logged in
+            var authStateProvider = ServiceProvider.GetService(typeof(Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider)) as BuildSmart.SharedUI.Services.MauiAuthenticationStateProvider;
+            authStateProvider?.NotifyAuthenticationStateChanged();
+
+            var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+            string destination = "/";
+            if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("ReturnUrl", out var returnUrlValues))
+            {
+                destination = returnUrlValues.FirstOrDefault() ?? "/";
+            }
+            else if (!string.IsNullOrEmpty(ReturnUrl))
+            {
+                destination = ReturnUrl;
+            }
+
+            // If token was nested inside the destination ReturnUrl, strip it out to avoid infinite loops or page reload issues
+            if (destination.Contains("token="))
+            {
+                var cleanDest = destination;
+                var tokenQueryIdx = cleanDest.IndexOf("?token=", StringComparison.OrdinalIgnoreCase);
+                if (tokenQueryIdx >= 0)
+                {
+                    destination = cleanDest.Substring(0, tokenQueryIdx);
+                }
+                else
+                {
+                    var tokenAmpIdx = cleanDest.IndexOf("&token=", StringComparison.OrdinalIgnoreCase);
+                    if (tokenAmpIdx >= 0)
+                    {
+                        destination = cleanDest.Substring(0, tokenAmpIdx);
+                    }
+                }
+            }
+
+            // Prevent open redirect vulnerabilities
+            if (!destination.StartsWith("/") || destination.StartsWith("//"))
+            {
+                destination = "/";
+            }
+
+            // Force load to ensure the browser sends the new cookie to the server
+            NavManager.NavigateTo(destination, forceLoad: true);
+        }
+        catch (Microsoft.AspNetCore.Components.NavigationException)
+        {
+            // Blazor uses this exception to execute the redirect, we MUST rethrow it!
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Login] Failed to process token: {ex.Message}");
+            _isProcessingToken = false;
+            StateHasChanged();
         }
     }
 

@@ -107,6 +107,7 @@ public class WebAuthService : IAuthService
             }
             else
             {
+                try { await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "auth_token"); } catch { }
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "auth_token", token);
                 await _jsRuntime.InvokeVoidAsync("setCookie", "auth_token", token, 365);
             }

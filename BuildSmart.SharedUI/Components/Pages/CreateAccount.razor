@@ -954,6 +954,15 @@
     private bool showEmailForm = false;
     private bool showRegPassword = false;
 
+    protected override void OnInitialized()
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        if (!string.IsNullOrEmpty(uri.Query) && (uri.Query.Contains("token=") || uri.Query.Contains("error=")))
+        {
+            NavManager.NavigateTo($"/login{uri.Query}", forceLoad: true);
+        }
+    }
+
     private void ToggleRegPasswordVisibility()
     {
         showRegPassword = !showRegPassword;
