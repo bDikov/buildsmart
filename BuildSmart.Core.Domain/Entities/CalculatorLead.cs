@@ -30,4 +30,19 @@ public class CalculatorLead : BaseEntity
     public bool IsContacted { get; set; } = false;
     public DateTime? ContactedAt { get; set; }
     public string? AdminNotes { get; set; }
+
+    // CRM Call Assessment & Prospect Rating
+    public string? CallOutcome { get; set; } // "WillingToWork", "Possible", "Reserved", "NotPossible", null
+    public int? ProspectRating { get; set; } // 1 to 10 scale (10 = highest perspective, 1 = pointless/not possible)
+
+    // CRM Live Meeting & Site Visit
+    public string? MeetingStatus { get; set; } // "None", "Requested", "Scheduled", "Completed", "Cancelled"
+    public DateTime? MeetingDate { get; set; }
+    public string? MeetingNotes { get; set; }
+
+    // CRM Client Readiness & Follow-up Reminders
+    public string? ReadyToStartTimeline { get; set; } // e.g. "immediately", "1_month", "2_3_months", "6_months_plus", "act_16", "custom"
+    public DateTime? FollowUpDate { get; set; }
+    public bool FollowUpReminderSent { get; set; } = false;
 }
+

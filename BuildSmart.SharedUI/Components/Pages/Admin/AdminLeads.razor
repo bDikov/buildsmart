@@ -124,6 +124,70 @@
         </div>
     </div>
 
+    <!-- CRM Follow-up Reminders & Urgent Actions Alert Banner -->
+    @if (_overdueFollowUpsCount > 0 || _todayFollowUpsCount > 0 || _upcomingMeetingsCount > 0 || _highProspectsCount > 0)
+    {
+        <div class="crm-reminders-banner">
+            <div class="reminders-banner-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span>@Loc["Admin_Leads_FollowUpFilter"]</span>
+            </div>
+            <div class="reminders-cards-row">
+                @if (_overdueFollowUpsCount > 0)
+                {
+                    <div class="reminder-card reminder-overdue cursor-pointer @(_followUpFilter == "overdue" ? "selected" : "")" @onclick='() => SetFollowUpFilter("overdue")'>
+                        <div class="reminder-card-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        </div>
+                        <div class="reminder-card-content">
+                            <span class="reminder-count">@_overdueFollowUpsCount</span>
+                            <span class="reminder-label">@Loc["Admin_Leads_Banner_Overdue"]</span>
+                        </div>
+                    </div>
+                }
+                @if (_todayFollowUpsCount > 0)
+                {
+                    <div class="reminder-card reminder-today cursor-pointer @(_followUpFilter == "today" ? "selected" : "")" @onclick='() => SetFollowUpFilter("today")'>
+                        <div class="reminder-card-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div class="reminder-card-content">
+                            <span class="reminder-count">@_todayFollowUpsCount</span>
+                            <span class="reminder-label">@Loc["Admin_Leads_Banner_Today"]</span>
+                        </div>
+                    </div>
+                }
+                @if (_upcomingMeetingsCount > 0)
+                {
+                    <div class="reminder-card reminder-meeting cursor-pointer @(_meetingFilter == "scheduled" ? "selected" : "")" @onclick='() => SetMeetingFilter("scheduled")'>
+                        <div class="reminder-card-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <div class="reminder-card-content">
+                            <span class="reminder-count">@_upcomingMeetingsCount</span>
+                            <span class="reminder-label">@Loc["Admin_Leads_Banner_Scheduled"]</span>
+                        </div>
+                    </div>
+                }
+                @if (_highProspectsCount > 0)
+                {
+                    <div class="reminder-card reminder-prospect cursor-pointer @(_prospectRatingFilter == "high" ? "selected" : "")" @onclick='() => SetProspectRatingFilter("high")'>
+                        <div class="reminder-card-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                        <div class="reminder-card-content">
+                            <span class="reminder-count">@_highProspectsCount</span>
+                            <span class="reminder-label">@Loc["Admin_Leads_Banner_TopProspects"]</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
     <!-- Filter & Control Bar -->
     <div class="controls-card">
         <!-- Row 1: Search & Date Range -->
@@ -170,7 +234,7 @@
             </div>
         </div>
 
-        <!-- Row 2: Secondary Filter Pills (Source, Scope, Email) -->
+        <!-- Row 2: Secondary Filter Pills (Source, Scope, Email, CRM Prospect, Meeting & Follow-up) -->
         <div class="controls-row-pills">
             <!-- Channel / Source Tabs -->
             <div class="filter-pill-container">
@@ -200,8 +264,44 @@
                 </button>
             </div>
 
-            <!-- Scope, Verification & Contact Status Selectors -->
+            <!-- Scope, Verification, Contact Status, Prospect, Meeting & Follow-up Selectors -->
             <div class="filter-pill-secondary">
+                <!-- Prospect / Call Outcome Filter -->
+                <select class="leads-select" @bind="_prospectOutcomeFilter">
+                    <option value="all">@Loc["Admin_Leads_OutcomeAll"]</option>
+                    <option value="willing">@Loc["Admin_Leads_OutcomeWilling"]</option>
+                    <option value="possible">@Loc["Admin_Leads_OutcomePossible"]</option>
+                    <option value="reserved">@Loc["Admin_Leads_OutcomeReserved"]</option>
+                    <option value="pointless">@Loc["Admin_Leads_OutcomePointless"]</option>
+                    <option value="unrated">@Loc["Admin_Leads_OutcomeUnrated"]</option>
+                </select>
+
+                <!-- Prospect Rating Filter (1-10) -->
+                <select class="leads-select" @bind="_prospectRatingFilter">
+                    <option value="all">@Loc["Admin_Leads_RatingAll"]</option>
+                    <option value="high">@Loc["Admin_Leads_RatingHigh"]</option>
+                    <option value="medium">@Loc["Admin_Leads_RatingMedium"]</option>
+                    <option value="low">@Loc["Admin_Leads_RatingLow"]</option>
+                </select>
+
+                <!-- Meeting Status Filter -->
+                <select class="leads-select" @bind="_meetingFilter">
+                    <option value="all">@Loc["Admin_Leads_MeetingAll"]</option>
+                    <option value="requested">@Loc["Admin_Leads_MeetingRequested"]</option>
+                    <option value="scheduled">@Loc["Admin_Leads_MeetingScheduled"]</option>
+                    <option value="completed">@Loc["Admin_Leads_MeetingCompleted"]</option>
+                    <option value="none">@Loc["Admin_Leads_MeetingNone"]</option>
+                </select>
+
+                <!-- Follow-up Reminders Filter -->
+                <select class="leads-select" @bind="_followUpFilter">
+                    <option value="all">@Loc["Admin_Leads_FollowUpAll"]</option>
+                    <option value="today">@Loc["Admin_Leads_FollowUpToday"]</option>
+                    <option value="overdue">@Loc["Admin_Leads_FollowUpOverdue"]</option>
+                    <option value="upcoming">@Loc["Admin_Leads_FollowUpUpcoming"]</option>
+                    <option value="none">@Loc["Admin_Leads_FollowUpNone"]</option>
+                </select>
+
                 <select class="leads-select" @bind="_contactStatusFilter">
                     <option value="all">@Loc["Admin_Leads_ContactAll"]</option>
                     <option value="new">@Loc["Admin_Leads_ContactNew"]</option>
@@ -300,6 +400,28 @@
                                 <div class="th-content">
                                     <span>@Loc["Admin_Leads_ColEstimate"]</span>
                                     @if (_sortColumn == "price")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Prospect Assessment (Sortable) -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("prospect")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColProspect"]</span>
+                                    @if (_sortColumn == "prospect")
+                                    {
+                                        <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
+                                    }
+                                </div>
+                            </th>
+
+                            <!-- Meeting & Follow-up (Sortable) -->
+                            <th class="cursor-pointer" @onclick='() => ToggleSort("followup")'>
+                                <div class="th-content">
+                                    <span>@Loc["Admin_Leads_ColMeeting"] &amp; @Loc["Admin_Leads_ColFollowUp"]</span>
+                                    @if (_sortColumn == "followup")
                                     {
                                         <span class="sort-icon">@(_sortDescending ? "↓" : "↑")</span>
                                     }
@@ -427,6 +549,90 @@
                                     }
                                 </td>
 
+                                <!-- Prospect Assessment Column -->
+                                <td class="td-prospect">
+                                    @if (lead.ProspectRating.HasValue || !string.IsNullOrEmpty(lead.CallOutcome))
+                                    {
+                                        var rating = lead.ProspectRating ?? 0;
+                                        var badgeClass = rating >= 8 ? "prospect-badge-high" : (rating >= 5 ? "prospect-badge-medium" : (rating > 0 ? "prospect-badge-low" : "prospect-badge-neutral"));
+                                        <div class="prospect-pill-group">
+                                            @if (lead.ProspectRating.HasValue)
+                                            {
+                                                <span class="prospect-score-pill @badgeClass">
+                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                    <span>@lead.ProspectRating.Value/10</span>
+                                                </span>
+                                            }
+                                            @if (!string.IsNullOrEmpty(lead.CallOutcome))
+                                            {
+                                                <span class="prospect-outcome-label">@GetCallOutcomeLabel(lead.CallOutcome)</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn-rate-ghost" @onclick="() => InspectLead(lead)" title="@Loc["Admin_Leads_ProspectTitle"]">
+                                            <span>@Loc["Admin_Leads_OutcomeUnrated"]</span>
+                                        </button>
+                                    }
+                                </td>
+
+                                <!-- Meeting & Follow-up Column -->
+                                <td class="td-meeting-followup">
+                                    @if (!string.IsNullOrEmpty(lead.MeetingStatus) && lead.MeetingStatus != "None")
+                                    {
+                                        <div class="meeting-pill @GetMeetingPillClass(lead.MeetingStatus)">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                            <span>@GetMeetingStatusLabel(lead.MeetingStatus)</span>
+                                            @if (lead.MeetingDate.HasValue)
+                                            {
+                                                <span class="meeting-pill-date">(@lead.MeetingDate.Value.ToString("dd MMM, HH:mm"))</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (lead.FollowUpDate.HasValue)
+                                    {
+                                        var isOverdue = lead.FollowUpDate.Value.Date < DateTime.UtcNow.Date;
+                                        var isToday = lead.FollowUpDate.Value.Date == DateTime.UtcNow.Date;
+                                        var fuClass = isOverdue ? "fu-overdue" : (isToday ? "fu-today" : "fu-upcoming");
+                                        <div class="followup-pill @fuClass" title="@lead.FollowUpDate.Value.ToString("dd MMM yyyy")">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <polyline points="12 6 12 12 16 14"></polyline>
+                                            </svg>
+                                            @if (isOverdue)
+                                            {
+                                                <span>@Loc["Admin_Leads_OverdueBadge"] (@((DateTime.UtcNow.Date - lead.FollowUpDate.Value.Date).Days)d)</span>
+                                            }
+                                            else if (isToday)
+                                            {
+                                                <span>@Loc["Admin_Leads_DueTodayBadge"]</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@lead.FollowUpDate.Value.ToString("dd MMM")</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(lead.ReadyToStartTimeline))
+                                    {
+                                        <div class="timeline-subtext" title="@lead.ReadyToStartTimeline">
+                                            @GetTimelineLabel(lead.ReadyToStartTimeline)
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(lead.MeetingNotes))
+                                    {
+                                        <div class="meeting-notes-snippet" title="@lead.MeetingNotes">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                            <span>@lead.MeetingNotes</span>
+                                        </div>
+                                    }
+                                    @if ((string.IsNullOrEmpty(lead.MeetingStatus) || lead.MeetingStatus == "None") && !lead.FollowUpDate.HasValue && string.IsNullOrWhiteSpace(lead.ReadyToStartTimeline) && string.IsNullOrWhiteSpace(lead.MeetingNotes))
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+
                                 <!-- Email Verification -->
                                 <td class="td-verification">
                                     @if (lead.VerificationStatus == "Valid" || lead.IsEmailVerified)
@@ -513,7 +719,7 @@
                                 <!-- Actions Group (Notes, Preview, Delete) -->
                                 <td class="td-actions">
                                     <div class="action-btn-row">
-                                        <button class="row-icon-btn btn-notes @(!string.IsNullOrWhiteSpace(lead.AdminNotes) ? "has-notes" : "")" @onclick="() => InspectLead(lead)" title="@(!string.IsNullOrWhiteSpace(lead.AdminNotes) ? Loc["Admin_Leads_HasNotes"] : Loc["Admin_Leads_AddNote"])">
+                                        <button class="row-icon-btn btn-notes @(!string.IsNullOrWhiteSpace(lead.AdminNotes) || !string.IsNullOrWhiteSpace(lead.MeetingNotes) ? "has-notes" : "")" @onclick="() => InspectLead(lead)" title="@(!string.IsNullOrWhiteSpace(lead.AdminNotes) || !string.IsNullOrWhiteSpace(lead.MeetingNotes) ? Loc["Admin_Leads_HasNotes"] : Loc["Admin_Leads_AddNote"])">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                         </button>
                                         <button class="row-icon-btn btn-inspect" @onclick="() => InspectLead(lead)" title="@Loc["Admin_Leads_Inspect"]">
@@ -747,25 +953,199 @@
                     </div>
                 }
 
-                <!-- CRM Follow-up & Client Notes Section -->
-                <div class="modal-section-card crm-notes-box">
-                    <div class="crm-notes-header">
-                        <div class="section-title">@Loc["Admin_Leads_NotesTitle"]</div>
-                        <div class="crm-status-toggle">
-                            <label class="status-checkbox-label">
-                                <input type="checkbox" @bind="_editIsContacted" />
-                                <span class="status-checkbox-text @(_editIsContacted ? "text-contacted" : "")">
-                                    @(_editIsContacted ? Loc["Admin_Leads_SpokenTo"] : Loc["Admin_Leads_Uncontacted"])
-                                </span>
-                            </label>
-                            @if (_selectedLead.ContactedAt.HasValue)
+                <!-- Client Contact Status Card -->
+                <div class="modal-section-card contact-status-card @(_editIsContacted ? "is-contacted" : "is-uncontacted")">
+                    <div class="contact-status-header">
+                        <div class="contact-status-info">
+                            <div class="status-indicator-badge @(_editIsContacted ? "badge-contacted" : "badge-uncontacted")">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    @if (_editIsContacted)
+                                    {
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    }
+                                    else
+                                    {
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    }
+                                </svg>
+                                <span>@(_editIsContacted ? Loc["Admin_Leads_SpokenTo"] : Loc["Admin_Leads_Uncontacted"])</span>
+                            </div>
+                            @if (_selectedLead.ContactedAt.HasValue && _editIsContacted)
                             {
                                 <span class="contacted-timestamp">(@_selectedLead.ContactedAt.Value.ToString("dd MMM yyyy, HH:mm"))</span>
                             }
                         </div>
+                        <button type="button" class="btn-toggle-contact @(_editIsContacted ? "btn-contacted-active" : "btn-contacted-prompt")" @onclick="ToggleContactStatus">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                @if (_editIsContacted)
+                                {
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                }
+                                else
+                                {
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                }
+                            </svg>
+                            <span>@(_editIsContacted ? Loc["Admin_Leads_MarkAsUncontacted"] : Loc["Admin_Leads_MarkAsContacted"])</span>
+                        </button>
+                    </div>
+                    @if (!_editIsContacted)
+                    {
+                        <div class="uncontacted-guide-notice">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span>@Loc["Admin_Leads_ContactClientFirstNotice"]</span>
+                        </div>
+                    }
+                </div>
+
+                @if (_editIsContacted)
+                {
+                    <!-- CRM Call Assessment & Prospect Rating Section -->
+                    <div class="modal-section-card crm-prospect-card">
+                        <div class="crm-prospect-header">
+                            <div class="section-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                </svg>
+                                <span>@Loc["Admin_Leads_ProspectTitle"]</span>
+                            </div>
+                        </div>
+
+                        <!-- 1-10 Rating Pills -->
+                        <div class="prospect-rating-block">
+                            <div class="field-label-row">
+                                <span class="field-label">@Loc["Admin_Leads_ProspectRating"]</span>
+                                @if (_editProspectRating.HasValue)
+                                {
+                                    <span class="rating-selected-value">@_editProspectRating.Value / 10</span>
+                                }
+                            </div>
+                            <div class="rating-pills-row">
+                                @for (int r = 1; r <= 10; r++)
+                                {
+                                    var currentVal = r;
+                                    var pillClass = currentVal >= 8 ? "rating-high" : (currentVal >= 5 ? "rating-medium" : "rating-low");
+                                    <button type="button" class="rating-pill @pillClass @(_editProspectRating == currentVal ? "active" : "")" @onclick="() => SetProspectRating(currentVal)">
+                                        <span>@currentVal</span>
+                                    </button>
+                                }
+                                @if (_editProspectRating.HasValue)
+                                {
+                                    <button type="button" class="rating-clear-btn" @onclick="() => _editProspectRating = null" title="@Loc["Admin_Leads_ClearReminder"]">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Call Outcome Selector Buttons -->
+                        <div class="call-outcome-block">
+                            <span class="field-label">@Loc["Admin_Leads_ProspectOutcome"]</span>
+                            <div class="outcome-options-grid">
+                                <button type="button" class="outcome-option-btn outcome-willing @(_editCallOutcome == "WillingToWork" ? "active" : "")" @onclick='() => _editCallOutcome = (_editCallOutcome == "WillingToWork" ? null : "WillingToWork")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <span>@Loc["Admin_Leads_OutcomeWilling"]</span>
+                                </button>
+                                <button type="button" class="outcome-option-btn outcome-possible @(_editCallOutcome == "Possible" ? "active" : "")" @onclick='() => _editCallOutcome = (_editCallOutcome == "Possible" ? null : "Possible")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    <span>@Loc["Admin_Leads_OutcomePossible"]</span>
+                                </button>
+                                <button type="button" class="outcome-option-btn outcome-reserved @(_editCallOutcome == "Reserved" ? "active" : "")" @onclick='() => _editCallOutcome = (_editCallOutcome == "Reserved" ? null : "Reserved")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                    <span>@Loc["Admin_Leads_OutcomeReserved"]</span>
+                                </button>
+                                <button type="button" class="outcome-option-btn outcome-pointless @(_editCallOutcome == "Pointless" ? "active" : "")" @onclick='() => _editCallOutcome = (_editCallOutcome == "Pointless" ? null : "Pointless")'>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    <span>@Loc["Admin_Leads_OutcomePointless"]</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Meeting & Site Inspection Section -->
+                    <div class="modal-section-card">
+                        <div class="section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            <span>@Loc["Admin_Leads_MeetingSection"]</span>
+                        </div>
+                        <div class="edit-fields-grid-2col">
+                            <div class="edit-group">
+                                <label class="edit-label">@Loc["Admin_Leads_MeetingStatus"]</label>
+                                <select class="leads-select-input" @bind="_editMeetingStatus">
+                                    <option value="None">@Loc["Admin_Leads_MeetingNone"]</option>
+                                    <option value="Requested">@Loc["Admin_Leads_MeetingRequested"]</option>
+                                    <option value="Scheduled">@Loc["Admin_Leads_MeetingScheduled"]</option>
+                                    <option value="Completed">@Loc["Admin_Leads_MeetingCompleted"]</option>
+                                    <option value="Cancelled">@Loc["Admin_Leads_MeetingCancelled"]</option>
+                                </select>
+                            </div>
+                            <div class="edit-group">
+                                <label class="edit-label">@Loc["Admin_Leads_MeetingDate"]</label>
+                                <input type="datetime-local" class="leads-datetime-input" @bind="_editMeetingDate" />
+                            </div>
+                        </div>
+                        <div class="edit-group mt-3">
+                            <label class="edit-label">@Loc["Admin_Leads_MeetingNotes"]</label>
+                            <textarea class="crm-notes-textarea-sm" @bind="_editMeetingNotes" placeholder="@Loc["Admin_Leads_MeetingNotesPlaceholder"]" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Project Start Readiness & Follow-up Reminders Section -->
+                    <div class="modal-section-card">
+                        <div class="section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <span>@Loc["Admin_Leads_ReadinessSection"]</span>
+                        </div>
+                        <div class="edit-fields-grid-2col">
+                            <div class="edit-group">
+                                <label class="edit-label">@Loc["Admin_Leads_ReadyToStart"]</label>
+                                <select class="leads-select-input" @bind="_editReadyTimeline">
+                                    <option value="">-- @Loc["Admin_Leads_ReadyToStart"] --</option>
+                                    <option value="immediately">@Loc["Admin_Leads_TimelineImmediately"]</option>
+                                    <option value="1_month">@Loc["Admin_Leads_Timeline1Month"]</option>
+                                    <option value="2_3_months">@Loc["Admin_Leads_Timeline2to3Months"]</option>
+                                    <option value="6_months_plus">@Loc["Admin_Leads_Timeline6MonthsPlus"]</option>
+                                    <option value="act_16">@Loc["Admin_Leads_TimelineAct16"]</option>
+                                    <option value="custom">@Loc["Admin_Leads_TimelineCustom"]</option>
+                                </select>
+                                @if (_editReadyTimeline == "custom")
+                                {
+                                    <input type="text" class="leads-text-input mt-2" @bind="_editReadyCustomTimeline" placeholder="@Loc["Admin_Leads_TimelineCustom"]..." />
+                                }
+                            </div>
+                            <div class="edit-group">
+                                <label class="edit-label">@Loc["Admin_Leads_FollowUpDate"]</label>
+                                <div class="followup-date-picker-row">
+                                    <input type="date" class="leads-datetime-input" @bind="_editFollowUpDate" />
+                                    @if (_editFollowUpDate.HasValue)
+                                    {
+                                        <button type="button" class="btn-clear-date" @onclick="() => _editFollowUpDate = null" title="@Loc["Admin_Leads_ClearReminder"]">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </button>
+                                    }
+                                </div>
+                                <div class="quick-add-days-row">
+                                    <button type="button" class="btn-quick-day" @onclick="() => AddDaysToFollowUp(3)">@Loc["Admin_Leads_QuickAdd3Days"]</button>
+                                    <button type="button" class="btn-quick-day" @onclick="() => AddDaysToFollowUp(7)">@Loc["Admin_Leads_QuickAdd1Week"]</button>
+                                    <button type="button" class="btn-quick-day" @onclick="() => AddDaysToFollowUp(30)">@Loc["Admin_Leads_QuickAdd1Month"]</button>
+                                    <button type="button" class="btn-quick-day" @onclick="() => AddDaysToFollowUp(90)">@Loc["Admin_Leads_QuickAdd3Months"]</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- CRM General Conversation Notes & Save Section -->
+                <div class="modal-section-card crm-notes-box">
+                    <div class="crm-notes-header">
+                        <div class="section-title">@Loc["Admin_Leads_NotesTitle"]</div>
                     </div>
                     <div class="crm-notes-body">
-                        <textarea class="crm-notes-textarea" @bind="_editNotes" placeholder="@Loc["Admin_Leads_NotesPlaceholder"]" rows="4"></textarea>
+                        <textarea class="crm-notes-textarea" @bind="_editNotes" placeholder="@Loc["Admin_Leads_NotesPlaceholder"]" rows="3"></textarea>
                         <div class="crm-notes-actions">
                             @if (!string.IsNullOrEmpty(_notesErrorMessage))
                             {
@@ -2382,6 +2762,594 @@
     text-decoration: none;
     flex-shrink: 0;
 }
+
+/* CRM Reminders & Follow-up Banner */
+.crm-reminders-banner {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.reminders-cards-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.reminder-card {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.18s ease;
+    user-select: none;
+}
+
+.reminder-card.cursor-pointer:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.reminder-card.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-bg, rgba(59, 130, 246, 0.08));
+}
+
+.reminder-card.reminder-overdue {
+    border-left: 4px solid var(--color-danger, #ef4444);
+}
+.reminder-card.reminder-overdue .reminder-icon-box {
+    background: rgba(239, 68, 68, 0.14);
+    color: var(--color-danger, #ef4444);
+}
+
+.reminder-card.reminder-today {
+    border-left: 4px solid var(--color-warning, #f59e0b);
+}
+.reminder-card.reminder-today .reminder-icon-box {
+    background: rgba(245, 158, 11, 0.14);
+    color: var(--color-warning, #f59e0b);
+}
+
+.reminder-card.reminder-meeting {
+    border-left: 4px solid var(--color-primary);
+}
+.reminder-card.reminder-meeting .reminder-icon-box {
+    background: rgba(59, 130, 246, 0.14);
+    color: var(--color-primary);
+}
+
+.reminder-card.reminder-prospect {
+    border-left: 4px solid var(--color-success, #10b981);
+}
+.reminder-card.reminder-prospect .reminder-icon-box {
+    background: rgba(16, 185, 129, 0.14);
+    color: var(--color-success, #10b981);
+}
+
+.reminder-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.reminder-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.reminder-val {
+    font: var(--font-h4);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.reminder-lbl {
+    font: var(--font-body-2);
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+/* Table Cells: Prospect & Meeting / Follow-up */
+.td-prospect {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.prospect-pill-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prospect-score-pill {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
+}
+
+.prospect-badge-high {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success, #10b981);
+}
+
+.prospect-badge-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning, #f59e0b);
+}
+
+.prospect-badge-low {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-danger, #ef4444);
+}
+
+.prospect-outcome-label {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+}
+
+.btn-rate-ghost {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: 6px;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-rate-ghost:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--bg-card-alt);
+}
+
+.td-meeting-followup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meeting-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+.meeting-badge-requested {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--color-info, #3b82f6);
+}
+
+.meeting-badge-scheduled {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success, #10b981);
+}
+
+.meeting-badge-completed {
+    background: rgba(107, 114, 128, 0.15);
+    color: var(--text-muted);
+}
+
+.meeting-badge-cancelled {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger, #ef4444);
+}
+
+.meeting-pill-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.followup-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+.followup-pill.fu-overdue {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-danger, #ef4444);
+}
+
+.followup-pill.fu-today {
+    background: rgba(245, 158, 11, 0.18);
+    color: var(--color-warning, #f59e0b);
+}
+
+.followup-pill.fu-upcoming {
+    background: var(--bg-card-alt);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.timeline-subtext {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.meeting-notes-snippet {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font: var(--font-body-2);
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    background: var(--bg-card-alt);
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    padding: 2px 6px;
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.meeting-notes-snippet svg {
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+
+.meeting-notes-snippet span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Modal CRM Controls */
+.prospect-rating-block,
+.call-outcome-block {
+    margin-bottom: 12px;
+}
+
+.rating-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.rating-pill {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.rating-pill:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.rating-pill.rating-high.active {
+    background: var(--color-success, #10b981);
+    color: #ffffff;
+    border-color: var(--color-success, #10b981);
+}
+
+.rating-pill.rating-medium.active {
+    background: var(--color-warning, #f59e0b);
+    color: #ffffff;
+    border-color: var(--color-warning, #f59e0b);
+}
+
+.rating-pill.rating-low.active {
+    background: var(--color-danger, #ef4444);
+    color: #ffffff;
+    border-color: var(--color-danger, #ef4444);
+}
+
+.rating-clear-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.rating-clear-btn:hover {
+    border-color: var(--color-danger, #ef4444);
+    color: var(--color-danger, #ef4444);
+}
+
+.outcome-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.outcome-option-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    font: var(--font-body-2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.outcome-option-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.outcome-option-btn.outcome-willing.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success, #10b981);
+    border-color: var(--color-success, #10b981);
+}
+
+.outcome-option-btn.outcome-possible.active {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-info, #3b82f6);
+    border-color: var(--color-info, #3b82f6);
+}
+
+.outcome-option-btn.outcome-reserved.active {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning, #f59e0b);
+    border-color: var(--color-warning, #f59e0b);
+}
+
+.outcome-option-btn.outcome-pointless.active {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-danger, #ef4444);
+    border-color: var(--color-danger, #ef4444);
+}
+
+.leads-select-input,
+.leads-datetime-input,
+.leads-text-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font: var(--font-body-2);
+    font-size: 0.85rem;
+    box-sizing: border-box;
+}
+
+.leads-select-input:focus,
+.leads-datetime-input:focus,
+.leads-text-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.crm-notes-textarea-sm {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font: var(--font-body-2);
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.crm-notes-textarea-sm:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.followup-date-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-clear-date {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    height: 38px;
+    width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.btn-clear-date:hover {
+    border-color: var(--color-danger, #ef4444);
+    color: var(--color-danger, #ef4444);
+}
+
+.quick-add-days-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.btn-quick-day {
+    padding: 4px 8px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-alt);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-quick-day:hover {
+    background: var(--color-primary-bg, rgba(59, 130, 246, 0.1));
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* Client Contact Status Card */
+.contact-status-card {
+    padding: 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.contact-status-card.is-contacted {
+    border-color: var(--color-success, #10b981);
+    background: var(--color-success-bg, rgba(16, 185, 129, 0.05));
+}
+
+.contact-status-card.is-uncontacted {
+    border-color: var(--color-warning, #f59e0b);
+    background: var(--color-warning-bg, rgba(245, 158, 11, 0.05));
+}
+
+.contact-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.contact-status-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font: var(--font-body-2);
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+
+.badge-contacted {
+    background: var(--color-success-bg, rgba(16, 185, 129, 0.15));
+    color: var(--color-success, #10b981);
+    border: 1px solid var(--color-success, #10b981);
+}
+
+.badge-uncontacted {
+    background: var(--color-warning-bg, rgba(245, 158, 11, 0.15));
+    color: var(--color-warning, #f59e0b);
+    border: 1px solid var(--color-warning, #f59e0b);
+}
+
+.contacted-timestamp {
+    font: var(--font-body-2);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.btn-toggle-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font: var(--font-body-2);
+    font-weight: 600;
+    font-size: 0.84rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-contacted-prompt {
+    background: var(--color-primary);
+    color: #ffffff;
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-contacted-prompt:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.btn-contacted-active {
+    background: var(--bg-card-alt);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-contacted-active:hover {
+    border-color: var(--color-danger, #ef4444);
+    color: var(--color-danger, #ef4444);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.uncontacted-guide-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: var(--bg-card-alt);
+    border: 1px dashed var(--color-warning, #f59e0b);
+    color: var(--text-secondary);
+    font: var(--font-body-2);
+    font-size: 0.8rem;
+}
 </style>
 
 @code {
@@ -2396,9 +3364,13 @@
     private string _customizationFilter = "all"; // all, customized, standard
     private string _verificationFilter = "all"; // all, valid, flagged
     private string _contactStatusFilter = "all"; // all, new, spoken
+    private string _prospectOutcomeFilter = "all"; // all, willing, possible, reserved, pointless, unrated
+    private string _prospectRatingFilter = "all";  // all, high, medium, low, unrated
+    private string _meetingFilter = "all";         // all, requested, scheduled, completed, none
+    private string _followUpFilter = "all";        // all, overdue, today, upcoming, none
 
     // Sorting
-    private string _sortColumn = "date"; // date, name, price, area, source, status
+    private string _sortColumn = "date"; // date, name, price, area, source, status, prospect, followup
     private bool _sortDescending = true;
 
     // Pagination
@@ -2412,6 +3384,20 @@
     // CRM Notes & Contact State in Modal
     private string _editNotes = string.Empty;
     private bool _editIsContacted = false;
+
+    // CRM Call Assessment & Prospect State in Modal
+    private string? _editCallOutcome = null;
+    private int? _editProspectRating = null;
+
+    // CRM Live Meeting & Site Visit in Modal
+    private string _editMeetingStatus = "None";
+    private DateTime? _editMeetingDate = null;
+    private string _editMeetingNotes = string.Empty;
+
+    // CRM Readiness Timeline & Follow-up in Modal
+    private string _editReadyTimeline = string.Empty;
+    private string _editReadyCustomTimeline = string.Empty;
+    private DateTime? _editFollowUpDate = null;
 
     // Attribution Edit Mode
     private bool _isEditingAttribution = false;
@@ -2432,6 +3418,12 @@
     private int _googleLeadsCount = 0;
     private decimal _totalPipelineEur = 0m;
     private decimal _totalPipelineBgn = 0m;
+
+    // Aggregated CRM reminder metrics
+    private int _overdueFollowUpsCount = 0;
+    private int _todayFollowUpsCount = 0;
+    private int _upcomingMeetingsCount = 0;
+    private int _highProspectsCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -2469,6 +3461,13 @@
         {
             var leads = await LeadRepository.GetLeadsAsync();
             _allLeads = leads ?? new List<CalculatorLead>();
+            foreach (var l in _allLeads)
+            {
+                if (!string.IsNullOrWhiteSpace(l.AdminNotes))
+                {
+                    ParseCustomizationInfo(l);
+                }
+            }
             CalculateKpiMetrics();
         }
         catch (Exception ex)
@@ -2487,6 +3486,7 @@
         var now = DateTime.UtcNow;
         var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
         var sevenDaysAgo = now.AddDays(-7);
+        var todayDate = now.Date;
 
         _leadsTodayCount = _allLeads.Count(l => l.CreatedAt >= todayStart);
         _leadsThisWeekCount = _allLeads.Count(l => l.CreatedAt >= sevenDaysAgo);
@@ -2496,6 +3496,11 @@
 
         _totalPipelineEur = _allLeads.Sum(l => l.MaxPriceEur > 0 ? l.MaxPriceEur : (l.MaxPriceBgn > 0 ? Math.Round(l.MaxPriceBgn / 1.95583m, 2) : 0m));
         _totalPipelineBgn = _allLeads.Sum(l => l.MaxPriceBgn > 0 ? l.MaxPriceBgn : (l.MaxPriceEur > 0 ? Math.Round(l.MaxPriceEur * 1.95583m, 0) : 0m));
+
+        _overdueFollowUpsCount = _allLeads.Count(l => l.FollowUpDate.HasValue && l.FollowUpDate.Value.Date < todayDate);
+        _todayFollowUpsCount = _allLeads.Count(l => l.FollowUpDate.HasValue && l.FollowUpDate.Value.Date == todayDate);
+        _upcomingMeetingsCount = _allLeads.Count(l => l.MeetingStatus == "Requested" || l.MeetingStatus == "Scheduled");
+        _highProspectsCount = _allLeads.Count(l => (l.ProspectRating.HasValue && l.ProspectRating.Value >= 8) || l.CallOutcome == "WillingToWork");
     }
 
     private bool IsFacebookSource(string? source)
@@ -2527,6 +3532,10 @@
         _customizationFilter = "all";
         _verificationFilter = "all";
         _contactStatusFilter = "all";
+        _prospectOutcomeFilter = "all";
+        _prospectRatingFilter = "all";
+        _meetingFilter = "all";
+        _followUpFilter = "all";
         _currentPage = 1;
     }
 
@@ -2635,7 +3644,84 @@
                 query = query.Where(l => l.VerificationStatus != "Valid" && !l.IsEmailVerified);
             }
 
-            // Text Search Filter (includes Name, Email, Phone, Campaign, Source, Area, and CRM Notes)
+            // Prospect Outcome Filter
+            if (_prospectOutcomeFilter == "willing")
+            {
+                query = query.Where(l => l.CallOutcome == "WillingToWork");
+            }
+            else if (_prospectOutcomeFilter == "possible")
+            {
+                query = query.Where(l => l.CallOutcome == "Possible");
+            }
+            else if (_prospectOutcomeFilter == "reserved")
+            {
+                query = query.Where(l => l.CallOutcome == "Reserved");
+            }
+            else if (_prospectOutcomeFilter == "pointless")
+            {
+                query = query.Where(l => l.CallOutcome == "Pointless");
+            }
+            else if (_prospectOutcomeFilter == "unrated")
+            {
+                query = query.Where(l => string.IsNullOrEmpty(l.CallOutcome) && !l.ProspectRating.HasValue);
+            }
+
+            // Prospect Rating Filter
+            if (_prospectRatingFilter == "high")
+            {
+                query = query.Where(l => l.ProspectRating.HasValue && l.ProspectRating.Value >= 8);
+            }
+            else if (_prospectRatingFilter == "medium")
+            {
+                query = query.Where(l => l.ProspectRating.HasValue && l.ProspectRating.Value >= 5 && l.ProspectRating.Value <= 7);
+            }
+            else if (_prospectRatingFilter == "low")
+            {
+                query = query.Where(l => l.ProspectRating.HasValue && l.ProspectRating.Value <= 4);
+            }
+            else if (_prospectRatingFilter == "unrated")
+            {
+                query = query.Where(l => !l.ProspectRating.HasValue);
+            }
+
+            // Meeting Filter
+            if (_meetingFilter == "requested")
+            {
+                query = query.Where(l => l.MeetingStatus == "Requested");
+            }
+            else if (_meetingFilter == "scheduled")
+            {
+                query = query.Where(l => l.MeetingStatus == "Scheduled" || (l.MeetingDate.HasValue && l.MeetingDate.Value >= now));
+            }
+            else if (_meetingFilter == "completed")
+            {
+                query = query.Where(l => l.MeetingStatus == "Completed");
+            }
+            else if (_meetingFilter == "none")
+            {
+                query = query.Where(l => string.IsNullOrEmpty(l.MeetingStatus) || l.MeetingStatus == "None");
+            }
+
+            // Follow-up Reminder Filter
+            if (_followUpFilter == "overdue")
+            {
+                query = query.Where(l => l.FollowUpDate.HasValue && l.FollowUpDate.Value.Date < now.Date);
+            }
+            else if (_followUpFilter == "today")
+            {
+                query = query.Where(l => l.FollowUpDate.HasValue && l.FollowUpDate.Value.Date == now.Date);
+            }
+            else if (_followUpFilter == "upcoming")
+            {
+                var nextWeek = now.Date.AddDays(7);
+                query = query.Where(l => l.FollowUpDate.HasValue && l.FollowUpDate.Value.Date > now.Date && l.FollowUpDate.Value.Date <= nextWeek);
+            }
+            else if (_followUpFilter == "none")
+            {
+                query = query.Where(l => !l.FollowUpDate.HasValue);
+            }
+
+            // Text Search Filter (includes Name, Email, Phone, Campaign, Source, Area, CRM Notes, Meeting Notes, and Timelines)
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
                 var q = _searchQuery.Trim().ToLowerInvariant();
@@ -2648,6 +3734,9 @@
                     (l.UtmCampaign != null && l.UtmCampaign.ToLowerInvariant().Contains(q)) ||
                     (l.UtmSource != null && l.UtmSource.ToLowerInvariant().Contains(q)) ||
                     (l.AdminNotes != null && l.AdminNotes.ToLowerInvariant().Contains(q)) ||
+                    (l.MeetingNotes != null && l.MeetingNotes.ToLowerInvariant().Contains(q)) ||
+                    (l.ReadyToStartTimeline != null && l.ReadyToStartTimeline.ToLowerInvariant().Contains(q)) ||
+                    (l.CallOutcome != null && l.CallOutcome.ToLowerInvariant().Contains(q)) ||
                     l.SelectedArea.ToString().Contains(q)
                 );
             }
@@ -2660,6 +3749,9 @@
                 "area" => _sortDescending ? query.OrderByDescending(l => l.SelectedArea) : query.OrderBy(l => l.SelectedArea),
                 "source" => _sortDescending ? query.OrderByDescending(l => l.UtmSource ?? "") : query.OrderBy(l => l.UtmSource ?? ""),
                 "status" => _sortDescending ? query.OrderByDescending(l => l.IsContacted) : query.OrderBy(l => l.IsContacted),
+                "prospect" => _sortDescending ? query.OrderByDescending(l => l.ProspectRating ?? 0) : query.OrderBy(l => l.ProspectRating ?? 0),
+                "meeting" => _sortDescending ? query.OrderByDescending(l => l.MeetingDate ?? DateTime.MinValue) : query.OrderBy(l => l.MeetingDate ?? DateTime.MinValue),
+                "followup" => _sortDescending ? query.OrderByDescending(l => l.FollowUpDate ?? DateTime.MinValue) : query.OrderBy(l => l.FollowUpDate ?? DateTime.MinValue),
                 _ => _sortDescending ? query.OrderByDescending(l => l.CreatedAt) : query.OrderBy(l => l.CreatedAt)
             };
 
@@ -2743,6 +3835,26 @@
         var custInfo = ParseCustomizationInfo(lead);
         _editNotes = custInfo.CrmNotesText;
         _editIsContacted = lead.IsContacted;
+
+        _editCallOutcome = lead.CallOutcome;
+        _editProspectRating = lead.ProspectRating;
+        _editMeetingStatus = string.IsNullOrWhiteSpace(lead.MeetingStatus) ? "None" : lead.MeetingStatus;
+        _editMeetingDate = lead.MeetingDate;
+        _editMeetingNotes = lead.MeetingNotes ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(lead.ReadyToStartTimeline) && lead.ReadyToStartTimeline.StartsWith("custom:"))
+        {
+            _editReadyTimeline = "custom";
+            _editReadyCustomTimeline = lead.ReadyToStartTimeline.Substring(7).Trim();
+        }
+        else
+        {
+            _editReadyTimeline = lead.ReadyToStartTimeline ?? string.Empty;
+            _editReadyCustomTimeline = string.Empty;
+        }
+
+        _editFollowUpDate = lead.FollowUpDate;
+
         _isSavingNotes = false;
         _notesSaveSuccess = false;
         _notesErrorMessage = null;
@@ -2754,6 +3866,14 @@
         _isEditingAttribution = false;
         _editNotes = string.Empty;
         _editIsContacted = false;
+        _editCallOutcome = null;
+        _editProspectRating = null;
+        _editMeetingStatus = "None";
+        _editMeetingDate = null;
+        _editMeetingNotes = string.Empty;
+        _editReadyTimeline = string.Empty;
+        _editReadyCustomTimeline = string.Empty;
+        _editFollowUpDate = null;
         _isSavingNotes = false;
         _notesSaveSuccess = false;
         _notesErrorMessage = null;
@@ -2775,6 +3895,80 @@
         }
     }
 
+    private void SetProspectRating(int rating)
+    {
+        _editProspectRating = _editProspectRating == rating ? null : rating;
+    }
+
+    private void AddDaysToFollowUp(int days)
+    {
+        var baseDate = _editFollowUpDate ?? DateTime.Today;
+        if (baseDate < DateTime.Today) baseDate = DateTime.Today;
+        _editFollowUpDate = baseDate.AddDays(days);
+    }
+
+    private void SetFollowUpFilter(string filter)
+    {
+        _followUpFilter = _followUpFilter == filter ? "all" : filter;
+        _currentPage = 1;
+    }
+
+    private void SetMeetingFilter(string filter)
+    {
+        _meetingFilter = _meetingFilter == filter ? "all" : filter;
+        _currentPage = 1;
+    }
+
+    private void SetProspectRatingFilter(string filter)
+    {
+        _prospectRatingFilter = _prospectRatingFilter == filter ? "all" : filter;
+        _currentPage = 1;
+    }
+
+    private string GetCallOutcomeLabel(string? outcome) => outcome switch
+    {
+        "WillingToWork" => Loc["Admin_Leads_OutcomeWilling"],
+        "Possible" => Loc["Admin_Leads_OutcomePossible"],
+        "Reserved" => Loc["Admin_Leads_OutcomeReserved"],
+        "Pointless" => Loc["Admin_Leads_OutcomePointless"],
+        _ => string.Empty
+    };
+
+    private string GetMeetingStatusLabel(string? status) => status switch
+    {
+        "Requested" => Loc["Admin_Leads_MeetingRequested"],
+        "Scheduled" => Loc["Admin_Leads_MeetingScheduled"],
+        "Completed" => Loc["Admin_Leads_MeetingCompleted"],
+        "Cancelled" => Loc["Admin_Leads_MeetingCancelled"],
+        _ => Loc["Admin_Leads_MeetingNone"]
+    };
+
+    private string GetMeetingPillClass(string? status) => status switch
+    {
+        "Requested" => "meeting-badge-requested",
+        "Scheduled" => "meeting-badge-scheduled",
+        "Completed" => "meeting-badge-completed",
+        "Cancelled" => "meeting-badge-cancelled",
+        _ => "meeting-badge-none"
+    };
+
+    private string GetTimelineLabel(string? timeline) => timeline switch
+    {
+        "immediately" => Loc["Admin_Leads_TimelineImmediately"],
+        "1_month" => Loc["Admin_Leads_Timeline1Month"],
+        "2_3_months" => Loc["Admin_Leads_Timeline2to3Months"],
+        "6_months_plus" => Loc["Admin_Leads_Timeline6MonthsPlus"],
+        "act_16" => Loc["Admin_Leads_TimelineAct16"],
+        _ when !string.IsNullOrWhiteSpace(timeline) && timeline.StartsWith("custom:") => timeline.Substring(7).Trim(),
+        _ when !string.IsNullOrWhiteSpace(timeline) => timeline,
+        _ => string.Empty
+    };
+
+    private void ToggleContactStatus()
+    {
+        _editIsContacted = !_editIsContacted;
+    }
+
     private async Task SaveCrmNotesAsync()
     {
         if (_selectedLead == null) return;
@@ -2785,6 +3979,61 @@
 
         try
         {
+            if (!_editIsContacted)
+            {
+                // Clear evaluation and meeting/follow-up when marked uncontacted
+                _editCallOutcome = null;
+                _editProspectRating = null;
+                _editMeetingStatus = "None";
+                _editMeetingDate = null;
+                _editMeetingNotes = string.Empty;
+                _editReadyTimeline = string.Empty;
+                _editReadyCustomTimeline = string.Empty;
+                _editFollowUpDate = null;
+
+                _selectedLead.CallOutcome = null;
+                _selectedLead.ProspectRating = null;
+                _selectedLead.MeetingStatus = null;
+                _selectedLead.MeetingDate = null;
+                _selectedLead.MeetingNotes = null;
+                _selectedLead.ReadyToStartTimeline = null;
+                _selectedLead.FollowUpDate = null;
+                _selectedLead.FollowUpReminderSent = false;
+            }
+            else
+            {
+                // 1. Update typed lead entity properties
+                _selectedLead.CallOutcome = _editCallOutcome;
+                _selectedLead.ProspectRating = _editProspectRating;
+                _selectedLead.MeetingStatus = _editMeetingStatus == "None" ? null : _editMeetingStatus;
+                _selectedLead.MeetingDate = _editMeetingDate.HasValue
+                    ? DateTime.SpecifyKind(_editMeetingDate.Value, DateTimeKind.Utc)
+                    : null;
+                _selectedLead.MeetingNotes = string.IsNullOrWhiteSpace(_editMeetingNotes) ? null : _editMeetingNotes.Trim();
+
+                string? finalTimeline = null;
+                if (_editReadyTimeline == "custom")
+                {
+                    finalTimeline = string.IsNullOrWhiteSpace(_editReadyCustomTimeline) ? "custom" : $"custom:{_editReadyCustomTimeline.Trim()}";
+                }
+                else if (!string.IsNullOrWhiteSpace(_editReadyTimeline))
+                {
+                    finalTimeline = _editReadyTimeline;
+                }
+                _selectedLead.ReadyToStartTimeline = finalTimeline;
+
+                var utcFollowUp = _editFollowUpDate.HasValue
+                    ? DateTime.SpecifyKind(_editFollowUpDate.Value, DateTimeKind.Utc)
+                    : (DateTime?)null;
+
+                if (_selectedLead.FollowUpDate != utcFollowUp)
+                {
+                    _selectedLead.FollowUpReminderSent = false;
+                }
+                _selectedLead.FollowUpDate = utcFollowUp;
+            }
+
+            // 2. Dual-Safety / Backward-Compatibility: serialize [CRM_META] into AdminNotes
             var rawNotes = _selectedLead.AdminNotes ?? string.Empty;
             string configPart = string.Empty;
             const string configMarker = "[CONFIG]:";
@@ -2809,9 +4058,22 @@
                 summaryPart = endOfLine >= 0 ? rawNotes.Substring(0, endOfLine) : rawNotes;
             }
 
+            var crmMetaObj = new
+            {
+                callOutcome = _selectedLead.CallOutcome,
+                prospectRating = _selectedLead.ProspectRating,
+                meetingStatus = _selectedLead.MeetingStatus,
+                meetingDate = _selectedLead.MeetingDate?.ToString("o"),
+                meetingNotes = _selectedLead.MeetingNotes,
+                readyTimeline = _selectedLead.ReadyToStartTimeline,
+                followUpDate = _selectedLead.FollowUpDate?.ToString("yyyy-MM-dd")
+            };
+            string crmMetaJson = System.Text.Json.JsonSerializer.Serialize(crmMetaObj);
+
             var sb = new System.Text.StringBuilder();
             if (!string.IsNullOrWhiteSpace(configPart)) sb.AppendLine(configPart.Trim());
             if (!string.IsNullOrWhiteSpace(summaryPart)) sb.AppendLine(summaryPart.Trim());
+            sb.AppendLine($"[CRM_META]:{crmMetaJson}");
             if (!string.IsNullOrWhiteSpace(_editNotes))
             {
                 sb.AppendLine("[CRM_NOTES]:");
@@ -2831,6 +4093,7 @@
             _selectedLead.IsContacted = _editIsContacted;
 
             await LeadRepository.UpdateLeadAsync(_selectedLead);
+            CalculateKpiMetrics();
 
             _notesSaveSuccess = true;
             ShowToast(Loc["Admin_Leads_NotesSaved"]);
@@ -2843,7 +4106,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving CRM notes: {ex.Message}");
-            _notesErrorMessage = ex.Message;
+            _notesErrorMessage = ex.InnerException?.Message ?? ex.Message;
             StateHasChanged();
         }
         finally
@@ -2927,7 +4190,7 @@
             // UTF-8 BOM for Excel Cyrillic support
             sb.Append('\uFEFF');
 
-            sb.AppendLine("SubmittedAt,Name,Email,Phone,Scope,SelectedAreaM2,BuildingStatus,QualityTier,IncludeFurniture,IncludeEquipment,Bathrooms,MinPriceEur,MaxPriceEur,MinPriceBgn,MaxPriceBgn,EstimatedDays,EmailVerificationStatus,IsEmailVerified,IsContacted,ContactedAt,AdminNotes,UtmSource,UtmMedium,UtmCampaign,UtmTerm,UtmContent");
+            sb.AppendLine("SubmittedAt,Name,Email,Phone,Scope,SelectedAreaM2,BuildingStatus,QualityTier,IncludeFurniture,IncludeEquipment,Bathrooms,MinPriceEur,MaxPriceEur,MinPriceBgn,MaxPriceBgn,EstimatedDays,EmailVerificationStatus,IsEmailVerified,IsContacted,ContactedAt,ProspectRating,CallOutcome,MeetingStatus,MeetingDate,ReadyToStartTimeline,FollowUpDate,MeetingNotes,AdminNotes,UtmSource,UtmMedium,UtmCampaign,UtmTerm,UtmContent");
 
             foreach (var l in leads)
             {
@@ -2941,8 +4204,15 @@
                 var content = SanitizeCsvField(l.UtmContent);
                 var notes = SanitizeCsvField(l.AdminNotes);
                 var contactedAtStr = l.ContactedAt.HasValue ? l.ContactedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : "";
+                var prospectRating = l.ProspectRating.HasValue ? l.ProspectRating.Value.ToString() : "";
+                var callOutcome = SanitizeCsvField(l.CallOutcome);
+                var meetingStatus = SanitizeCsvField(l.MeetingStatus);
+                var meetingDateStr = l.MeetingDate.HasValue ? l.MeetingDate.Value.ToString("yyyy-MM-dd HH:mm") : "";
+                var readyTimeline = SanitizeCsvField(l.ReadyToStartTimeline);
+                var followUpDateStr = l.FollowUpDate.HasValue ? l.FollowUpDate.Value.ToString("yyyy-MM-dd") : "";
+                var meetingNotes = SanitizeCsvField(l.MeetingNotes);
 
-                sb.AppendLine($"\"{l.CreatedAt:yyyy-MM-dd HH:mm:ss}\",\"{name}\",\"{email}\",\"{phone}\",\"{l.Scope}\",{l.SelectedArea},\"{l.BuildingStatus}\",\"{l.QualityTier}\",{l.IncludeFurniture},{l.IncludeEquipment},{l.BathroomCount},{l.MinPriceEur:F2},{l.MaxPriceEur:F2},{l.MinPriceBgn:F2},{l.MaxPriceBgn:F2},{l.EstimatedDays},\"{l.VerificationStatus}\",{l.IsEmailVerified},{l.IsContacted},\"{contactedAtStr}\",\"{notes}\",\"{source}\",\"{medium}\",\"{campaign}\",\"{term}\",\"{content}\"");
+                sb.AppendLine($"\"{l.CreatedAt:yyyy-MM-dd HH:mm:ss}\",\"{name}\",\"{email}\",\"{phone}\",\"{l.Scope}\",{l.SelectedArea},\"{l.BuildingStatus}\",\"{l.QualityTier}\",{l.IncludeFurniture},{l.IncludeEquipment},{l.BathroomCount},{l.MinPriceEur:F2},{l.MaxPriceEur:F2},{l.MinPriceBgn:F2},{l.MaxPriceBgn:F2},{l.EstimatedDays},\"{l.VerificationStatus}\",{l.IsEmailVerified},{l.IsContacted},\"{contactedAtStr}\",{prospectRating},\"{callOutcome}\",\"{meetingStatus}\",\"{meetingDateStr}\",\"{readyTimeline}\",\"{followUpDateStr}\",\"{meetingNotes}\",\"{notes}\",\"{source}\",\"{medium}\",\"{campaign}\",\"{term}\",\"{content}\"");
             }
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
@@ -3094,12 +4364,44 @@
             info.HasCustomization = true;
         }
 
+        // Parse [CRM_META]:{...} for dual safety fallback
+        const string crmMetaMarker = "[CRM_META]:";
+        int crmMetaIdx = notes.IndexOf(crmMetaMarker, StringComparison.OrdinalIgnoreCase);
+        if (crmMetaIdx >= 0)
+        {
+            int endOfLine = notes.IndexOf('\n', crmMetaIdx);
+            string metaJson = endOfLine >= 0
+                ? notes.Substring(crmMetaIdx + crmMetaMarker.Length, endOfLine - (crmMetaIdx + crmMetaMarker.Length)).Trim()
+                : notes.Substring(crmMetaIdx + crmMetaMarker.Length).Trim();
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(metaJson);
+                var root = doc.RootElement;
+                if (string.IsNullOrEmpty(lead.CallOutcome) && root.TryGetProperty("callOutcome", out var coProp) && coProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                    lead.CallOutcome = coProp.GetString();
+                if (!lead.ProspectRating.HasValue && root.TryGetProperty("prospectRating", out var prProp) && prProp.ValueKind == System.Text.Json.JsonValueKind.Number)
+                    lead.ProspectRating = prProp.GetInt32();
+                if (string.IsNullOrEmpty(lead.MeetingStatus) && root.TryGetProperty("meetingStatus", out var msProp) && msProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                    lead.MeetingStatus = msProp.GetString();
+                if (!lead.MeetingDate.HasValue && root.TryGetProperty("meetingDate", out var mdProp) && mdProp.ValueKind == System.Text.Json.JsonValueKind.String && DateTime.TryParse(mdProp.GetString(), out var parsedMd))
+                    lead.MeetingDate = parsedMd;
+                if (string.IsNullOrEmpty(lead.MeetingNotes) && root.TryGetProperty("meetingNotes", out var mnProp) && mnProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                    lead.MeetingNotes = mnProp.GetString();
+                if (string.IsNullOrEmpty(lead.ReadyToStartTimeline) && root.TryGetProperty("readyTimeline", out var rtProp) && rtProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                    lead.ReadyToStartTimeline = rtProp.GetString();
+                if (!lead.FollowUpDate.HasValue && root.TryGetProperty("followUpDate", out var fuProp) && fuProp.ValueKind == System.Text.Json.JsonValueKind.String && DateTime.TryParse(fuProp.GetString(), out var parsedFu))
+                    lead.FollowUpDate = parsedFu;
+            }
+            catch { }
+        }
+
         // Parse [SUMMARY]:...
         const string summaryMarker = "[SUMMARY]:";
         int sumIdx = notes.IndexOf(summaryMarker, StringComparison.OrdinalIgnoreCase);
         if (sumIdx >= 0)
         {
-            int nextMarker = notes.IndexOf("[CRM_NOTES]:", sumIdx, StringComparison.OrdinalIgnoreCase);
+            int nextMarker = notes.IndexOf("[CRM_META]:", sumIdx, StringComparison.OrdinalIgnoreCase);
+            if (nextMarker < 0) nextMarker = notes.IndexOf("[CRM_NOTES]:", sumIdx, StringComparison.OrdinalIgnoreCase);
             info.SummaryText = nextMarker >= 0
                 ? notes.Substring(sumIdx + summaryMarker.Length, nextMarker - (sumIdx + summaryMarker.Length)).Trim()
                 : notes.Substring(sumIdx + summaryMarker.Length).Trim();
@@ -3117,7 +4419,7 @@
         {
             info.CrmNotesText = notes.Substring(crmIdx + crmMarker.Length).Trim();
         }
-        else if (!notes.StartsWith("[CONFIG]:") && !notes.StartsWith("[SUMMARY]:") && !notes.StartsWith("[Клиентът"))
+        else if (!notes.StartsWith("[CONFIG]:") && !notes.StartsWith("[SUMMARY]:") && !notes.StartsWith("[CRM_META]:") && !notes.StartsWith("[Клиентът"))
         {
             info.CrmNotesText = notes.Trim();
         }

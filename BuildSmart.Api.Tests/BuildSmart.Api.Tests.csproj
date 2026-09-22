@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bunit" Version="2.11.3" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.11" />
@@ -28,6 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BuildSmart.Api\BuildSmart.Api.csproj" />
     <ProjectReference Include="..\BuildSmart.Core.Application\BuildSmart.Core.Application.csproj" />
+    <ProjectReference Include="..\BuildSmart.SharedUI\BuildSmart.SharedUI.csproj" />
   </ItemGroup>
 
 </Project>

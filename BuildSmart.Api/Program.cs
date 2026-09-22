@@ -607,6 +607,12 @@ public partial class Program
 			job => job.RunCleanupAsync(System.Threading.CancellationToken.None),
 			Cron.Daily);
 
+		// Register Lead Follow-Up Reminder recurring job (runs every hour to catch due reminders)
+		RecurringJob.AddOrUpdate<BuildSmart.Api.Workers.LeadFollowUpReminderJob>(
+			"lead-followup-reminders",
+			job => job.RunCheckAsync(System.Threading.CancellationToken.None),
+			Cron.Hourly);
+
 
 		// Authenticate and Authorize for ALL requests BEFORE any endpoint routing
 		app.UseAuthentication();

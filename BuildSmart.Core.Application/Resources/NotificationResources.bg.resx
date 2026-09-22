@@ -120,4 +120,10 @@
   <data name="Msg_AdminNewOffer" xml:space="preserve">
     <value>Генерирана е нова оферта за проект '{0}'.</value>
   </data>
+  <data name="Title_LeadFollowUpReminder" xml:space="preserve">
+    <value>Напомняне за обаждане на клиент</value>
+  </data>
+  <data name="Msg_LeadFollowUpReminder" xml:space="preserve">
+    <value>Днес е насрочено последващо обаждане за клиент '{0}' ({1}).</value>
+  </data>
 </root>

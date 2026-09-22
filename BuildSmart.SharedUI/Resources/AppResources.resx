@@ -3585,4 +3585,178 @@ Boncho | BuildSmart</value>
   <data name="AdminOffers_CreateError" xml:space="preserve">
     <value>Error creating offer: {0}</value>
   </data>
+  <data name="Admin_Leads_ProspectTitle" xml:space="preserve">
+    <value>Phone Call Assessment &amp; Prospect Rating</value>
+  </data>
+  <data name="Admin_Leads_ProspectRating" xml:space="preserve">
+    <value>Prospect Score (1-10)</value>
+  </data>
+  <data name="Admin_Leads_ProspectOutcome" xml:space="preserve">
+    <value>Call Outcome</value>
+  </data>
+  <data name="Admin_Leads_OutcomeAll" xml:space="preserve">
+    <value>All Outcomes</value>
+  </data>
+  <data name="Admin_Leads_OutcomeWilling" xml:space="preserve">
+    <value>Willing to Work</value>
+  </data>
+  <data name="Admin_Leads_OutcomePossible" xml:space="preserve">
+    <value>Possible to Work</value>
+  </data>
+  <data name="Admin_Leads_OutcomeReserved" xml:space="preserve">
+    <value>Reserved / Hesitant</value>
+  </data>
+  <data name="Admin_Leads_OutcomePointless" xml:space="preserve">
+    <value>Pointless / Not Possible</value>
+  </data>
+  <data name="Admin_Leads_OutcomeUnrated" xml:space="preserve">
+    <value>Not Rated</value>
+  </data>
+  <data name="Admin_Leads_RatingFilter" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="Admin_Leads_RatingAll" xml:space="preserve">
+    <value>All Ratings</value>
+  </data>
+  <data name="Admin_Leads_RatingHigh" xml:space="preserve">
+    <value>High Prospect (8-10)</value>
+  </data>
+  <data name="Admin_Leads_RatingMedium" xml:space="preserve">
+    <value>Moderate (5-7)</value>
+  </data>
+  <data name="Admin_Leads_RatingLow" xml:space="preserve">
+    <value>Low / Pointless (1-4)</value>
+  </data>
+  <data name="Admin_Leads_MeetingSection" xml:space="preserve">
+    <value>Live Meeting &amp; Site Inspection</value>
+  </data>
+  <data name="Admin_Leads_MeetingStatus" xml:space="preserve">
+    <value>Meeting Status</value>
+  </data>
+  <data name="Admin_Leads_MeetingAll" xml:space="preserve">
+    <value>All Meetings</value>
+  </data>
+  <data name="Admin_Leads_MeetingNone" xml:space="preserve">
+    <value>No Meeting</value>
+  </data>
+  <data name="Admin_Leads_MeetingRequested" xml:space="preserve">
+    <value>Meeting Requested</value>
+  </data>
+  <data name="Admin_Leads_MeetingScheduled" xml:space="preserve">
+    <value>Meeting Scheduled</value>
+  </data>
+  <data name="Admin_Leads_MeetingCompleted" xml:space="preserve">
+    <value>Meeting Completed</value>
+  </data>
+  <data name="Admin_Leads_MeetingCancelled" xml:space="preserve">
+    <value>Meeting Cancelled</value>
+  </data>
+  <data name="Admin_Leads_MeetingDate" xml:space="preserve">
+    <value>Meeting Date &amp; Time</value>
+  </data>
+  <data name="Admin_Leads_MeetingNotes" xml:space="preserve">
+    <value>Meeting Notes &amp; Observations</value>
+  </data>
+  <data name="Admin_Leads_MeetingNotesPlaceholder" xml:space="preserve">
+    <value>Enter site visit observations, client specifics, measurements...</value>
+  </data>
+  <data name="Admin_Leads_ReadinessSection" xml:space="preserve">
+    <value>Project Start Timeline &amp; Follow-up</value>
+  </data>
+  <data name="Admin_Leads_ReadyToStart" xml:space="preserve">
+    <value>Ready to Start</value>
+  </data>
+  <data name="Admin_Leads_TimelineImmediately" xml:space="preserve">
+    <value>Immediately / Next 2 weeks</value>
+  </data>
+  <data name="Admin_Leads_Timeline1Month" xml:space="preserve">
+    <value>Within 1 Month</value>
+  </data>
+  <data name="Admin_Leads_Timeline2to3Months" xml:space="preserve">
+    <value>In 2-3 Months</value>
+  </data>
+  <data name="Admin_Leads_Timeline6MonthsPlus" xml:space="preserve">
+    <value>In 6+ Months</value>
+  </data>
+  <data name="Admin_Leads_TimelineAct16" xml:space="preserve">
+    <value>Waiting for Act 16</value>
+  </data>
+  <data name="Admin_Leads_TimelineCustom" xml:space="preserve">
+    <value>Custom Timeframe</value>
+  </data>
+  <data name="Admin_Leads_FollowUpDate" xml:space="preserve">
+    <value>Follow-up Reminder Date</value>
+  </data>
+  <data name="Admin_Leads_FollowUpFilter" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="Admin_Leads_FollowUpAll" xml:space="preserve">
+    <value>All Reminders</value>
+  </data>
+  <data name="Admin_Leads_FollowUpOverdue" xml:space="preserve">
+    <value>Overdue Calls</value>
+  </data>
+  <data name="Admin_Leads_FollowUpToday" xml:space="preserve">
+    <value>Due Today</value>
+  </data>
+  <data name="Admin_Leads_FollowUpUpcoming" xml:space="preserve">
+    <value>Upcoming (Next 7 Days)</value>
+  </data>
+  <data name="Admin_Leads_FollowUpNone" xml:space="preserve">
+    <value>No Reminder</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd3Days" xml:space="preserve">
+    <value>+3 Days</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd1Week" xml:space="preserve">
+    <value>+1 Week</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd1Month" xml:space="preserve">
+    <value>+1 Month</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd3Months" xml:space="preserve">
+    <value>+3 Months</value>
+  </data>
+  <data name="Admin_Leads_ClearReminder" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Admin_Leads_ColProspect" xml:space="preserve">
+    <value>Prospect</value>
+  </data>
+  <data name="Admin_Leads_ColMeeting" xml:space="preserve">
+    <value>Meeting</value>
+  </data>
+  <data name="Admin_Leads_ColFollowUp" xml:space="preserve">
+    <value>Follow-up</value>
+  </data>
+  <data name="Admin_Leads_Banner_Overdue" xml:space="preserve">
+    <value>Overdue Follow-ups</value>
+  </data>
+  <data name="Admin_Leads_Banner_Today" xml:space="preserve">
+    <value>Calls Due Today</value>
+  </data>
+  <data name="Admin_Leads_Banner_Scheduled" xml:space="preserve">
+    <value>Upcoming Meetings</value>
+  </data>
+  <data name="Admin_Leads_Banner_TopProspects" xml:space="preserve">
+    <value>High Prospect Leads</value>
+  </data>
+  <data name="Admin_Leads_Banner_ViewAll" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="Admin_Leads_DueTodayBadge" xml:space="preserve">
+    <value>Call Today</value>
+  </data>
+  <data name="Admin_Leads_OverdueBadge" xml:space="preserve">
+    <value>Overdue</value>
+  </data>
+  <data name="Admin_Leads_MarkAsContacted" xml:space="preserve">
+    <value>Mark as Contacted</value>
+  </data>
+  <data name="Admin_Leads_MarkAsUncontacted" xml:space="preserve">
+    <value>Mark as Not Contacted</value>
+  </data>
+  <data name="Admin_Leads_ContactClientFirstNotice" xml:space="preserve">
+    <value>Mark client as contacted to record call evaluation, prospect rating (1-10), and site inspection meetings.</value>
+  </data>
 </root>

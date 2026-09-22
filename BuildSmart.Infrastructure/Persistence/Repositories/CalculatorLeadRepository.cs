@@ -52,6 +52,16 @@ public class CalculatorLeadRepository : ICalculatorLeadRepository
     public async Task UpdateLeadAsync(CalculatorLead lead)
     {
         lead.UpdatedAt = DateTime.UtcNow;
+
+        if (lead.MeetingDate.HasValue && lead.MeetingDate.Value.Kind != DateTimeKind.Utc)
+        {
+            lead.MeetingDate = DateTime.SpecifyKind(lead.MeetingDate.Value, DateTimeKind.Utc);
+        }
+        if (lead.FollowUpDate.HasValue && lead.FollowUpDate.Value.Kind != DateTimeKind.Utc)
+        {
+            lead.FollowUpDate = DateTime.SpecifyKind(lead.FollowUpDate.Value, DateTimeKind.Utc);
+        }
+
         await using var db = await CreateDbContextAsync();
         var existing = await db.CalculatorLeads.FirstOrDefaultAsync(l => l.Id == lead.Id);
         if (existing != null)
@@ -62,7 +72,28 @@ public class CalculatorLeadRepository : ICalculatorLeadRepository
         {
             db.CalculatorLeads.Update(lead);
         }
-        await db.SaveChangesAsync();
+
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("does not exist") == true
+                                        || ex.InnerException?.Message.Contains("42703") == true
+                                        || ex.Message.Contains("does not exist"))
+        {
+            // The database table has not yet been migrated with new CRM columns.
+            // Fallback: persist only the core columns and AdminNotes (which carries [CRM_META]).
+            await using var fallbackDb = await CreateDbContextAsync();
+            var fallbackLead = await fallbackDb.CalculatorLeads.FirstOrDefaultAsync(l => l.Id == lead.Id);
+            if (fallbackLead != null)
+            {
+                fallbackLead.AdminNotes = lead.AdminNotes;
+                fallbackLead.IsContacted = lead.IsContacted;
+                fallbackLead.ContactedAt = lead.ContactedAt;
+                fallbackLead.UpdatedAt = DateTime.UtcNow;
+                await fallbackDb.SaveChangesAsync();
+            }
+        }
     }
 
     public async Task DeleteLeadAsync(Guid id)

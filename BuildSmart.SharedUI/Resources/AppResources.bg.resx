@@ -3534,4 +3534,178 @@
   <data name="AdminOffers_CreateError" xml:space="preserve">
     <value>Грешка при създаване на офертата: {0}</value>
   </data>
+  <data name="Admin_Leads_ProspectTitle" xml:space="preserve">
+    <value>Оценка на разговора и перспектива</value>
+  </data>
+  <data name="Admin_Leads_ProspectRating" xml:space="preserve">
+    <value>Перспектива (1-10)</value>
+  </data>
+  <data name="Admin_Leads_ProspectOutcome" xml:space="preserve">
+    <value>Резултат от разговора</value>
+  </data>
+  <data name="Admin_Leads_OutcomeAll" xml:space="preserve">
+    <value>Всички резултати</value>
+  </data>
+  <data name="Admin_Leads_OutcomeWilling" xml:space="preserve">
+    <value>Готов за работа</value>
+  </data>
+  <data name="Admin_Leads_OutcomePossible" xml:space="preserve">
+    <value>Възможен клиент</value>
+  </data>
+  <data name="Admin_Leads_OutcomeReserved" xml:space="preserve">
+    <value>Резервиран / Колеблив</value>
+  </data>
+  <data name="Admin_Leads_OutcomePointless" xml:space="preserve">
+    <value>Безсмислен / Невъзможен</value>
+  </data>
+  <data name="Admin_Leads_OutcomeUnrated" xml:space="preserve">
+    <value>Неоценен</value>
+  </data>
+  <data name="Admin_Leads_RatingFilter" xml:space="preserve">
+    <value>Рейтинг</value>
+  </data>
+  <data name="Admin_Leads_RatingAll" xml:space="preserve">
+    <value>Всички рейтинги</value>
+  </data>
+  <data name="Admin_Leads_RatingHigh" xml:space="preserve">
+    <value>Висока перспектива (8-10)</value>
+  </data>
+  <data name="Admin_Leads_RatingMedium" xml:space="preserve">
+    <value>Умерена (5-7)</value>
+  </data>
+  <data name="Admin_Leads_RatingLow" xml:space="preserve">
+    <value>Ниска / Невъзможен (1-4)</value>
+  </data>
+  <data name="Admin_Leads_MeetingSection" xml:space="preserve">
+    <value>Среща на живо и оглед</value>
+  </data>
+  <data name="Admin_Leads_MeetingStatus" xml:space="preserve">
+    <value>Статус на срещата</value>
+  </data>
+  <data name="Admin_Leads_MeetingAll" xml:space="preserve">
+    <value>Всички срещи</value>
+  </data>
+  <data name="Admin_Leads_MeetingNone" xml:space="preserve">
+    <value>Няма среща</value>
+  </data>
+  <data name="Admin_Leads_MeetingRequested" xml:space="preserve">
+    <value>Иска среща / оглед</value>
+  </data>
+  <data name="Admin_Leads_MeetingScheduled" xml:space="preserve">
+    <value>Насрочена среща</value>
+  </data>
+  <data name="Admin_Leads_MeetingCompleted" xml:space="preserve">
+    <value>Проведена среща</value>
+  </data>
+  <data name="Admin_Leads_MeetingCancelled" xml:space="preserve">
+    <value>Отменена среща</value>
+  </data>
+  <data name="Admin_Leads_MeetingDate" xml:space="preserve">
+    <value>Дата и час на срещата</value>
+  </data>
+  <data name="Admin_Leads_MeetingNotes" xml:space="preserve">
+    <value>Бележки от срещата / огледа</value>
+  </data>
+  <data name="Admin_Leads_MeetingNotesPlaceholder" xml:space="preserve">
+    <value>Въведете детайли от огледа, специфики на клиента, размери...</value>
+  </data>
+  <data name="Admin_Leads_ReadinessSection" xml:space="preserve">
+    <value>Срок за стартиране и последващо обаждане</value>
+  </data>
+  <data name="Admin_Leads_ReadyToStart" xml:space="preserve">
+    <value>Готовност за старт</value>
+  </data>
+  <data name="Admin_Leads_TimelineImmediately" xml:space="preserve">
+    <value>Веднага / До 2 седмици</value>
+  </data>
+  <data name="Admin_Leads_Timeline1Month" xml:space="preserve">
+    <value>До 1 месец</value>
+  </data>
+  <data name="Admin_Leads_Timeline2to3Months" xml:space="preserve">
+    <value>След 2-3 месеца</value>
+  </data>
+  <data name="Admin_Leads_Timeline6MonthsPlus" xml:space="preserve">
+    <value>След 6+ месеца</value>
+  </data>
+  <data name="Admin_Leads_TimelineAct16" xml:space="preserve">
+    <value>Чака Акт 16</value>
+  </data>
+  <data name="Admin_Leads_TimelineCustom" xml:space="preserve">
+    <value>Персонализиран срок</value>
+  </data>
+  <data name="Admin_Leads_FollowUpDate" xml:space="preserve">
+    <value>Дата за напомняне</value>
+  </data>
+  <data name="Admin_Leads_FollowUpFilter" xml:space="preserve">
+    <value>Напомняния</value>
+  </data>
+  <data name="Admin_Leads_FollowUpAll" xml:space="preserve">
+    <value>Всички напомняния</value>
+  </data>
+  <data name="Admin_Leads_FollowUpOverdue" xml:space="preserve">
+    <value>Просрочени обаждания</value>
+  </data>
+  <data name="Admin_Leads_FollowUpToday" xml:space="preserve">
+    <value>За днес</value>
+  </data>
+  <data name="Admin_Leads_FollowUpUpcoming" xml:space="preserve">
+    <value>Предстоящи (следващи 7 дни)</value>
+  </data>
+  <data name="Admin_Leads_FollowUpNone" xml:space="preserve">
+    <value>Без напомняне</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd3Days" xml:space="preserve">
+    <value>+3 дни</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd1Week" xml:space="preserve">
+    <value>+1 седмица</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd1Month" xml:space="preserve">
+    <value>+1 месец</value>
+  </data>
+  <data name="Admin_Leads_QuickAdd3Months" xml:space="preserve">
+    <value>+3 месеца</value>
+  </data>
+  <data name="Admin_Leads_ClearReminder" xml:space="preserve">
+    <value>Изчисти</value>
+  </data>
+  <data name="Admin_Leads_ColProspect" xml:space="preserve">
+    <value>Перспектива</value>
+  </data>
+  <data name="Admin_Leads_ColMeeting" xml:space="preserve">
+    <value>Среща</value>
+  </data>
+  <data name="Admin_Leads_ColFollowUp" xml:space="preserve">
+    <value>Напомняне</value>
+  </data>
+  <data name="Admin_Leads_Banner_Overdue" xml:space="preserve">
+    <value>Просрочени обаждания</value>
+  </data>
+  <data name="Admin_Leads_Banner_Today" xml:space="preserve">
+    <value>Обаждания за днес</value>
+  </data>
+  <data name="Admin_Leads_Banner_Scheduled" xml:space="preserve">
+    <value>Насрочени срещи</value>
+  </data>
+  <data name="Admin_Leads_Banner_TopProspects" xml:space="preserve">
+    <value>Висока перспектива</value>
+  </data>
+  <data name="Admin_Leads_Banner_ViewAll" xml:space="preserve">
+    <value>Филтрирай</value>
+  </data>
+  <data name="Admin_Leads_DueTodayBadge" xml:space="preserve">
+    <value>Обади се днес</value>
+  </data>
+  <data name="Admin_Leads_OverdueBadge" xml:space="preserve">
+    <value>Просрочено</value>
+  </data>
+  <data name="Admin_Leads_MarkAsContacted" xml:space="preserve">
+    <value>Маркирай като проведен контакт</value>
+  </data>
+  <data name="Admin_Leads_MarkAsUncontacted" xml:space="preserve">
+    <value>Маркирай като непроведен контакт</value>
+  </data>
+  <data name="Admin_Leads_ContactClientFirstNotice" xml:space="preserve">
+    <value>Маркирайте клиента като проведен контакт, за да отключите оценката на разговора, перспективата (1-10) и организирането на оглед.</value>
+  </data>
 </root>
