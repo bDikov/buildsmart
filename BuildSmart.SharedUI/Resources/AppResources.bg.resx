@@ -3354,7 +3354,154 @@
   <data name="Admin_Leads_ExcludedItems" xml:space="preserve">
     <value>Изключени позиции</value>
   </data>
-  <data name="Admin_Leads_ActiveCategories" xml:space="preserve">
-    <value>Активни категории</value>
+  <data name="AdminOffers_NewMarkdownOffer" xml:space="preserve">
+    <value>Нова КСС Оферта от Markdown</value>
+  </data>
+  <data name="AdminOffers_ModalTitle" xml:space="preserve">
+    <value>Нова Официална Оферта и КСС от Markdown</value>
+  </data>
+  <data name="AdminOffers_Close" xml:space="preserve">
+    <value>Затвори</value>
+  </data>
+  <data name="AdminOffers_Step1Desc" xml:space="preserve">
+    <value>Качете готов .md файл или въведете Markdown текста с клиентските параметри и количествените сметки по раздели.</value>
+  </data>
+  <data name="AdminOffers_ClientLabel" xml:space="preserve">
+    <value>Изготвено за (Клиент / Възложител):</value>
+  </data>
+  <data name="AdminOffers_ClientPlaceholder" xml:space="preserve">
+    <value>Въведете име на клиента (по подразбиране: Възложител)</value>
+  </data>
+  <data name="AdminOffers_AssignToLabel" xml:space="preserve">
+    <value>Назначаване (Потребител):</value>
+  </data>
+  <data name="AdminOffers_SiteLocationLabel" xml:space="preserve">
+    <value>Обект / Местоположение:</value>
+  </data>
+  <data name="AdminOffers_SiteLocationPlaceholder" xml:space="preserve">
+    <value>напр. гр. София, кв. Лозенец</value>
+  </data>
+  <data name="AdminOffers_SelectFile" xml:space="preserve">
+    <value>Избери .md файл</value>
+  </data>
+  <data name="AdminOffers_LoadSample" xml:space="preserve">
+    <value>Зареди примерен шаблон</value>
+  </data>
+  <data name="AdminOffers_TextareaPlaceholder" xml:space="preserve">
+    <value>Поставете съдържанието на Markdown офертата тук...</value>
+  </data>
+  <data name="AdminOffers_Cancel" xml:space="preserve">
+    <value>Отказ</value>
+  </data>
+  <data name="AdminOffers_Processing" xml:space="preserve">
+    <value>Обработка...</value>
+  </data>
+  <data name="AdminOffers_PreviewAndValidate" xml:space="preserve">
+    <value>Прегледай и валидирай КСС</value>
+  </data>
+  <data name="AdminOffers_ProposalRequisites" xml:space="preserve">
+    <value>Реквизити на Офертата (Корица и Получател)</value>
+  </data>
+  <data name="AdminOffers_ReadyForImport" xml:space="preserve">
+    <value>Готова за импорт ({0} каталожни, {1} с цена / общо {2})</value>
+  </data>
+  <data name="AdminOffers_UnrecognizedWithoutPrice" xml:space="preserve">
+    <value>Внимание: Неразпознати пера без цена ({0}/{1})</value>
+  </data>
+  <data name="AdminOffers_ProjectTitleLabel" xml:space="preserve">
+    <value>Заглавие на офертата / проект:</value>
+  </data>
+  <data name="AdminOffers_ProjectTitlePlaceholder" xml:space="preserve">
+    <value>Официална Оферта за СМР</value>
+  </data>
+  <data name="AdminOffers_SiteParameters" xml:space="preserve">
+    <value>Параметри на обекта:</value>
+  </data>
+  <data name="AdminOffers_ParamLocation" xml:space="preserve">
+    <value>Местоположение:</value>
+  </data>
+  <data name="AdminOffers_ParamCondition" xml:space="preserve">
+    <value>Състояние:</value>
+  </data>
+  <data name="AdminOffers_ParamArea" xml:space="preserve">
+    <value>Обща площ:</value>
+  </data>
+  <data name="AdminOffers_ParamTimeline" xml:space="preserve">
+    <value>Срок:</value>
+  </data>
+  <data name="AdminOffers_ParamQuality" xml:space="preserve">
+    <value>Ниво:</value>
+  </data>
+  <data name="AdminOffers_ParamWarranty" xml:space="preserve">
+    <value>Гаранция:</value>
+  </data>
+  <data name="AdminOffers_ParamPayment" xml:space="preserve">
+    <value>Плащане:</value>
+  </data>
+  <data name="AdminOffers_InvestmentStructure" xml:space="preserve">
+    <value>Структура на инвестицията:</value>
+  </data>
+  <data name="AdminOffers_ColComponent" xml:space="preserve">
+    <value>Компонент</value>
+  </data>
+  <data name="AdminOffers_ColShare" xml:space="preserve">
+    <value>Дял</value>
+  </data>
+  <data name="AdminOffers_ColIndex" xml:space="preserve">
+    <value>№</value>
+  </data>
+  <data name="AdminOffers_ColItemDesc" xml:space="preserve">
+    <value>Описание / СМР Перо</value>
+  </data>
+  <data name="AdminOffers_ColUnit" xml:space="preserve">
+    <value>Мярка</value>
+  </data>
+  <data name="AdminOffers_ColQuantity" xml:space="preserve">
+    <value>Количество</value>
+  </data>
+  <data name="AdminOffers_ColUnitPrice" xml:space="preserve">
+    <value>Ед. цена</value>
+  </data>
+  <data name="AdminOffers_ColTotal" xml:space="preserve">
+    <value>Общо</value>
+  </data>
+  <data name="AdminOffers_SectionTitle" xml:space="preserve">
+    <value>Раздел: {0}</value>
+  </data>
+  <data name="AdminOffers_CustomPriceBadge" xml:space="preserve">
+    <value>Потребителска цена</value>
+  </data>
+  <data name="AdminOffers_EditPriceTitle" xml:space="preserve">
+    <value>Редактирайте цена или диапазон (напр. 1500 - 2500 или €2000)</value>
+  </data>
+  <data name="AdminOffers_SubtotalForSection" xml:space="preserve">
+    <value>Междинна сума ({0}):</value>
+  </data>
+  <data name="AdminOffers_GrandTotalLabel" xml:space="preserve">
+    <value>Обща стойност на Офертата (КСС):</value>
+  </data>
+  <data name="AdminOffers_BackToEdit" xml:space="preserve">
+    <value>Назад към редакция</value>
+  </data>
+  <data name="AdminOffers_ConfirmAndGeneratePdf" xml:space="preserve">
+    <value>Потвърди и Генерирай КСС PDF</value>
+  </data>
+  <data name="AdminOffers_GeneratingPdf" xml:space="preserve">
+    <value>Генериране на PDF...</value>
+  </data>
+  <data name="AdminOffers_ImportSuccessAlert" xml:space="preserve">
+    <value>Официалната Оферта и КСС беше успешно създадена и PDF документът е компилиран и готов за сваляне!</value>
+  </data>
+  <data name="AdminOffers_FileReadError" xml:space="preserve">
+    <value>Грешка при четене на файла: {0}</value>
+  </data>
+  <data name="AdminOffers_ValidationFailed" xml:space="preserve">
+    <value>Грешка при валидация: {0}</value>
+  </data>
+  <data name="AdminOffers_CommunicationError" xml:space="preserve">
+    <value>Комуникационна грешка: {0}</value>
+  </data>
+  <data name="AdminOffers_CreateError" xml:space="preserve">
+    <value>Грешка при създаване на офертата: {0}</value>
   </data>
 </root>

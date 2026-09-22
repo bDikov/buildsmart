@@ -133,6 +133,7 @@ public class CustomOfferPhaseDto
 
 public class CustomOfferItemDto
 {
+    public int Index { get; set; }
     public string SkuCode { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -140,6 +141,10 @@ public class CustomOfferItemDto
     public decimal Quantity { get; set; }
     public decimal UnitPriceEur { get; set; }
     public decimal TotalEur => Math.Round(Quantity * UnitPriceEur, 2);
+    public string? PriceRangeText { get; set; }
+    public decimal? MinPriceEur { get; set; }
+    public decimal? MaxPriceEur { get; set; }
+    public List<string> SubItems { get; set; } = new();
 }
 
 

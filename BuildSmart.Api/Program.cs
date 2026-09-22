@@ -181,6 +181,7 @@ public partial class Program
 		builder.Services.AddScoped<IPricingEngine, PricingEngine>();
 		builder.Services.AddScoped<IEmailService, EmailService>();
 		builder.Services.AddScoped<IProjectManagementService, BuildSmart.Infrastructure.Services.ProjectManagementService>();
+		builder.Services.AddScoped<IMarkdownOfferParserService, BuildSmart.Infrastructure.Services.MarkdownOfferParserService>();
 		builder.Services.AddSingleton<IActiveProjectChatTracker, ActiveProjectChatTracker>();
 		builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
 

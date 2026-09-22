@@ -22,6 +22,10 @@ public class ProjectRepository : IProjectRepository
 				.ThenInclude(jp => jp.JobTasks)
 					.ThenInclude(t => t.AcceptanceCriteria)
 			.Include(p => p.JobPosts)
+				.ThenInclude(jp => jp.JobTasks)
+					.ThenInclude(t => t.SkuItems)
+						.ThenInclude(s => s.ServiceSku)
+			.Include(p => p.JobPosts)
 				.ThenInclude(jp => jp.Feedbacks)
 					.ThenInclude(f => f.Author)
 			.Include(p => p.JobPosts)
@@ -57,7 +61,10 @@ public class ProjectRepository : IProjectRepository
 
 	public void Update(Project project)
 	{
-		_context.Projects.Update(project);
+		if (_context.Entry(project).State == EntityState.Detached)
+		{
+			_context.Projects.Update(project);
+		}
 	}
 
 	public async Task DeleteAsync(Guid id)

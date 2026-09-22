@@ -4,63 +4,54 @@
     <meta charset="utf-8" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #333333;
+            color: #1f2937;
             word-break: break-word;
             overflow-wrap: break-word;
         }
 
         .pdf-page-fixed, .pdf-page-flow {
             width: 100%;
-            max-width: 56rem; /* max-w-4xl */
+            max-width: 56rem;
             margin: 0 auto;
             background-color: #ffffff;
-            padding: 4rem; /* p-16 */
-            padding-bottom: 12rem; /* Make room for absolutely positioned footer */
+            padding: 3.5rem;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            position: relative; /* Establish relative positioning context */
+            position: relative;
         }
 
         .pdf-footer-block {
-            position: absolute;
-            bottom: 4rem;
-            left: 4rem;
-            right: 4rem;
+            width: 100%;
+            margin-top: auto;
         }
 
         .separator {
-            height: 5px;
-            background-color: #333333;
+            height: 3px;
+            background-color: #111827;
             width: 100%;
-            margin: 20px 0;
+            margin: 16px 0;
         }
 
-        /* Screen style (when viewed in browser) */
+        /* Screen style */
         @media screen {
             body {
-                background-color: #f3f4f6; /* bg-gray-50 */
+                background-color: #f3f4f6;
                 padding: 2rem 0;
             }
-            .pdf-page-fixed {
+            .pdf-page-fixed, .pdf-page-flow {
                 min-height: 1050px;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
-                border-radius: 0.5rem;
-                margin-bottom: 2rem;
-            }
-            .pdf-page-flow {
-                min-height: 1050px;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                 border-radius: 0.5rem;
                 margin-bottom: 2rem;
             }
         }
 
-        /* Print style (when generating PDF) */
+        /* Print style (Puppeteer PDF rendering) */
         @media print {
             body {
                 background-color: #ffffff;
@@ -73,8 +64,7 @@
                 min-height: 275mm;
                 box-shadow: none;
                 margin: 0;
-                padding: 15mm;
-                padding-bottom: 10mm; /* Bring footer closer to bottom edge */
+                padding: 14mm 14mm 12mm 14mm;
                 border-radius: 0;
                 display: flex;
                 flex-direction: column;
@@ -85,14 +75,13 @@
                 min-height: auto;
                 box-shadow: none;
                 margin: 0;
-                padding: 15mm;
-                padding-bottom: 10mm; /* Bring footer closer to bottom edge */
+                padding: 14mm 14mm 12mm 14mm;
                 border-radius: 0;
-                display: block; /* Force block layout in print to prevent flexbox page-break bugs */
+                display: block;
             }
             .pdf-footer-block {
                 position: static;
-                margin-top: auto; /* Pushes footer to bottom in flex containers */
+                margin-top: 0.75rem;
                 width: 100%;
             }
             .page-break {
@@ -107,6 +96,19 @@
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
+            table {
+                page-break-inside: auto;
+            }
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-row-group;
+            }
         }
     </style>
 </head>
@@ -115,120 +117,289 @@
     <!-- PAGE 1: COVER -->
     <div class="pdf-page-fixed justify-between page-break">
         <div class="mt-8">
-            <h1 class="text-8xl font-extrabold text-black mb-12 tracking-tight">{{Header_Hello}}</h1>
-            <div class="mb-24">
-                <h2 class="text-5xl font-bold text-gray-900">{{JobTitle}}</h2>
-                <p class="text-2xl text-gray-500 mt-4 uppercase tracking-widest">{{Header_ProjectProposal}}</p>
+            <h1 class="text-7xl font-extrabold text-black mb-10 tracking-tight">{{Header_Hello}}</h1>
+            <div class="mb-20">
+                <h2 class="text-4xl font-bold text-gray-900 leading-tight">{{JobTitle}}</h2>
+                <p class="text-xl text-gray-500 mt-4 uppercase tracking-widest">{{Header_ProjectProposal}}</p>
             </div>
         </div>
-        <div class="flex justify-between items-end">
+        <div class="flex justify-between items-end border-t border-gray-200 pt-8">
             <div>
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">{{Header_PreparedBy}}</p>
-                <p class="text-xl font-bold text-black">{{TradesmanName}}</p>
-                <p class="text-lg text-gray-500">Ref: #{{JobId}}</p>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{{Header_PreparedBy}}</p>
+                <p class="text-lg font-bold text-black">{{TradesmanName}}</p>
+                <p class="text-sm text-gray-500">Реф. № {{JobId}}</p>
             </div>
             <div class="text-right">
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">{{Header_PreparedFor}}</p>
-                <p class="text-xl font-semibold text-black">{{ClientName}}</p>
-                <p class="text-lg text-gray-600">{{ClientAddress}}</p>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{{Header_PreparedFor}}</p>
+                <p class="text-lg font-semibold text-black">{{ClientName}}</p>
+                <p class="text-sm text-gray-600 max-w-sm">{{ClientAddress}}</p>
             </div>
         </div>
     </div>
 
-    <!-- PAGE 2: PROJECT BRIEF -->
-    <div class="{{BriefClass}} {{#if ShowPageBreakAfterBrief}}page-break{{/if}}">
-        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_ProjectBrief}}</h2>
-        
-        <div class="mb-16 flex-grow">
-            <h3 class="text-3xl font-bold text-black mb-6">{{Header_Overview}}</h3>
-            <p class="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+    <!-- PAGE 2: PROJECT OVERVIEW & INVESTMENT BREAKDOWN -->
+    <div class="{{BriefClass}} page-break">
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">{{Label_ProjectBrief}}</h2>
+
+        {{#if HasParameters}}
+        <!-- Project Parameters Bento Grid -->
+        <div class="mb-2.5 no-break">
+            <h3 class="text-sm font-bold text-gray-900 mb-1">Общи данни и параметри на проекта</h3>
+            <div class="grid grid-cols-2 gap-1.5 bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-[11px]">
+                {{#if Parameters.Location}}
+                <div class="col-span-2">
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Местоположение / Обект:</span>
+                    <span class="font-semibold text-gray-900">{{Parameters.Location}}</span>
+                </div>
+                {{/if}}
+                {{#if Parameters.PropertyCondition}}
+                <div class="col-span-2">
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Възраст и състояние:</span>
+                    <span class="text-gray-700 leading-snug">{{Parameters.PropertyCondition}}</span>
+                </div>
+                {{/if}}
+                {{#if Parameters.TotalArea}}
+                <div>
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Обща площ:</span>
+                    <span class="font-bold text-gray-900">{{Parameters.TotalArea}}</span>
+                </div>
+                {{/if}}
+                {{#if Parameters.ExecutionTimeline}}
+                <div>
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Срок за изпълнение:</span>
+                    <span class="font-bold text-gray-900">{{Parameters.ExecutionTimeline}}</span>
+                </div>
+                {{/if}}
+                {{#if Parameters.QualityLevel}}
+                <div>
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Ниво на изпълнение:</span>
+                    <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">{{Parameters.QualityLevel}}</span>
+                </div>
+                {{/if}}
+                {{#if Parameters.Warranty}}
+                <div>
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Гаранция:</span>
+                    <span class="font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">{{Parameters.Warranty}}</span>
+                </div>
+                {{/if}}
+                {{#if Parameters.PaymentTerms}}
+                <div class="col-span-2 pt-1 border-t border-gray-200">
+                    <span class="text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Начин на плащане:</span>
+                    <span class="font-semibold text-gray-900">{{Parameters.PaymentTerms}}</span>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if HasInvestmentBreakdown}}
+        <!-- 3-Component Investment Breakdown -->
+        <div class="mb-2">
+            <div class="flex justify-between items-end mb-1.5">
+                <h3 class="text-sm font-bold text-gray-900">02 — Структура на инвестицията</h3>
+                {{#if GrandTotalRange}}
+                <div class="text-right">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider block font-bold">Прогнозен диапазон:</span>
+                    <span class="text-sm font-extrabold text-gray-900 font-mono">{{GrandTotalRange}}</span>
+                    {{#if GrandTotalBgnRange}}
+                    <span class="text-xs text-gray-500 font-mono ml-1">({{GrandTotalBgnRange}})</span>
+                    {{/if}}
+                </div>
+                {{/if}}
+            </div>
+
+            <table class="w-full text-left border-collapse bg-white border border-gray-200 rounded-lg overflow-hidden text-[11px]">
+                <thead>
+                    <tr class="bg-gray-100 border-b border-gray-200 font-bold uppercase text-gray-600 tracking-wider">
+                        <th class="py-1 px-2">Компонент на инвестицията</th>
+                        <th class="py-1 px-1.5 text-center w-14">Дял (%)</th>
+                        <th class="py-1 px-2 text-right w-36">Стойност в EUR (€)</th>
+                        <th class="py-1 px-2 text-right w-36">Стойност в BGN (лв.)</th>
+                        <th class="py-1 px-2">Какво включва</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-gray-700">
+                    {{#each InvestmentBreakdown}}
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-1 px-2 font-semibold text-gray-900">{{Name}}</td>
+                        <td class="py-1 px-1.5 text-center font-bold font-mono text-gray-800">{{SharePercentage}}</td>
+                        <td class="py-1 px-2 text-right font-bold font-mono text-gray-900">{{AmountEurRange}}</td>
+                        <td class="py-1 px-2 text-right font-mono text-gray-600">{{AmountBgnRange}}</td>
+                        <td class="py-1 px-2 text-gray-600 leading-snug">{{Description}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{/if}}
+
+        {{#if ScopeDescription}}
+        {{#unless HasParameters}}
+        <div class="mb-8 flex-grow">
+            <h3 class="text-2xl font-bold text-black mb-4">{{Header_Overview}}</h3>
+            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                 {{ScopeDescription}}
             </p>
         </div>
+        {{/unless}}
+        {{/if}}
 
-        {{#if ShowPageBreakAfterBrief}}
         <!-- Footer -->
-        <div class="pdf-footer-block">
-            <div class="flex justify-between text-sm text-gray-500">
+        <div class="pdf-footer-block no-break">
+            <div class="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-200">
                 <p>{{TradesmanName}}</p>
                 <p>{{Date}}</p>
             </div>
         </div>
-        {{/if}}
     </div>
 
-    <!-- PRICING BREAKDOWN (GROUPED BY CATEGORY) -->
-    <div class="{{PricingClass}} {{#if ShowPageBreakAfterPricing}}page-break{{/if}}">
-        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_PricingBreakdown}}</h2>
+    <!-- PRICING BREAKDOWN (BOQ / КСС) -->
+    <div class="{{PricingClass}}">
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">{{Label_PricingBreakdown}}</h2>
         
-        <div class="flex justify-between items-end mb-6">
-            <h3 class="text-3xl font-bold text-black">{{Header_Fees}}</h3>
-            <p class="text-gray-500">{{Label_FeesDescription}}</p>
+        <div class="flex justify-between items-end mb-3">
+            <h3 class="text-2xl font-bold text-black">{{Header_Fees}}</h3>
+            <p class="text-xs text-gray-500">{{Label_FeesDescription}}</p>
         </div>
 
         <div class="separator"></div>
 
-        <div class="mb-12">
+        <div class="mb-6">
             {{#each Categories}}
-            <div class="mb-10">
+            <div class="mb-6">
                 <!-- Category Header -->
-                <h4 class="text-xl font-bold text-black uppercase tracking-wide mb-4">{{CategoryName}}</h4>
+                <h4 class="text-base font-bold text-gray-900 uppercase tracking-wide mb-2 pb-1 border-b border-gray-200">{{CategoryName}}</h4>
                 
-                <!-- Tasks within Category -->
-                <div class="flex flex-col gap-6 mb-4">
-                    {{#each Tasks}}
-                    <div class="no-break">
-                        <div class="flex justify-between items-center text-lg text-gray-700 mb-1">
-                            <span class="pr-8">{{Description}}</span>
-                            <span class="font-semibold whitespace-nowrap">{{../../CurrencySymbol}}{{Amount}}</span>
-                        </div>
-                        {{#if AcceptanceCriteria}}
-                        <ul class="list-disc pl-5 text-sm text-gray-500">
-                            {{#each AcceptanceCriteria}}
-                            <li>{{this}}</li>
-                            {{/each}}
-                        </ul>
+                <!-- Tasks within Category (BOQ / КСС Table) -->
+                <table class="w-full text-left border-collapse mb-2">
+                    <thead>
+                        <tr class="border-b-2 border-gray-300 text-xs font-bold uppercase text-gray-500 tracking-wider">
+                            <th class="py-1.5 pr-2 w-7 text-center">№</th>
+                            <th class="py-1.5 pr-3">Описание на СМР / Процес</th>
+                            <th class="py-1.5 px-1.5 text-center w-12">Мярка</th>
+                            <th class="py-1.5 px-1.5 text-right w-12">Кол.</th>
+                            <th class="py-1.5 px-2 text-right w-28 whitespace-nowrap">Ед. цена</th>
+                            <th class="py-1.5 pl-2 text-right w-28 whitespace-nowrap">Общо</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-xs text-gray-700">
+                        {{#each Tasks}}
+                        <tr class="no-break hover:bg-gray-50">
+                            <td class="py-1.5 pr-2 text-gray-400 font-mono text-center align-top">{{Index}}</td>
+                            <td class="py-1.5 pr-3 align-top">
+                                <div class="font-semibold text-gray-900 leading-snug">{{Description}}</div>
+                                {{#if SkuCode}}<span class="inline-block text-[10px] text-gray-400 font-mono mt-0.5">Код: {{SkuCode}}</span>{{/if}}
+                                {{#if AcceptanceCriteria}}
+                                <ul class="list-disc pl-3.5 text-[11px] text-gray-600 mt-1 space-y-0.5 leading-snug">
+                                    {{#each AcceptanceCriteria}}
+                                    <li>{{this}}</li>
+                                    {{/each}}
+                                </ul>
+                                {{/if}}
+                            </td>
+                            <td class="py-1.5 px-1.5 text-center text-gray-600 font-medium align-top">{{Unit}}</td>
+                            <td class="py-1.5 px-1.5 text-right font-mono text-gray-800 align-top">{{Quantity}}</td>
+                            <td class="py-1.5 px-2 text-right font-mono text-gray-800 align-top whitespace-nowrap">
+                                {{#if PriceRange}}
+                                    {{PriceRange}}
+                                {{else}}
+                                    {{../../CurrencySymbol}}{{UnitPrice}}
+                                {{/if}}
+                            </td>
+                            <td class="py-1.5 pl-2 text-right font-bold font-mono text-gray-900 align-top whitespace-nowrap">
+                                {{#if AmountRange}}
+                                    {{AmountRange}}
+                                {{else}}
+                                    {{../../CurrencySymbol}}{{Amount}}
+                                {{/if}}
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                    {{#unless ../GrandTotalRange}}
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-200 font-bold text-gray-900 text-sm">
+                            <td colspan="5" class="py-2 text-right pr-4">{{SubtotalLabel}}</td>
+                            <td class="py-2 pl-2 text-right font-mono text-base">
+                                {{#if SubtotalRange}}
+                                    {{SubtotalRange}}
+                                {{else}}
+                                    {{../CurrencySymbol}}{{Subtotal}}
+                                {{/if}}
+                            </td>
+                        </tr>
+                    </tfoot>
+                    {{/unless}}
+                </table>
+            </div>
+            {{/each}}
+        </div>
+
+        <!-- Grand Total Block -->
+        <div class="no-break mt-4 pt-3 border-t-2 border-gray-900">
+            <div class="flex justify-between items-center text-xl font-extrabold text-black mb-3">
+                <span>{{Label_GrandTotal}}</span>
+                <div class="text-right">
+                    {{#if GrandTotalRange}}
+                        <span class="text-xl font-extrabold text-black font-mono">{{GrandTotalRange}}</span>
+                        {{#if GrandTotalBgnRange}}
+                            <span class="text-xs font-normal text-gray-500 block font-mono mt-0.5">({{GrandTotalBgnRange}})</span>
                         {{/if}}
-                    </div>
-                    {{/each}}
+                    {{else}}
+                        <span class="text-xl font-extrabold text-black font-mono">{{CurrencySymbol}}{{TotalAmount}}</span>
+                    {{/if}}
                 </div>
-                
-                <!-- Category Subtotal -->
-                <div class="flex justify-between items-center text-lg text-gray-900 font-bold pt-3 border-t border-gray-200 no-break">
-                    <span>{{SubtotalLabel}}</span>
-                    <span>{{../CurrencySymbol}}{{Subtotal}}</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-4 border-t border-gray-200 flex justify-between text-xs text-gray-400">
+                <p>{{TradesmanName}}</p>
+                <p>{{Date}}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENGINEERING NOTES & RECOMMENDATIONS -->
+    {{#if HasEngineeringNotes}}
+    <div class="pdf-page-flow page-break-before">
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">04 — ИНЖЕНЕРНИ ПРЕПОРЪКИ И ВАРИАНТИ</h2>
+        <h3 class="text-xl font-bold text-black mb-4">Инженерни анализи, опции и препоръки за преговори</h3>
+
+        <div class="space-y-2.5 mb-4">
+            {{#each EngineeringNotes}}
+            <div class="no-break bg-white border border-gray-200 rounded-lg p-3 shadow-xs">
+                <div class="flex flex-wrap justify-between items-baseline gap-2 mb-1.5">
+                    <h4 class="text-xs font-bold text-gray-900 flex-1 min-w-[200px]">{{Title}}</h4>
+                    {{#if CostEstimate}}
+                    <span class="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 inline-block">
+                        {{CostEstimate}}
+                    </span>
+                    {{/if}}
+                </div>
+                <div class="text-[11px] text-gray-700 leading-snug whitespace-pre-line">
+                    {{Content}}
                 </div>
             </div>
             {{/each}}
         </div>
 
-        <div class="pdf-footer-block no-break">
-            <div class="separator"></div>
-
-            <!-- Grand Total -->
-            <div class="flex justify-between items-center text-3xl font-extrabold text-black mb-8">
-                <span>{{Label_GrandTotal}}</span>
-                <span>{{CurrencySymbol}}{{TotalAmount}}</span>
-            </div>
-
-            <!-- Footer -->
-            <div class="pt-8 border-t border-gray-200 flex justify-between text-sm text-gray-500">
-                <p>{{TradesmanName}}</p>
-                <p>{{Date}}</p>
-            </div>
+        <div class="no-break pt-4 border-t border-gray-200 flex justify-between text-xs text-gray-400">
+            <p>{{TradesmanName}}</p>
+            <p>{{Date}}</p>
         </div>
     </div>
+    {{/if}}
 
-    <!-- PAGE 4: TERMS & CONDITIONS -->
+    <!-- TERMS & CONDITIONS -->
     <div class="{{TermsClass}} page-break-before">
-        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">{{Label_TC}}</h2>
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">{{Label_TC}}</h2>
         
         <div class="mb-auto">
-            <h3 class="text-3xl font-bold text-black mb-8">{{Header_Terms}}</h3>
-            <p class="text-lg text-gray-700 leading-relaxed mb-6">
+            <h3 class="text-xl font-bold text-black mb-4">{{Header_Terms}}</h3>
+            <p class="text-sm text-gray-700 leading-relaxed mb-4">
                 {{Terms_Intro}}
             </p>
-            <ul class="list-decimal pl-6 text-lg text-gray-700 leading-relaxed space-y-4">
+            <ul class="list-decimal pl-5 text-xs text-gray-700 leading-relaxed space-y-2.5">
                 <li>{{Terms_Point1}}</li>
                 <li>{{Terms_Point2}}</li>
                 <li>{{Terms_Point3}}</li>
@@ -239,11 +410,11 @@
 
         <!-- Footer -->
         <div class="pdf-footer-block">
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-2">
                 <div class="text-xs text-gray-400 italic text-center">
                     {{Footer_Validity}}
                 </div>
-                <div class="flex justify-between text-sm text-gray-500">
+                <div class="flex justify-between text-xs text-gray-500 pt-2 border-t border-gray-200">
                     <p>{{TradesmanName}}</p>
                     <p>{{Date}}</p>
                 </div>

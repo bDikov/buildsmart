@@ -4,6 +4,9 @@ using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
 using BuildSmart.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using TaskStatus = BuildSmart.Core.Domain.Enums.TaskStatus;
 
 namespace BuildSmart.Infrastructure.Services;
@@ -255,23 +258,39 @@ public class ProjectManagementService : IProjectManagementService
 
         if (homeowner.HomeownerProfile == null)
         {
-            homeowner.HomeownerProfile = new HomeownerProfile
+            var existingProfile = await _context.HomeownerProfiles.FirstOrDefaultAsync(hp => hp.UserId == homeowner.Id);
+            if (existingProfile != null)
             {
-                Id = Guid.NewGuid(),
-                UserId = homeowner.Id,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            _context.HomeownerProfiles.Add(homeowner.HomeownerProfile);
+                homeowner.HomeownerProfile = existingProfile;
+            }
+            else
+            {
+                homeowner.HomeownerProfile = new HomeownerProfile
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = homeowner.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.HomeownerProfiles.Add(homeowner.HomeownerProfile);
+            }
         }
+
+        string safeTitle = string.IsNullOrWhiteSpace(title) 
+            ? "Tradesman Offer Project" 
+            : (title.Length > 200 ? title.Substring(0, 197) + "..." : title);
+
+        string safeDesc = string.IsNullOrWhiteSpace(description) 
+            ? safeTitle 
+            : (description.Length > 2000 ? description.Substring(0, 1997) + "..." : description);
 
         var project = new Project
         {
             Id = Guid.NewGuid(),
             HomeownerId = homeowner.Id,
             Homeowner = homeowner,
-            Title = string.IsNullOrWhiteSpace(title) ? "Tradesman Offer Project" : title,
-            Description = description ?? string.Empty,
+            Title = safeTitle,
+            Description = safeDesc,
             GeneralSummary = description,
             AdminMarkupPercentage = adminMarkupPercentage < 0 ? 0 : adminMarkupPercentage,
             CreatedAt = DateTime.UtcNow,
@@ -282,6 +301,19 @@ public class ProjectManagementService : IProjectManagementService
 
         var allCategories = await _context.ServiceCategories.ToListAsync();
         var defaultCategory = allCategories.FirstOrDefault();
+        if (defaultCategory == null)
+        {
+            defaultCategory = new ServiceCategory
+            {
+                Id = Guid.NewGuid(),
+                Name = "Общи строително-монтажни дейности",
+                EnglishName = "General Construction Works",
+                TemplateStructure = "{}"
+            };
+            await _context.ServiceCategories.AddAsync(defaultCategory);
+            await _context.SaveChangesAsync();
+            allCategories.Add(defaultCategory);
+        }
         var allSkus = await _context.ServiceSkus.ToListAsync();
 
         decimal markupFactor = 1.0m + (adminMarkupPercentage / 100.0m);
@@ -290,12 +322,16 @@ public class ProjectManagementService : IProjectManagementService
 
         foreach (var phase in phases)
         {
-            Guid categoryId = phase.CategoryId ?? Guid.Empty;
-            if (categoryId == Guid.Empty && !string.IsNullOrWhiteSpace(phase.CategoryName))
+            Guid categoryId = Guid.Empty;
+            if (phase.CategoryId.HasValue && allCategories.Any(c => c.Id == phase.CategoryId.Value))
             {
-                var matchedCat = allCategories.FirstOrDefault(c =>
-                    c.Name.Equals(phase.CategoryName, StringComparison.OrdinalIgnoreCase) ||
-                    (c.EnglishName != null && c.EnglishName.Equals(phase.CategoryName, StringComparison.OrdinalIgnoreCase)) ||
+                categoryId = phase.CategoryId.Value;
+            }
+            else
+            {
+                var matchedCat = allCategories.FirstOrDefault(c => 
+                    string.Equals(c.Name, phase.CategoryName, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(c.EnglishName) && string.Equals(c.EnglishName, phase.CategoryName, StringComparison.OrdinalIgnoreCase)) ||
                     c.Name.Contains(phase.CategoryName, StringComparison.OrdinalIgnoreCase) ||
                     phase.CategoryName.Contains(c.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -325,36 +361,30 @@ public class ProjectManagementService : IProjectManagementService
                     {
                         matchedCat = allCategories.FirstOrDefault(c => c.Name.Contains("Кърт", StringComparison.OrdinalIgnoreCase) || c.Name.Contains("Извоз", StringComparison.OrdinalIgnoreCase));
                     }
-                    else if (textToMatch.Contains("настилк") || textToMatch.Contains("плоч") || textToMatch.Contains("ламинат") || textToMatch.Contains("tile"))
+                    else if (textToMatch.Contains("настилк") || textToMatch.Contains("плоч") || textToMatch.Contains("паркет") || textToMatch.Contains("floor"))
                     {
                         matchedCat = allCategories.FirstOrDefault(c => c.Name.Contains("Настилк", StringComparison.OrdinalIgnoreCase) || c.Name.Contains("Под", StringComparison.OrdinalIgnoreCase));
                     }
+                    else if (textToMatch.Contains("вик") || textToMatch.Contains("водопровод") || textToMatch.Contains("баня") || textToMatch.Contains("plumb"))
+                    {
+                        matchedCat = allCategories.FirstOrDefault(c => c.Name.Contains("ВиК", StringComparison.OrdinalIgnoreCase) || c.Name.Contains("Баня", StringComparison.OrdinalIgnoreCase));
+                    }
                 }
 
-                if (matchedCat != null)
-                {
-                    categoryId = matchedCat.Id;
-                }
-            }
-
-            if (categoryId == Guid.Empty)
-            {
-                if (defaultCategory != null)
-                {
-                    categoryId = defaultCategory.Id;
-                }
-                else
-                {
-                    throw new InvalidOperationException("No ServiceCategory available in database for project phase.");
-                }
+                categoryId = matchedCat?.Id ?? defaultCategory.Id;
             }
 
             createdCategoryIds.Add(categoryId);
 
             if (!jobPostsByCategory.TryGetValue(categoryId, out var jobPost))
             {
-                var matchedCategoryObj = allCategories.FirstOrDefault(c => c.Id == categoryId);
-                string catName = matchedCategoryObj?.Name ?? phase.CategoryName ?? phase.PhaseTitle;
+                string catName = !string.IsNullOrWhiteSpace(phase.CategoryName) && !phase.CategoryName.StartsWith("Cat ", StringComparison.OrdinalIgnoreCase)
+                    ? phase.CategoryName
+                    : (allCategories.FirstOrDefault(c => c.Id == categoryId)?.Name ?? "Количествено-Стойностна Сметка (КСС)");
+                string jpTitle = $"{catName} - Work Package";
+                if (jpTitle.Length > 200) jpTitle = jpTitle.Substring(0, 197) + "...";
+                string jpDesc = $"Detailed work package for {catName}";
+                if (jpDesc.Length > 2000) jpDesc = jpDesc.Substring(0, 1997) + "...";
 
                 jobPost = new JobPost
                 {
@@ -362,8 +392,8 @@ public class ProjectManagementService : IProjectManagementService
                     ProjectId = project.Id,
                     HomeownerProfileId = homeowner.HomeownerProfile.Id,
                     ServiceCategoryId = categoryId,
-                    Title = $"{catName} - Work Package",
-                    Description = $"Detailed work package for {catName}",
+                    Title = jpTitle,
+                    Description = jpDesc,
                     Location = location ?? "Sofia",
                     CategoryStatus = ProjectCategoryStatus.Active,
                     CreatedAt = DateTime.UtcNow,
@@ -416,12 +446,39 @@ public class ProjectManagementService : IProjectManagementService
                 decimal tradesmanTotalEur = item.TotalEur;
                 decimal homeownerTotalEur = Math.Round(tradesmanTotalEur * markupFactor, 2);
 
+                string taskTitle = string.IsNullOrWhiteSpace(item.Title) ? "Task" : item.Title;
+                if (taskTitle.Length > 255) taskTitle = taskTitle.Substring(0, 252) + "...";
+
+                var metaTags = new List<string>();
+                if (!string.IsNullOrWhiteSpace(item.PriceRangeText))
+                {
+                    metaTags.Add($"[RANGE: {item.PriceRangeText}]");
+                }
+                if (!string.IsNullOrWhiteSpace(item.Unit))
+                {
+                    metaTags.Add($"[UNIT: {item.Unit}]");
+                }
+                if (item.Quantity > 0)
+                {
+                    metaTags.Add($"[QTY: {item.Quantity.ToString("G", CultureInfo.InvariantCulture)}]");
+                }
+
+                string metaPrefix = metaTags.Any() ? string.Join(" ", metaTags) + " " : string.Empty;
+                string rawDesc = string.IsNullOrWhiteSpace(item.Description) ? taskTitle : item.Description;
+                if (metaPrefix.Contains("[RANGE:") && rawDesc.Contains("[RANGE:"))
+                {
+                    rawDesc = Regex.Replace(rawDesc, @"\[RANGE:\s*[^\]]+\]\s*", "");
+                }
+
+                string taskDesc = metaPrefix + rawDesc;
+                if (taskDesc.Length > 2000) taskDesc = taskDesc.Substring(0, 1997) + "...";
+
                 var task = new JobTask
                 {
                     Id = Guid.NewGuid(),
                     JobPostId = jobPost.Id,
-                    Title = item.Title,
-                    Description = string.IsNullOrWhiteSpace(item.Description) ? item.Title : item.Description,
+                    Title = taskTitle,
+                    Description = taskDesc,
                     SequenceOrder = taskSeq,
                     TradesmanPrice = tradesmanTotalEur,
                     EstimatedPrice = homeownerTotalEur,
@@ -430,9 +487,10 @@ public class ProjectManagementService : IProjectManagementService
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                var matchingSku = allSkus.FirstOrDefault(s => s.SkuCode == item.SkuCode)
-                               ?? allSkus.FirstOrDefault(s => s.ServiceCategoryId == categoryId)
-                               ?? allSkus.FirstOrDefault();
+                var matchingSku = allSkus.FirstOrDefault(s => !string.IsNullOrWhiteSpace(item.SkuCode) && string.Equals(s.SkuCode, item.SkuCode, StringComparison.OrdinalIgnoreCase))
+                               ?? (string.IsNullOrWhiteSpace(item.SkuCode) || item.SkuCode.StartsWith("CUSTOM", StringComparison.OrdinalIgnoreCase) || item.SkuCode.StartsWith("KSS", StringComparison.OrdinalIgnoreCase)
+                                   ? null
+                                   : allSkus.FirstOrDefault(s => string.Equals(s.Name, item.Title, StringComparison.OrdinalIgnoreCase)));
 
                 if (matchingSku != null)
                 {
@@ -447,22 +505,58 @@ public class ProjectManagementService : IProjectManagementService
                         UpdatedAt = DateTime.UtcNow
                     };
                     task.SkuItems.Add(skuItem);
-                    _context.TaskSkuItems.Add(skuItem);
+                    if (_context.Entry(skuItem).State == EntityState.Detached)
+                    {
+                        _context.TaskSkuItems.Add(skuItem);
+                    }
                 }
 
-                var criteria = new TaskAcceptanceCriteria
+                if (item.SubItems != null && item.SubItems.Any())
                 {
-                    Id = Guid.NewGuid(),
-                    JobTaskId = task.Id,
-                    Description = GetDefaultAcceptanceCriteria(item.Title, project.LanguageCode),
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-                task.AcceptanceCriteria.Add(criteria);
+                    foreach (var sub in item.SubItems)
+                    {
+                        string sDesc = sub;
+                        if (sDesc.Length > 1000) sDesc = sDesc.Substring(0, 997) + "...";
+                        var subCriteria = new TaskAcceptanceCriteria
+                        {
+                            Id = Guid.NewGuid(),
+                            JobTaskId = task.Id,
+                            Description = sDesc,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        task.AcceptanceCriteria.Add(subCriteria);
+                        if (_context.Entry(subCriteria).State == EntityState.Detached)
+                        {
+                            _context.TaskAcceptanceCriteria.Add(subCriteria);
+                        }
+                    }
+                }
+                else
+                {
+                    string critDesc = GetDefaultAcceptanceCriteria(taskTitle, project.LanguageCode);
+                    if (critDesc.Length > 1000) critDesc = critDesc.Substring(0, 997) + "...";
+
+                    var criteria = new TaskAcceptanceCriteria
+                    {
+                        Id = Guid.NewGuid(),
+                        JobTaskId = task.Id,
+                        Description = critDesc,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    task.AcceptanceCriteria.Add(criteria);
+                    if (_context.Entry(criteria).State == EntityState.Detached)
+                    {
+                        _context.TaskAcceptanceCriteria.Add(criteria);
+                    }
+                }
 
                 jobPost.JobTasks.Add(task);
-                _context.JobTasks.Add(task);
-                _context.TaskAcceptanceCriteria.Add(criteria);
+                if (_context.Entry(task).State == EntityState.Detached)
+                {
+                    _context.JobTasks.Add(task);
+                }
             }
         }
 

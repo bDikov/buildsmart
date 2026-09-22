@@ -1,12 +1,19 @@
 @page "/admin-offers"
 @using BuildSmart.SharedUI.GraphQL
 @using BuildSmart.SharedUI.ViewModels.Admin
+@using BuildSmart.SharedUI.Services
+@using System.Net.Http.Headers
 @inject AdminProjectsViewModel ViewModel
 @inject NavigationManager NavManager
+@inject IAuthService AuthService
 
 <div class="page-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="page-title">Project Offers</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="page-title mb-0">Project Offers</h2>
+        <button class="bs-btn-primary" @onclick="OpenMarkdownModal" style="display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            @Loc["AdminOffers_NewMarkdownOffer"]
+        </button>
     </div>
 
     <!-- Search & Filters -->
@@ -26,7 +33,7 @@
 
     @if (!string.IsNullOrEmpty(ErrorMessage))
     {
-        <div class="bs-card mb-4" style="background-color: rgba(244, 67, 54, 0.1); border: 1px solid #F44336;">
+        <div class="bs-card mb-4" style="background-color: var(--color-danger-bg, rgba(239, 68, 68, 0.1)); border: 1px solid var(--color-danger);">
             <h4 class="text-danger mb-1">Search Error</h4>
             <p class="text-danger mb-0" style="font-size: 14px;">@ErrorMessage</p>
         </div>
@@ -67,11 +74,11 @@
                             <div class="d-flex align-items-center gap-2">
                                 @if (project.HasOfferPdf)
                                 {
-                                    <span class="offer-status-badge ready" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: var(--color-success);" title="PDF offer is compiled and saved in DB">🟢 PDF Ready</span>
+                                    <span class="offer-status-badge ready" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: var(--color-success-bg, rgba(16, 185, 129, 0.15)); color: var(--color-success);" title="PDF offer is compiled and saved in DB">PDF Ready</span>
                                 }
                                 else
                                 {
-                                    <span class="offer-status-badge pending" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: rgba(255, 193, 7, 0.15); color: var(--color-warning);" title="PDF offer will compile on demand when downloaded">🟡 PDF Pending</span>
+                                    <span class="offer-status-badge pending" style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: var(--color-warning-bg, rgba(255, 193, 7, 0.15)); color: var(--color-warning);" title="PDF offer will compile on demand when downloaded">PDF Pending</span>
                                 }
                                 <span class="status-badge @project.Status.ToString().ToLower()">@Loc[$"Status_{project.Status}"]</span>
                             </div>
@@ -83,22 +90,22 @@
                         <div class="jobs-list mt-3">
                             @if (project.HasOfferPdf)
                             {
-                                <a class="bs-btn-primary btn-sm mb-2" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                    📄 Download PDF Offer
+                                <a class="bs-btn-primary btn-sm mb-2" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    Download PDF Offer
                                 </a>
                             }
                             else
                             {
-                                <a class="bs-btn-primary btn-sm mb-2" style="background-color: #ff9800; border-color: #ff9800; color: #ffffff;" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                    ⚡ Generate & Download PDF
+                                <a class="bs-btn-primary btn-sm mb-2" style="background-color: var(--color-warning); border-color: var(--color-warning); color: var(--color-primary-contrast, #ffffff); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download")" target="_blank" download>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                    Generate & Download PDF
                                 </a>
                             }
 
-                            <a class="bs-btn-secondary btn-sm mb-2" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download?force=true")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M2.5 2v6h6M21.5 22v-6h-6M21.34 15.57a10 10 0 1 0-1.57 6.43l3.5-3.5"/></svg>
-                                🔄 Regenerate & Download PDF
+                            <a class="bs-btn-secondary btn-sm mb-2" href="@($"{ApiConfig.GetBaseUrl()}/api/offers/{project.Id}/download?force=true")" target="_blank" download style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M21.5 22v-6h-6M21.34 15.57a10 10 0 1 0-1.57 6.43l3.5-3.5"/></svg>
+                                Regenerate & Download PDF
                             </a>
                         </div>
                     </div>
@@ -106,11 +113,386 @@
             </div>
         }
     }
+
+    <!-- Modal: New BoQ / КСС Offer from Markdown -->
+    @if (isMarkdownModalOpen)
+    {
+        <div class="modal-backdrop" style="position: fixed; inset: 0; background: var(--bg-overlay, rgba(0, 0, 0, 0.7)); z-index: 1050; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div class="bs-card modal-content-card" style="width: 100%; max-width: 960px; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 28px; box-shadow: var(--elevation-24dp, 0 20px 25px -5px rgba(0,0,0,0.5));">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="h4 mb-0" style="color: var(--text-primary); font-weight: 700;">@Loc["AdminOffers_ModalTitle"]</h3>
+                    <button class="bs-btn-secondary btn-sm" @onclick="CloseMarkdownModal" style="padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        @Loc["AdminOffers_Close"]
+                    </button>
+                </div>
+
+                @if (!string.IsNullOrEmpty(modalError))
+                {
+                    <div class="p-3 mb-3" style="background: var(--color-danger-bg, rgba(239, 68, 68, 0.1)); border: 1px solid var(--color-danger); border-radius: 8px;">
+                        <p class="text-danger mb-0" style="font-size: 14px; font-weight: 600;">@modalError</p>
+                    </div>
+                }
+
+                @if (previewData == null)
+                {
+                    <!-- Step 1: Input Markdown -->
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+                        @Loc["AdminOffers_Step1Desc"]
+                    </p>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                @Loc["AdminOffers_ClientLabel"]
+                            </label>
+                            <input type="text" class="bs-input" value="@targetClientName" @oninput="OnClientNameInput" placeholder="@Loc["AdminOffers_ClientPlaceholder"]" style="width: 100%; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                @Loc["AdminOffers_AssignToLabel"]
+                            </label>
+                            <input type="text" class="bs-input" value="@targetAssignTo" @oninput="OnAssignToInput" placeholder="admin" style="width: 100%; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                @Loc["AdminOffers_SiteLocationLabel"]
+                            </label>
+                            <input type="text" class="bs-input" @bind="targetSiteAddress" @bind:event="oninput" placeholder="@Loc["AdminOffers_SiteLocationPlaceholder"]" style="width: 100%; font-size: 13px;" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-3 flex-wrap align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="bs-btn-secondary btn-sm mb-0" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                @Loc["AdminOffers_SelectFile"]
+                                <InputFile OnChange="HandleFileSelected" accept=".md,.markdown,.txt" style="display: none;" />
+                            </label>
+                            @if (!string.IsNullOrEmpty(selectedFileName))
+                            {
+                                <span style="font-size: 13px; color: var(--color-primary); font-weight: 600;">@selectedFileName</span>
+                            }
+                        </div>
+                        <button class="bs-btn-secondary btn-sm" @onclick="LoadSampleMarkdown">
+                            @Loc["AdminOffers_LoadSample"]
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <textarea class="bs-input" rows="14" @bind="markdownInput" placeholder="@Loc["AdminOffers_TextareaPlaceholder"]" style="font-family: monospace; font-size: 13px; line-height: 1.5; width: 100%;"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="bs-btn-secondary" @onclick="CloseMarkdownModal" disabled="@isProcessingMarkdown">@Loc["AdminOffers_Cancel"]</button>
+                        <button class="bs-btn-primary" @onclick="PreviewMarkdownAsync" disabled="@(isProcessingMarkdown || string.IsNullOrWhiteSpace(markdownInput))" style="display: inline-flex; align-items: center; gap: 6px;">
+                            @if (isProcessingMarkdown)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                <span>@Loc["AdminOffers_Processing"]</span>
+                            }
+                            else
+                            {
+                                <span>@Loc["AdminOffers_PreviewAndValidate"]</span>
+                            }
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <!-- Step 2: Interactive Preview -->
+                    <div class="p-3 mb-4" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 8px;">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                                @Loc["AdminOffers_ProposalRequisites"]
+                            </span>
+                            @if (previewData.IsValid)
+                            {
+                                <span style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; background: var(--color-success-bg, rgba(16, 185, 129, 0.15)); color: var(--color-success);">
+                                    @string.Format(Loc["AdminOffers_ReadyForImport"], previewData.MatchedSkuCount, previewData.CustomItemCount, previewData.TotalItemCount)
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; background: var(--color-danger-bg, rgba(239, 68, 68, 0.15)); color: var(--color-danger);">
+                                    @string.Format(Loc["AdminOffers_UnrecognizedWithoutPrice"], previewData.TotalItemCount - previewData.MatchedSkuCount - previewData.CustomItemCount, previewData.TotalItemCount)
+                                </span>
+                            }
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                    @Loc["AdminOffers_ClientLabel"]
+                                </label>
+                                <input type="text" class="bs-input" value="@targetClientName" @oninput="OnClientNameInput" placeholder="@Loc["AdminOffers_ClientPlaceholder"]" style="width: 100%; font-size: 13px; font-weight: 600;" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                    @Loc["AdminOffers_SiteLocationLabel"]
+                                </label>
+                                <input type="text" class="bs-input" @bind="targetSiteAddress" @bind:event="oninput" placeholder="@Loc["AdminOffers_SiteLocationPlaceholder"]" style="width: 100%; font-size: 13px;" />
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                    @Loc["AdminOffers_ProjectTitleLabel"]
+                                </label>
+                                <input type="text" class="bs-input" @bind="targetProjectTitle" @bind:event="oninput" placeholder="@Loc["AdminOffers_ProjectTitlePlaceholder"]" style="width: 100%; font-size: 13px;" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">
+                                    @Loc["AdminOffers_AssignToLabel"]
+                                </label>
+                                <input type="text" class="bs-input" value="@targetAssignTo" @oninput="OnAssignToInput" placeholder="admin" style="width: 100%; font-size: 13px;" />
+                            </div>
+                        </div>
+
+                        @if (previewData.ValidationMessages.Any())
+                        {
+                            <div class="mt-3 p-2" style="background: var(--color-danger-bg, rgba(239, 68, 68, 0.08)); border-left: 3px solid var(--color-danger); border-radius: 4px;">
+                                @foreach (var msg in previewData.ValidationMessages)
+                                {
+                                    <div style="font-size: 12px; color: var(--color-danger);">• @msg</div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (previewData.Parameters != null && (!string.IsNullOrEmpty(previewData.Parameters.Location) || !string.IsNullOrEmpty(previewData.Parameters.TotalArea)))
+                    {
+                        <div class="mb-3 p-3" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px;">
+                            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">@Loc["AdminOffers_SiteParameters"]</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.Location))
+                                {
+                                    <div style="grid-column: span 2;"><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamLocation"]</span> <strong>@previewData.Parameters.Location</strong></div>
+                                }
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.PropertyCondition))
+                                {
+                                    <div style="grid-column: span 2;"><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamCondition"]</span> @previewData.Parameters.PropertyCondition</div>
+                                }
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.TotalArea))
+                                {
+                                    <div><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamArea"]</span> <strong>@previewData.Parameters.TotalArea</strong></div>
+                                }
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.ExecutionTimeline))
+                                {
+                                    <div><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamTimeline"]</span> <strong>@previewData.Parameters.ExecutionTimeline</strong></div>
+                                }
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.QualityLevel))
+                                {
+                                    <div><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamQuality"]</span> <strong>@previewData.Parameters.QualityLevel</strong></div>
+                                }
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.Warranty))
+                                {
+                                    <div><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamWarranty"]</span> <strong>@previewData.Parameters.Warranty</strong></div>
+                                }
+                                @if (!string.IsNullOrEmpty(previewData.Parameters.PaymentTerms))
+                                {
+                                    <div style="grid-column: span 2;"><span style="color: var(--text-muted);">@Loc["AdminOffers_ParamPayment"]</span> <strong>@previewData.Parameters.PaymentTerms</strong></div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (previewData.InvestmentBreakdown != null && previewData.InvestmentBreakdown.Any())
+                    {
+                        <div class="mb-3 p-3" style="background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px;">
+                            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">@Loc["AdminOffers_InvestmentStructure"]</div>
+                            <table class="table table-sm mb-1" style="font-size: 12px; color: var(--text-primary);">
+                                <thead>
+                                    <tr style="color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
+                                        <th>@Loc["AdminOffers_ColComponent"]</th>
+                                        <th style="text-align: center; width: 60px;">@Loc["AdminOffers_ColShare"]</th>
+                                        <th style="text-align: right; width: 140px;">EUR</th>
+                                        <th style="text-align: right; width: 140px;">BGN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var comp in previewData.InvestmentBreakdown)
+                                    {
+                                        <tr>
+                                            <td style="font-weight: 600;">@comp.Name</td>
+                                            <td style="text-align: center; font-weight: 700;">@comp.SharePercentage</td>
+                                            <td style="text-align: right; font-family: monospace; font-weight: 600;">@comp.AmountEurRange</td>
+                                            <td style="text-align: right; font-family: monospace; color: var(--text-muted);">@comp.AmountBgnRange</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            @if (!string.IsNullOrEmpty(previewData.AveragePricePerSqm))
+                            {
+                                <div style="text-align: right; font-size: 11px; color: var(--text-muted); font-style: italic;">@previewData.AveragePricePerSqm</div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Breakdown Table -->
+                    <div class="mb-4">
+                        @foreach (var sec in previewData.Sections)
+                        {
+                            <div class="mb-3">
+                                <h5 class="h6 mb-2" style="color: var(--color-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    @string.Format(Loc["AdminOffers_SectionTitle"], sec.CategoryName)
+                                </h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm" style="color: var(--text-primary); border-color: var(--border-color); font-size: 13px;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                                                <th style="width: 40px; text-align: center;">@Loc["AdminOffers_ColIndex"]</th>
+                                                <th>@Loc["AdminOffers_ColItemDesc"]</th>
+                                                <th style="width: 80px; text-align: center;">@Loc["AdminOffers_ColUnit"]</th>
+                                                <th style="width: 90px; text-align: right;">@Loc["AdminOffers_ColQuantity"]</th>
+                                                <th style="width: 155px; text-align: right;">@Loc["AdminOffers_ColUnitPrice"]</th>
+                                                <th style="width: 155px; text-align: right;">@Loc["AdminOffers_ColTotal"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in sec.Items)
+                                            {
+                                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                                    <td style="text-align: center; color: var(--text-muted); font-family: monospace;">@item.Index</td>
+                                                    <td>
+                                                        <div style="font-weight: 600;">@item.Title</div>
+                                                        @if (item.IsSkuRecognized && !string.IsNullOrEmpty(item.SkuCode))
+                                                        {
+                                                            <span style="font-size: 11px; color: var(--text-muted); font-family: monospace;">SKU: @item.SkuCode</span>
+                                                        }
+                                                        else if (item.IsCustomPrice)
+                                                        {
+                                                            <span class="badge" style="background: var(--color-primary-bg, rgba(59, 130, 246, 0.15)); color: var(--color-primary); font-size: 11px; border: 1px solid var(--border-color);">@Loc["AdminOffers_CustomPriceBadge"]</span>
+                                                        }
+                                                        @if (item.SubItems != null && item.SubItems.Any())
+                                                        {
+                                                            <ul style="margin: 4px 0 0 16px; padding: 0; font-size: 11px; color: var(--text-muted);">
+                                                                @foreach (var sub in item.SubItems)
+                                                                {
+                                                                    <li>@sub</li>
+                                                                }
+                                                            </ul>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(item.ValidationMessage))
+                                                        {
+                                                            <div style="font-size: 11px; color: var(--color-danger); margin-top: 2px;">• @item.ValidationMessage</div>
+                                                        }
+                                                    </td>
+                                                    <td style="text-align: center; color: var(--text-muted);">@item.Unit</td>
+                                                    <td style="text-align: right; font-family: monospace;">@item.Quantity.ToString("N2")</td>
+                                                    <td style="text-align: right; font-family: monospace;">
+                                                        <input type="text"
+                                                               class="bs-input"
+                                                               style="text-align: right; width: 140px; padding: 2px 6px; font-size: 13px; font-family: monospace; display: inline-block; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px;"
+                                                               value="@GetItemPriceInput(item)"
+                                                               @onchange="(e) => OnItemPriceChanged(item, sec, e.Value?.ToString())"
+                                                               title="@Loc["AdminOffers_EditPriceTitle"]" />
+                                                    </td>
+                                                    <td style="text-align: right; font-family: monospace; font-weight: 600;">
+                                                        @if (!string.IsNullOrWhiteSpace(item.PriceRangeText))
+                                                        {
+                                                            @if (item.Quantity == 1)
+                                                            {
+                                                                <span>@item.PriceRangeText</span>
+                                                            }
+                                                            else if (item.MinUnitPriceEur.HasValue && item.MaxUnitPriceEur.HasValue)
+                                                            {
+                                                                <span>€@((item.MinUnitPriceEur.Value * item.Quantity).ToString("N0")) – @((item.MaxUnitPriceEur.Value * item.Quantity).ToString("N0"))</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@item.PriceRangeText</span>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>€@item.TotalEur.ToString("N2")</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="border-top: 1px solid var(--border-color); font-weight: 700;">
+                                                <td colspan="5" style="text-align: right; padding-top: 8px;">@string.Format(Loc["AdminOffers_SubtotalForSection"], sec.CategoryName)</td>
+                                                <td style="text-align: right; font-family: monospace; padding-top: 8px;">
+                                                    @if (!string.IsNullOrWhiteSpace(sec.SubtotalRangeText))
+                                                    {
+                                                        <span>@sec.SubtotalRangeText</span>
+                                                    }
+                                                    else if (sec.SubtotalEur == 0m && !string.IsNullOrWhiteSpace(previewData.GrandTotalRangeText))
+                                                    {
+                                                        <span>@previewData.GrandTotalRangeText</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>€@sec.SubtotalEur.ToString("N2")</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Grand Total Banner -->
+                    <div class="p-3 mb-4 d-flex justify-content-between align-items-center" style="background: var(--color-success-bg, rgba(16, 185, 129, 0.1)); border: 1px solid var(--color-success); border-radius: 8px;">
+                        <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);">@Loc["AdminOffers_GrandTotalLabel"]</span>
+                        <div style="text-align: right;">
+                            @if (!string.IsNullOrWhiteSpace(previewData.GrandTotalRangeText))
+                            {
+                                <span style="font-size: 20px; font-weight: 800; color: var(--color-success);">@previewData.GrandTotalRangeText</span>
+                                @if (!string.IsNullOrWhiteSpace(previewData.GrandTotalBgnRangeText))
+                                {
+                                    <span style="font-size: 14px; color: var(--text-muted); margin-left: 6px;">(@previewData.GrandTotalBgnRangeText)</span>
+                                }
+                            }
+                            else
+                            {
+                                <span style="font-size: 20px; font-weight: 800; color: var(--color-success);">€@previewData.GrandTotalEur.ToString("N2")</span>
+                                <span style="font-size: 14px; color: var(--text-muted); margin-left: 6px;">(@previewData.GrandTotalBgn.ToString("N2") лв.)</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <button class="bs-btn-secondary" @onclick="ResetPreview" disabled="@isProcessingMarkdown" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            @Loc["AdminOffers_BackToEdit"]
+                        </button>
+                        <button class="bs-btn-primary" @onclick="ConfirmAndImportAsync" disabled="@isProcessingMarkdown" style="display: inline-flex; align-items: center; gap: 6px;">
+                            @if (isProcessingMarkdown)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                <span>@Loc["AdminOffers_GeneratingPdf"]</span>
+                            }
+                            else
+                            {
+                                <span>@Loc["AdminOffers_ConfirmAndGeneratePdf"]</span>
+                            }
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     private string? ErrorMessage;
-    private bool IsRegenerating = false;
+
+    // Markdown Import Modal State
+    private bool isMarkdownModalOpen = false;
+    private string markdownInput = string.Empty;
+    private string? selectedFileName;
+    private bool isProcessingMarkdown = false;
+    private string? modalError;
+    private BuildSmart.Core.Application.DTOs.OfferPreviewDto? previewData;
+
+    private string targetClientName = string.Empty;
+    private string targetSiteAddress = string.Empty;
+    private string targetProjectTitle = string.Empty;
+    private string targetAssignTo = "admin";
 
     [Inject]
     public IBuildSmartApiClient ApiClient { get; set; } = null!;
@@ -118,11 +500,308 @@
     [Inject]
     public IJSRuntime JSRuntime { get; set; } = null!;
 
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
     protected override async Task OnInitializedAsync()
     {
         if (ViewModel.Projects.Count == 0)
         {
             await TriggerSearch();
+        }
+    }
+
+    private void OpenMarkdownModal()
+    {
+        modalError = null;
+        previewData = null;
+        selectedFileName = null;
+        targetClientName = string.Empty;
+        targetSiteAddress = string.Empty;
+        targetProjectTitle = string.Empty;
+        targetAssignTo = "admin";
+        isMarkdownModalOpen = true;
+    }
+
+    private void CloseMarkdownModal()
+    {
+        isMarkdownModalOpen = false;
+        previewData = null;
+        modalError = null;
+    }
+
+    private void ResetPreview()
+    {
+        previewData = null;
+        modalError = null;
+    }
+
+    private void OnClientNameInput(Microsoft.AspNetCore.Components.ChangeEventArgs e)
+    {
+        targetClientName = e.Value?.ToString() ?? string.Empty;
+        if ((string.IsNullOrWhiteSpace(targetAssignTo) || targetAssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase)) &&
+            !string.IsNullOrWhiteSpace(targetClientName) &&
+            !targetClientName.Equals("Възложител", StringComparison.OrdinalIgnoreCase) &&
+            !targetClientName.Equals("Уважаеми Клиент", StringComparison.OrdinalIgnoreCase))
+        {
+            targetAssignTo = targetClientName;
+        }
+    }
+
+    private void OnAssignToInput(Microsoft.AspNetCore.Components.ChangeEventArgs e)
+    {
+        targetAssignTo = e.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(targetClientName) ||
+            targetClientName.Equals("Възложител", StringComparison.OrdinalIgnoreCase) ||
+            targetClientName.Equals("Уважаеми Клиент", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!string.IsNullOrWhiteSpace(targetAssignTo) && !targetAssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase))
+            {
+                targetClientName = targetAssignTo;
+            }
+        }
+    }
+
+    private void LoadSampleMarkdown()
+    {
+        markdownInput = @"---
+ProjectTitle: ""Цялостен ремонт на 3-стаен апартамент - кв. Лозенец""
+ClientName: ""инж. Димитър Стоянов""
+ClientEmail: ""client@example.com""
+SiteAddress: ""гр. София, кв. Лозенец""
+AssignTo: ""admin""
+Currency: ""EUR""
+AdminMarkupPercentage: 20
+Language: ""bg""
+---
+
+# Официална Оферта за СМР
+Извършване на цялостни ремонтни дейности и инсталации.
+
+## Раздел: Електроинсталации
+| Код / Перо | Дейност / Описание | Мярка | Количество | Ед. цена |
+| :--- | :--- | :--- | :--- | :--- |
+| ELEC-POINT-STD | Изграждане на контакт | бр. | 10.00 | |
+| ELEC-CABLE-LAY | Полагане на кабел СВТ | м | 50.00 | |
+
+## Раздел: Боядисване и Шпакловка
+| Код / Перо | Дейност / Описание | Мярка | Количество | Ед. цена |
+| :--- | :--- | :--- | :--- | :--- |
+| PANT-PRIMER | Полагане на дълбокопроникващ грунд по стени и тавани | м² | 240.00 | |
+| PANT-SPACKLE-STD | Стандартна шпакловка (2 ръце) с шлайфане | м² | 240.00 | |
+| PANT-PAINT-WHITE | Боядисване с бял латекс (2 ръце) | м² | 240.00 | |
+";
+    }
+
+    private async Task HandleFileSelected(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        selectedFileName = file.Name;
+        modalError = null;
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var reader = new System.IO.StreamReader(stream);
+            markdownInput = await reader.ReadToEndAsync();
+            await PreviewMarkdownAsync();
+        }
+        catch (Exception ex)
+        {
+            modalError = string.Format(Loc["AdminOffers_FileReadError"], ex.Message);
+        }
+    }
+
+    private async Task PreviewMarkdownAsync()
+    {
+        if (string.IsNullOrWhiteSpace(markdownInput)) return;
+
+        isProcessingMarkdown = true;
+        modalError = null;
+        StateHasChanged();
+
+        try
+        {
+            var requestUrl = $"{ApiConfig.GetBaseUrl()}/api/offers/preview-markdown";
+            var payload = new
+            {
+                MarkdownContent = markdownInput,
+                ClientName = string.IsNullOrWhiteSpace(targetClientName) ? null : targetClientName,
+                SiteAddress = string.IsNullOrWhiteSpace(targetSiteAddress) ? null : targetSiteAddress,
+                ProjectTitle = string.IsNullOrWhiteSpace(targetProjectTitle) ? null : targetProjectTitle,
+                AssignTo = string.IsNullOrWhiteSpace(targetAssignTo) ? null : targetAssignTo
+            };
+
+            var token = await AuthService.GetTokenAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            request.Content = JsonContent.Create(payload);
+            var response = await Http.SendAsync(request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                previewData = await response.Content.ReadFromJsonAsync<BuildSmart.Core.Application.DTOs.OfferPreviewDto>();
+                if (previewData != null)
+                {
+                    if (string.IsNullOrWhiteSpace(targetClientName) || targetClientName == "Уважаеми Клиент" || targetClientName == "Възложител")
+                    {
+                        if (!string.IsNullOrWhiteSpace(previewData.ClientName) && 
+                            !previewData.ClientName.Equals("Уважаеми Клиент", StringComparison.OrdinalIgnoreCase) &&
+                            !previewData.ClientName.Equals("Възложител", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetClientName = previewData.ClientName;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(previewData.AssignTo) && !previewData.AssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetClientName = previewData.AssignTo;
+                        }
+                        else
+                        {
+                            targetClientName = string.Empty;
+                        }
+                    }
+                    if (string.IsNullOrWhiteSpace(targetSiteAddress))
+                    {
+                        targetSiteAddress = !string.IsNullOrWhiteSpace(previewData.SiteAddress) ? previewData.SiteAddress : (previewData.Parameters?.Location ?? string.Empty);
+                    }
+                    if (string.IsNullOrWhiteSpace(targetProjectTitle))
+                    {
+                        targetProjectTitle = previewData.ProjectTitle;
+                    }
+                    if (string.IsNullOrWhiteSpace(targetAssignTo) || targetAssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!string.IsNullOrWhiteSpace(previewData.AssignTo) && !previewData.AssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetAssignTo = previewData.AssignTo;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(targetClientName) && !targetClientName.Equals("Възложител", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetAssignTo = targetClientName;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                modalError = string.Format(Loc["AdminOffers_ValidationFailed"], err);
+            }
+        }
+        catch (Exception ex)
+        {
+            modalError = string.Format(Loc["AdminOffers_CommunicationError"], ex.Message);
+        }
+        finally
+        {
+            isProcessingMarkdown = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmAndImportAsync()
+    {
+        if (string.IsNullOrWhiteSpace(markdownInput)) return;
+
+        isProcessingMarkdown = true;
+        modalError = null;
+        StateHasChanged();
+
+        try
+        {
+            var overrides = previewData?.Sections
+                .SelectMany(s => s.Items)
+                .Select(i => new BuildSmart.Core.Application.DTOs.MarkdownOfferItemOverride
+                {
+                    Index = i.Index,
+                    SkuCode = i.SkuCode,
+                    Title = i.Title,
+                    Quantity = i.Quantity,
+                    UnitPriceEur = i.EffectiveUnitPriceEur,
+                    PriceRangeText = i.PriceRangeText,
+                    MinUnitPriceEur = i.MinUnitPriceEur,
+                    MaxUnitPriceEur = i.MaxUnitPriceEur,
+                    TotalEur = i.TotalEur
+                }).ToList();
+
+            string effectiveClientName = targetClientName?.Trim() ?? string.Empty;
+            string effectiveAssignTo = targetAssignTo?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(effectiveClientName) || effectiveClientName.Equals("Възложител", StringComparison.OrdinalIgnoreCase) || effectiveClientName.Equals("Уважаеми Клиент", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(effectiveAssignTo) && !effectiveAssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    effectiveClientName = effectiveAssignTo;
+                }
+            }
+            if (string.IsNullOrWhiteSpace(effectiveAssignTo) || effectiveAssignTo.Equals("admin", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(effectiveClientName) && !effectiveClientName.Equals("Възложител", StringComparison.OrdinalIgnoreCase) && !effectiveClientName.Equals("Уважаеми Клиент", StringComparison.OrdinalIgnoreCase))
+                {
+                    effectiveAssignTo = effectiveClientName;
+                }
+            }
+
+            var requestUrl = $"{ApiConfig.GetBaseUrl()}/api/offers/import-markdown";
+            var payload = new
+            {
+                MarkdownContent = markdownInput,
+                ClientName = effectiveClientName,
+                SiteAddress = targetSiteAddress,
+                ProjectTitle = targetProjectTitle,
+                AssignTo = effectiveAssignTo,
+                ItemOverrides = overrides
+            };
+
+            var token = await AuthService.GetTokenAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            request.Content = JsonContent.Create(payload);
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                CloseMarkdownModal();
+                await TriggerSearch();
+                await JSRuntime.InvokeVoidAsync("alert", Loc["AdminOffers_ImportSuccessAlert"].Value);
+            }
+            else
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                string errorDetail = err;
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(err);
+                    if (doc.RootElement.TryGetProperty("error", out var errorProp))
+                    {
+                        errorDetail = errorProp.GetString() ?? err;
+                    }
+                    else if (doc.RootElement.TryGetProperty("Error", out var errorPropUpper))
+                    {
+                        errorDetail = errorPropUpper.GetString() ?? err;
+                    }
+                }
+                catch
+                {
+                    // use raw err
+                }
+                modalError = string.Format(Loc["AdminOffers_CreateError"], errorDetail);
+            }
+        }
+        catch (Exception ex)
+        {
+            modalError = string.Format(Loc["AdminOffers_CreateError"], ex.Message);
+        }
+        finally
+        {
+            isProcessingMarkdown = false;
+            StateHasChanged();
         }
     }
 
@@ -155,7 +834,6 @@
 
     private async Task HandleRegenerateOffer(Guid projectId)
     {
-        IsRegenerating = true;
         StateHasChanged();
         
         try
@@ -177,8 +855,203 @@
         }
         finally
         {
-            IsRegenerating = false;
             StateHasChanged();
         }
+    }
+
+    private string GetItemPriceInput(BuildSmart.Core.Application.DTOs.OfferPreviewItemDto item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.PriceRangeText))
+        {
+            return item.PriceRangeText;
+        }
+        return item.EffectiveUnitPriceEur > 0 ? item.EffectiveUnitPriceEur.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+    }
+
+    private static decimal? ParseInputNumber(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return null;
+        var s = System.Text.RegularExpressions.Regex.Replace(input, @"[^\d.,\s]", "").Trim();
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\s+", "");
+
+        if (s.Contains(',') && s.Contains('.'))
+        {
+            if (s.IndexOf(',') < s.IndexOf('.')) s = s.Replace(",", "");
+            else s = s.Replace(".", "").Replace(",", ".");
+        }
+        else if (s.Contains(','))
+        {
+            var commaIdx = s.LastIndexOf(',');
+            if (s.Length - commaIdx - 1 == 3 && commaIdx > 0) s = s.Replace(",", "");
+            else s = s.Replace(",", ".");
+        }
+        else if (s.Contains('.'))
+        {
+            var dotIdx = s.LastIndexOf('.');
+            if (s.Length - dotIdx - 1 == 3 && dotIdx > 0 && !s.Substring(0, dotIdx).Contains('.')) s = s.Replace(".", "");
+        }
+
+        if (decimal.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var val))
+        {
+            return val;
+        }
+        return null;
+    }
+
+    private void OnItemPriceChanged(BuildSmart.Core.Application.DTOs.OfferPreviewItemDto item, BuildSmart.Core.Application.DTOs.OfferPreviewSectionDto section, string? rawInput)
+    {
+        if (string.IsNullOrWhiteSpace(rawInput)) return;
+        rawInput = rawInput.Trim();
+
+        var rangeMatch = System.Text.RegularExpressions.Regex.Match(rawInput, @"(?:€|EUR)?\s*([0-9\s.,]+)\s*[-–—]\s*(?:€|EUR)?\s*([0-9\s.,]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (rangeMatch.Success)
+        {
+            var minVal = ParseInputNumber(rangeMatch.Groups[1].Value);
+            var maxVal = ParseInputNumber(rangeMatch.Groups[2].Value);
+
+            if (minVal.HasValue && maxVal.HasValue)
+            {
+                decimal mi = minVal.Value;
+                decimal ma = maxVal.Value;
+                if (mi > ma)
+                {
+                    var tmp = mi;
+                    mi = ma;
+                    ma = tmp;
+                }
+
+                decimal avg = Math.Round((mi + ma) / 2m, 2);
+                item.MinUnitPriceEur = mi;
+                item.MaxUnitPriceEur = ma;
+                item.EffectiveUnitPriceEur = avg;
+                item.BaseUnitPriceEur = avg;
+                item.PriceRangeText = $"€ {mi:N0} – {ma:N0}";
+                item.TotalEur = Math.Round(item.Quantity * avg, 2);
+                item.IsCustomPrice = true;
+                if (!string.IsNullOrEmpty(item.ValidationMessage) && previewData != null)
+                {
+                    previewData.ValidationMessages.Remove(item.ValidationMessage);
+                    item.ValidationMessage = null;
+                }
+            }
+        }
+        else
+        {
+            var singleVal = ParseInputNumber(rawInput);
+            if (singleVal.HasValue)
+            {
+                item.MinUnitPriceEur = null;
+                item.MaxUnitPriceEur = null;
+                item.PriceRangeText = null;
+                item.EffectiveUnitPriceEur = singleVal.Value;
+                item.BaseUnitPriceEur = singleVal.Value;
+                item.TotalEur = Math.Round(item.Quantity * singleVal.Value, 2);
+                item.IsCustomPrice = true;
+                if (!string.IsNullOrEmpty(item.ValidationMessage) && previewData != null)
+                {
+                    previewData.ValidationMessages.Remove(item.ValidationMessage);
+                    item.ValidationMessage = null;
+                }
+            }
+        }
+
+        RecalculatePreviewTotals();
+    }
+
+    private void RecalculatePreviewTotals()
+    {
+        if (previewData == null) return;
+
+        decimal grandTotal = 0m;
+        decimal grandMin = 0m;
+        decimal grandMax = 0m;
+        bool anyRange = false;
+
+        foreach (var sec in previewData.Sections)
+        {
+            decimal secTotal = 0m;
+            decimal secMin = 0m;
+            decimal secMax = 0m;
+            bool secAnyRange = false;
+
+            foreach (var it in sec.Items)
+            {
+                secTotal += it.TotalEur;
+                if (it.MinUnitPriceEur.HasValue && it.MaxUnitPriceEur.HasValue && it.MaxUnitPriceEur.Value > it.MinUnitPriceEur.Value)
+                {
+                    secMin += it.MinUnitPriceEur.Value * it.Quantity;
+                    secMax += it.MaxUnitPriceEur.Value * it.Quantity;
+                    secAnyRange = true;
+                }
+                else
+                {
+                    secMin += it.TotalEur;
+                    secMax += it.TotalEur;
+                }
+            }
+
+            sec.SubtotalEur = secTotal;
+            if (secAnyRange && secMax > secMin)
+            {
+                sec.SubtotalRangeText = $"€ {secMin:N0} – € {secMax:N0}";
+            }
+            else
+            {
+                sec.SubtotalRangeText = null;
+            }
+
+            grandTotal += secTotal;
+            grandMin += secMin;
+            grandMax += secMax;
+            if (secAnyRange) anyRange = true;
+        }
+
+        previewData.GrandTotalEur = grandTotal;
+
+        if (anyRange && grandMax > grandMin)
+        {
+            previewData.GrandTotalMinEur = grandMin;
+            previewData.GrandTotalMaxEur = grandMax;
+            previewData.GrandTotalRangeText = $"€ {grandMin:N0} – € {grandMax:N0}";
+            previewData.GrandTotalBgnRangeText = $"{Math.Round(grandMin * 1.95583m, 0):N0} – {Math.Round(grandMax * 1.95583m, 0):N0} лв.";
+
+            if (previewData.InvestmentBreakdown != null && previewData.InvestmentBreakdown.Any())
+            {
+                foreach (var comp in previewData.InvestmentBreakdown)
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(comp.SharePercentage, @"(\d+)");
+                    if (match.Success && decimal.TryParse(match.Groups[1].Value, out var pct))
+                    {
+                        decimal share = pct / 100m;
+                        decimal cMin = Math.Round(grandMin * share, 0);
+                        decimal cMax = Math.Round(grandMax * share, 0);
+                        comp.AmountEurRange = $"€ {cMin:N0} – € {cMax:N0}";
+                        comp.AmountBgnRange = $"{Math.Round(cMin * 1.95583m, 0):N0} – {Math.Round(cMax * 1.95583m, 0):N0} лв.";
+                    }
+                }
+            }
+
+            if (previewData.Parameters != null && !string.IsNullOrWhiteSpace(previewData.Parameters.TotalArea))
+            {
+                var areaMatch = System.Text.RegularExpressions.Regex.Match(previewData.Parameters.TotalArea, @"([\d\.,]+)");
+                if (areaMatch.Success && decimal.TryParse(areaMatch.Groups[1].Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var area) && area > 0)
+                {
+                    decimal minPerSqm = Math.Round(grandMin / area, 0);
+                    decimal maxPerSqm = Math.Round(grandMax / area, 0);
+                    decimal minBgnPerSqm = Math.Round(minPerSqm * 1.95583m, 0);
+                    decimal maxBgnPerSqm = Math.Round(maxPerSqm * 1.95583m, 0);
+                    previewData.AveragePricePerSqm = $"Средна цена: {minPerSqm:N0} – {maxPerSqm:N0} €/m² ({minBgnPerSqm:N0} – {maxBgnPerSqm:N0} лв./m²)";
+                }
+            }
+        }
+        else
+        {
+            previewData.GrandTotalRangeText = null;
+            previewData.GrandTotalBgnRangeText = null;
+        }
+
+        previewData.IsValid = previewData.Sections.SelectMany(s => s.Items).All(i => string.IsNullOrEmpty(i.ValidationMessage));
+        StateHasChanged();
     }
 }
