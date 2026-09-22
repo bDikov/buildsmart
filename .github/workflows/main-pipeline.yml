@@ -157,11 +157,17 @@ jobs:
             set -e
             cd /opt/buildsmart
             
+            # Pre-cleanup: remove leftover tarballs and prune unused containers/builder cache before unpacking
+            rm -f buildsmart-api.tar.gz buildsmart-web.tar.gz
+            docker system prune -f --volumes=false || true
+            docker builder prune -a -f || true
+            truncate -s 0 /var/lib/docker/containers/*/*-json.log 2>/dev/null || true
+
             mkdir -p images/blog posts
 
-            # Extract tarball and clean it up
+            # Extract tarball and clean it up immediately
             tar -xzf buildsmart.tar.gz
-            rm buildsmart.tar.gz
+            rm -f buildsmart.tar.gz
             
             # Create an environment file from GitHub Secrets to be used by docker-compose
             echo "POSTGRES_USER=${{ secrets.DB_USER }}" > .env
@@ -192,12 +198,12 @@ jobs:
             echo "POSTHOG_API_HOST=${{ secrets.POSTHOG_API_HOST }}" >> .env
             echo "HANGFIRE_DASHBOARD_TOKEN=${{ secrets.HANGFIRE_DASHBOARD_TOKEN }}" >> .env
             
-            # Load the new Docker images
+            # Load the new Docker images sequentially and delete each tarball immediately to conserve disk space
             docker load < buildsmart-api.tar.gz
+            rm -f buildsmart-api.tar.gz
+
             docker load < buildsmart-web.tar.gz
-            
-            # Clean up the image tarballs
-            rm buildsmart-api.tar.gz buildsmart-web.tar.gz
+            rm -f buildsmart-web.tar.gz
             
             # Start/update the service containers (only restarts the ones that changed, i.e., api and web)
             docker compose -f docker-compose.prod.yml up -d
@@ -212,7 +218,9 @@ jobs:
             # Restart web container to trigger startup seeding with updated volume
             docker compose -f docker-compose.prod.yml restart web
 
-            # Clean up old images to save space
+            # Clean up old images and builder cache to save space
             docker image prune -f
+            docker builder prune -a -f || true
+
 
 

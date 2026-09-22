@@ -25,15 +25,7 @@ public class AuthService : IAuthService
 
 	private bool IsValidBulgarianPhoneNumber(string? phoneNumber)
 	{
-		if (string.IsNullOrWhiteSpace(phoneNumber))
-			return false;
-
-		// Normalize by removing spaces, dashes, and parentheses
-		var normalized = phoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
-
-		// Check Bulgarian format using regex (supporting landlines and mobile, starting with +359, 00359, or 0)
-		var regex = new System.Text.RegularExpressions.Regex(@"^(?:\+359|00359|0)([2-9]\d{7,8}|8[7-9]\d{7}|9[8-9]\d{7})$");
-		return regex.IsMatch(normalized);
+		return BulgarianPhoneValidator.Evaluate(phoneNumber, checkDummyPatterns: false).IsValid;
 	}
 
 	public async Task<User> RegisterUserAsync(string firstName, string lastName, string email, string password, string? phoneNumber = null)

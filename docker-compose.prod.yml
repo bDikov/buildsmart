@@ -18,6 +18,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
 
   api:
     image: buildsmart-api:latest
@@ -55,6 +60,11 @@ services:
       - HANGFIRE_DASHBOARD_TOKEN=${HANGFIRE_DASHBOARD_TOKEN}
     volumes:
       - blog_images_data:/app/wwwroot/images/blog
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
     depends_on:
       db:
         condition: service_healthy
@@ -81,6 +91,11 @@ services:
     volumes:
       - blog_images_data:/app/wwwroot/images/blog
       - blog_posts_data:/app/wwwroot/posts
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
     depends_on:
       - api
 
@@ -96,6 +111,11 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
     depends_on:
       - web
       - api

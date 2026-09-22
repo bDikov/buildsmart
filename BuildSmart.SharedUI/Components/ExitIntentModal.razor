@@ -1,6 +1,7 @@
 @using Microsoft.Extensions.Localization
 @using Microsoft.AspNetCore.Components.Authorization
 @using BuildSmart.Core.Application.Interfaces
+@using BuildSmart.Core.Application.Services
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
 @inject IJSRuntime JSRuntime
 @inject ICalculatorLeadRepository LeadRepository
@@ -471,6 +472,27 @@
             return;
         }
 
+        var phoneResult = BulgarianPhoneValidator.Evaluate(_leadModel.Phone);
+        if (!phoneResult.IsValid)
+        {
+            _errorMessage = phoneResult.ErrorCode switch
+            {
+                PhoneErrorCode.MissingDigits => phoneResult.DigitsDelta == -1
+                    ? Loc["Lander_Phone_MissingOneDigit"].Value
+                    : string.Format(Loc["Lander_Phone_MissingDigits"].Value, -phoneResult.DigitsDelta, phoneResult.DigitCount),
+                PhoneErrorCode.ExtraDigits => phoneResult.DigitsDelta == 1
+                    ? Loc["Lander_Phone_ExtraOneDigit"].Value
+                    : string.Format(Loc["Lander_Phone_ExtraDigits"].Value, phoneResult.DigitsDelta, phoneResult.DigitCount),
+                PhoneErrorCode.InvalidPrefix => Loc["Lander_Phone_InvalidPrefix"].Value,
+                PhoneErrorCode.DummySequence => Loc["Lander_Phone_DummySequence"].Value,
+                PhoneErrorCode.DummyRepetition => Loc["Lander_Phone_DummyRepetition"].Value,
+                PhoneErrorCode.LowEntropy => Loc["Lander_Phone_DummyLowEntropy"].Value,
+                PhoneErrorCode.InvalidCharacters => Loc["Lander_Phone_InvalidChars"].Value,
+                _ => Loc["Lander_PhoneError"].Value
+            };
+            return;
+        }
+
         _isSubmitting = true;
         _errorMessage = null;
 
@@ -499,7 +521,7 @@
             {
                 Id = Guid.NewGuid(),
                 Name = _leadModel.Name.Trim(),
-                Phone = _leadModel.Phone.Trim(),
+                Phone = phoneResult.FormattedDisplay,
                 Email = _leadModel.Email.Trim(),
                 SelectedArea = _leadModel.PropertyArea ?? 0,
                 Scope = "exit_intent_lead",

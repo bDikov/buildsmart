@@ -1462,7 +1462,37 @@ Boncho | BuildSmart</value>
     <value>Please enter a valid email address (name@domain.com)</value>
   </data>
   <data name="Lander_PhoneError" xml:space="preserve">
-    <value>Please enter a valid phone number (at least 6 digits)</value>
+    <value>Please enter a valid Bulgarian phone number (e.g. 0888 123 456).</value>
+  </data>
+  <data name="Lander_Phone_MissingDigits" xml:space="preserve">
+    <value>{0} digits remaining ({1} of 10)</value>
+  </data>
+  <data name="Lander_Phone_MissingOneDigit" xml:space="preserve">
+    <value>Missing 1 digit (9 of 10)</value>
+  </data>
+  <data name="Lander_Phone_ExtraDigits" xml:space="preserve">
+    <value>{0} extra digits entered ({1} of 10)</value>
+  </data>
+  <data name="Lander_Phone_ExtraOneDigit" xml:space="preserve">
+    <value>1 extra digit entered (11 of 10). Check for duplicate digits.</value>
+  </data>
+  <data name="Lander_Phone_InvalidPrefix" xml:space="preserve">
+    <value>Bulgarian mobile numbers start with 087, 088, 089 or 098/099.</value>
+  </data>
+  <data name="Lander_Phone_DummySequence" xml:space="preserve">
+    <value>Phone number contains sequential test digits. Please enter a real phone.</value>
+  </data>
+  <data name="Lander_Phone_DummyRepetition" xml:space="preserve">
+    <value>Phone number contains too many repeated digits. Please enter a real phone.</value>
+  </data>
+  <data name="Lander_Phone_DummyLowEntropy" xml:space="preserve">
+    <value>Phone number appears fictitious or generated. Please enter a real contact number.</value>
+  </data>
+  <data name="Lander_Phone_Valid" xml:space="preserve">
+    <value>Valid contact phone number</value>
+  </data>
+  <data name="Lander_Phone_InvalidChars" xml:space="preserve">
+    <value>Phone number can only contain digits.</value>
   </data>
   <data name="Lander_NameError" xml:space="preserve">
     <value>Please enter your name</value>

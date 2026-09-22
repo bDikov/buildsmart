@@ -1543,7 +1543,37 @@
     <value>Моля въведете валиден имейл адрес (name@domain.com)</value>
   </data>
   <data name="Lander_PhoneError" xml:space="preserve">
-    <value>Моля въведете валиден телефонен номер (поне 6 цифри)</value>
+    <value>Моля, въведете валиден български телефонен номер (напр. 0888 123 456).</value>
+  </data>
+  <data name="Lander_Phone_MissingDigits" xml:space="preserve">
+    <value>Остават още {0} цифри ({1} от 10)</value>
+  </data>
+  <data name="Lander_Phone_MissingOneDigit" xml:space="preserve">
+    <value>Липсва още 1 цифра (9 от 10)</value>
+  </data>
+  <data name="Lander_Phone_ExtraDigits" xml:space="preserve">
+    <value>Въведени са {0} излишни цифри ({1} от 10)</value>
+  </data>
+  <data name="Lander_Phone_ExtraOneDigit" xml:space="preserve">
+    <value>Въведена е 1 излишна цифра (11 от 10). Проверете за повторена цифра.</value>
+  </data>
+  <data name="Lander_Phone_InvalidPrefix" xml:space="preserve">
+    <value>Българските мобилни номера започват с 087, 088, 089 или 098/099.</value>
+  </data>
+  <data name="Lander_Phone_DummySequence" xml:space="preserve">
+    <value>Номерът съдържа поредни тестови цифри. Моля, въведете реален номер.</value>
+  </data>
+  <data name="Lander_Phone_DummyRepetition" xml:space="preserve">
+    <value>Номерът съдържа твърде много повтарящи се цифри. Моля, въведете реален телефон.</value>
+  </data>
+  <data name="Lander_Phone_DummyLowEntropy" xml:space="preserve">
+    <value>Номерът изглежда фиктивен или генериран. Моля, въведете реален номер за контакт.</value>
+  </data>
+  <data name="Lander_Phone_Valid" xml:space="preserve">
+    <value>Валиден телефонен номер за връзка</value>
+  </data>
+  <data name="Lander_Phone_InvalidChars" xml:space="preserve">
+    <value>Телефонният номер може да съдържа само цифри.</value>
   </data>
   <data name="Lander_NameError" xml:space="preserve">
     <value>Моля, въведете Вашето име</value>
