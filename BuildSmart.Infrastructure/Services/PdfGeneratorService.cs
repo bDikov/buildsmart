@@ -53,6 +53,13 @@ namespace BuildSmart.Infrastructure.Services
 
 				string localChromePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe";
 				string localEdgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
+				string[] linuxChromePaths = new[]
+				{
+					"/usr/bin/google-chrome",
+					"/usr/bin/google-chrome-stable",
+					"/usr/bin/chromium",
+					"/usr/bin/chromium-browser"
+				};
 
 				if (OperatingSystem.IsWindows() && File.Exists(localChromePath))
 				{
@@ -63,6 +70,11 @@ namespace BuildSmart.Infrastructure.Services
 				{
 					_logger.LogInformation($"Using local Edge installation: {localEdgePath}");
 					launchOptions.ExecutablePath = localEdgePath;
+				}
+				else if (!OperatingSystem.IsWindows() && Array.Find(linuxChromePaths, File.Exists) is string linuxChrome)
+				{
+					_logger.LogInformation($"Using system Linux Chrome installation: {linuxChrome}");
+					launchOptions.ExecutablePath = linuxChrome;
 				}
 				else
 				{

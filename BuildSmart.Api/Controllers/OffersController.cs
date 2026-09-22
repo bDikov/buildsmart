@@ -956,8 +956,16 @@ public class OffersController : ControllerBase
                 parsed.AdminMarkupPercentage,
                 parsed.Phases);
 
-            // Pre-compile the Master Offer PDF immediately
-            await DownloadOfferPdf(projectId, force: true);
+            // Pre-compile the Master Offer PDF immediately (non-blocking fallback to on-demand compilation)
+            try
+            {
+                await DownloadOfferPdf(projectId, force: true);
+            }
+            catch
+            {
+                // Non-blocking: pre-compilation is an optimization; if headless browser is unavailable during import,
+                // the PDF will be generated on demand when downloaded by the user.
+            }
 
             var project = await dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
 

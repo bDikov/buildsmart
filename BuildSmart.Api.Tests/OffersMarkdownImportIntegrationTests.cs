@@ -557,9 +557,11 @@ AdminMarkupPercentage: 20
             mockLocalizer.Setup(l => l[It.IsAny<string>()]).Returns((string key) => new LocalizedString(key, key));
 
             var mockAiService = new Mock<IAiService>();
-            var pdfGenerator = new PdfGeneratorService(NullLogger<PdfGeneratorService>.Instance);
+            var mockPdfGenerator = new Mock<IPdfGeneratorService>();
+            mockPdfGenerator.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>()))
+                .ReturnsAsync(new byte[] { 0x25, 0x50, 0x44, 0x46 });
 
-            var controller = new OffersController(unitOfWork, pdfGenerator, mockLocalizer.Object, mockAiService.Object);
+            var controller = new OffersController(unitOfWork, mockPdfGenerator.Object, mockLocalizer.Object, mockAiService.Object);
             var parserService = new MarkdownOfferParserService(actContext, NullLogger<MarkdownOfferParserService>.Instance);
             var projectService = new ProjectManagementService(actContext);
 
@@ -1034,9 +1036,16 @@ AdminMarkupPercentage: 20
             mockLocalizer.Setup(l => l[It.IsAny<string>()]).Returns((string key) => new LocalizedString(key, key));
 
             var mockAiService = new Mock<IAiService>();
-            var realPdfGenerator = new PdfGeneratorService(NullLogger<PdfGeneratorService>.Instance);
+            var dummyPdf = new byte[10050];
+            dummyPdf[0] = 0x25; // %
+            dummyPdf[1] = 0x50; // P
+            dummyPdf[2] = 0x44; // D
+            dummyPdf[3] = 0x46; // F
+            var mockPdfGenerator = new Mock<IPdfGeneratorService>();
+            mockPdfGenerator.Setup(p => p.GenerateOfferPdfAsync(It.IsAny<object>()))
+                .ReturnsAsync(dummyPdf);
 
-            var controller = new OffersController(unitOfWork, realPdfGenerator, mockLocalizer.Object, mockAiService.Object);
+            var controller = new OffersController(unitOfWork, mockPdfGenerator.Object, mockLocalizer.Object, mockAiService.Object);
             var parserService = new MarkdownOfferParserService(actContext, NullLogger<MarkdownOfferParserService>.Instance);
             var projectService = new ProjectManagementService(actContext);
 
