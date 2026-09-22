@@ -103,6 +103,7 @@ builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailVerifica
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailService, BuildSmart.Infrastructure.Services.EmailService>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IProjectManagementService, BuildSmart.Infrastructure.Services.ProjectManagementService>();
+builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.IRenovationEstimatorCalculator, BuildSmart.Core.Application.Services.RenovationEstimatorCalculator>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<AuthHeaderHandler>();

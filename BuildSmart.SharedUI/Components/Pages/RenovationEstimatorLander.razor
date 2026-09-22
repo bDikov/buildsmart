@@ -17,6 +17,7 @@
 @inject BuildSmart.Core.Application.Interfaces.IEmailService EmailService
 @inject BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository LeadRepository
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
+@inject BuildSmart.Core.Application.Interfaces.IRenovationEstimatorCalculator EstimatorCalculator
 
 <PageTitle>@Loc["Seo_Estimator_Title"]</PageTitle>
 
@@ -1407,97 +1408,16 @@
         }
     }
 
-    private decimal GetTierMultiplier()
-    {
-        return _finishQualityTier == "luxury" ? 1.85m : (_finishQualityTier == "premium" ? 1.25m : 1.0m);
-    }
-
     private decimal GetSingleBathroomPriceEur(int index, bool isMax)
     {
         if (index < 0 || index >= _bathroomSizes.Length) return 0;
         int area = _bathroomSizes[index];
-
-        decimal multiplier = GetTierMultiplier();
-        decimal baseRate = isMax ? 650m : 420m;
-        decimal statusDemolition = _buildingStatus == "old" ? (isMax ? 650m : 450m) : (_buildingStatus == "rough" ? (isMax ? 300m : 200m) : 0m);
-        decimal fixedEquipment = _includeEquipment ? (isMax ? 2600m : 1800m) : 0m;
-
-        return Math.Round((area * baseRate + fixedEquipment + statusDemolition) * multiplier, 0);
-    }
-
-    private decimal GetBaseCmpMinEur()
-    {
-        decimal tierMultiplier = GetTierMultiplier();
-        decimal baseRate = 370m;
-        if (_buildingStatus == "rough") baseRate = 400m;
-        else if (_buildingStatus == "old") baseRate = 450m;
-        return Math.Round(_selectedArea * baseRate * tierMultiplier, 0);
-    }
-
-    private decimal GetBaseCmpMaxEur()
-    {
-        decimal tierMultiplier = GetTierMultiplier();
-        decimal baseRateMax = 440m;
-        if (_buildingStatus == "rough") baseRateMax = 470m;
-        else if (_buildingStatus == "old") baseRateMax = 540m;
-        return Math.Round(_selectedArea * baseRateMax * tierMultiplier, 0);
-    }
-
-    private decimal GetFurnitureMinEur()
-    {
-        decimal tierMultiplier = GetTierMultiplier();
-        return Math.Round(_selectedArea * 230m * tierMultiplier, 0);
-    }
-
-    private decimal GetFurnitureMaxEur()
-    {
-        decimal tierMultiplier = GetTierMultiplier();
-        return Math.Round(_selectedArea * 350m * tierMultiplier, 0);
+        return EstimatorCalculator.GetSingleBathroomPriceEur(area, isMax, _buildingStatus, _finishQualityTier, _includeEquipment);
     }
 
     private (decimal min, decimal max) GetCategoryBudget(int catId)
     {
-        if (catId == 9)
-        {
-            return (GetFurnitureMinEur(), GetFurnitureMaxEur());
-        }
-
-        decimal cmpMin = GetBaseCmpMinEur();
-        decimal cmpMax = GetBaseCmpMaxEur();
-
-        decimal weight = catId switch
-        {
-            1 => 0.18m, // Баня и санитарен възел
-            2 => 0.18m, // Шпакловка, штробове, ъгли
-            3 => 0.07m, // Боядисване
-            4 => 0.12m, // Гипсокартон, ниши, тавани
-            5 => 0.08m, // Подови настилки и замазки
-            6 => 0.13m, // Електроинсталация и осветление
-            7 => 0.06m, // ВиК инсталация
-            8 => 0.08m, // Интериорни врати
-            _ => 0.10m  // Логистика, къртене, депониране
-        };
-
-        if (catId == 10)
-        {
-            decimal sum1to8Min = Math.Round(cmpMin * 0.18m, 0) * 2
-                               + Math.Round(cmpMin * 0.07m, 0)
-                               + Math.Round(cmpMin * 0.12m, 0)
-                               + Math.Round(cmpMin * 0.08m, 0) * 2
-                               + Math.Round(cmpMin * 0.13m, 0)
-                               + Math.Round(cmpMin * 0.06m, 0);
-
-            decimal sum1to8Max = Math.Round(cmpMax * 0.18m, 0) * 2
-                               + Math.Round(cmpMax * 0.07m, 0)
-                               + Math.Round(cmpMax * 0.12m, 0)
-                               + Math.Round(cmpMax * 0.08m, 0) * 2
-                               + Math.Round(cmpMax * 0.13m, 0)
-                               + Math.Round(cmpMax * 0.06m, 0);
-
-            return (cmpMin - sum1to8Min, cmpMax - sum1to8Max);
-        }
-
-        return (Math.Round(cmpMin * weight, 0), Math.Round(cmpMax * weight, 0));
+        return EstimatorCalculator.GetCategoryBudget(catId, _selectedArea, _buildingStatus, _finishQualityTier, _includeFurniture);
     }
 
     private string GetCategoryName(int catId) => catId switch
@@ -1887,17 +1807,16 @@
 
     private int GetEstimatedDays()
     {
-        if (_activeScope == "bathroom")
-        {
-            int bathroomStatusDays = _buildingStatus == "old" ? 5 : (_buildingStatus == "rough" ? 2 : 0);
-            return 12 + (_bathroomCount * 5) + (bathroomStatusDays * _bathroomCount);
-        }
-
-        int fullStatusDays = _buildingStatus == "old" ? 20 : (_buildingStatus == "rough" ? 10 : 0);
-        decimal tierTimeMultiplier = _finishQualityTier == "luxury" ? 1.65m : (_finishQualityTier == "premium" ? 1.30m : 1.0m);
-        int baseDays = 40 + (int)Math.Round(_selectedArea / 2.5m, 0);
-
-        return (int)Math.Round(baseDays * tierTimeMultiplier, 0) + fullStatusDays;
+        return EstimatorCalculator.CalculateEstimate(new RenovationEstimateRequest(
+            Scope: _activeScope,
+            SelectedArea: _selectedArea,
+            BuildingStatus: _buildingStatus,
+            QualityTier: _finishQualityTier,
+            BathroomCount: _bathroomCount,
+            BathroomSizes: _bathroomSizes,
+            IncludeFurniture: _includeFurniture,
+            IncludeEquipment: _includeEquipment
+        )).EstimatedDays;
     }
 
     private string? _emailValidationError;

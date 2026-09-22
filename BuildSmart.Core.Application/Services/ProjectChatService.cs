@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BuildSmart.Core.Application.Services;
@@ -16,19 +17,22 @@ public class ProjectChatService : IProjectChatService
     private readonly IActiveProjectChatTracker _activeProjectChatTracker;
     private readonly ITelegramBotService? _telegramBotService;
     private readonly IAiService? _aiService;
+    private readonly IRenovationEstimatorCalculator? _estimatorCalculator;
 
     public ProjectChatService(
         IUnitOfWork unitOfWork,
         INotificationService notificationService,
         IActiveProjectChatTracker activeProjectChatTracker,
         ITelegramBotService? telegramBotService = null,
-        IAiService? aiService = null)
+        IAiService? aiService = null,
+        IRenovationEstimatorCalculator? estimatorCalculator = null)
     {
         _unitOfWork = unitOfWork;
         _notificationService = notificationService;
         _activeProjectChatTracker = activeProjectChatTracker;
         _telegramBotService = telegramBotService;
         _aiService = aiService;
+        _estimatorCalculator = estimatorCalculator;
     }
 
     public async Task<IEnumerable<ProjectMessage>> GetProjectMessagesAsync(Guid projectId, Guid userId, int offset, int limit)
@@ -190,8 +194,39 @@ public class ProjectChatService : IProjectChatService
                         ? string.Join("; ", jobPosts.Select(j => $"{j.Title} ({j.ServiceCategory?.Name ?? "Обща"}): {j.Description}"))
                         : project.Description;
 
-                    var context = $"Проект: {project.Title}. Дейности: {jobsSummary}.";
-                    autoReplyText = await _aiService.GenerateChatReplyAsync(context, messageText, lang);
+                    var historySb = new StringBuilder();
+                    var recentMessages = await _unitOfWork.ProjectMessages.GetMessagesPaginatedAsync(projectId, 0, 8);
+                    if (recentMessages != null)
+                    {
+                        var chronological = recentMessages.Reverse().ToList();
+                        foreach (var msg in chronological)
+                        {
+                            if (msg.Id == message.Id) continue;
+                            var senderRole = msg.SenderId == project.HomeownerId ? "Клиент" : "BuildSmart Консултант";
+                            historySb.AppendLine($"{senderRole}: \"{msg.MessageText}\"");
+                        }
+                    }
+
+                    var contextSb = new StringBuilder();
+                    contextSb.AppendLine($"Проект: {project.Title}");
+                    if (!string.IsNullOrWhiteSpace(jobsSummary))
+                    {
+                        contextSb.AppendLine($"Дейности: {jobsSummary}");
+                    }
+                    if (historySb.Length > 0)
+                    {
+                        contextSb.AppendLine();
+                        contextSb.AppendLine("История на текущия разговор до момента:");
+                        contextSb.Append(historySb);
+                    }
+
+                    if (_estimatorCalculator != null && (_estimatorCalculator.IsPricingOrDimensionQuery(messageText) || !string.IsNullOrWhiteSpace(jobsSummary)))
+                    {
+                        contextSb.AppendLine();
+                        contextSb.AppendLine(_estimatorCalculator.GetEstimatorKnowledgeSummary());
+                    }
+
+                    autoReplyText = await _aiService.GenerateChatReplyAsync(contextSb.ToString(), messageText, lang);
                 }
                 else
                 {
