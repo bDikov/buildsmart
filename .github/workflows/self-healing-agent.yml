@@ -1,0 +1,104 @@
+name: BuildSmart Self-Healing Bug-Fixing Agent
+
+on:
+  repository_dispatch:
+    types: [self-healing-fix]
+  workflow_dispatch:
+    inputs:
+      error_title:
+        description: 'Error title / Exception'
+        required: true
+        default: 'NullReferenceException'
+      error_message:
+        description: 'Error message'
+        required: true
+        default: 'Object reference not set'
+      file_path:
+        description: 'Target C# file path'
+        required: true
+        default: 'BuildSmart.Infrastructure/Services/ProjectManagementService.cs'
+      line_number:
+        description: 'Line number'
+        required: false
+        default: '837'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  self-heal:
+    name: Autonomous Bug Fix & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Self-Healing Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ERROR_TITLE: ${{ github.event.client_payload.error_title || inputs.error_title }}
+          ERROR_MESSAGE: ${{ github.event.client_payload.error_message || inputs.error_message }}
+          STACK_TRACE: ${{ github.event.client_payload.stack_trace }}
+          FILE_PATH: ${{ github.event.client_payload.file_path || inputs.file_path }}
+          LINE_NUMBER: ${{ github.event.client_payload.line_number || inputs.line_number }}
+        run: |
+          python scripts/self_heal.py
+
+      - name: Create Git Branch & Commit Fix
+        id: git_commit
+        run: |
+          BRANCH_NAME="fix/auto-sentry-${{ github.run_id }}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          git config user.name "BuildSmart Infra Bot"
+          git config user.email "bot@buildsmart.bg"
+          git checkout -b $BRANCH_NAME
+          git add -A
+          git commit -m "fix: autonomous fix for ${{ github.event.client_payload.error_title || inputs.error_title }}"
+          git push origin $BRANCH_NAME
+
+      - name: Open GitHub Pull Request
+        id: create_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_TITLE="🛠️ Auto-Fix: ${{ github.event.client_payload.error_title || inputs.error_title }}"
+          PR_URL=$(gh pr create --title "$PR_TITLE" --body-file pr_description.md --base main --head ${{ steps.git_commit.outputs.branch_name }})
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "Created PR: $PR_URL"
+
+      - name: Notify Admin via Telegram (Success)
+        if: success()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            MSG="🎉 <b>Self-Healing PR е готов!</b>%0A• <b>Проблем:</b> <code>${{ github.event.client_payload.error_title || inputs.error_title }}</code>%0A• <b>Файл:</b> <code>${{ github.event.client_payload.file_path || inputs.file_path }}</code>%0A• <b>Тестове:</b> ✅ 100% зелени%0A%0A🔗 <a href='${{ steps.create_pr.outputs.pr_url }}'>Прегледай и одобри Pull Request</a>"
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d "text=$MSG" \
+              -d "parse_mode=HTML"
+          fi
+
+      - name: Notify Admin via Telegram (Failure)
+        if: failure()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            MSG="⚠️ <b>Self-Healing не успя да валидира фикса:</b>%0AТестовете не преминаха след опита за автоматична корекция на <code>${{ github.event.client_payload.error_title || inputs.error_title }}</code>. Изисква се ръчен преглед от разработчик."
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d "text=$MSG" \
+              -d "parse_mode=HTML"
+          fi

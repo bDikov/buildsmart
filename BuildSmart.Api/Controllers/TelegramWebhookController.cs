@@ -25,19 +25,22 @@ public class TelegramWebhookController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAiService _aiService;
     private readonly ILogger<TelegramWebhookController> _logger;
+    private readonly IServiceProvider? _serviceProvider;
 
     public TelegramWebhookController(
         IConfiguration configuration,
         IProjectChatService projectChatService,
         IUnitOfWork unitOfWork,
         IAiService aiService,
-        ILogger<TelegramWebhookController> logger)
+        ILogger<TelegramWebhookController> logger,
+        IServiceProvider? serviceProvider = null)
     {
         _configuration = configuration;
         _projectChatService = projectChatService;
         _unitOfWork = unitOfWork;
         _aiService = aiService;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     [HttpGet("status")]
@@ -97,7 +100,11 @@ public class TelegramWebhookController : ControllerBase
 
             if (root.TryGetProperty("message", out var messageElement))
             {
-                await DispatchTelegramMessageAsync(messageElement, _unitOfWork, _projectChatService, _logger);
+                await DispatchTelegramMessageAsync(messageElement, _unitOfWork, _projectChatService, _logger, _serviceProvider);
+            }
+            else if (root.TryGetProperty("callback_query", out var callbackQueryElement) && _serviceProvider != null)
+            {
+                await DispatchCallbackQueryAsync(callbackQueryElement, _serviceProvider, _logger);
             }
 
             return Ok();
@@ -117,7 +124,8 @@ public class TelegramWebhookController : ControllerBase
         JsonElement messageElement,
         IUnitOfWork unitOfWork,
         IProjectChatService projectChatService,
-        ILogger logger)
+        ILogger logger,
+        IServiceProvider? serviceProvider = null)
     {
         if (!messageElement.TryGetProperty("text", out var adminReplyTextProp))
         {
@@ -161,7 +169,7 @@ public class TelegramWebhookController : ControllerBase
             projectId = _lastActiveProjectId.Value;
         }
 
-        // Support bot control commands (e.g. /ai on, /ai off)
+        // Support bot control commands (e.g. /ai on, /ai off, /status, /restart, /logs, /fix, /help)
         if (adminReplyText.StartsWith("/"))
         {
             var command = adminReplyText.Trim().ToLowerInvariant();
@@ -178,6 +186,70 @@ public class TelegramWebhookController : ControllerBase
                     BuildSmart.Core.Application.Services.ProjectChatService.SetHumanTakeover(projectId, true, TimeSpan.FromHours(24));
                     logger.LogInformation("[Telegram] AI auto-reply paused for 24 hours for Project {ProjectId}", projectId);
                     return true;
+                }
+            }
+
+            // Infrastructure / DevOps Commands
+            if (serviceProvider != null)
+            {
+                var infraService = serviceProvider.GetService(typeof(IInfraService)) as IInfraService;
+                var telegramBotService = serviceProvider.GetService(typeof(ITelegramBotService)) as ITelegramBotService;
+
+                if (infraService != null && telegramBotService != null)
+                {
+                    if (command == "/status")
+                    {
+                        var st = await infraService.GetSystemStatusAsync();
+                        var dbIcon = st.DatabaseConnected ? "✅ Свързана" : "❌ Прекъсната";
+                        var uptimeStr = $"{st.Uptime.Days}д {st.Uptime.Hours}ч {st.Uptime.Minutes}м";
+                        var msg = "<b>📊 СЪСТОЯНИЕ НА BUILDSMART ИНФРАСТРУКТУРА</b>\n\n" +
+                                  $"• <b>Среда:</b> <code>{st.Environment}</code>\n" +
+                                  $"• <b>База данни:</b> {dbIcon} (латентност: {st.DatabaseLatencyMs})\n" +
+                                  $"• <b>RAM памет:</b> <code>{st.MemoryUsageMb} MB</code> (алокирана: {st.TotalAllocatedMb} MB)\n" +
+                                  $"• <b>Uptime:</b> <code>{uptimeStr}</code>\n" +
+                                  $"• <b>Хост:</b> <code>{st.OsVersion} ({st.ProcessorCount} CPU ядра)</code>\n" +
+                                  $"• <b>Сървърно време (UTC):</b> <code>{st.ServerTimeUtc:yyyy-MM-dd HH:mm:ss}</code>";
+                        await telegramBotService.SendNotificationAsync(msg);
+                        return true;
+                    }
+                    if (command.StartsWith("/restart"))
+                    {
+                        await telegramBotService.SendNotificationAsync("🔄 <b>Иницииран е рестарт на API контейнера...</b>");
+                        await infraService.RestartServiceAsync("api");
+                        return true;
+                    }
+                    if (command.StartsWith("/logs"))
+                    {
+                        var logs = await infraService.GetRecentLogsAsync(25);
+                        var snippet = logs.Length > 3000 ? logs.Substring(logs.Length - 3000) : logs;
+                        await telegramBotService.SendNotificationAsync($"<b>📜 ПОСЛЕДНИ ЛОГОВЕ:</b>\n<pre>{System.Web.HttpUtility.HtmlEncode(snippet)}</pre>");
+                        return true;
+                    }
+                    if (command == "/fix")
+                    {
+                        await infraService.TriggerSelfHealingWorkflowAsync(
+                            "Manual Admin Trigger",
+                            "Triggered via Telegram /fix command",
+                            null,
+                            null,
+                            null);
+                        return true;
+                    }
+                    if (command == "/help")
+                    {
+                        var help = "<b>🤖 BUILDSMART BOT КОМАНДИ:</b>\n\n" +
+                                   "<b>Чат с клиенти:</b>\n" +
+                                   "• <code>Reply</code>: отговор към клиента в уеб чата\n" +
+                                   "• <code>/ai on</code>: възобновяване на AI консултанта\n" +
+                                   "• <code>/ai off</code>: спиране на AI за 24 часа\n\n" +
+                                   "<b>Инфраструктура & DevOps:</b>\n" +
+                                   "• <code>/status</code>: здраве на сървъра, RAM и базата\n" +
+                                   "• <code>/restart</code>: рестартиране на API контейнера\n" +
+                                   "• <code>/logs</code>: преглед на последните логове\n" +
+                                   "• <code>/fix</code>: задействане на Self-Healing GitHub Action";
+                        await telegramBotService.SendNotificationAsync(help);
+                        return true;
+                    }
                 }
             }
 
@@ -209,6 +281,54 @@ public class TelegramWebhookController : ControllerBase
             return false;
         }
     }
+
+    /// <summary>
+    /// Handles Telegram inline keyboard button clicks (e.g. [Auto-Fix & Create PR], [Restart API], [Logs]).
+    /// </summary>
+    public static async Task<bool> DispatchCallbackQueryAsync(
+        JsonElement callbackQueryElement,
+        IServiceProvider serviceProvider,
+        ILogger logger)
+    {
+        if (!callbackQueryElement.TryGetProperty("data", out var dataProp))
+            return false;
+
+        var data = dataProp.GetString() ?? string.Empty;
+        var infraService = serviceProvider.GetService(typeof(IInfraService)) as IInfraService;
+        var telegramBotService = serviceProvider.GetService(typeof(ITelegramBotService)) as ITelegramBotService;
+
+        if (infraService == null || telegramBotService == null) return false;
+
+        if (data.StartsWith("fix:"))
+        {
+            var targetFile = data.Substring(4);
+            logger.LogInformation("[TelegramCallback] Auto-Fix requested for file: {File}", targetFile);
+            await infraService.TriggerSelfHealingWorkflowAsync(
+                "Sentry Incident",
+                "Auto-Fix triggered via Telegram inline button",
+                null,
+                targetFile,
+                null);
+            return true;
+        }
+        if (data == "restart:api")
+        {
+            logger.LogInformation("[TelegramCallback] API container restart requested via callback.");
+            await telegramBotService.SendNotificationAsync("🔄 <b>Иницииран е рестарт на API контейнера...</b>");
+            await infraService.RestartServiceAsync("api");
+            return true;
+        }
+        if (data == "logs:api")
+        {
+            var logs = await infraService.GetRecentLogsAsync(25);
+            var snippet = logs.Length > 3000 ? logs.Substring(logs.Length - 3000) : logs;
+            await telegramBotService.SendNotificationAsync($"<b>📜 ПОСЛЕДНИ ЛОГОВЕ:</b>\n<pre>{System.Web.HttpUtility.HtmlEncode(snippet)}</pre>");
+            return true;
+        }
+
+        return false;
+    }
+
 
     /// <summary>
     /// Generates an AI-suggested draft reply for admins in the chat view.

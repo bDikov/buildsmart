@@ -110,9 +110,10 @@ public class TelegramPollingWorker : BackgroundService
                             offset = updateId + 1; // Acknowledge update to Telegram so it's not redelivered
                         }
 
+                        using var scope = _scopeFactory.CreateScope();
+
                         if (update.TryGetProperty("message", out var messageElement))
                         {
-                            using var scope = _scopeFactory.CreateScope();
                             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                             var chatService = scope.ServiceProvider.GetRequiredService<IProjectChatService>();
 
@@ -120,6 +121,14 @@ public class TelegramPollingWorker : BackgroundService
                                 messageElement,
                                 uow,
                                 chatService,
+                                _logger,
+                                scope.ServiceProvider);
+                        }
+                        else if (update.TryGetProperty("callback_query", out var callbackQueryElement))
+                        {
+                            await TelegramWebhookController.DispatchCallbackQueryAsync(
+                                callbackQueryElement,
+                                scope.ServiceProvider,
                                 _logger);
                         }
                     }

@@ -185,6 +185,7 @@ public partial class Program
 		builder.Services.AddScoped<IMarkdownOfferParserService, BuildSmart.Infrastructure.Services.MarkdownOfferParserService>();
 		builder.Services.AddSingleton<IActiveProjectChatTracker, ActiveProjectChatTracker>();
 		builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
+		builder.Services.AddScoped<IInfraService, BuildSmart.Infrastructure.Services.InfraService>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
