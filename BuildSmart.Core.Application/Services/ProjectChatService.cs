@@ -14,12 +14,21 @@ public class ProjectChatService : IProjectChatService
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotificationService _notificationService;
     private readonly IActiveProjectChatTracker _activeProjectChatTracker;
+    private readonly ITelegramBotService? _telegramBotService;
+    private readonly IAiService? _aiService;
 
-    public ProjectChatService(IUnitOfWork unitOfWork, INotificationService notificationService, IActiveProjectChatTracker activeProjectChatTracker)
+    public ProjectChatService(
+        IUnitOfWork unitOfWork,
+        INotificationService notificationService,
+        IActiveProjectChatTracker activeProjectChatTracker,
+        ITelegramBotService? telegramBotService = null,
+        IAiService? aiService = null)
     {
         _unitOfWork = unitOfWork;
         _notificationService = notificationService;
         _activeProjectChatTracker = activeProjectChatTracker;
+        _telegramBotService = telegramBotService;
+        _aiService = aiService;
     }
 
     public async Task<IEnumerable<ProjectMessage>> GetProjectMessagesAsync(Guid projectId, Guid userId, int offset, int limit)
@@ -114,43 +123,95 @@ public class ProjectChatService : IProjectChatService
             CreatedAt = message.CreatedAt
         });
 
-        // Auto-reply logic if this is the homeowner's first message
+        // Send Telegram alert if the message is from homeowner/client
+        if (senderId == project.HomeownerId && _telegramBotService != null)
+        {
+            try
+            {
+                var senderDisplayName = $"{sender?.FirstName} {sender?.LastName}".Trim();
+                if (string.IsNullOrWhiteSpace(senderDisplayName)) senderDisplayName = "Клиент";
+                await _telegramBotService.SendChatMessageAlertAsync(
+                    projectId: projectId,
+                    projectTitle: project.Title ?? "Чат по проект",
+                    senderName: senderDisplayName,
+                    messageText: messageText,
+                    senderPhone: sender?.PhoneNumber
+                );
+            }
+            catch
+            {
+                // Never disrupt chat flow if Telegram encounters network error
+            }
+        }
+
+        // Always-On AI Assistant reply when homeowner/client sends a message
         if (senderId == project.HomeownerId)
         {
-            var messages = await _unitOfWork.ProjectMessages.GetMessagesPaginatedAsync(projectId, 0, 2);
-            var messageCount = messages.Count();
-            if (messageCount == 1)
+            var adminUser = await _unitOfWork.Users.GetQueryable()
+                .FirstOrDefaultAsync(u => u.Role == UserRoleTypes.Admin);
+            if (adminUser != null)
             {
-                var adminUser = await _unitOfWork.Users.GetQueryable()
-                    .FirstOrDefaultAsync(u => u.Role == UserRoleTypes.Admin);
-                if (adminUser != null)
+                var lang = project.LanguageCode ?? "bg";
+                var isBg = lang.Equals("bg", StringComparison.OrdinalIgnoreCase);
+
+                string autoReplyText;
+                if (_aiService != null)
                 {
-                    var currentLang = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
-                    var isBg = currentLang.Equals("bg", StringComparison.OrdinalIgnoreCase);
-                    var autoReplyText = isBg 
+                    var jobPosts = _unitOfWork.JobPosts != null 
+                        ? await _unitOfWork.JobPosts.GetJobsByProjectIdAsync(projectId) 
+                        : null;
+                    var jobsSummary = jobPosts != null && jobPosts.Any()
+                        ? string.Join("; ", jobPosts.Select(j => $"{j.Title} ({j.ServiceCategory?.Name ?? "Обща"}): {j.Description}"))
+                        : project.Description;
+
+                    var context = $"Проект: {project.Title}. Дейности: {jobsSummary}.";
+                    autoReplyText = await _aiService.GenerateChatReplyAsync(context, messageText, lang);
+                }
+                else
+                {
+                    autoReplyText = isBg 
                         ? "Здравейте! Благодарим Ви за съобщението. Наш сътрудник ще се свърже с Вас възможно най-скоро."
                         : "Hello! Thank you for your message. A representative will get in touch with you as soon as possible.";
-                    
-                    var autoReply = new ProjectMessage
+                }
+                
+                var autoReply = new ProjectMessage
+                {
+                    ProjectId = projectId,
+                    SenderId = adminUser.Id,
+                    MessageText = autoReplyText,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                await _unitOfWork.ProjectMessages.AddAsync(autoReply);
+                await _unitOfWork.SaveChangesAsync();
+                
+                await _notificationService.NotifyProjectGroupAsync(projectId, "ReceiveProjectMessage", new
+                {
+                    Id = autoReply.Id,
+                    ProjectId = autoReply.ProjectId,
+                    SenderId = autoReply.SenderId,
+                    SenderName = $"{adminUser.FirstName} {adminUser.LastName}",
+                    MessageText = autoReply.MessageText,
+                    CreatedAt = autoReply.CreatedAt
+                });
+
+                // Also notify admin in Telegram what the AI answered
+                if (_telegramBotService != null)
+                {
+                    try
                     {
-                        ProjectId = projectId,
-                        SenderId = adminUser.Id,
-                        MessageText = autoReplyText,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    
-                    await _unitOfWork.ProjectMessages.AddAsync(autoReply);
-                    await _unitOfWork.SaveChangesAsync();
-                    
-                    await _notificationService.NotifyProjectGroupAsync(projectId, "ReceiveProjectMessage", new
+                        var clientDisplayName = $"{sender?.FirstName} {sender?.LastName}".Trim();
+                        if (string.IsNullOrWhiteSpace(clientDisplayName)) clientDisplayName = "Клиент";
+                        await _telegramBotService.SendAiReplyNotificationAsync(
+                            projectId: projectId,
+                            clientName: clientDisplayName,
+                            aiReplyText: autoReplyText
+                        );
+                    }
+                    catch
                     {
-                        Id = autoReply.Id,
-                        ProjectId = autoReply.ProjectId,
-                        SenderId = autoReply.SenderId,
-                        SenderName = $"{adminUser.FirstName} {adminUser.LastName}",
-                        MessageText = autoReply.MessageText,
-                        CreatedAt = autoReply.CreatedAt
-                    });
+                        // Ignore Telegram alert errors
+                    }
                 }
             }
         }

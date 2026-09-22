@@ -90,4 +90,18 @@ public class MockAiService : IAiService
 	{
 		return Task.FromResult("This is a mocked executive summary based on combined scopes.");
 	}
+
+	public Task<string> GenerateChatReplyAsync(string projectContext, string userMessage, string languageCode = "bg", CancellationToken cancellationToken = default)
+	{
+		var reply = languageCode.Equals("bg", StringComparison.OrdinalIgnoreCase)
+			? "Здравейте! Благодарим за съобщението. Разглеждаме детайлите по Вашия проект и ще се свържем с Вас скоро с точен разчет."
+			: "Hello! Thank you for reaching out. We are reviewing your project details and will get back to you shortly.";
+		return Task.FromResult(reply);
+	}
+
+	public Task<string> GenerateLeadSummaryAsync(Project project, CancellationToken cancellationToken = default)
+	{
+		var summary = $"Проект '{project.Title}' включва {project.JobPosts.Count} дейности. Локация: {project.JobPosts.FirstOrDefault()?.Location ?? "Непосочена"}.";
+		return Task.FromResult(summary);
+	}
 }

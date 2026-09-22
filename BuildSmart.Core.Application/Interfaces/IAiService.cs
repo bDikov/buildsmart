@@ -25,4 +25,14 @@ public interface IAiService
     /// Generates a short, professional executive summary based on the combined scopes.
     /// </summary>
     Task<string> GenerateExecutiveSummaryAsync(string combinedScopes, string languageCode = "en", CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates an intelligent, conversational chat reply to a client message within a project context.
+    /// </summary>
+    Task<string> GenerateChatReplyAsync(string projectContext, string userMessage, string languageCode = "bg", CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates a concise lead summary highlighting key scope, budget, and potential risks for Telegram alerts.
+    /// </summary>
+    Task<string> GenerateLeadSummaryAsync(Project project, CancellationToken cancellationToken = default);
 }

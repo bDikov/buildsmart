@@ -58,6 +58,11 @@ services:
       - Smtp__SenderEmail=${SMTP_SENDER_EMAIL:-support@buildsmart.bg}
       - Smtp__SenderName=${SMTP_SENDER_NAME:-BuildSmart}
       - HANGFIRE_DASHBOARD_TOKEN=${HANGFIRE_DASHBOARD_TOKEN}
+      # Telegram Bot Notifications
+      - Telegram__BotToken=${TELEGRAM_BOT_TOKEN}
+      - Telegram__ChatId=${TELEGRAM_CHAT_ID}
+      - Telegram__Enabled=${TELEGRAM_ENABLED:-true}
+      - Telegram__WebhookSecretToken=${TELEGRAM_WEBHOOK_SECRET_TOKEN}
     volumes:
       - blog_images_data:/app/wwwroot/images/blog
     logging:

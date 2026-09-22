@@ -444,4 +444,84 @@ public class GeminiAiService : IAiService
 		}
 		return trimmed;
 	}
+
+	public async Task<string> GenerateChatReplyAsync(string projectContext, string userMessage, string languageCode = "bg", CancellationToken cancellationToken = default)
+	{
+		var isBg = languageCode.Equals("bg", StringComparison.OrdinalIgnoreCase);
+		var prompt = $@"Ти си любезен, висок клас строителен консултант и AI асистент за водещата българска строителна платформа BuildSmart.
+Твоята цел е да отговориш на въпроса на клиента учтиво, компетентно, ясно и точно (в рамките на 2-4 изречения).
+Отговори на същия език като на клиента (по подразбиране: {(isBg ? "Български" : "English")}).
+
+КРИТИЧНИ ПРАВИЛА:
+1. НЕ използвай никакви емоджита (строго забранени са от фирмената естетика).
+2. НЕ давай категорични финансови обещания и не измисляй окончателни цени или твърди начални дати. Обясни, че финалната количествена сметка и график се потвърждават от техническия екип след оглед на място.
+3. Отговаряй технически грамотно на строителни въпроси (напр. за етапи, съхнене на замазки/хидроизолации, последователност на ремонти).
+4. Ако е уместно, задай един полезен уточняващ въпрос към клиента (напр. за етаж, асансьор, предпочитан период или дали имотът е свободен за оглед).
+
+Контекст за проекта и избраните услуги:
+{projectContext}
+
+Въпрос/съобщение от клиента:
+""{userMessage}""
+
+Отговори директно към клиента от името на екипа на BuildSmart:";
+
+		try
+		{
+			var reply = await ExecuteAiPromptAsync(prompt, useJsonMode: false, cancellationToken);
+			return CleanLanguagePrefix(reply).Trim();
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "[GeminiAiService] Failed to generate AI chat reply. Falling back to default message.");
+			return isBg
+				? "Здравейте! Благодарим за съобщението. Преглеждаме детайлите по Вашия проект и наш представител ще Ви отговори скоро."
+				: "Hello! Thank you for your message. We are reviewing your project details and a representative will reply shortly.";
+		}
+	}
+
+	public async Task<string> GenerateLeadSummaryAsync(Project project, CancellationToken cancellationToken = default)
+	{
+		var jobsInfo = new StringBuilder();
+		if (project.JobPosts != null)
+		{
+			foreach (var job in project.JobPosts)
+			{
+				jobsInfo.AppendLine($"- Дейност: {job.Title} (Категория: {job.ServiceCategory?.Name ?? "Обща"})");
+				if (!string.IsNullOrWhiteSpace(job.JobDetails) && job.JobDetails != "{}")
+				{
+					jobsInfo.AppendLine($"  Детайли/Отговори: {job.JobDetails}");
+				}
+				if (!string.IsNullOrWhiteSpace(job.Description))
+				{
+					jobsInfo.AppendLine($"  Описание: {job.Description}");
+				}
+			}
+		}
+
+		var prompt = $@"Направи кратък, ясен и структуриран анализ на български език (до 3-4 изречения или точки) за нов лийд за строително-ремонтен проект.
+Посочи:
+1. Ключов обхват на дейностите
+2. Специфики или забележки от отговорите на клиента (ако има квадратури, специфични материали, етаж)
+3. Потенциални въпроси за изясняване от екипа
+НЕ използвай емоджита.
+
+Проект: {project.Title}
+Описание: {project.Description}
+Дейности и детайли:
+{jobsInfo}
+
+Анализ:";
+
+		try
+		{
+			var summary = await ExecuteAiPromptAsync(prompt, useJsonMode: false, cancellationToken);
+			return CleanLanguagePrefix(summary).Trim();
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "[GeminiAiService] Failed to generate AI lead summary.");
+			return $"Проект: {project.Title}. Включва {project.JobPosts?.Count ?? 0} дейности.";
+		}
+	}
 }

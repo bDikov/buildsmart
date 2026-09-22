@@ -18,6 +18,7 @@ public class JobPostService : IJobPostService
 	private readonly IAiService _aiService;
 	private readonly IConfiguration _configuration;
 	private readonly IStringLocalizer<NotificationResources> _localizer;
+	private readonly ITelegramBotService? _telegramBotService;
 
 	public JobPostService(
 		IUnitOfWork unitOfWork,
@@ -26,7 +27,8 @@ public class JobPostService : IJobPostService
 		IJobsNotificationService jobsNotificationService,
 		IAiService aiService,
 		IConfiguration configuration,
-		IStringLocalizer<NotificationResources> localizer)
+		IStringLocalizer<NotificationResources> localizer,
+		ITelegramBotService? telegramBotService = null)
 	{
 		_unitOfWork = unitOfWork;
 		_scopeGenerationQueue = scopeGenerationQueue;
@@ -35,6 +37,7 @@ public class JobPostService : IJobPostService
 		_aiService = aiService;
 		_configuration = configuration;
 		_localizer = localizer;
+		_telegramBotService = telegramBotService;
 	}
 
 	public async Task SubmitJobForScopeGenerationAsync(Guid jobPostId)
@@ -143,6 +146,38 @@ public class JobPostService : IJobPostService
 					jobPost.ProjectId,
 					"Project"
 				);
+			}
+
+			// Send Telegram Lead Alert with AI analysis
+			if (_telegramBotService != null && project != null)
+			{
+				try
+				{
+					var homeowner = await _unitOfWork.Users.GetByIdAsync(project.HomeownerId);
+					string? aiSummary = null;
+					if (_aiService != null)
+					{
+						try
+						{
+							aiSummary = await _aiService.GenerateLeadSummaryAsync(project);
+						}
+						catch { }
+					}
+
+					await _telegramBotService.SendLeadAlertAsync(
+						projectId: project.Id,
+						projectTitle: projectName,
+						homeownerName: $"{homeowner?.FirstName} {homeowner?.LastName}".Trim(),
+						homeownerPhone: homeowner?.PhoneNumber,
+						homeownerEmail: homeowner?.Email,
+						location: jobPost.Location ?? homeowner?.Location,
+						aiSummary: aiSummary
+					);
+				}
+				catch
+				{
+					// Ignore Telegram alert errors so submission is never broken
+				}
 			}
 		}
 	}

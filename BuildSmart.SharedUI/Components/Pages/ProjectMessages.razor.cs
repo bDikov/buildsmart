@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using BuildSmart.SharedUI.GraphQL;
 using BuildSmart.SharedUI.Services;
@@ -26,6 +28,10 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
     private bool _hasMoreHistory = true;
     private bool _shouldScrollToBottom = false;
     private bool _isGuest = false;
+    private bool _isAdmin = false;
+    private bool _isAiGenerating = false;
+    private bool _showLeadDrawer = false;
+    private IGetProjectById_ProjectById? _projectDetails;
 
     private Guid? _activeLoadedProjectId;
 
@@ -137,11 +143,13 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
                 _currentUserId = Guid.Parse(userResult.Data.CurrentUser.Id);
                 var email = userResult.Data.CurrentUser.Email;
                 _isGuest = email != null && email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase);
+                _isAdmin = string.Equals(userResult.Data.CurrentUser.Role.ToString(), "Admin", StringComparison.OrdinalIgnoreCase);
             }
 
             var projectResult = await ApiClient.GetProjectById.ExecuteAsync(ProjectId!.Value);
             if (projectResult.Data?.ProjectById != null)
             {
+                _projectDetails = projectResult.Data.ProjectById;
                 _projectName = projectResult.Data.ProjectById.Title;
                 if (_projectName == "Support Chat")
                 {
@@ -152,6 +160,53 @@ public partial class ProjectMessages : ComponentBase, IAsyncDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading user data or project: {ex.Message}");
+        }
+    }
+
+    private void ToggleLeadDrawer()
+    {
+        _showLeadDrawer = !_showLeadDrawer;
+    }
+
+    private async Task GenerateAiReplySuggestionAsync()
+    {
+        if (!ProjectId.HasValue || _isAiGenerating) return;
+
+        _isAiGenerating = true;
+        StateHasChanged();
+
+        try
+        {
+            using var client = new HttpClient();
+            var token = await AuthService.GetTokenAsync();
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{ApiConfig.GetBaseUrl()}/api/telegram/suggest-reply");
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
+            request.Content = JsonContent.Create(new { projectId = ProjectId.Value });
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("suggestion", out var suggProp))
+                {
+                    _newMessageText = suggProp.GetString() ?? string.Empty;
+                    StateHasChanged();
+                    await JSRuntime.InvokeVoidAsync("chatHelpers.autoResize", _textareaRef);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProjectMessages] Error generating AI suggestion: {ex.Message}");
+        }
+        finally
+        {
+            _isAiGenerating = false;
+            StateHasChanged();
         }
     }
 

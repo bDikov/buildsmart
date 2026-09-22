@@ -197,6 +197,10 @@ jobs:
             echo "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
             echo "POSTHOG_API_HOST=${{ secrets.POSTHOG_API_HOST }}" >> .env
             echo "HANGFIRE_DASHBOARD_TOKEN=${{ secrets.HANGFIRE_DASHBOARD_TOKEN }}" >> .env
+            echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+            echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
+            echo "TELEGRAM_ENABLED=true" >> .env
+            echo "TELEGRAM_WEBHOOK_SECRET_TOKEN=${{ secrets.TELEGRAM_WEBHOOK_SECRET_TOKEN }}" >> .env
             
             # Load the new Docker images sequentially and delete each tarball immediately to conserve disk space
             docker load < buildsmart-api.tar.gz
