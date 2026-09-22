@@ -1,4 +1,4 @@
-﻿using BuildSmart.Core.Application.Interfaces;
+using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Application.Services;
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
@@ -153,4 +153,63 @@ public class ProjectChatServiceAiTests
             It.Is<object>(o => o != null && o.GetType().GetProperty("MessageText")!.GetValue(o)!.ToString()!.Contains("Здравейте, Мария!"))
         ), Times.Once);
     }
+
+    [Fact]
+    public async Task SendMessageAsync_ShouldNotInvokeAiService_WhenHumanTakeoverActive()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        var homeownerId = Guid.NewGuid();
+        var messageText = "Имате ли свободен час за оглед?";
+
+        var project = new Project
+        {
+            Id = projectId,
+            HomeownerId = homeownerId,
+            Title = "Ремонт апартамент",
+            Description = "Боядисване"
+        };
+
+        var homeownerUser = new User
+        {
+            Id = homeownerId,
+            FirstName = "Петър",
+            LastName = "Стоянов",
+            Role = UserRoleTypes.Homeowner
+        };
+
+        _mockUow.Setup(u => u.Projects.GetByIdAsync(projectId)).ReturnsAsync(project);
+        _mockUow.Setup(u => u.Users.GetByIdAsync(homeownerId)).ReturnsAsync(homeownerUser);
+        _mockUow.Setup(u => u.Users.GetQueryable()).Returns(new List<User>().BuildMockDbSet().Object);
+        _mockUow.Setup(u => u.ProjectMessages.AddAsync(It.IsAny<ProjectMessage>())).Returns(Task.CompletedTask);
+
+        // Act: Manually activate human takeover (simulating admin just sent a message)
+        ProjectChatService.SetHumanTakeover(projectId, true, TimeSpan.FromMinutes(30));
+
+        var result = await _service.SendMessageAsync(projectId, homeownerId, messageText);
+
+        // Assert
+        result.Should().NotBeNull();
+        // AI service should NEVER be invoked because a human admin is active
+        _mockAiService.Verify(a => a.GenerateChatReplyAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()
+        ), Times.Never);
+
+        // But Telegram alert should STILL be sent to the admin so the admin can reply!
+        _mockTelegram.Verify(t => t.SendChatMessageAlertAsync(
+            projectId,
+            "Ремонт апартамент",
+            "Петър Стоянов",
+            messageText,
+            null,
+            It.IsAny<CancellationToken>()
+        ), Times.Once);
+
+        // Cleanup
+        ProjectChatService.SetHumanTakeover(projectId, false);
+    }
 }
+

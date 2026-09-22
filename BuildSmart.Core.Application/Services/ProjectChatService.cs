@@ -89,6 +89,25 @@ public class ProjectChatService : IProjectChatService
         return false;
     }
 
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTime> _humanTakeoverExpiry = new();
+
+    public static void SetHumanTakeover(Guid projectId, bool active, TimeSpan? duration = null)
+    {
+        if (active)
+        {
+            _humanTakeoverExpiry[projectId] = DateTime.UtcNow.Add(duration ?? TimeSpan.FromMinutes(30));
+        }
+        else
+        {
+            _humanTakeoverExpiry.TryRemove(projectId, out _);
+        }
+    }
+
+    public static bool IsHumanTakeoverActive(Guid projectId)
+    {
+        return _humanTakeoverExpiry.TryGetValue(projectId, out var expiry) && expiry > DateTime.UtcNow;
+    }
+
     public async Task<ProjectMessage> SendMessageAsync(Guid projectId, Guid senderId, string messageText)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(projectId);
@@ -123,6 +142,12 @@ public class ProjectChatService : IProjectChatService
             CreatedAt = message.CreatedAt
         });
 
+        // If a real human admin sends a message, activate Human Takeover (suppress AI for 30 minutes)
+        if (sender?.Role == UserRoleTypes.Admin)
+        {
+            SetHumanTakeover(projectId, true, TimeSpan.FromMinutes(30));
+        }
+
         // Send Telegram alert if the message is from homeowner/client
         if (senderId == project.HomeownerId && _telegramBotService != null)
         {
@@ -145,7 +170,8 @@ public class ProjectChatService : IProjectChatService
         }
 
         // Always-On AI Assistant reply when homeowner/client sends a message
-        if (senderId == project.HomeownerId)
+        // ONLY if a human admin is NOT currently active in this conversation
+        if (senderId == project.HomeownerId && !IsHumanTakeoverActive(projectId))
         {
             var adminUser = await _unitOfWork.Users.GetQueryable()
                 .FirstOrDefaultAsync(u => u.Role == UserRoleTypes.Admin);
@@ -190,7 +216,7 @@ public class ProjectChatService : IProjectChatService
                     Id = autoReply.Id,
                     ProjectId = autoReply.ProjectId,
                     SenderId = autoReply.SenderId,
-                    SenderName = $"{adminUser.FirstName} {adminUser.LastName}",
+                    SenderName = isBg ? "BuildSmart AI Консултант" : "BuildSmart AI Assistant",
                     MessageText = autoReply.MessageText,
                     CreatedAt = autoReply.CreatedAt
                 });

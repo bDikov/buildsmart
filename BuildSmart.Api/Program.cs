@@ -190,6 +190,7 @@ public partial class Program
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
 		builder.Services.AddScoped<IAiService, GeminiAiService>();
 		builder.Services.AddScoped<BuildSmart.Api.Workers.GuestCleanupJob>();
+		builder.Services.AddHostedService<BuildSmart.Api.Workers.TelegramPollingWorker>();
 
 
 		// --- Hangfire Configuration ---
