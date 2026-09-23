@@ -129,4 +129,55 @@ public class TelegramBotServiceTests
         text.Should().Contain("Иван Иванов");
         text.Should().Contain(projectId.ToString());
     }
+
+    [Fact]
+    public async Task SendProductionAlertAsync_ShouldCallTelegramApi_WithAlertDetails()
+    {
+        // Arrange
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            ["Telegram:Enabled"] = "true",
+            ["Telegram:BotToken"] = "test-token",
+            ["Telegram:ChatId"] = "123"
+        };
+        var config = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
+        var mockLogger = new Mock<ILogger<TelegramBotService>>();
+
+        HttpRequestMessage? capturedRequest = null;
+        var mockHandler = new Mock<HttpMessageHandler>();
+        mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"ok\":true}")
+            });
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var service = new TelegramBotService(httpClient, config, mockLogger.Object);
+        var jobId = Guid.NewGuid();
+
+        // Act
+        var result = await service.SendProductionAlertAsync(
+            source: "API POST /graphql",
+            message: "Database timeout during pricing calculation",
+            stackTrace: "at BuildSmart.Core.Application.Services.PricingEngine.Evaluate()",
+            jobId: jobId
+        );
+
+        // Assert
+        result.Should().BeTrue();
+        capturedRequest.Should().NotBeNull();
+        var requestBody = await capturedRequest!.Content!.ReadAsStringAsync();
+        using var doc = System.Text.Json.JsonDocument.Parse(requestBody);
+        var text = doc.RootElement.GetProperty("text").GetString();
+        text.Should().Contain("[BUILDSMART OPS ALERT]");
+        text.Should().Contain("API POST /graphql");
+        text.Should().Contain("Database timeout during pricing calculation");
+        text.Should().Contain(jobId.ToString());
+    }
 }

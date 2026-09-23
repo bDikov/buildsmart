@@ -34,4 +34,9 @@ gh secret set FACEBOOK_VERIFY_TOKEN --repo $Repo --body "BuildSmart_FB_Webhook_S
 # gh secret set POSTHOG_API_KEY --repo $Repo --body "YOUR_POSTHOG_KEY"
 # gh secret set POSTHOG_API_HOST --repo $Repo --body "https://us.i.posthog.com"
 
+# 8. Axiom Cloud Logging
+gh secret set AXIOM_TOKEN --repo $Repo --body "xaat-060d6033-7c92-4f00-9095-abf05f5a7b7d"
+gh secret set AXIOM_DATASET --repo $Repo --body "buildsmart-prod"
+gh secret set AXIOM_URL --repo $Repo --body "https://eu-central-1.aws.edge.axiom.co/v1/logs"
+
 Write-Host "GitHub Secrets updated successfully!" -ForegroundColor Green

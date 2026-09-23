@@ -48,10 +48,11 @@ public class TelegramBotService : ITelegramBotService
         try
         {
             var url = $"https://api.telegram.org/bot{_botToken}/sendMessage";
+            var safeMessage = message.Length > 4000 ? message.Substring(0, 3990) + "..." : message;
             var payload = new Dictionary<string, object?>
             {
                 ["chat_id"] = _adminChatId,
-                ["text"] = message,
+                ["text"] = safeMessage,
                 ["parse_mode"] = "HTML"
             };
 
@@ -186,6 +187,48 @@ public class TelegramBotService : ITelegramBotService
         var replyMarkup = new
         {
             inline_keyboard = new[] { inlineButtons }
+        };
+
+        return await SendNotificationAsync(sb.ToString(), replyMarkup, cancellationToken);
+    }
+
+    public async Task<bool> SendProductionAlertAsync(
+        string source,
+        string message,
+        string? stackTrace = null,
+        Guid? jobId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<b>[BUILDSMART OPS ALERT]</b>");
+        sb.AppendLine($"<b>Source:</b> {EscapeHtml(source)}");
+        sb.AppendLine($"<b>Time:</b> {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+        if (jobId.HasValue)
+        {
+            sb.AppendLine($"<b>Job ID:</b> <code>{jobId.Value}</code>");
+        }
+        sb.AppendLine();
+        sb.AppendLine("<b>Error:</b>");
+        sb.AppendLine($"<code>{EscapeHtml(message)}</code>");
+
+        if (!string.IsNullOrWhiteSpace(stackTrace))
+        {
+            var truncatedTrace = stackTrace.Length > 600 ? stackTrace.Substring(0, 600) + "..." : stackTrace;
+            sb.AppendLine();
+            sb.AppendLine("<b>Stack Trace:</b>");
+            sb.AppendLine($"<pre>{EscapeHtml(truncatedTrace)}</pre>");
+        }
+
+        var inlineButtons = new List<object>();
+        if (jobId.HasValue)
+        {
+            inlineButtons.Add(new { text = "View Job Details", url = $"{_appBaseUrl}/project-messages?projectId={jobId.Value}" });
+        }
+        inlineButtons.Add(new { text = "Open Admin Portal", url = $"{_appBaseUrl}/admin" });
+
+        var replyMarkup = new
+        {
+            inline_keyboard = new[] { inlineButtons.ToArray() }
         };
 
         return await SendNotificationAsync(sb.ToString(), replyMarkup, cancellationToken);

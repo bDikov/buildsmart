@@ -355,4 +355,42 @@ public static class BulgarianPhoneValidator
 
         return digits;
     }
+
+    private static readonly Regex CandidatePhoneRegex = new(@"(?:(?:\+359|00359|0)[\s\-\/\.]*)[1-9](?:[\s\-\/\.]*\d){7,9}", RegexOptions.Compiled);
+    private static readonly Regex CandidateEmailRegex = new(@"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", RegexOptions.Compiled);
+
+    public static List<string> ExtractValidPhones(string? text, bool checkDummyPatterns = false)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return new List<string>();
+
+        var validPhones = new List<string>();
+        var matches = CandidatePhoneRegex.Matches(text);
+        foreach (Match match in matches)
+        {
+            var eval = Evaluate(match.Value, checkDummyPatterns: checkDummyPatterns);
+            if (eval.IsValid && !validPhones.Contains(eval.FormattedDisplay))
+            {
+                validPhones.Add(eval.FormattedDisplay);
+            }
+        }
+
+        return validPhones;
+    }
+
+    public static List<string> ExtractEmails(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return new List<string>();
+
+        var validEmails = new List<string>();
+        var matches = CandidateEmailRegex.Matches(text);
+        foreach (Match match in matches)
+        {
+            var email = match.Value.Trim();
+            if (!validEmails.Contains(email, StringComparer.OrdinalIgnoreCase))
+            {
+                validEmails.Add(email);
+            }
+        }
+        return validEmails;
+    }
 }

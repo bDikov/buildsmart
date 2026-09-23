@@ -104,6 +104,7 @@ builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IEmailService,
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IProjectManagementService, BuildSmart.Infrastructure.Services.ProjectManagementService>();
 builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.IRenovationEstimatorCalculator, BuildSmart.Core.Application.Services.RenovationEstimatorCalculator>();
+builder.Services.AddHttpClient<BuildSmart.Core.Application.Interfaces.ITelegramBotService, BuildSmart.Infrastructure.Services.TelegramBotService>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<AuthHeaderHandler>();
@@ -244,6 +245,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "buildsmart-web", timestamp = DateTime.UtcNow }));
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(BuildSmart.SharedUI.Components.Layout.MainLayout).Assembly);

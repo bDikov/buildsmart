@@ -44,6 +44,9 @@ services:
       - Authentication__Facebook__PixelId=${FACEBOOK_PIXEL_ID}
       # Sentry Error Tracking
       - SENTRY_DSN=${SENTRY_DSN}
+      # Axiom Cloud Logging (500GB/mo free)
+      - AXIOM_TOKEN=${AXIOM_TOKEN}
+      - AXIOM_DATASET=${AXIOM_DATASET:-buildsmart-prod}
       # Cloudflare R2 Media
       - CloudflareR2__ServiceUrl=${CLOUDFLARE_R2_SERVICE_URL}
       - CloudflareR2__SecretKey=${CLOUDFLARE_R2_SECRET_KEY}
@@ -70,6 +73,12 @@ services:
       options:
         max-size: "20m"
         max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     depends_on:
       db:
         condition: service_healthy
@@ -93,6 +102,10 @@ services:
       - Smtp__Password=${SMTP_PASSWORD}
       - Smtp__SenderEmail=${SMTP_SENDER_EMAIL:-office@buildsmart.bg}
       - Smtp__SenderName=${SMTP_SENDER_NAME:-BuildSmart}
+      # Telegram Bot Notifications
+      - Telegram__BotToken=${TELEGRAM_BOT_TOKEN}
+      - Telegram__ChatId=${TELEGRAM_CHAT_ID}
+      - Telegram__Enabled=${TELEGRAM_ENABLED:-true}
     volumes:
       - blog_images_data:/app/wwwroot/images/blog
       - blog_posts_data:/app/wwwroot/posts
@@ -101,8 +114,24 @@ services:
       options:
         max-size: "20m"
         max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     depends_on:
       - api
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+      - AUTOHEAL_INTERVAL=10
+      - AUTOHEAL_START_PERIOD=30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   caddy:
     image: caddy:2-alpine

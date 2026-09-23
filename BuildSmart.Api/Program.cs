@@ -95,6 +95,28 @@ public partial class Program
 			});
 		}
 
+		var axiomToken = builder.Configuration["AXIOM_TOKEN"] ?? builder.Configuration["Axiom:Token"];
+		var axiomDataset = builder.Configuration["AXIOM_DATASET"] ?? builder.Configuration["Axiom:Dataset"];
+		var axiomUrl = builder.Configuration["AXIOM_URL"] ?? builder.Configuration["Axiom:Url"] ?? "https://eu-central-1.aws.edge.axiom.co/v1/logs";
+
+		if (!string.IsNullOrWhiteSpace(axiomToken) && !string.IsNullOrWhiteSpace(axiomDataset))
+		{
+			loggerConfig.WriteTo.OpenTelemetry(options =>
+			{
+				options.Endpoint = axiomUrl;
+				options.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.HttpProtobuf;
+				options.Headers = new Dictionary<string, string>
+				{
+					{ "Authorization", $"Bearer {axiomToken}" },
+					{ "X-Axiom-Dataset", axiomDataset }
+				};
+				options.ResourceAttributes = new Dictionary<string, object>
+				{
+					{ "service.name", "buildsmart-api" }
+				};
+			});
+		}
+
 		Log.Logger = loggerConfig.CreateLogger();
 
 		builder.Host.UseSerilog();
@@ -187,6 +209,7 @@ public partial class Program
 		builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
 		builder.Services.AddScoped<IInfraService, BuildSmart.Infrastructure.Services.InfraService>();
 		builder.Services.AddSingleton<IRenovationEstimatorCalculator, RenovationEstimatorCalculator>();
+		builder.Services.AddScoped<ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
 
 		// --- Background Services (Scope Generation) ---
 		builder.Services.AddSingleton<IScopeGenerationQueue, BuildSmart.Api.Services.HangfireScopeGenerationQueue>();
@@ -573,10 +596,45 @@ public partial class Program
 		// --- 2. Configure the HTTP request pipeline ---
 		app.UseForwardedHeaders();
 
+		app.UseExceptionHandler(errorApp =>
+		{
+			errorApp.Run(async context =>
+			{
+				var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+				if (exceptionFeature?.Error != null)
+				{
+					var ex = exceptionFeature.Error;
+					Log.Error(ex, "Unhandled HTTP exception on path {Path}", context.Request.Path);
+					var telegramService = context.RequestServices.GetService<ITelegramBotService>();
+					if (telegramService != null)
+					{
+						_ = Task.Run(async () =>
+						{
+							try
+							{
+								await telegramService.SendProductionAlertAsync(
+									source: $"API {context.Request.Method} {context.Request.Path}",
+									message: ex.Message,
+									stackTrace: ex.StackTrace,
+									cancellationToken: CancellationToken.None);
+							}
+							catch { }
+						});
+					}
+				}
+				context.Response.StatusCode = 500;
+				context.Response.ContentType = "application/json";
+				await context.Response.WriteAsync("{\"error\":\"Internal server error occurred.\"}");
+			});
+		});
+
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseDeveloperExceptionPage();
 		}
+
+		// Healthcheck endpoint for Docker / Autoheal / Monitoring
+		app.MapGet("/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }));
 
 		// Enable Swagger in all environments for access via Caddy proxy
 		app.UseSwagger();

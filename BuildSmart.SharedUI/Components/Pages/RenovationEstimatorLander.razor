@@ -18,6 +18,7 @@
 @inject BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository LeadRepository
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 @inject BuildSmart.Core.Application.Interfaces.IRenovationEstimatorCalculator EstimatorCalculator
+@inject IServiceProvider ServiceProvider
 
 <PageTitle>@Loc["Seo_Estimator_Title"]</PageTitle>
 
@@ -1970,7 +1971,7 @@
             Console.WriteLine($"Error saving CalculatorLead: {ex.Message}");
         }
 
-        // Fire-and-forget email offer dispatch
+        // Fire-and-forget email offer & Telegram lead alert dispatch
         _ = Task.Run(async () =>
         {
             try
@@ -1980,6 +1981,30 @@
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error sending lead offer email: {ex.Message}");
+            }
+
+            try
+            {
+                var telegramService = (BuildSmart.Core.Application.Interfaces.ITelegramBotService?)ServiceProvider.GetService(typeof(BuildSmart.Core.Application.Interfaces.ITelegramBotService));
+                if (telegramService != null)
+                {
+                    var scopeName = lead.Scope == "bathroom" ? "Ремонт на баня" : "Цялостен ремонт на апартамент";
+                    var summary = $"Ориентировъчен бюджет: €{lead.MinPriceEur:N0} – €{lead.MaxPriceEur:N0} ({lead.MinPriceBgn:N0} – {lead.MaxPriceBgn:N0} лв.)\nПлощ: {lead.SelectedArea} кв.м, Състояние: {lead.BuildingStatus}, Пакет: {lead.QualityTier}\nИзточник: {lead.UtmSource ?? "Директен"}";
+
+                    await telegramService.SendLeadAlertAsync(
+                        projectId: lead.Id,
+                        projectTitle: $"Калкулатор: {scopeName} ({lead.SelectedArea} м²)",
+                        homeownerName: lead.Name,
+                        homeownerPhone: lead.Phone,
+                        homeownerEmail: lead.Email,
+                        location: "София",
+                        aiSummary: summary
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error sending telegram lead alert: {ex.Message}");
             }
         });
 

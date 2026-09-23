@@ -2,10 +2,13 @@ using BuildSmart.Core.Application.Interfaces;
 using BuildSmart.Core.Domain.Entities;
 using BuildSmart.Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BuildSmart.Core.Application.Services;
@@ -18,6 +21,10 @@ public class ProjectChatService : IProjectChatService
     private readonly ITelegramBotService? _telegramBotService;
     private readonly IAiService? _aiService;
     private readonly IRenovationEstimatorCalculator? _estimatorCalculator;
+    private readonly ILogger<ProjectChatService>? _logger;
+    private readonly ICalculatorLeadRepository? _calculatorLeadRepository;
+
+    private static readonly ConcurrentDictionary<Guid, bool> _leadAlertedProjects = new();
 
     public ProjectChatService(
         IUnitOfWork unitOfWork,
@@ -25,7 +32,9 @@ public class ProjectChatService : IProjectChatService
         IActiveProjectChatTracker activeProjectChatTracker,
         ITelegramBotService? telegramBotService = null,
         IAiService? aiService = null,
-        IRenovationEstimatorCalculator? estimatorCalculator = null)
+        IRenovationEstimatorCalculator? estimatorCalculator = null,
+        ILogger<ProjectChatService>? logger = null,
+        ICalculatorLeadRepository? calculatorLeadRepository = null)
     {
         _unitOfWork = unitOfWork;
         _notificationService = notificationService;
@@ -33,6 +42,8 @@ public class ProjectChatService : IProjectChatService
         _telegramBotService = telegramBotService;
         _aiService = aiService;
         _estimatorCalculator = estimatorCalculator;
+        _logger = logger;
+        _calculatorLeadRepository = calculatorLeadRepository;
     }
 
     public async Task<IEnumerable<ProjectMessage>> GetProjectMessagesAsync(Guid projectId, Guid userId, int offset, int limit)
@@ -152,30 +163,131 @@ public class ProjectChatService : IProjectChatService
             SetHumanTakeover(projectId, true, TimeSpan.FromMinutes(30));
         }
 
+        bool isClientMessage = sender?.Role != UserRoleTypes.Admin;
+        string? detectedPhone = null;
+        string? detectedEmail = null;
+
+        if (isClientMessage)
+        {
+            try
+            {
+                var phones = BulgarianPhoneValidator.ExtractValidPhones(messageText, checkDummyPatterns: false);
+                detectedPhone = phones.FirstOrDefault();
+
+                var emails = BulgarianPhoneValidator.ExtractEmails(messageText);
+                detectedEmail = emails.FirstOrDefault();
+
+                bool userUpdated = false;
+
+                if (!string.IsNullOrWhiteSpace(detectedPhone) && string.IsNullOrWhiteSpace(sender?.PhoneNumber))
+                {
+                    sender!.PhoneNumber = detectedPhone;
+                    userUpdated = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(detectedEmail) && sender != null && sender.Email.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase))
+                {
+                    sender.Email = detectedEmail;
+                    userUpdated = true;
+                }
+
+                // Check if user introduced their name: "казвам се Иван", "аз съм Петър Георгиев", "име: Димитър"
+                var nameMatch = Regex.Match(messageText, @"(?:казвам се|аз съм|име(?:то ми е)?\s*[:\-]?)\s+([А-Яа-яA-Za-z]+(?:\s+[А-Яа-яA-Za-z]+)?)", RegexOptions.IgnoreCase);
+                if (nameMatch.Success && sender != null && (sender.FirstName == "Guest" || string.IsNullOrWhiteSpace(sender.FirstName)))
+                {
+                    var fullName = nameMatch.Groups[1].Value.Trim();
+                    var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 0)
+                    {
+                        sender.FirstName = parts[0];
+                        if (parts.Length > 1) sender.LastName = string.Join(" ", parts.Skip(1));
+                        userUpdated = true;
+                    }
+                }
+
+                if (userUpdated)
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "[ProjectChatService] Failed to extract contact info or enrich user profile for project {ProjectId}", projectId);
+            }
+        }
+
         // Send Telegram alert if the message is from homeowner/client
-        if (senderId == project.HomeownerId && _telegramBotService != null)
+        if (isClientMessage && _telegramBotService != null)
         {
             try
             {
                 var senderDisplayName = $"{sender?.FirstName} {sender?.LastName}".Trim();
-                if (string.IsNullOrWhiteSpace(senderDisplayName)) senderDisplayName = "Клиент";
-                await _telegramBotService.SendChatMessageAlertAsync(
-                    projectId: projectId,
-                    projectTitle: project.Title ?? "Чат по проект",
-                    senderName: senderDisplayName,
-                    messageText: messageText,
-                    senderPhone: sender?.PhoneNumber
-                );
+                if (string.IsNullOrWhiteSpace(senderDisplayName) || senderDisplayName == "Guest User") senderDisplayName = "Клиент";
+                var effectivePhone = detectedPhone ?? sender?.PhoneNumber;
+                var effectiveEmail = detectedEmail ?? (sender?.Email?.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase) == true ? null : sender?.Email);
+
+                bool isNewContactProvided = !string.IsNullOrWhiteSpace(detectedPhone) || 
+                    (!string.IsNullOrWhiteSpace(detectedEmail) && sender?.Email?.EndsWith("@buildsmart.guest", StringComparison.OrdinalIgnoreCase) == true);
+
+                if (isNewContactProvided)
+                {
+                    _leadAlertedProjects[projectId] = true;
+
+                    // Sync lead to CRM repository
+                    if (_calculatorLeadRepository != null && !string.IsNullOrWhiteSpace(effectivePhone))
+                    {
+                        try
+                        {
+                            var lead = new CalculatorLead
+                            {
+                                Name = senderDisplayName,
+                                Phone = effectivePhone,
+                                Email = effectiveEmail ?? $"{projectId:N}@buildsmart.chat",
+                                Scope = "ai_chat",
+                                BuildingStatus = "unknown",
+                                QualityTier = "standard",
+                                AdminNotes = $"[AI_CHAT_LEAD]: {messageText}\nПроект: {project.Title}",
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            await _calculatorLeadRepository.AddLeadAsync(lead);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogWarning(ex, "[ProjectChatService] Failed to persist chat lead to CRM for project {ProjectId}", projectId);
+                        }
+                    }
+
+                    // Send official Lead Alert to Telegram with WhatsApp quick action
+                    await _telegramBotService.SendLeadAlertAsync(
+                        projectId: projectId,
+                        projectTitle: project.Title ?? "Запитване от AI Чат",
+                        homeownerName: senderDisplayName,
+                        homeownerPhone: effectivePhone,
+                        homeownerEmail: effectiveEmail,
+                        location: "София",
+                        aiSummary: $"Съобщение от клиент:\n\"{messageText}\""
+                    );
+                }
+                else
+                {
+                    await _telegramBotService.SendChatMessageAlertAsync(
+                        projectId: projectId,
+                        projectTitle: project.Title ?? "Чат по проект",
+                        senderName: senderDisplayName,
+                        messageText: messageText,
+                        senderPhone: effectivePhone
+                    );
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // Never disrupt chat flow if Telegram encounters network error
+                _logger?.LogError(ex, "[ProjectChatService] Failed to dispatch Telegram alert for project {ProjectId}", projectId);
             }
         }
 
         // Always-On AI Assistant reply when homeowner/client sends a message
         // ONLY if a human admin is NOT currently active in this conversation
-        if (senderId == project.HomeownerId && !IsHumanTakeoverActive(projectId))
+        if (isClientMessage && !IsHumanTakeoverActive(projectId))
         {
             var adminUser = await _unitOfWork.Users.GetQueryable()
                 .FirstOrDefaultAsync(u => u.Role == UserRoleTypes.Admin);
@@ -262,16 +374,16 @@ public class ProjectChatService : IProjectChatService
                     try
                     {
                         var clientDisplayName = $"{sender?.FirstName} {sender?.LastName}".Trim();
-                        if (string.IsNullOrWhiteSpace(clientDisplayName)) clientDisplayName = "Клиент";
+                        if (string.IsNullOrWhiteSpace(clientDisplayName) || clientDisplayName == "Guest User") clientDisplayName = "Клиент";
                         await _telegramBotService.SendAiReplyNotificationAsync(
                             projectId: projectId,
                             clientName: clientDisplayName,
                             aiReplyText: autoReplyText
                         );
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Ignore Telegram alert errors
+                        _logger?.LogError(ex, "[ProjectChatService] Failed to notify admin of AI reply for project {ProjectId}", projectId);
                     }
                 }
             }

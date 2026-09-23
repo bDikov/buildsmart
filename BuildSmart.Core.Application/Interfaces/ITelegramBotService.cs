@@ -45,4 +45,15 @@ public interface ITelegramBotService
         string clientName,
         string aiReplyText,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends an alert to Telegram notifying the admin of a production error or critical system event.
+    /// Includes source/service name, error message, truncated stack trace, optional JobId, and direct action links.
+    /// </summary>
+    Task<bool> SendProductionAlertAsync(
+        string source,
+        string message,
+        string? stackTrace = null,
+        Guid? jobId = null,
+        CancellationToken cancellationToken = default);
 }
