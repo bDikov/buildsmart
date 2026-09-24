@@ -93,9 +93,189 @@ public class InfraService : IInfraService
 
     public Task<string> GetRecentLogsAsync(int lineCount = 50, CancellationToken cancellationToken = default)
     {
+        return GetRecentLogsAsync(lineCount, null, cancellationToken);
+    }
+
+    public async Task<string> GetRecentLogsAsync(int lineCount, string? filter, CancellationToken cancellationToken = default)
+    {
+        var axiomToken = _configuration["AXIOM_TOKEN"] ?? _configuration["Axiom:Token"];
+        var axiomDataset = _configuration["AXIOM_DATASET"] ?? _configuration["Axiom:Dataset"] ?? "buildsmart-prod";
+        var queryUrl = _configuration["Axiom:QueryUrl"] ?? "https://api.axiom.co/v1/datasets/_apl?format=legacy";
+
+        if (!string.IsNullOrWhiteSpace(axiomToken))
+        {
+            try
+            {
+                var apl = BuildAplQuery(axiomDataset, lineCount, filter);
+                using var request = new HttpRequestMessage(HttpMethod.Post, queryUrl);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", axiomToken);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var payload = new { apl };
+                request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+                    var formatted = FormatAxiomLogs(responseJson);
+                    if (!string.IsNullOrWhiteSpace(formatted))
+                    {
+                        return formatted;
+                    }
+                }
+                else
+                {
+                    var err = await response.Content.ReadAsStringAsync(cancellationToken);
+                    _logger.LogWarning("[InfraService] Axiom query returned {StatusCode}: {Error}", response.StatusCode, err);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[InfraService] Failed to query Axiom logs.");
+            }
+        }
+
+        return GetLocalLogs(lineCount);
+    }
+
+    private static string BuildAplQuery(string dataset, int lineCount, string? filter)
+    {
+        var count = Math.Clamp(lineCount, 1, 50);
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return $"['{dataset}'] | sort by _time desc | limit {count}";
+        }
+
+        var cleanFilter = filter.Trim().ToLowerInvariant();
+        if (cleanFilter == "error" || cleanFilter == "errors")
+        {
+            return $"['{dataset}'] | where ['severity_text'] == 'Error' or ['severity_text'] == 'Fatal' or ['severity'] == 'error' | sort by _time desc | limit {count}";
+        }
+
+        if (cleanFilter == "chat")
+        {
+            return $"['{dataset}'] | where ['body'] contains 'chat' or ['body'] contains 'Chat' or ['body'] contains 'notifications' | sort by _time desc | limit {count}";
+        }
+
+        var safeKeyword = Regex.Replace(cleanFilter, @"['""\\]", "");
+        return $"['{dataset}'] | where ['body'] contains '{safeKeyword}' | sort by _time desc | limit {count}";
+    }
+
+    private static string FormatAxiomLogs(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        if (!root.TryGetProperty("matches", out var matches) || matches.ValueKind != JsonValueKind.Array)
+        {
+            return string.Empty;
+        }
+
+        var logItems = new List<string>();
+        foreach (var match in matches.EnumerateArray())
+        {
+            var timeStr = "";
+            if (match.TryGetProperty("_time", out var timeProp) && timeProp.GetString() is string rawTime)
+            {
+                if (DateTime.TryParse(rawTime, out var dt))
+                {
+                    timeStr = dt.ToString("HH:mm:ss");
+                }
+                else
+                {
+                    timeStr = rawTime.Length > 19 ? rawTime.Substring(11, 8) : rawTime;
+                }
+            }
+
+            string sev = "INFO";
+            string msg = "";
+            string path = "";
+            string status = "";
+            string elapsed = "";
+            string? excSummary = null;
+
+            if (match.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
+            {
+                if (data.TryGetProperty("severity_text", out var sevProp) && sevProp.GetString() is string sText)
+                    sev = sText.ToUpperInvariant();
+                else if (data.TryGetProperty("severity", out var sProp) && sProp.GetString() is string s)
+                    sev = s.ToUpperInvariant();
+
+                if (data.TryGetProperty("body", out var bProp) && bProp.GetString() is string b)
+                    msg = b;
+                else if (data.TryGetProperty("message", out var mProp) && mProp.GetString() is string m)
+                    msg = m;
+
+                if (data.TryGetProperty("attributes", out var attrs) && attrs.ValueKind == JsonValueKind.Object)
+                {
+                    if (attrs.TryGetProperty("RequestPath", out var pProp) && pProp.GetString() is string p)
+                        path = p;
+                    if (attrs.TryGetProperty("StatusCode", out var stProp))
+                    {
+                        if (stProp.ValueKind == JsonValueKind.Number) status = stProp.GetInt32().ToString();
+                        else if (stProp.GetString() is string st) status = st;
+                    }
+                    if (attrs.TryGetProperty("ElapsedMilliseconds", out var elProp))
+                    {
+                        if (elProp.ValueKind == JsonValueKind.Number) elapsed = $"{Math.Round(elProp.GetDouble(), 1)}ms";
+                    }
+
+                    if (attrs.TryGetProperty("exception", out var exc) && exc.ValueKind == JsonValueKind.Object)
+                    {
+                        string? excType = null;
+                        string? excMsg = null;
+                        if (exc.TryGetProperty("type", out var tProp) && tProp.GetString() is string t) excType = t;
+                        if (exc.TryGetProperty("message", out var msgP) && msgP.GetString() is string em) excMsg = em;
+
+                        if (!string.IsNullOrEmpty(excType) || !string.IsNullOrEmpty(excMsg))
+                        {
+                            var shortType = excType?.Split('.').LastOrDefault() ?? "Exception";
+                            excSummary = $"{shortType}: {excMsg}";
+                        }
+                    }
+                }
+            }
+
+            msg = Regex.Replace(msg, @"\s+", " ").Trim();
+            if (msg.Length > 140)
+            {
+                msg = msg.Substring(0, 137) + "...";
+            }
+
+            var sb = new StringBuilder();
+            sb.Append($"[{timeStr}] [{sev}]");
+            if (!string.IsNullOrEmpty(path))
+            {
+                sb.Append($" {path}");
+                if (!string.IsNullOrEmpty(status)) sb.Append($" ({status})");
+                if (!string.IsNullOrEmpty(elapsed)) sb.Append($" {elapsed}");
+            }
+            if (!string.IsNullOrEmpty(msg))
+            {
+                sb.Append($"\n  {msg}");
+            }
+            if (!string.IsNullOrEmpty(excSummary))
+            {
+                if (excSummary.Length > 120) excSummary = excSummary.Substring(0, 117) + "...";
+                sb.Append($"\n  ⚠️ {excSummary}");
+            }
+
+            logItems.Add(sb.ToString());
+        }
+
+        if (logItems.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        logItems.Reverse();
+        return string.Join("\n\n", logItems);
+    }
+
+    private string GetLocalLogs(int lineCount)
+    {
         try
         {
-            // Check for log files in typical locations
             var logDirs = new[] { "logs", "Logs", "app_data/logs" };
             foreach (var dir in logDirs)
             {
@@ -110,17 +290,17 @@ public class InfraService : IInfraService
                     {
                         var lines = File.ReadLines(latestFile.FullName)
                             .TakeLast(lineCount);
-                        return Task.FromResult(string.Join(Environment.NewLine, lines));
+                        return string.Join(Environment.NewLine, lines);
                     }
                 }
             }
 
-            return Task.FromResult($"[InfraService] No local log files found. Use 'docker logs buildsmart-api --tail {lineCount}' on VPS.");
+            return $"[InfraService] No local log files found. Configure AXIOM_TOKEN or use 'docker logs buildsmart-api --tail {lineCount}' on VPS.";
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[InfraService] Error reading logs.");
-            return Task.FromResult($"[InfraService] Error retrieving logs: {ex.Message}");
+            _logger.LogError(ex, "[InfraService] Error reading local log files.");
+            return $"[InfraService] Error retrieving logs: {ex.Message}";
         }
     }
 

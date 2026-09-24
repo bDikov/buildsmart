@@ -17,6 +17,11 @@ public interface IInfraService
     Task<string> GetRecentLogsAsync(int lineCount = 50, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves recent application logs with optional filter (e.g. 'error', 'chat', or keyword).
+    /// </summary>
+    Task<string> GetRecentLogsAsync(int lineCount, string? filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Requests a graceful service or container restart.
     /// </summary>
     Task<bool> RestartServiceAsync(string serviceName = "api", CancellationToken cancellationToken = default);

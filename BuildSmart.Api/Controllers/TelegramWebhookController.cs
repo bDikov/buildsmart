@@ -220,9 +220,28 @@ public class TelegramWebhookController : ControllerBase
                     }
                     if (command.StartsWith("/logs"))
                     {
-                        var logs = await infraService.GetRecentLogsAsync(25);
-                        var snippet = logs.Length > 3000 ? logs.Substring(logs.Length - 3000) : logs;
-                        await telegramBotService.SendNotificationAsync($"<b>📜 ПОСЛЕДНИ ЛОГОВЕ:</b>\n<pre>{System.Web.HttpUtility.HtmlEncode(snippet)}</pre>");
+                        var parts = adminReplyText.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        string? filter = null;
+                        int count = 15;
+                        if (parts.Length > 1)
+                        {
+                            for (int i = 1; i < parts.Length; i++)
+                            {
+                                if (int.TryParse(parts[i], out var parsedCount))
+                                {
+                                    count = Math.Clamp(parsedCount, 5, 50);
+                                }
+                                else
+                                {
+                                    filter = parts[i].ToLowerInvariant();
+                                }
+                            }
+                        }
+
+                        var logs = await infraService.GetRecentLogsAsync(count, filter);
+                        var filterLabel = string.IsNullOrEmpty(filter) ? "" : $" ({filter.ToUpperInvariant()})";
+                        var snippet = logs.Length > 3800 ? logs.Substring(logs.Length - 3800) : logs;
+                        await telegramBotService.SendNotificationAsync($"<b>📜 ПОСЛЕДНИ ЛОГОВЕ{filterLabel}:</b>\n<pre>{System.Web.HttpUtility.HtmlEncode(snippet)}</pre>");
                         return true;
                     }
                     if (command == "/fix")
@@ -245,7 +264,7 @@ public class TelegramWebhookController : ControllerBase
                                    "<b>Инфраструктура & DevOps:</b>\n" +
                                    "• <code>/status</code>: здраве на сървъра, RAM и базата\n" +
                                    "• <code>/restart</code>: рестартиране на API контейнера\n" +
-                                   "• <code>/logs</code>: преглед на последните логове\n" +
+                                   "• <code>/logs</code> [error | chat | N]: преглед на логове от Axiom\n" +
                                    "• <code>/fix</code>: задействане на Self-Healing GitHub Action";
                         await telegramBotService.SendNotificationAsync(help);
                         return true;
@@ -320,8 +339,8 @@ public class TelegramWebhookController : ControllerBase
         }
         if (data == "logs:api")
         {
-            var logs = await infraService.GetRecentLogsAsync(25);
-            var snippet = logs.Length > 3000 ? logs.Substring(logs.Length - 3000) : logs;
+            var logs = await infraService.GetRecentLogsAsync(15);
+            var snippet = logs.Length > 3800 ? logs.Substring(logs.Length - 3800) : logs;
             await telegramBotService.SendNotificationAsync($"<b>📜 ПОСЛЕДНИ ЛОГОВЕ:</b>\n<pre>{System.Web.HttpUtility.HtmlEncode(snippet)}</pre>");
             return true;
         }

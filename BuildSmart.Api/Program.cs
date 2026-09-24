@@ -207,7 +207,7 @@ public partial class Program
 		builder.Services.AddScoped<IMarkdownOfferParserService, BuildSmart.Infrastructure.Services.MarkdownOfferParserService>();
 		builder.Services.AddSingleton<IActiveProjectChatTracker, ActiveProjectChatTracker>();
 		builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
-		builder.Services.AddScoped<IInfraService, BuildSmart.Infrastructure.Services.InfraService>();
+		builder.Services.AddHttpClient<IInfraService, BuildSmart.Infrastructure.Services.InfraService>();
 		builder.Services.AddSingleton<IRenovationEstimatorCalculator, RenovationEstimatorCalculator>();
 		builder.Services.AddScoped<ICalculatorLeadRepository, BuildSmart.Infrastructure.Persistence.Repositories.CalculatorLeadRepository>();
 

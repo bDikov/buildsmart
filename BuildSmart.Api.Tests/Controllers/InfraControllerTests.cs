@@ -124,4 +124,21 @@ public class InfraControllerTests
             It.IsAny<CancellationToken>()
         ), Times.Once);
     }
+
+    [Fact]
+    public async Task GetLogs_ShouldReturnOk_WithLogs()
+    {
+        // Arrange
+        var fakeLogs = "[16:04:52] [INFO] /health (200)\n  Request finished 200";
+        _mockInfraService.Setup(s => s.GetRecentLogsAsync(25, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fakeLogs);
+
+        // Act
+        var result = await _controller.GetLogs(25);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.Value.Should().NotBeNull();
+        _mockInfraService.Verify(s => s.GetRecentLogsAsync(25, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }
