@@ -41,38 +41,60 @@ public partial class Program
 		var builder = WebApplication.CreateBuilder(args);
 
 		// --- Sentry & Serilog Configuration ---
-		// We explicitly read SENTRY_DSN from environment variables (set in GitHub Secrets/Docker)
-		var sentryDsn = builder.Configuration["SENTRY_DSN"];
+		// Read SENTRY_DSN from environment variables or appsettings.json
+		var sentryDsn = builder.Configuration["SENTRY_DSN"]
+			?? builder.Configuration["Sentry:Dsn"]
+			?? builder.Configuration.GetSection("Sentry")["Dsn"];
 
 		if (!string.IsNullOrWhiteSpace(sentryDsn))
 		{
 			builder.WebHost.UseSentry(o =>
 			{
 				o.Dsn = sentryDsn;
-				o.Debug = true; // Helpful for initial setup verification
-				o.TracesSampleRate = 1.0;
+				o.Debug = builder.Environment.IsDevelopment();
+				o.MaxRequestBodySize = Sentry.Extensibility.RequestSize.Medium;
 				o.EnableLogs = true; // Enable Sentry logging
+				o.TracesSampler = samplingContext =>
+				{
+					var name = samplingContext.TransactionContext.Name;
+					if (!string.IsNullOrEmpty(name) && 
+					    (name.Contains("/health", StringComparison.OrdinalIgnoreCase) || 
+					     name.Contains("/hubs/", StringComparison.OrdinalIgnoreCase)))
+					{
+						return 0.0;
+					}
+					return 0.2; // 20% sample rate for normal endpoints
+				};
 				o.SetBeforeSend((@event, hint) =>
 				{
 					if (@event.Exception != null)
 					{
-						var exType = @event.Exception.GetType().FullName;
-						var exMessage = @event.Exception.Message;
+						var exType = @event.Exception.GetType().FullName ?? string.Empty;
+						var exMessage = @event.Exception.Message ?? string.Empty;
 
-						if (exType != null && exType.Contains("Puppeteer") && exMessage != null && exMessage.Contains("Response body is unavailable"))
+						if (exType.Contains("Puppeteer") && exMessage.Contains("Response body is unavailable"))
 						{
 							return null; // Don't report to Sentry
+						}
+
+						if (exType.Contains("ConnectionAbortedException") && @event.Request?.Url?.Contains("/hubs/") == true)
+						{
+							return null; // Don't report SignalR aborts
 						}
 
 						if (@event.Exception is AggregateException aggEx)
 						{
 							foreach (var inner in aggEx.InnerExceptions)
 							{
-								var innerType = inner.GetType().FullName;
-								var innerMsg = inner.Message;
-								if (innerType != null && innerType.Contains("Puppeteer") && innerMsg != null && innerMsg.Contains("Response body is unavailable"))
+								var innerType = inner.GetType().FullName ?? string.Empty;
+								var innerMsg = inner.Message ?? string.Empty;
+								if (innerType.Contains("Puppeteer") && innerMsg.Contains("Response body is unavailable"))
 								{
 									return null; // Don't report
+								}
+								if (innerType.Contains("ConnectionAbortedException") && @event.Request?.Url?.Contains("/hubs/") == true)
+								{
+									return null;
 								}
 							}
 						}

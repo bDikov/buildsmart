@@ -829,12 +829,15 @@ public class ProjectManagementService : IProjectManagementService
             });
         }
 
+        var projectTitle = jobPost.Project?.Title ?? "Project";
+        var tradeTitle = !string.IsNullOrWhiteSpace(jobPost.Title) ? jobPost.Title : "Trade";
+
         _context.Notifications.Add(new Notification
         {
             Id = Guid.NewGuid(),
             UserId = tradesman.Id,
             Title = "New Trade Assignment",
-            Message = $"You have been assigned as the primary tradesman for trade '{jobPost.Title}' on project '{jobPost.Project.Title}'.",
+            Message = $"You have been assigned as the primary tradesman for trade '{tradeTitle}' on project '{projectTitle}'.",
             IsRead = false,
             RelatedEntityId = projectId,
             RelatedEntityType = "Project",
