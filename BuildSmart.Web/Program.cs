@@ -35,21 +35,21 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options =>
     {
         options.DetailedErrors = builder.Environment.IsDevelopment();
-        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(20);
-        options.DisconnectedCircuitMaxRetained = 150;
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromHours(1);
+        options.DisconnectedCircuitMaxRetained = 2500;
     })
     .AddHubOptions(options =>
     {
-        options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
-        options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+        options.ClientTimeoutInterval = TimeSpan.FromSeconds(180);
+        options.KeepAliveInterval = TimeSpan.FromSeconds(10);
         options.HandshakeTimeout = TimeSpan.FromSeconds(30);
         options.MaximumReceiveMessageSize = 102400000;
     });
 
 builder.Services.AddSignalR(options => 
 {
-    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
-    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(180);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(10);
     options.HandshakeTimeout = TimeSpan.FromSeconds(30);
     options.MaximumReceiveMessageSize = 102400000;
 });

@@ -357,7 +357,49 @@
     <script src="_content/BuildSmart.SharedUI/js/reels-observer.js?v=1.4"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="_content/BuildSmart.SharedUI/js/map.js"></script>
-    <script src="_framework/blazor.web.js"></script>
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            circuit: {
+                reconnectionOptions: {
+                    maxRetries: 3,
+                    retryIntervalMilliseconds: function (previousAttempts, maxRetries) {
+                        return previousAttempts >= maxRetries ? null : 1000;
+                    }
+                }
+            }
+        });
+
+        // Fast-reload observer: If the server restarted and the circuit was lost/rejected ("Rejoin failed"),
+        // automatically refresh the page immediately so users never get stuck in a countdown banner.
+        (function () {
+            var isReloading = false;
+            function triggerFastReload() {
+                if (isReloading) return;
+                isReloading = true;
+                setTimeout(function () {
+                    window.location.reload();
+                }, 400);
+            }
+
+            var reconnectModal = document.getElementById("components-reconnect-modal");
+            if (reconnectModal) {
+                reconnectModal.addEventListener("components-reconnect-state-changed", function (e) {
+                    if (e.detail && (e.detail.state === 'rejected' || e.detail.state === 'failed')) {
+                        triggerFastReload();
+                    }
+                });
+            }
+
+            var observer = new MutationObserver(function () {
+                if (document.body && document.body.innerText && document.body.innerText.indexOf("Rejoin failed") !== -1) {
+                    observer.disconnect();
+                    triggerFastReload();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+        })();
+    </script>
 </body>
 
 </html>
