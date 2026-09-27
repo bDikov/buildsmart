@@ -353,6 +353,8 @@
         <a class="dismiss" style="cursor: pointer;">🗙</a>
     </div>
 
+    <div id="components-reconnect-modal" class="components-reconnect-hide" style="display: none;"></div>
+
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="_content/BuildSmart.SharedUI/js/reels-observer.js?v=1.4"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -372,32 +374,56 @@
 
         // Fast-reload observer: If the server restarted and the circuit was lost/rejected ("Rejoin failed"),
         // automatically refresh the page immediately so users never get stuck in a countdown banner.
+        // Observes ONLY class changes on #components-reconnect-modal (0ms CPU, zero layout thrashing).
+        // Protected by a session-backed circuit breaker to prevent reload loops during sustained backend outages.
         (function () {
             var isReloading = false;
             function triggerFastReload() {
                 if (isReloading) return;
                 isReloading = true;
+
+                try {
+                    var now = Date.now();
+                    var lastReload = parseInt(sessionStorage.getItem("bs_circuit_reload_ts") || "0", 10);
+                    var reloadCount = parseInt(sessionStorage.getItem("bs_circuit_reload_count") || "0", 10);
+
+                    // Count rapid reloads within a 15-second window
+                    if (now - lastReload < 15000) {
+                        reloadCount++;
+                    } else {
+                        reloadCount = 1;
+                    }
+
+                    sessionStorage.setItem("bs_circuit_reload_ts", now.toString());
+                    sessionStorage.setItem("bs_circuit_reload_count", reloadCount.toString());
+
+                    // If 3 consecutive fast reloads fail, stop reloading and show manual error banner
+                    if (reloadCount > 3) {
+                        console.warn("[BuildSmart] Repeated circuit failure. Halting auto-reload loop.");
+                        var errorUi = document.getElementById("blazor-error-ui");
+                        if (errorUi) {
+                            errorUi.style.display = "block";
+                        }
+                        return;
+                    }
+                } catch (e) { }
+
                 setTimeout(function () {
                     window.location.reload();
-                }, 400);
+                }, 300);
             }
 
             var reconnectModal = document.getElementById("components-reconnect-modal");
             if (reconnectModal) {
-                reconnectModal.addEventListener("components-reconnect-state-changed", function (e) {
-                    if (e.detail && (e.detail.state === 'rejected' || e.detail.state === 'failed')) {
+                var observer = new MutationObserver(function () {
+                    if (reconnectModal.classList.contains("components-reconnect-rejected") ||
+                        reconnectModal.classList.contains("components-reconnect-failed")) {
+                        observer.disconnect();
                         triggerFastReload();
                     }
                 });
+                observer.observe(reconnectModal, { attributes: true, attributeFilter: ["class"] });
             }
-
-            var observer = new MutationObserver(function () {
-                if (document.body && document.body.innerText && document.body.innerText.indexOf("Rejoin failed") !== -1) {
-                    observer.disconnect();
-                    triggerFastReload();
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
         })();
     </script>
 </body>

@@ -308,8 +308,16 @@ namespace BuildSmart.SharedUI.ViewModels
 			}
 		}
 
+		private string? _cachedCategoryCulture;
+
 		private async Task LoadCategoriesAsync()
 		{
+			var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+			if (Categories.Any() && string.Equals(_cachedCategoryCulture, currentCulture, StringComparison.OrdinalIgnoreCase))
+			{
+				return;
+			}
+
 			try
 			{
 				var result = await _apiClient.GetServiceCategories.ExecuteAsync();
@@ -332,7 +340,7 @@ namespace BuildSmart.SharedUI.ViewModels
 					AppServiceLocator.MainThread.BeginInvokeOnMainThread(() =>
 					{
 						Categories.Clear();
-						var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+						_cachedCategoryCulture = currentCulture;
 
 						// Filter only Active categories of CategorySpecific type and has active videos
 						foreach (var cat in result.Data.ServiceCategories.Where(c => c.Status == BuildSmart.SharedUI.GraphQL.CategoryStatus.Active && c.Type == CategoryType.CategorySpecific))
