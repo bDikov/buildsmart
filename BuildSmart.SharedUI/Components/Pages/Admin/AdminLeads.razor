@@ -472,6 +472,20 @@
                                 <td class="td-contact">
                                     <div class="contact-name">
                                         @(string.IsNullOrWhiteSpace(lead.Name) ? Loc["Admin_Leads_Anonymous"] : lead.Name)
+                                        @if (IsLiveTakeoverActive(lead.AdminNotes))
+                                        {
+                                            <span class="badge-live-chat" title="@Loc["Admin_Leads_LiveBadge"]">
+                                                <span class="live-dot-pulse"></span>
+                                                <span>@Loc["Admin_Leads_LiveBadge"]</span>
+                                            </span>
+                                        }
+                                        else if (HasAiChat(lead))
+                                        {
+                                            <span class="badge-ai-chat" title="@Loc["Admin_Leads_AiChatBadge"]">
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                                <span>@Loc["Admin_Leads_AiChatBadge"]</span>
+                                            </span>
+                                        }
                                     </div>
                                     <div class="contact-email-row">
                                         <a href="mailto:@lead.Email" class="contact-link" title="@Loc["Admin_Leads_Email"]">@lead.Email</a>
@@ -1138,6 +1152,114 @@
                         </div>
                     </div>
                 }
+
+                <!-- AI Consultant Dialogue Section & Live Operator Takeover -->
+                @{
+                    var aiChatEntries = ExtractAiChatEntries(_selectedLead.AdminNotes);
+                    bool isLiveTakeover = IsLiveTakeoverActive(_selectedLead.AdminNotes);
+                }
+                <div class="modal-section-card ai-chat-card">
+                    <div class="ai-chat-header">
+                        <div class="section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <span>@Loc["Admin_Leads_AiChatTitle"]</span>
+                            @if (aiChatEntries.Any())
+                            {
+                                <span class="ai-chat-count-badge">@aiChatEntries.Count</span>
+                            }
+                            @if (isLiveTakeover)
+                            {
+                                <span class="badge-live-chat-status">
+                                    <span class="live-dot-pulse"></span>
+                                    <span>@Loc["Admin_Leads_LiveBadge"]</span>
+                                </span>
+                            }
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- Toggle Takeover Button -->
+                            <button type="button" class="btn-live-takeover @(isLiveTakeover ? "active" : "")" @onclick="ToggleLiveTakeoverAsync" title="@(isLiveTakeover ? Loc["Admin_Leads_LiveTakeoverActive"] : Loc["Admin_Leads_LiveTakeoverEnable"])">
+                                <span class="takeover-status-dot @(isLiveTakeover ? "dot-live" : "")"></span>
+                                <span>@(isLiveTakeover ? Loc["Admin_Leads_LiveTakeoverActive"] : Loc["Admin_Leads_LiveTakeoverEnable"])</span>
+                            </button>
+
+                            <!-- Refresh Chat Button -->
+                            <button type="button" class="scope-quick-action-btn secondary" @onclick="RefreshSelectedLeadChatAsync" title="@Loc["Admin_Leads_LiveChatRefresh"]">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+
+                            @if (aiChatEntries.Any())
+                            {
+                                <button type="button" class="scope-quick-action-btn secondary" @onclick="() => CopyAiChatTranscriptAsync(aiChatEntries)" title="@Loc["Admin_Leads_AiChatCopy"]">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span>@Loc["Admin_Leads_AiChatCopy"]</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!aiChatEntries.Any())
+                    {
+                        <div class="ai-chat-empty-state">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <span>@Loc["Admin_Leads_AiChatEmpty"]</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ai-chat-messages-container" id="admin-ai-chat-thread">
+                            @foreach (var entry in aiChatEntries)
+                            {
+                                bool isUser = entry.Sender.Equals("user", StringComparison.OrdinalIgnoreCase) || entry.Sender.Equals("Клиент", StringComparison.OrdinalIgnoreCase) || entry.Sender.Equals("Client", StringComparison.OrdinalIgnoreCase) || (!string.IsNullOrWhiteSpace(_selectedLead.Name) && entry.Sender.Equals(_selectedLead.Name, StringComparison.OrdinalIgnoreCase));
+                                <div class="ai-chat-bubble-row @(isUser ? "client-row" : "consultant-row")">
+                                    <div class="ai-chat-bubble @(isUser ? "bubble-client" : "bubble-consultant")">
+                                        <div class="bubble-meta">
+                                            <span class="bubble-sender">@(isUser ? (!string.IsNullOrWhiteSpace(_selectedLead.Name) ? _selectedLead.Name : "Клиент") : "Бончо Диков (Консултант)")</span>
+                                            @if (!string.IsNullOrWhiteSpace(entry.Timestamp))
+                                            {
+                                                <span class="bubble-time">@entry.Timestamp</span>
+                                            }
+                                        </div>
+                                        <div class="bubble-text">@entry.Message</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Live Message Input for Support / Boncho Dikov -->
+                    <div class="admin-live-chat-input-box mt-3">
+                        <div class="d-flex gap-2">
+                            <textarea class="form-control admin-live-chat-textarea" 
+                                      rows="2" 
+                                      placeholder="@Loc["Admin_Leads_LiveChatPlaceholder"]" 
+                                      @bind="_adminLiveMessage" 
+                                      @bind:event="oninput" 
+                                      @onkeydown="HandleAdminLiveChatKeyDown"
+                                      disabled="@_isSendingLiveMessage"></textarea>
+                            <button type="button" 
+                                    class="btn-admin-live-send" 
+                                    disabled="@(string.IsNullOrWhiteSpace(_adminLiveMessage) || _isSendingLiveMessage)" 
+                                    @onclick="SendAdminLiveMessageAsync">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                <span>@Loc["Admin_Leads_LiveChatSend"]</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- CRM General Conversation Notes & Save Section -->
                 <div class="modal-section-card crm-notes-box">
@@ -1961,6 +2083,259 @@
 .lead-note-indicator:hover {
     border-color: var(--color-primary);
     color: var(--color-primary);
+}
+
+/* AI Chat Badge in Table */
+.badge-ai-chat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font: var(--font-body-2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--bg-card-alt);
+    color: var(--color-primary);
+    border: 1px solid var(--border-color);
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* Live Chat Badge in Table */
+.badge-live-chat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font: var(--font-body-2);
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--bg-card-alt);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.live-dot-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-success);
+    animation: live-pulse-anim 1.5s infinite;
+}
+
+@@keyframes live-pulse-anim {
+    0% { transform: scale(0.85); opacity: 0.45; }
+    50% { transform: scale(1.25); opacity: 1; }
+    100% { transform: scale(0.85); opacity: 0.45; }
+}
+
+/* AI Chat Dossier Card */
+.ai-chat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.ai-chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.ai-chat-count-badge {
+    background: var(--bg-card-alt);
+    color: var(--color-primary);
+    border: 1px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 8px;
+}
+
+.ai-chat-empty-state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background: var(--bg-card-alt);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font: var(--font-body-2);
+}
+
+.ai-chat-empty-state p {
+    margin: 0;
+}
+
+.ai-chat-messages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 6px 2px;
+}
+
+.ai-chat-bubble-row {
+    display: flex;
+    width: 100%;
+}
+
+.ai-chat-bubble-row.client-row {
+    justify-content: flex-end;
+}
+
+.ai-chat-bubble-row.consultant-row {
+    justify-content: flex-start;
+}
+
+.ai-chat-bubble {
+    max-width: 82%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font: var(--font-body-2);
+    line-height: 1.5;
+}
+
+.bubble-client {
+    background: var(--color-primary);
+    color: var(--bg-card);
+    border-bottom-right-radius: 3px;
+}
+
+.bubble-consultant {
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 3px;
+}
+
+.bubble-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    opacity: 0.85;
+}
+
+.bubble-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Live Takeover Button & Status in Modal */
+.btn-live-takeover {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font: var(--font-body-2);
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-live-takeover:hover {
+    background: var(--bg-card);
+    border-color: var(--color-primary);
+}
+
+.btn-live-takeover.active {
+    background: var(--color-primary);
+    color: var(--bg-card);
+    border-color: var(--color-primary);
+}
+
+.takeover-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.takeover-status-dot.dot-live {
+    background: var(--color-success);
+    animation: live-pulse-anim 1.5s infinite;
+}
+
+.badge-live-chat-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--bg-card-alt);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+    margin-left: 8px;
+}
+
+/* Admin Live Chat Input */
+.admin-live-chat-input-box {
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+}
+
+.admin-live-chat-textarea {
+    resize: none;
+    font: var(--font-body-2);
+    font-size: 0.85rem;
+    background: var(--bg-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.admin-live-chat-textarea:focus {
+    background: var(--bg-card);
+    border-color: var(--color-primary);
+    box-shadow: none;
+}
+
+.btn-admin-live-send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+    background: var(--color-primary);
+    color: var(--bg-card);
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    font: var(--font-body-2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-admin-live-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-admin-live-send:not(:disabled):hover {
+    background: var(--color-primary-hover);
 }
 
 /* CRM Follow-up Notes Box inside Modal */
@@ -3381,6 +3756,11 @@
     private CalculatorLead? _selectedLead = null;
     private CalculatorLead? _leadToDelete = null;
 
+    // Live Chat Support & Takeover State in Modal
+    private string _adminLiveMessage = string.Empty;
+    private bool _isSendingLiveMessage = false;
+    private System.Threading.Timer? _chatModalPollTimer;
+
     // CRM Notes & Contact State in Modal
     private string _editNotes = string.Empty;
     private bool _editIsContacted = false;
@@ -3452,6 +3832,7 @@
     public void Dispose()
     {
         _autoRefreshTimer?.Dispose();
+        _chatModalPollTimer?.Dispose();
     }
 
     private async Task RefreshLeadsAsync()
@@ -3858,10 +4239,40 @@
         _isSavingNotes = false;
         _notesSaveSuccess = false;
         _notesErrorMessage = null;
+
+        _adminLiveMessage = string.Empty;
+        _isSendingLiveMessage = false;
+
+        _chatModalPollTimer?.Dispose();
+        _ = RefreshSelectedLeadChatAsync();
+        _chatModalPollTimer = new System.Threading.Timer(async _ =>
+        {
+            if (_selectedLead == null) return;
+            try
+            {
+                var refreshed = await LeadRepository.GetByIdAsync(_selectedLead.Id);
+                if (refreshed != null && refreshed.AdminNotes != _selectedLead.AdminNotes)
+                {
+                    await InvokeAsync(() =>
+                    {
+                        _selectedLead.AdminNotes = refreshed.AdminNotes;
+                        var inList = _allLeads.FirstOrDefault(l => l.Id == _selectedLead.Id);
+                        if (inList != null) inList.AdminNotes = refreshed.AdminNotes;
+                        StateHasChanged();
+                    });
+                }
+            }
+            catch { }
+        }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
     }
 
     private void CloseDossierModal()
     {
+        _chatModalPollTimer?.Dispose();
+        _chatModalPollTimer = null;
+        _adminLiveMessage = string.Empty;
+        _isSendingLiveMessage = false;
+
         _selectedLead = null;
         _isEditingAttribution = false;
         _editNotes = string.Empty;
@@ -4070,14 +4481,25 @@
             };
             string crmMetaJson = System.Text.Json.JsonSerializer.Serialize(crmMetaObj);
 
+            var chatEntriesPart = ExtractAiChatRawPart(rawNotes);
+            bool isLiveTakeover = IsLiveTakeoverActive(rawNotes);
+
             var sb = new System.Text.StringBuilder();
             if (!string.IsNullOrWhiteSpace(configPart)) sb.AppendLine(configPart.Trim());
             if (!string.IsNullOrWhiteSpace(summaryPart)) sb.AppendLine(summaryPart.Trim());
             sb.AppendLine($"[CRM_META]:{crmMetaJson}");
+            if (isLiveTakeover)
+            {
+                sb.AppendLine("[LIVE_TAKEOVER]:true");
+            }
             if (!string.IsNullOrWhiteSpace(_editNotes))
             {
                 sb.AppendLine("[CRM_NOTES]:");
-                sb.Append(_editNotes.Trim());
+                sb.AppendLine(_editNotes.Trim());
+            }
+            if (!string.IsNullOrWhiteSpace(chatEntriesPart))
+            {
+                sb.AppendLine(chatEntriesPart.Trim());
             }
 
             _selectedLead.AdminNotes = sb.Length > 0 ? sb.ToString().Trim() : null;
@@ -4417,11 +4839,16 @@
         int crmIdx = notes.IndexOf(crmMarker, StringComparison.OrdinalIgnoreCase);
         if (crmIdx >= 0)
         {
-            info.CrmNotesText = notes.Substring(crmIdx + crmMarker.Length).Trim();
+            var notesAfter = notes.Substring(crmIdx + crmMarker.Length).Trim();
+            int chatIdx = notesAfter.IndexOf("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase);
+            if (chatIdx < 0) chatIdx = notesAfter.IndexOf("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase);
+            if (chatIdx < 0) chatIdx = notesAfter.IndexOf("[AI_CHAT_JSON]:", StringComparison.OrdinalIgnoreCase);
+            if (chatIdx < 0) chatIdx = notesAfter.IndexOf("[LIVE_TAKEOVER]:", StringComparison.OrdinalIgnoreCase);
+            info.CrmNotesText = chatIdx >= 0 ? notesAfter.Substring(0, chatIdx).Trim() : notesAfter;
         }
-        else if (!notes.StartsWith("[CONFIG]:") && !notes.StartsWith("[SUMMARY]:") && !notes.StartsWith("[CRM_META]:") && !notes.StartsWith("[Клиентът"))
+        else
         {
-            info.CrmNotesText = notes.Trim();
+            info.CrmNotesText = ExtractManualNotes(notes);
         }
 
         if (info.InitialMaxEur == 0 && lead.MaxPriceEur > 0)
@@ -4499,4 +4926,436 @@
             new("cat10_p3", "Lander_Full_Item_WasteTransport", "Транспорт, контейнери за отпадък & депониране")
         })
     };
+
+    public record AiChatEntry(string Timestamp, string Sender, string Message);
+
+    private static string ExtractJsonArray(string input, int startIndex)
+    {
+        int arrayStart = input.IndexOf('[', startIndex);
+        if (arrayStart < 0) return string.Empty;
+
+        int depth = 0;
+        bool inString = false;
+        bool isEscaped = false;
+
+        for (int i = arrayStart; i < input.Length; i++)
+        {
+            char c = input[i];
+
+            if (isEscaped)
+            {
+                isEscaped = false;
+                continue;
+            }
+
+            if (c == '\\')
+            {
+                if (inString) isEscaped = true;
+                continue;
+            }
+
+            if (c == '"')
+            {
+                inString = !inString;
+                continue;
+            }
+
+            if (!inString)
+            {
+                if (c == '[') depth++;
+                else if (c == ']')
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        return input.Substring(arrayStart, i - arrayStart + 1);
+                    }
+                }
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static List<AiChatEntry> ExtractAiChatEntries(string? notes)
+    {
+        var list = new List<AiChatEntry>();
+        if (string.IsNullOrWhiteSpace(notes)) return list;
+
+        // 1. Try to parse structured [AI_CHAT_JSON]:...
+        const string jsonMarker = "[AI_CHAT_JSON]:";
+        int jsonIdx = notes.IndexOf(jsonMarker, StringComparison.OrdinalIgnoreCase);
+        if (jsonIdx >= 0)
+        {
+            string json = ExtractJsonArray(notes, jsonIdx + jsonMarker.Length);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(json);
+                    if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        foreach (var el in doc.RootElement.EnumerateArray())
+                        {
+                            var ts = el.TryGetProperty("timestamp", out var pTs) ? pTs.GetString() ?? "" : "";
+                            var sender = el.TryGetProperty("sender", out var pS) ? pS.GetString() ?? "" : "";
+                            var msg = el.TryGetProperty("message", out var pM) ? pM.GetString() ?? "" : "";
+                            if (!string.IsNullOrWhiteSpace(msg))
+                            {
+                                list.Add(new AiChatEntry(ts, sender, msg));
+                            }
+                        }
+                        if (list.Any()) return list;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error parsing AI_CHAT_JSON: {ex.Message}");
+                }
+            }
+        }
+
+        // 2. Fallback: Parse line-based format (with multiline continuation support!)
+        var lines = notes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        string currentTimestamp = "";
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[CONFIG]:") || trimmed.StartsWith("[SUMMARY]:") || trimmed.StartsWith("[CRM_META]:") || trimmed.StartsWith("[CRM_NOTES]:") || trimmed.StartsWith("[AI_CHAT_JSON]:") || trimmed.StartsWith("[LIVE_TAKEOVER]:"))
+            {
+                continue;
+            }
+
+            if (trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase))
+            {
+                var content = trimmed.Substring("[AI_CHAT_ENTRY]:".Length).Trim();
+                var parts = content.Split('|', 3);
+                if (parts.Length == 3)
+                {
+                    list.Add(new AiChatEntry(parts[0].Trim(), parts[1].Trim(), parts[2].Trim()));
+                }
+            }
+            else if (trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase))
+            {
+                var closeBracket = trimmed.IndexOf(']');
+                if (closeBracket > 18)
+                {
+                    currentTimestamp = trimmed.Substring(18, closeBracket - 18).Trim().TrimStart('-', ' ');
+                }
+            }
+            else if (trimmed.StartsWith("Клиент:", StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add(new AiChatEntry(currentTimestamp, "Клиент", trimmed.Substring(7).Trim()));
+            }
+            else if (trimmed.StartsWith("Инж. Калоян:", StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add(new AiChatEntry(currentTimestamp, "Консултант (Бончо Диков)", trimmed.Substring(12).Trim()));
+            }
+            else if (trimmed.StartsWith("Консултант (Бончо Диков):", StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add(new AiChatEntry(currentTimestamp, "Консултант (Бончо Диков)", trimmed.Substring(25).Trim()));
+            }
+            else if (trimmed.StartsWith("Консултант:", StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add(new AiChatEntry(currentTimestamp, "Консултант (Бончо Диков)", trimmed.Substring(11).Trim()));
+            }
+            else if (trimmed.StartsWith("Бончо Диков:", StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add(new AiChatEntry(currentTimestamp, "Консултант (Бончо Диков)", trimmed.Substring(12).Trim()));
+            }
+            else if (list.Count > 0 && !trimmed.StartsWith("["))
+            {
+                // Multiline content belonging to the previous entry
+                var last = list[list.Count - 1];
+                list[list.Count - 1] = last with { Message = last.Message + "\n" + trimmed };
+            }
+        }
+        return list;
+    }
+
+    private static string ExtractAiChatRawPart(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return string.Empty;
+
+        const string jsonMarker = "[AI_CHAT_JSON]:";
+        int jsonIdx = notes.IndexOf(jsonMarker, StringComparison.OrdinalIgnoreCase);
+        if (jsonIdx >= 0)
+        {
+            string json = ExtractJsonArray(notes, jsonIdx + jsonMarker.Length);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                return $"{jsonMarker}{json}";
+            }
+        }
+
+        var sb = new System.Text.StringBuilder();
+        var lines = notes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        bool inChatBlock = false;
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase)
+                || trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase))
+            {
+                inChatBlock = true;
+                sb.AppendLine(trimmed);
+            }
+            else if (inChatBlock)
+            {
+                if (trimmed.StartsWith("[CONFIG]:") || trimmed.StartsWith("[SUMMARY]:") || trimmed.StartsWith("[CRM_META]:") || trimmed.StartsWith("[CRM_NOTES]:") || trimmed.StartsWith("[LIVE_TAKEOVER]:"))
+                {
+                    inChatBlock = false;
+                }
+                else
+                {
+                    sb.AppendLine(trimmed);
+                }
+            }
+        }
+        return sb.ToString().Trim();
+    }
+
+    private static string ExtractManualNotes(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return string.Empty;
+        var sb = new System.Text.StringBuilder();
+        var lines = notes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        bool inChat = false;
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[CONFIG]:") || trimmed.StartsWith("[SUMMARY]:") || trimmed.StartsWith("[CRM_META]:") || trimmed.StartsWith("[Клиентът") || trimmed.StartsWith("[AI_CHAT_JSON]:") || trimmed.StartsWith("[LIVE_TAKEOVER]:"))
+                continue;
+            if (trimmed.StartsWith("[AI_CHAT_ENTRY]:") || trimmed.StartsWith("[AI CHAT DIALOGUE"))
+            {
+                inChat = true;
+                continue;
+            }
+            if (inChat)
+            {
+                if (trimmed.StartsWith("Клиент:") || trimmed.StartsWith("Инж.") || trimmed.StartsWith("Консултант:") || trimmed.StartsWith("Бончо"))
+                    continue;
+                inChat = false;
+            }
+            sb.AppendLine(trimmed);
+        }
+        return sb.ToString().Trim();
+    }
+
+    private static bool HasAiChat(CalculatorLead lead)
+    {
+        if (string.IsNullOrWhiteSpace(lead.AdminNotes)) return false;
+        return lead.AdminNotes.Contains("[AI_CHAT_JSON]:", StringComparison.OrdinalIgnoreCase)
+            || lead.AdminNotes.Contains("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase)
+            || lead.AdminNotes.Contains("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task CopyAiChatTranscriptAsync(List<AiChatEntry> entries)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"ЧАТ КОРЕСПОНДЕНЦИЯ: {_selectedLead?.Name} ({_selectedLead?.Phone})");
+        sb.AppendLine($"Имот: {_selectedLead?.SelectedArea} м2, {_selectedLead?.BuildingStatus}");
+        sb.AppendLine(new string('-', 50));
+        foreach (var e in entries)
+        {
+            sb.AppendLine($"[{e.Timestamp}] {e.Sender}: {e.Message}");
+        }
+        await CopyToClipboard(sb.ToString(), Loc["Admin_Leads_AiChatCopied"]);
+    }
+
+    private static bool IsLiveTakeoverActive(string? adminNotes)
+    {
+        if (string.IsNullOrWhiteSpace(adminNotes)) return false;
+        return adminNotes.Contains("[LIVE_TAKEOVER]:true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string SetLiveTakeoverFlag(string? adminNotes, bool active)
+    {
+        var raw = adminNotes ?? string.Empty;
+        const string marker = "[LIVE_TAKEOVER]:";
+        int idx = raw.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx >= 0)
+        {
+            int end = raw.IndexOf("\n", idx);
+            var before = raw.Substring(0, idx).TrimEnd();
+            var after = end >= 0 ? raw.Substring(end).TrimStart() : string.Empty;
+            var sb = new System.Text.StringBuilder();
+            if (!string.IsNullOrWhiteSpace(before)) sb.AppendLine(before);
+            sb.AppendLine($"{marker}{active.ToString().ToLowerInvariant()}");
+            if (!string.IsNullOrWhiteSpace(after)) sb.AppendLine(after);
+            return sb.ToString().Trim();
+        }
+        else
+        {
+            return string.IsNullOrWhiteSpace(raw)
+                ? $"{marker}{active.ToString().ToLowerInvariant()}"
+                : $"{raw.TrimEnd()}\n{marker}{active.ToString().ToLowerInvariant()}";
+        }
+    }
+
+    private static string UpdateAdminNotesWithChat(string? adminNotes, string chatJson)
+    {
+        var raw = adminNotes ?? string.Empty;
+        const string marker = "[AI_CHAT_JSON]:";
+        int idx = raw.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx >= 0)
+        {
+            string existingJson = ExtractJsonArray(raw, idx + marker.Length);
+            int startOfJson = raw.IndexOf('[', idx + marker.Length);
+            if (!string.IsNullOrWhiteSpace(existingJson) && startOfJson >= 0)
+            {
+                int endOfJson = startOfJson + existingJson.Length;
+                var before = raw.Substring(0, startOfJson);
+                var after = raw.Substring(endOfJson);
+                return (before + chatJson + after).Trim();
+            }
+            else
+            {
+                int end = raw.IndexOf("\n[", idx + marker.Length);
+                var before = raw.Substring(0, idx).TrimEnd();
+                var after = end >= 0 ? raw.Substring(end).TrimStart() : string.Empty;
+                var sb = new System.Text.StringBuilder();
+                if (!string.IsNullOrWhiteSpace(before)) sb.AppendLine(before);
+                sb.AppendLine($"{marker}{chatJson}");
+                if (!string.IsNullOrWhiteSpace(after)) sb.AppendLine(after);
+                return sb.ToString().Trim();
+            }
+        }
+        else
+        {
+            var cleanedRaw = StripLegacyChatText(raw);
+            return string.IsNullOrWhiteSpace(cleanedRaw)
+                ? $"{marker}{chatJson}"
+                : $"{cleanedRaw.TrimEnd()}\n{marker}{chatJson}";
+        }
+    }
+
+    private static string StripLegacyChatText(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var lines = input.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var sb = new System.Text.StringBuilder();
+        bool inLegacyChat = false;
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase)
+                || trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase))
+            {
+                inLegacyChat = true;
+                continue;
+            }
+            if (inLegacyChat)
+            {
+                if (trimmed.StartsWith("[") && !trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase) && !trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase))
+                {
+                    inLegacyChat = false;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            sb.AppendLine(line);
+        }
+        return sb.ToString().Trim();
+    }
+
+    private async Task ToggleLiveTakeoverAsync()
+    {
+        if (_selectedLead == null) return;
+        bool current = IsLiveTakeoverActive(_selectedLead.AdminNotes);
+        bool next = !current;
+        _selectedLead.AdminNotes = SetLiveTakeoverFlag(_selectedLead.AdminNotes, next);
+        try
+        {
+            await LeadRepository.UpdateLeadAsync(_selectedLead);
+            var inList = _allLeads.FirstOrDefault(l => l.Id == _selectedLead.Id);
+            if (inList != null) inList.AdminNotes = _selectedLead.AdminNotes;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Грешка: {ex.Message}");
+        }
+    }
+
+    private async Task RefreshSelectedLeadChatAsync()
+    {
+        if (_selectedLead == null) return;
+        try
+        {
+            var refreshed = await LeadRepository.GetByIdAsync(_selectedLead.Id);
+            if (refreshed != null)
+            {
+                _selectedLead.AdminNotes = refreshed.AdminNotes;
+                var inList = _allLeads.FirstOrDefault(l => l.Id == _selectedLead.Id);
+                if (inList != null) inList.AdminNotes = refreshed.AdminNotes;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error refreshing lead chat: {ex.Message}");
+        }
+    }
+
+    private async Task HandleAdminLiveChatKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendAdminLiveMessageAsync();
+        }
+    }
+
+    private async Task SendAdminLiveMessageAsync()
+    {
+        if (_selectedLead == null || string.IsNullOrWhiteSpace(_adminLiveMessage) || _isSendingLiveMessage) return;
+
+        var messageText = _adminLiveMessage.Trim();
+        _isSendingLiveMessage = true;
+        try
+        {
+            var existingEntries = ExtractAiChatEntries(_selectedLead.AdminNotes);
+            var newEntry = new AiChatEntry(DateTime.Now.ToString("yyyy-MM-dd HH:mm"), "Бончо Диков (Консултант)", messageText);
+            existingEntries.Add(newEntry);
+
+            var jsonList = existingEntries.Select(e => new
+            {
+                timestamp = e.Timestamp,
+                sender = e.Sender,
+                message = e.Message
+            }).ToList();
+
+            while (jsonList.Count > 1 && System.Text.Json.JsonSerializer.Serialize(jsonList).Length > 3000)
+            {
+                jsonList.RemoveAt(0);
+            }
+
+            var chatJson = System.Text.Json.JsonSerializer.Serialize(jsonList);
+            var updatedNotes = UpdateAdminNotesWithChat(_selectedLead.AdminNotes, chatJson);
+            // Ensure live takeover flag is active when operator sends a message
+            updatedNotes = SetLiveTakeoverFlag(updatedNotes, true);
+
+            _selectedLead.AdminNotes = updatedNotes;
+            await LeadRepository.UpdateLeadAsync(_selectedLead);
+
+            var inList = _allLeads.FirstOrDefault(l => l.Id == _selectedLead.Id);
+            if (inList != null) inList.AdminNotes = updatedNotes;
+
+            _adminLiveMessage = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Грешка: {ex.Message}");
+        }
+        finally
+        {
+            _isSendingLiveMessage = false;
+            StateHasChanged();
+        }
+    }
 }

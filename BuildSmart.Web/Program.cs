@@ -113,6 +113,7 @@ builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.ICalculatorLea
 builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IProjectManagementService, BuildSmart.Infrastructure.Services.ProjectManagementService>();
 builder.Services.AddSingleton<BuildSmart.Core.Application.Interfaces.IRenovationEstimatorCalculator, BuildSmart.Core.Application.Services.RenovationEstimatorCalculator>();
 builder.Services.AddHttpClient<BuildSmart.Core.Application.Interfaces.ITelegramBotService, BuildSmart.Infrastructure.Services.TelegramBotService>();
+builder.Services.AddScoped<BuildSmart.Core.Application.Interfaces.IAiService, BuildSmart.Infrastructure.Services.GeminiAiService>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<AuthHeaderHandler>();

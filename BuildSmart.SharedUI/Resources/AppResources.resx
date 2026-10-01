@@ -3759,4 +3759,88 @@ Boncho | BuildSmart</value>
   <data name="Admin_Leads_ContactClientFirstNotice" xml:space="preserve">
     <value>Mark client as contacted to record call evaluation, prospect rating (1-10), and site inspection meetings.</value>
   </data>
+  <data name="Estimator_AiConsultant_Badge" xml:space="preserve">
+    <value>Construction Consultant</value>
+  </data>
+  <data name="Estimator_AiConsultant_Name" xml:space="preserve">
+    <value>Boncho Dikov</value>
+  </data>
+  <data name="Estimator_AiConsultant_Role" xml:space="preserve">
+    <value>Lead Construction Consultant</value>
+  </data>
+  <data name="Estimator_AiConsultant_StatusOnline" xml:space="preserve">
+    <value>Online for direct consultation</value>
+  </data>
+  <data name="Estimator_AiConsultant_Typing" xml:space="preserve">
+    <value>Boncho is typing...</value>
+  </data>
+  <data name="Estimator_AiConsultant_Placeholder" xml:space="preserve">
+    <value>Tell us briefly about the property, furniture, or your vision...</value>
+  </data>
+  <data name="Estimator_AiConsultant_SendBtn" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_OldFurniture" xml:space="preserve">
+    <value>Old furniture needs removal</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_OldVacant" xml:space="preserve">
+    <value>Property is vacant and ready</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_Remodel" xml:space="preserve">
+    <value>Planning remodeling / wall removal</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_BdsAct16" xml:space="preserve">
+    <value>Have Act 16 and keys</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_BdsWaitingAct16" xml:space="preserve">
+    <value>Waiting for Act 16 soon</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_DesignProject" xml:space="preserve">
+    <value>Have an interior design project</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_FreeInspection" xml:space="preserve">
+    <value>Request a free on-site survey</value>
+  </data>
+  <data name="Admin_Leads_AiChatTitle" xml:space="preserve">
+    <value>Consultant Chat Transcript (Boncho Dikov)</value>
+  </data>
+  <data name="Admin_Leads_AiChatBadge" xml:space="preserve">
+    <value>AI Chat</value>
+  </data>
+  <data name="Admin_Leads_AiChatEmpty" xml:space="preserve">
+    <value>The client has not chatted with the consultant yet.</value>
+  </data>
+  <data name="Admin_Leads_AiChatCopy" xml:space="preserve">
+    <value>Copy Chat</value>
+  </data>
+  <data name="Admin_Leads_AiChatCopied" xml:space="preserve">
+    <value>Chat transcript copied</value>
+  </data>
+  <data name="Estimator_AiConsultant_StatusLiveHuman" xml:space="preserve">
+    <value>Boncho Dikov is online (Live)</value>
+  </data>
+  <data name="Estimator_AiConsultant_BadgeLive" xml:space="preserve">
+    <value>Personal Consultant</value>
+  </data>
+  <data name="Estimator_AiConsultant_WaitingOperator" xml:space="preserve">
+    <value>Waiting for Boncho Dikov's reply...</value>
+  </data>
+  <data name="Admin_Leads_LiveTakeoverEnable" xml:space="preserve">
+    <value>Take Over Live</value>
+  </data>
+  <data name="Admin_Leads_LiveTakeoverActive" xml:space="preserve">
+    <value>Live Takeover Active (Click to switch back to AI)</value>
+  </data>
+  <data name="Admin_Leads_LiveChatPlaceholder" xml:space="preserve">
+    <value>Type a direct reply to the client (Boncho Dikov)...</value>
+  </data>
+  <data name="Admin_Leads_LiveChatSend" xml:space="preserve">
+    <value>Send Live</value>
+  </data>
+  <data name="Admin_Leads_LiveBadge" xml:space="preserve">
+    <value>LIVE</value>
+  </data>
+  <data name="Admin_Leads_LiveChatRefresh" xml:space="preserve">
+    <value>Refresh messages</value>
+  </data>
 </root>

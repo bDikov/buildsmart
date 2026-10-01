@@ -9,6 +9,7 @@
 @using Microsoft.Extensions.Localization
 @using Microsoft.JSInterop
 @layout BuildSmart.SharedUI.Components.Layout.MainLayout
+@implements IDisposable
 @inject NavigationManager NavManager
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<BuildSmart.SharedUI.Resources.AppResources> Loc
@@ -18,6 +19,7 @@
 @inject BuildSmart.Core.Application.Interfaces.ICalculatorLeadRepository LeadRepository
 @inject BuildSmart.SharedUI.Services.IAuthService AuthService
 @inject BuildSmart.Core.Application.Interfaces.IRenovationEstimatorCalculator EstimatorCalculator
+@inject BuildSmart.Core.Application.Interfaces.IAiService AiService
 @inject IServiceProvider ServiceProvider
 
 <PageTitle>@Loc["Seo_Estimator_Title"]</PageTitle>
@@ -238,6 +240,99 @@
                         @string.Format(Loc["Lander_OverallDescFull"], _selectedArea, _finishQualityTier.ToUpper())
                     }
                 </p>
+            </div>
+
+            <!-- Interactive AI Construction Consultant & Vision Card -->
+            <div class="proposal-ai-consultant-card mb-4 p-4 p-md-5 position-relative">
+                <div class="ai-consultant-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="ai-consultant-avatar-box">
+                            <svg class="ai-avatar-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <strong class="ai-consultant-name">@Loc["Estimator_AiConsultant_Name"]</strong>
+                                @if (_isLiveTakeoverActive)
+                                {
+                                    <span class="ai-consultant-badge live-operator-badge">@Loc["Estimator_AiConsultant_BadgeLive"]</span>
+                                }
+                                else
+                                {
+                                    <span class="ai-consultant-badge">@Loc["Estimator_AiConsultant_Badge"]</span>
+                                }
+                            </div>
+                            <span class="ai-consultant-role">@Loc["Estimator_AiConsultant_Role"]</span>
+                        </div>
+                    </div>
+                    <div class="ai-online-status @(_isLiveTakeoverActive ? "status-live" : "")">
+                        <span class="ai-status-pulse"></span>
+                        <span class="ai-status-text">@(_isLiveTakeoverActive ? Loc["Estimator_AiConsultant_StatusLiveHuman"] : Loc["Estimator_AiConsultant_StatusOnline"])</span>
+                    </div>
+                </div>
+
+                <!-- Chat Dialogue Thread -->
+                <div class="ai-chat-thread d-flex flex-column gap-3 mb-4" id="estimator-consultant-chat-thread">
+                    @foreach (var msg in _consultantMessages)
+                    {
+                        @if (msg.Sender == "consultant")
+                        {
+                            <div class="ai-message-bubble-wrapper d-flex align-items-start gap-2">
+                                <div class="ai-bubble-avatar">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.91 1.45 5.48 3.72 7.12.21.15.33.42.27.68l-.55 2.71c-.06.29.22.54.5.42l3.1-1.3c.21-.09.46-.06.65.07.74.52 1.52.8 2.31.8 5.52 0 10-4.14 10-9.25C22 6.14 17.52 2 12 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ai-message-bubble">
+                                    <div class="ai-message-text">@((MarkupString)msg.Text.Replace("\n", "<br/>"))</div>
+                                    <span class="ai-message-time">@msg.Time.ToString("HH:mm")</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="user-message-bubble-wrapper d-flex justify-content-end align-items-start gap-2">
+                                <div class="user-message-bubble">
+                                    <div class="user-message-text">@msg.Text</div>
+                                    <span class="user-message-time">@msg.Time.ToString("HH:mm")</span>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    @if (_isAiConsultantTyping)
+                    {
+                        <div class="ai-typing-indicator d-flex align-items-center gap-2">
+                            <span class="ai-typing-dot"></span>
+                            <span class="ai-typing-dot"></span>
+                            <span class="ai-typing-dot"></span>
+                            <span class="ai-typing-text ms-1">@Loc["Estimator_AiConsultant_Typing"]</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Input Box -->
+                <div class="ai-consultant-input-wrapper position-relative">
+                    <textarea class="form-control ai-consultant-input" 
+                              rows="2"
+                              placeholder="@Loc["Estimator_AiConsultant_Placeholder"]" 
+                              disabled="@_isAiConsultantTyping"
+                              @bind="_userConsultantInput"
+                              @bind:event="oninput"
+                              @onkeydown="HandleConsultantKeyDown"></textarea>
+                    <button type="button" 
+                            class="ai-send-btn" 
+                            disabled="@(string.IsNullOrWhiteSpace(_userConsultantInput) || _isAiConsultantTyping)"
+                            @onclick='() => HandleSendConsultantMessageAsync(null)'>
+                        <span>@Loc["Estimator_AiConsultant_SendBtn"]</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Investment Composition Visualizer: Labor vs Rough Materials vs Finishes/Fitout -->
@@ -1137,6 +1232,9 @@
     [SupplyParameterFromQuery(Name = "utm_content")]
     public string? UtmContent { get; set; }
 
+    [SupplyParameterFromQuery(Name = "leadId")]
+    public Guid? QueryLeadId { get; set; }
+
     private string _activeScope = "full"; // full, bathroom, finishing
     private int _selectedArea = 75;
     private bool _includeFurniture = true;
@@ -1237,6 +1335,14 @@
     private HashSet<string> _excludedProcessIds = new HashSet<string>();
     private BuildSmart.Core.Domain.Entities.CalculatorLead? _savedLead;
 
+    private record ConsultantChatMessage(string Sender, string Text, DateTime Time);
+    private List<ConsultantChatMessage> _consultantMessages = new();
+    private string _userConsultantInput = "";
+    private bool _isAiConsultantTyping = false;
+    private bool _isConsultantInitialized = false;
+    private CancellationTokenSource? _livePollingCts;
+    private bool _isLiveTakeoverActive = false;
+
     protected override void OnParametersSet()
     {
         if (!string.IsNullOrWhiteSpace(QueryScope))
@@ -1289,6 +1395,7 @@
         if (QueryProposalReady == true || QueryLeadSubmitted == true)
         {
             _isProposalReady = true;
+            InitAiConsultantDialogue();
         }
 
         if (!string.IsNullOrWhiteSpace(QueryExcluded))
@@ -1298,6 +1405,33 @@
             foreach (var id in ids)
             {
                 _excludedProcessIds.Add(id);
+            }
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (QueryLeadId.HasValue && (_savedLead == null || _savedLead.Id != QueryLeadId.Value))
+        {
+            try
+            {
+                _savedLead = await LeadRepository.GetByIdAsync(QueryLeadId.Value);
+                if (_savedLead != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(_savedLead.Name)) _name = _savedLead.Name;
+                    if (!string.IsNullOrWhiteSpace(_savedLead.Email)) _email = _savedLead.Email;
+                    if (!string.IsNullOrWhiteSpace(_savedLead.Phone)) _phone = _savedLead.Phone;
+                    if (!string.IsNullOrWhiteSpace(_savedLead.AdminNotes))
+                    {
+                        _isLiveTakeoverActive = IsLiveTakeoverActive(_savedLead.AdminNotes);
+                        SyncMessagesFromAdminNotes(_savedLead.AdminNotes);
+                    }
+                    StartLivePolling();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Estimator] Error loading lead by QueryLeadId: {ex.Message}");
             }
         }
     }
@@ -1670,6 +1804,7 @@
             }
 
             string existingCrmNotes = ExtractCrmNotes(_savedLead.AdminNotes);
+            string existingChatPart = ExtractAiChatRawPart(_savedLead.AdminNotes);
 
             var configObj = new
             {
@@ -1686,7 +1821,8 @@
             var jsonConfig = System.Text.Json.JsonSerializer.Serialize(configObj);
 
             _savedLead.AdminNotes = $"[CONFIG]:{jsonConfig}\n[SUMMARY]:{summaryText}" +
-                (string.IsNullOrWhiteSpace(existingCrmNotes) ? "" : $"\n[CRM_NOTES]:\n{existingCrmNotes}");
+                (string.IsNullOrWhiteSpace(existingCrmNotes) ? "" : $"\n[CRM_NOTES]:\n{existingCrmNotes}") +
+                (string.IsNullOrWhiteSpace(existingChatPart) ? "" : $"\n{existingChatPart}");
 
             await LeadRepository.UpdateLeadAsync(_savedLead);
         }
@@ -1738,6 +1874,163 @@
         return totalMax;
     }
 
+    private static string ExtractAiChatRawPart(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return string.Empty;
+
+        const string jsonMarker = "[AI_CHAT_JSON]:";
+        int jsonIdx = notes.IndexOf(jsonMarker, StringComparison.OrdinalIgnoreCase);
+        if (jsonIdx >= 0)
+        {
+            int end = notes.IndexOf("\n[", jsonIdx + jsonMarker.Length);
+            return end >= 0 ? notes.Substring(jsonIdx, end - jsonIdx).Trim() : notes.Substring(jsonIdx).Trim();
+        }
+
+        var sb = new System.Text.StringBuilder();
+        var lines = notes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        bool inChatBlock = false;
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase)
+                || trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase))
+            {
+                inChatBlock = true;
+                sb.AppendLine(trimmed);
+            }
+            else if (inChatBlock)
+            {
+                if (trimmed.StartsWith("[CONFIG]:") || trimmed.StartsWith("[SUMMARY]:") || trimmed.StartsWith("[CRM_META]:") || trimmed.StartsWith("[CRM_NOTES]:"))
+                {
+                    inChatBlock = false;
+                }
+                else
+                {
+                    sb.AppendLine(trimmed);
+                }
+            }
+        }
+        return sb.ToString().Trim();
+    }
+
+    private static string ExtractJsonArray(string input, int startIndex)
+    {
+        int arrayStart = input.IndexOf('[', startIndex);
+        if (arrayStart < 0) return string.Empty;
+
+        int depth = 0;
+        bool inString = false;
+        bool isEscaped = false;
+
+        for (int i = arrayStart; i < input.Length; i++)
+        {
+            char c = input[i];
+
+            if (isEscaped)
+            {
+                isEscaped = false;
+                continue;
+            }
+
+            if (c == '\\')
+            {
+                if (inString) isEscaped = true;
+                continue;
+            }
+
+            if (c == '"')
+            {
+                inString = !inString;
+                continue;
+            }
+
+            if (!inString)
+            {
+                if (c == '[') depth++;
+                else if (c == ']')
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        return input.Substring(arrayStart, i - arrayStart + 1);
+                    }
+                }
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static string UpdateAdminNotesWithChat(string? adminNotes, string chatJson)
+    {
+        var raw = adminNotes ?? string.Empty;
+        const string marker = "[AI_CHAT_JSON]:";
+        int idx = raw.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx >= 0)
+        {
+            string existingJson = ExtractJsonArray(raw, idx + marker.Length);
+            int startOfJson = raw.IndexOf('[', idx + marker.Length);
+            if (!string.IsNullOrWhiteSpace(existingJson) && startOfJson >= 0)
+            {
+                int endOfJson = startOfJson + existingJson.Length;
+                var before = raw.Substring(0, startOfJson);
+                var after = raw.Substring(endOfJson);
+                return (before + chatJson + after).Trim();
+            }
+            else
+            {
+                int end = raw.IndexOf("\n[", idx + marker.Length);
+                var before = raw.Substring(0, idx).TrimEnd();
+                var after = end >= 0 ? raw.Substring(end).TrimStart() : string.Empty;
+                var sb = new System.Text.StringBuilder();
+                if (!string.IsNullOrWhiteSpace(before)) sb.AppendLine(before);
+                sb.AppendLine($"{marker}{chatJson}");
+                if (!string.IsNullOrWhiteSpace(after)) sb.AppendLine(after);
+                return sb.ToString().Trim();
+            }
+        }
+        else
+        {
+            var cleanedRaw = StripLegacyChatText(raw);
+            return string.IsNullOrWhiteSpace(cleanedRaw)
+                ? $"{marker}{chatJson}"
+                : $"{cleanedRaw.TrimEnd()}\n{marker}{chatJson}";
+        }
+    }
+
+    private static string StripLegacyChatText(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var lines = input.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var sb = new System.Text.StringBuilder();
+        bool inLegacyChat = false;
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase)
+                || trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase))
+            {
+                inLegacyChat = true;
+                continue;
+            }
+            if (inLegacyChat)
+            {
+                if (trimmed.StartsWith("[") && !trimmed.StartsWith("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase) && !trimmed.StartsWith("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase))
+                {
+                    inLegacyChat = false;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            sb.AppendLine(line);
+        }
+        return sb.ToString().Trim();
+    }
+
     private static string ExtractCrmNotes(string? adminNotes)
     {
         if (string.IsNullOrWhiteSpace(adminNotes)) return string.Empty;
@@ -1745,9 +2038,13 @@
         var idx = adminNotes.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
         if (idx >= 0)
         {
-            return adminNotes.Substring(idx + marker.Length).Trim();
+            var notesAfter = adminNotes.Substring(idx + marker.Length).Trim();
+            int chatIdx = notesAfter.IndexOf("[AI_CHAT_JSON]:", StringComparison.OrdinalIgnoreCase);
+            if (chatIdx < 0) chatIdx = notesAfter.IndexOf("[AI_CHAT_ENTRY]:", StringComparison.OrdinalIgnoreCase);
+            if (chatIdx < 0) chatIdx = notesAfter.IndexOf("[AI CHAT DIALOGUE", StringComparison.OrdinalIgnoreCase);
+            return chatIdx >= 0 ? notesAfter.Substring(0, chatIdx).Trim() : notesAfter;
         }
-        if (adminNotes.StartsWith("[CONFIG]:") || adminNotes.StartsWith("[SUMMARY]:") || adminNotes.StartsWith("[Клиентът"))
+        if (adminNotes.StartsWith("[CONFIG]:") || adminNotes.StartsWith("[SUMMARY]:") || adminNotes.StartsWith("[Клиентът") || adminNotes.StartsWith("[AI_CHAT_JSON]:"))
         {
             return string.Empty;
         }
@@ -1965,6 +2262,7 @@
         {
             await LeadRepository.AddLeadAsync(lead);
             _savedLead = lead;
+            StartLivePolling();
         }
         catch (Exception ex)
         {
@@ -2026,6 +2324,7 @@
         await Task.Delay(600);
         _isProcessingModalOpen = false;
         _isProposalReady = true;
+        InitAiConsultantDialogue();
         StateHasChanged();
 
         try
@@ -2046,6 +2345,7 @@
             }
             queryParams.Add("proposalReady=true");
             queryParams.Add("leadSubmitted=true");
+            queryParams.Add($"leadId={lead.Id}");
 
             if (!string.IsNullOrEmpty(UtmSource)) queryParams.Add($"utm_source={Uri.EscapeDataString(UtmSource)}");
             if (!string.IsNullOrEmpty(UtmMedium)) queryParams.Add($"utm_medium={Uri.EscapeDataString(UtmMedium)}");
@@ -2138,5 +2438,350 @@
         {
             return false;
         }
+    }
+
+    private void InitAiConsultantDialogue()
+    {
+        if (_isConsultantInitialized) return;
+        _isConsultantInitialized = true;
+
+        var clientName = !string.IsNullOrWhiteSpace(_name) ? _name.Trim() : "";
+        var greeting = !string.IsNullOrWhiteSpace(clientName) ? $"Здравейте, {clientName}! " : "Здравейте! ";
+        var minEur = GetMinPriceEur();
+        var maxEur = GetMaxPriceEur();
+        var minBgn = GetMinPriceBgn();
+        var maxBgn = GetMaxPriceBgn();
+
+        string initialText;
+        if (_buildingStatus == "old")
+        {
+            initialText = greeting + $"Аз съм Бончо Диков – строителен консултант в BuildSmart. Прегледах офертата за вашето жилище от {_selectedArea} кв.м (старо строителство).\n\n" +
+                          $"Ориентировъчната цена от €{minEur:N0} – €{maxEur:N0} ({minBgn:N0} – {maxBgn:N0} лв.) може да ви се стори сериозна сума на пръв поглед, но тя отразява пълен, безкомпромисен ремонт – с цялостно премахване на стари настилки, нова Ел и ВиК инсталация, изправяне на стени и 5 години писмена гаранция по договор.\n\n" +
+                          "В практиката обаче всеки ремонт на стар имот е напълно индивидуален. Затова ми е важно да ви попитам две неща:\n" +
+                          "1. На какъв етап е жилището в момента? Живее ли се в него, има ли стари мебели и багаж за изнасяне и извозване или вече е напълно празно?\n" +
+                          "2. Какво си представяте като визия за новия ви дом? Имате ли конкретни идеи (преустройство, събаряне на преградна стена, голяма душ зона в банята или по-изчистено практично решение)?\n\n" +
+                          "Разкажете ми накратко – ще ви кажа точно как най-лесно да организираме всичко и от какво може да се спести.";
+        }
+        else
+        {
+            initialText = greeting + $"Аз съм Бончо Диков – строителен консултант в BuildSmart. Прегледах избора ви за новото ви жилище на БДС от {_selectedArea} кв.м.\n\n" +
+                          $"Прогнозата от €{minEur:N0} – €{maxEur:N0} ({minBgn:N0} – {maxBgn:N0} лв.) включва цялостно качествено довършване до ключ – настилки, баня, фина шпакловка, боя и интериорни врати с материали от доказани производители.\n\n" +
+                          "За да планираме графика и бюджета максимално прецизно:\n" +
+                          "1. На какъв етап е сградата? Имате ли вече Акт 16 и ключ в ръка или очаквате въвеждане в експлоатация в близките месеци?\n" +
+                          "2. Каква е вашата визия за интериора? Имате ли вече харесана концепция (големи плочи в банята, скрито LED осветление, конкретни цветове) или готов интериорен проект?\n\n" +
+                          "Споделете с две думи, за да ви насоча за най-добрите решения и реалистични срокове.";
+        }
+
+        _consultantMessages.Add(new ConsultantChatMessage("consultant", initialText, DateTime.Now));
+
+        if (_savedLead != null)
+        {
+            _ = PersistChatStateAsync();
+        }
+    }
+
+    private async Task PersistChatStateAsync()
+    {
+        if (_savedLead == null) return;
+        try
+        {
+            var clientSender = !string.IsNullOrWhiteSpace(_name) ? _name.Trim() : "Клиент";
+            var chatEntriesList = _consultantMessages.Select(m => new
+            {
+                timestamp = m.Time.ToString("yyyy-MM-dd HH:mm"),
+                sender = m.Sender == "consultant" ? "Консултант (Бончо Диков)" : clientSender,
+                message = m.Text
+            }).ToList();
+
+            while (chatEntriesList.Count > 1 && System.Text.Json.JsonSerializer.Serialize(chatEntriesList).Length > 3000)
+            {
+                chatEntriesList.RemoveAt(0);
+            }
+
+            var chatJson = System.Text.Json.JsonSerializer.Serialize(chatEntriesList);
+            _savedLead.AdminNotes = UpdateAdminNotesWithChat(_savedLead.AdminNotes, chatJson);
+            await LeadRepository.UpdateLeadAsync(_savedLead);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Estimator] Failed to persist chat state: {ex.Message}");
+        }
+    }
+
+    private async Task HandleConsultantKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await HandleSendConsultantMessageAsync(null);
+        }
+    }
+
+    private async Task HandleSendConsultantMessageAsync(string? quickMessage = null)
+    {
+        var textToSend = quickMessage ?? _userConsultantInput;
+        if (string.IsNullOrWhiteSpace(textToSend) || _isAiConsultantTyping) return;
+
+        textToSend = textToSend.Trim();
+        _userConsultantInput = "";
+        _consultantMessages.Add(new ConsultantChatMessage("user", textToSend, DateTime.Now));
+        _isAiConsultantTyping = true;
+        StateHasChanged();
+
+        try
+        {
+            if (_savedLead == null)
+            {
+                var newLead = new BuildSmart.Core.Domain.Entities.CalculatorLead
+                {
+                    Name = _name,
+                    Email = !string.IsNullOrWhiteSpace(_email) ? _email : "lead@buildsmart.bg",
+                    Phone = _phone,
+                    SelectedArea = _selectedArea,
+                    BuildingStatus = _buildingStatus,
+                    Scope = _activeScope,
+                    QualityTier = _finishQualityTier,
+                    MinPriceEur = GetMinPriceEur(),
+                    MaxPriceEur = GetMaxPriceEur(),
+                    MinPriceBgn = GetMinPriceBgn(),
+                    MaxPriceBgn = GetMaxPriceBgn(),
+                    CreatedAt = DateTime.UtcNow
+                };
+                try
+                {
+                    await LeadRepository.AddLeadAsync(newLead);
+                    _savedLead = newLead;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Estimator] Failed to persist initial lead from chat: {ex.Message}");
+                }
+            }
+
+            if (_savedLead != null)
+            {
+                var textLower = textToSend.ToLowerInvariant();
+                if (textLower.Contains("оглед") || textLower.Contains("среща"))
+                {
+                    _savedLead.MeetingStatus = "Requested";
+                }
+                if (textLower.Contains("веднага") || textLower.Contains("спешно"))
+                {
+                    _savedLead.ReadyToStartTimeline = "immediately";
+                }
+                else if (textLower.Contains("месец") || textLower.Contains("1 месец"))
+                {
+                    _savedLead.ReadyToStartTimeline = "1_month";
+                }
+                else if (textLower.Contains("акт 16") || textLower.Contains("акт16"))
+                {
+                    _savedLead.ReadyToStartTimeline = "act_16";
+                }
+
+                // Immediately persist the client's message so the admin portal sees it in real time
+                await PersistChatStateAsync();
+            }
+
+            StartLivePolling();
+
+            bool isLive = _isLiveTakeoverActive || IsLiveTakeoverActive(_savedLead?.AdminNotes);
+            if (isLive)
+            {
+                if (_savedLead != null)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var telegramService = (BuildSmart.Core.Application.Interfaces.ITelegramBotService?)ServiceProvider.GetService(typeof(BuildSmart.Core.Application.Interfaces.ITelegramBotService));
+                            if (telegramService != null)
+                            {
+                                await telegramService.SendLeadConsultationAlertAsync(_savedLead, "[НА ЖИВО] " + textToSend, "Чатът е поет на живо от Бончо Диков. Очаква се ръчен отговор през админ панела.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error sending telegram consultation alert: {ex.Message}");
+                        }
+                    });
+                }
+
+                return;
+            }
+
+            var historyList = _consultantMessages
+                .Where(m => m.Sender != "user" || m.Text != textToSend)
+                .Select(m => (m.Sender == "consultant" ? "Консултант Бончо Диков" : (!string.IsNullOrWhiteSpace(_name) ? _name : "Клиент"), m.Text))
+                .ToList();
+
+            var lang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
+            string aiReply;
+            try
+            {
+                aiReply = await AiService.GenerateLeadConsultationReplyAsync(_savedLead!, historyList, textToSend, lang, cts.Token);
+                aiReply = StripRepeatedGreetings(aiReply);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Estimator] AiService exception: {ex.Message}. Falling back to default consultation reply.");
+                aiReply = "Благодаря за детайлите! В практиката всеки такъв ремонт има своите особености. Най-добре е наш технически ръководител да направи кратък безплатен оглед на място за 20 минути, за да премерим с лазер и да ви дадем твърда оферта по договор. Кога би ви било удобно – делничен ден след 17:30 или през уикенда?";
+            }
+
+            _consultantMessages.Add(new ConsultantChatMessage("consultant", aiReply, DateTime.Now));
+
+            if (_savedLead != null)
+            {
+                // Immediately persist the AI answer to database
+                await PersistChatStateAsync();
+
+                // Trigger Telegram alert in background
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var telegramService = (BuildSmart.Core.Application.Interfaces.ITelegramBotService?)ServiceProvider.GetService(typeof(BuildSmart.Core.Application.Interfaces.ITelegramBotService));
+                        if (telegramService != null)
+                        {
+                            await telegramService.SendLeadConsultationAlertAsync(_savedLead, textToSend, aiReply);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error sending telegram consultation alert: {ex.Message}");
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating consultation reply: {ex.Message}");
+            var fallback = "Благодаря ви за детайлите! Наш технически ръководител ще се свърже с вас за организиране на предварителен оглед на място в удобно за вас време.";
+            _consultantMessages.Add(new ConsultantChatMessage("consultant", fallback, DateTime.Now));
+            await PersistChatStateAsync();
+        }
+        finally
+        {
+            _isAiConsultantTyping = false;
+            StateHasChanged();
+        }
+    }
+
+    private static bool IsLiveTakeoverActive(string? adminNotes)
+    {
+        if (string.IsNullOrWhiteSpace(adminNotes)) return false;
+        return adminNotes.Contains("[LIVE_TAKEOVER]:true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool SyncMessagesFromAdminNotes(string? adminNotes)
+    {
+        if (string.IsNullOrWhiteSpace(adminNotes)) return false;
+        const string marker = "[AI_CHAT_JSON]:";
+        int idx = adminNotes.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return false;
+
+        string json = ExtractJsonArray(adminNotes, idx + marker.Length);
+        if (string.IsNullOrWhiteSpace(json)) return false;
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind != System.Text.Json.JsonValueKind.Array) return false;
+
+            var parsed = new List<ConsultantChatMessage>();
+            foreach (var el in doc.RootElement.EnumerateArray())
+            {
+                var tsStr = el.TryGetProperty("timestamp", out var pTs) ? pTs.GetString() ?? "" : "";
+                var senderStr = el.TryGetProperty("sender", out var pS) ? pS.GetString() ?? "" : "";
+                var msgStr = el.TryGetProperty("message", out var pM) ? pM.GetString() ?? "" : "";
+                if (string.IsNullOrWhiteSpace(msgStr)) continue;
+
+                DateTime time = DateTime.TryParse(tsStr, out var parsedDate) ? parsedDate : DateTime.Now;
+                bool isConsultant = senderStr.Equals("consultant", StringComparison.OrdinalIgnoreCase) || senderStr.Contains("Консултант", StringComparison.OrdinalIgnoreCase) || senderStr.Contains("Бончо", StringComparison.OrdinalIgnoreCase) || senderStr.Contains("Калоян", StringComparison.OrdinalIgnoreCase);
+                parsed.Add(new ConsultantChatMessage(isConsultant ? "consultant" : "user", msgStr, time));
+            }
+
+            if (parsed.Count > 0)
+            {
+                bool countChanged = parsed.Count != _consultantMessages.Count;
+                bool lastMsgChanged = _consultantMessages.Count > 0 && parsed[^1].Text != _consultantMessages[^1].Text;
+                if (countChanged || lastMsgChanged)
+                {
+                    _consultantMessages = parsed;
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Estimator Sync Error]: {ex.Message}");
+        }
+        return false;
+    }
+
+    private void StartLivePolling()
+    {
+        if (_livePollingCts != null || _savedLead == null || _savedLead.Id == Guid.Empty) return;
+        _livePollingCts = new CancellationTokenSource();
+        _ = PollLeadUpdatesAsync(_livePollingCts.Token);
+    }
+
+    private async Task PollLeadUpdatesAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await timer.WaitForNextTickAsync(ct);
+                if (_savedLead == null || _savedLead.Id == Guid.Empty) continue;
+
+                var updated = await LeadRepository.GetByIdAsync(_savedLead.Id);
+                if (updated != null && updated.AdminNotes != null)
+                {
+                    bool takeover = IsLiveTakeoverActive(updated.AdminNotes);
+                    bool takeoverChanged = takeover != _isLiveTakeoverActive;
+                    _isLiveTakeoverActive = takeover;
+
+                    bool messagesChanged = SyncMessagesFromAdminNotes(updated.AdminNotes);
+                    if (takeoverChanged || messagesChanged)
+                    {
+                        _savedLead.AdminNotes = updated.AdminNotes;
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Estimator Polling Error]: {ex.Message}");
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _livePollingCts?.Cancel();
+        _livePollingCts?.Dispose();
+        _livePollingCts = null;
+    }
+
+    private static string StripRepeatedGreetings(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return text;
+        var trimmed = text.Trim();
+
+        // Strips any leading greetings like "Здравейте отново, Пешо!", "Здравейте, Пешо!", "Привет отново!"
+        var pattern = @"^(?:(?:Здравейте|Привет|Добър ден|Добро утро|Добър вечер|Здравей|Hello|Hi)\s*(?:отново|again)?(?:\s*,\s*[^!\n\r]+)?\s*[!.,:;—–-]\s*)+";
+        var cleaned = System.Text.RegularExpressions.Regex.Replace(trimmed, pattern, "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+
+        if (!string.IsNullOrEmpty(cleaned) && char.IsLower(cleaned[0]))
+        {
+            cleaned = char.ToUpper(cleaned[0]) + cleaned.Substring(1);
+        }
+
+        return string.IsNullOrWhiteSpace(cleaned) ? trimmed : cleaned;
     }
 }

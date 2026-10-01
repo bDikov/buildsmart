@@ -11,26 +11,24 @@ class Program
         await conn.OpenAsync();
         
         var query = @"
-            SELECT 
-                jp.""Title"",
-                c.""Name"",
-                jp.""JobDetails""
-            FROM ""JobPosts"" jp
-            JOIN ""ServiceCategories"" c ON jp.""ServiceCategoryId"" = c.""Id""
-            WHERE jp.""ProjectId"" IN (SELECT ""Id"" FROM ""Projects"" WHERE ""Id""::text LIKE 'dd7e3002%')
-            ORDER BY c.""Name"";
+            SELECT ""Id"", ""Name"", ""Phone"", length(""AdminNotes""), ""AdminNotes""
+            FROM ""CalculatorLeads""
+            WHERE ""Name"" ILIKE '%Pesho%' OR ""Phone"" ILIKE '%0899%'
+            ORDER BY ""CreatedAt"" DESC;
         ";
         
         using var cmd = new NpgsqlCommand(query, conn);
         using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            var title = reader.GetString(0);
-            var category = reader.GetString(1);
-            var details = reader.GetString(2);
-            Console.WriteLine($"=== Category: {category} (Title: {title}) ===");
-            Console.WriteLine(details);
-            Console.WriteLine();
+            var id = reader.GetGuid(0);
+            var name = reader.GetString(1);
+            var phone = reader.GetString(2);
+            var len = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+            var notes = reader.IsDBNull(4) ? "" : reader.GetString(4);
+            Console.WriteLine($"=== Lead {id}: {name} ({phone}) - Length: {len} ===");
+            Console.WriteLine(notes);
+            Console.WriteLine("==================================================");
         }
     }
 }

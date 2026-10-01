@@ -3708,4 +3708,88 @@
   <data name="Admin_Leads_ContactClientFirstNotice" xml:space="preserve">
     <value>Маркирайте клиента като проведен контакт, за да отключите оценката на разговора, перспективата (1-10) и организирането на оглед.</value>
   </data>
+  <data name="Estimator_AiConsultant_Badge" xml:space="preserve">
+    <value>Строителен консултант</value>
+  </data>
+  <data name="Estimator_AiConsultant_Name" xml:space="preserve">
+    <value>Бончо Диков</value>
+  </data>
+  <data name="Estimator_AiConsultant_Role" xml:space="preserve">
+    <value>Главен строителен консултант</value>
+  </data>
+  <data name="Estimator_AiConsultant_StatusOnline" xml:space="preserve">
+    <value>На линия за лична консултация</value>
+  </data>
+  <data name="Estimator_AiConsultant_Typing" xml:space="preserve">
+    <value>Бончо пише...</value>
+  </data>
+  <data name="Estimator_AiConsultant_Placeholder" xml:space="preserve">
+    <value>Напишете накратко за жилището, мебелите или визията си...</value>
+  </data>
+  <data name="Estimator_AiConsultant_SendBtn" xml:space="preserve">
+    <value>Изпрати</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_OldFurniture" xml:space="preserve">
+    <value>Има стари мебели за изнасяне</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_OldVacant" xml:space="preserve">
+    <value>Имотът е празен и свободен</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_Remodel" xml:space="preserve">
+    <value>Искам преустройство / събаряне на стена</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_BdsAct16" xml:space="preserve">
+    <value>Имаме Акт 16 и ключ</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_BdsWaitingAct16" xml:space="preserve">
+    <value>Очакваме Акт 16 скоро</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_DesignProject" xml:space="preserve">
+    <value>Имам готов интериорен проект</value>
+  </data>
+  <data name="Estimator_AiConsultant_Chip_FreeInspection" xml:space="preserve">
+    <value>Искам безплатен оглед на място</value>
+  </data>
+  <data name="Admin_Leads_AiChatTitle" xml:space="preserve">
+    <value>Кореспонденция с Консултант (Бончо Диков)</value>
+  </data>
+  <data name="Admin_Leads_AiChatBadge" xml:space="preserve">
+    <value>AI Чат</value>
+  </data>
+  <data name="Admin_Leads_AiChatEmpty" xml:space="preserve">
+    <value>Клиентът все още не е писал в чата с консултанта.</value>
+  </data>
+  <data name="Admin_Leads_AiChatCopy" xml:space="preserve">
+    <value>Копирай чата</value>
+  </data>
+  <data name="Admin_Leads_AiChatCopied" xml:space="preserve">
+    <value>Чатът е копиран</value>
+  </data>
+  <data name="Estimator_AiConsultant_StatusLiveHuman" xml:space="preserve">
+    <value>Бончо Диков е на линия (На живо)</value>
+  </data>
+  <data name="Estimator_AiConsultant_BadgeLive" xml:space="preserve">
+    <value>Личен консултант</value>
+  </data>
+  <data name="Estimator_AiConsultant_WaitingOperator" xml:space="preserve">
+    <value>Очаква се отговор от Бончо Диков...</value>
+  </data>
+  <data name="Admin_Leads_LiveTakeoverEnable" xml:space="preserve">
+    <value>Поеми на живо</value>
+  </data>
+  <data name="Admin_Leads_LiveTakeoverActive" xml:space="preserve">
+    <value>Чатът е поет на живо (Кликни за прехвърляне към AI)</value>
+  </data>
+  <data name="Admin_Leads_LiveChatPlaceholder" xml:space="preserve">
+    <value>Напишете директен отговор към клиента (Бончо Диков)...</value>
+  </data>
+  <data name="Admin_Leads_LiveChatSend" xml:space="preserve">
+    <value>Изпрати на живо</value>
+  </data>
+  <data name="Admin_Leads_LiveBadge" xml:space="preserve">
+    <value>НА ЖИВО</value>
+  </data>
+  <data name="Admin_Leads_LiveChatRefresh" xml:space="preserve">
+    <value>Обнови съобщенията</value>
+  </data>
 </root>

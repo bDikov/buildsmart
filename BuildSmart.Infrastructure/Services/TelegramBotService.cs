@@ -1,4 +1,5 @@
 using BuildSmart.Core.Application.Interfaces;
+using BuildSmart.Core.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -225,6 +226,58 @@ public class TelegramBotService : ITelegramBotService
             inlineButtons.Add(new { text = "View Job Details", url = $"{_appBaseUrl}/project-messages?projectId={jobId.Value}" });
         }
         inlineButtons.Add(new { text = "Open Admin Portal", url = $"{_appBaseUrl}/admin" });
+
+        var replyMarkup = new
+        {
+            inline_keyboard = new[] { inlineButtons.ToArray() }
+        };
+
+        return await SendNotificationAsync(sb.ToString(), replyMarkup, cancellationToken);
+    }
+
+    public async Task<bool> SendLeadConsultationAlertAsync(
+        CalculatorLead lead,
+        string userMessage,
+        string aiReply,
+        CancellationToken cancellationToken = default)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<b>🔥 АКТИВЕН ДИАЛОГ В КАЛКУЛАТОРА!</b>");
+        sb.AppendLine();
+        sb.AppendLine($"👤 <b>Име:</b> {EscapeHtml(string.IsNullOrWhiteSpace(lead.Name) ? "Непосочено" : lead.Name)}");
+        sb.AppendLine($"📞 <b>Телефон:</b> <code>{EscapeHtml(lead.Phone ?? "Липсва")}</code>");
+        if (!string.IsNullOrWhiteSpace(lead.Email))
+        {
+            sb.AppendLine($"📧 <b>Имейл:</b> {EscapeHtml(lead.Email)}");
+        }
+
+        var statusDesc = lead.BuildingStatus switch
+        {
+            "old" => "Старо строителство",
+            "bds" => "Ново строителство (БДС)",
+            "rough" => "Груб строеж",
+            _ => lead.BuildingStatus
+        };
+
+        var scopeDesc = lead.Scope == "bathroom" ? $"Ремонт на баня ({lead.BathroomCount} бр.)" : "Цялостен ремонт";
+        sb.AppendLine($"📐 <b>Параметри:</b> {lead.SelectedArea} м² | {statusDesc} | {scopeDesc}");
+        sb.AppendLine($"💰 <b>Оферта:</b> €{lead.MinPriceEur:N0} – €{lead.MaxPriceEur:N0} ({lead.MinPriceBgn:N0} – {lead.MaxPriceBgn:N0} лв.)");
+        sb.AppendLine();
+        sb.AppendLine("💬 <b>Клиентът написа:</b>");
+        sb.AppendLine($"<i>\"{EscapeHtml(userMessage)}\"</i>");
+        sb.AppendLine();
+        sb.AppendLine("💬 <b>Консултант Бончо Диков отговори:</b>");
+        sb.AppendLine($"<i>\"{EscapeHtml(aiReply)}\"</i>");
+        sb.AppendLine();
+        sb.AppendLine($"<code>LEAD-ID:{lead.Id}</code>");
+
+        var inlineButtons = new List<object>();
+        if (!string.IsNullOrWhiteSpace(lead.Phone))
+        {
+            var cleanPhone = CleanPhoneNumber(lead.Phone);
+            inlineButtons.Add(new { text = "Пиши по WhatsApp", url = $"https://wa.me/{cleanPhone}" });
+        }
+        inlineButtons.Add(new { text = "Отвори Лийдове", url = $"{_appBaseUrl}/admin/leads" });
 
         var replyMarkup = new
         {

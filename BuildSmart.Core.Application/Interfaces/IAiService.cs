@@ -35,4 +35,15 @@ public interface IAiService
     /// Generates a concise lead summary highlighting key scope, budget, and potential risks for Telegram alerts.
     /// </summary>
     Task<string> GenerateLeadSummaryAsync(Project project, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates an engaging, expert sales and technical consultation response to a calculator lead,
+    /// acknowledging their renovation scope, BDS/Old building status, furniture removal, timeline, and guiding toward a free on-site survey.
+    /// </summary>
+    Task<string> GenerateLeadConsultationReplyAsync(
+        CalculatorLead lead, 
+        List<(string Sender, string Message)> chatHistory, 
+        string latestUserMessage, 
+        string languageCode = "bg", 
+        CancellationToken cancellationToken = default);
 }

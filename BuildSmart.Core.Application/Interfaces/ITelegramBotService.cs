@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BuildSmart.Core.Domain.Entities;
 
 namespace BuildSmart.Core.Application.Interfaces;
 
@@ -55,5 +56,14 @@ public interface ITelegramBotService
         string message,
         string? stackTrace = null,
         Guid? jobId = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends an alert to Telegram notifying the admin of a lead's response and conversation in the estimator AI consultation widget.
+    /// </summary>
+    Task<bool> SendLeadConsultationAlertAsync(
+        CalculatorLead lead,
+        string userMessage,
+        string aiReply,
         CancellationToken cancellationToken = default);
 }

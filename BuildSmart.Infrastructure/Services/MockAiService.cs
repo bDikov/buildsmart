@@ -104,4 +104,17 @@ public class MockAiService : IAiService
 		var summary = $"Проект '{project.Title}' включва {project.JobPosts.Count} дейности. Локация: {project.JobPosts.FirstOrDefault()?.Location ?? "Непосочена"}.";
 		return Task.FromResult(summary);
 	}
+
+	public Task<string> GenerateLeadConsultationReplyAsync(
+		CalculatorLead lead, 
+		List<(string Sender, string Message)> chatHistory, 
+		string latestUserMessage, 
+		string languageCode = "bg", 
+		CancellationToken cancellationToken = default)
+	{
+		var reply = languageCode.Equals("bg", StringComparison.OrdinalIgnoreCase)
+			? $"Благодаря за информацията относно вашия ремонт от {lead.SelectedArea} кв.м. Можем да организираме наш технически ръководител да направи безплатен предварителен оглед на място за 20 минути, за да уточним точните параметри. Удобно ли ви е през седмицата или през уикенда?"
+			: $"Thank you for the details regarding your {lead.SelectedArea} sqm renovation. We can arrange a free 20-minute on-site survey to finalize the measurements. Would you prefer a weekday or weekend?";
+		return Task.FromResult(reply);
+	}
 }

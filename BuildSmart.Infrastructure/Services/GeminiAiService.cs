@@ -4,6 +4,7 @@ using BuildSmart.Core.Application.DTOs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -22,7 +23,11 @@ public class GeminiAiService : IAiService
 	{
 		var geminiKey = configuration["Gemini:ApiKey"];
 
-		_apiKey = geminiKey ?? throw new ArgumentNullException("Gemini:ApiKey is not configured.");
+		_apiKey = geminiKey ?? string.Empty;
+		if (string.IsNullOrEmpty(_apiKey))
+		{
+			logger.LogWarning("[GeminiAiService] Gemini:ApiKey is not configured in this environment. Fallback responses will be used.");
+		}
 		_model = "gemini-2.5-flash"; // Updated to current 2026 model
 
 		_logger = logger;
@@ -544,5 +549,139 @@ public class GeminiAiService : IAiService
 			_logger.LogWarning(ex, "[GeminiAiService] Failed to generate AI lead summary.");
 			return $"Проект: {project.Title}. Включва {project.JobPosts?.Count ?? 0} дейности.";
 		}
+	}
+
+	public async Task<string> GenerateLeadConsultationReplyAsync(
+		CalculatorLead lead, 
+		List<(string Sender, string Message)> chatHistory, 
+		string latestUserMessage, 
+		string languageCode = "bg", 
+		CancellationToken cancellationToken = default)
+	{
+		var isBg = languageCode.Equals("bg", StringComparison.OrdinalIgnoreCase);
+		var historySb = new StringBuilder();
+		if (chatHistory != null && chatHistory.Any())
+		{
+			foreach (var (sender, msg) in chatHistory)
+			{
+				historySb.AppendLine($"{sender}: \"{msg}\"");
+			}
+		}
+
+		var buildingStatusDesc = lead.BuildingStatus switch
+		{
+			"old" => "Старо строителство (панел/тухла/ЕПК, нужда от основен ремонт)",
+			"bds" => "Ново строителство на БДС (шпакловка и замазка)",
+			"rough" => "Груб строеж / на тухла",
+			_ => lead.BuildingStatus
+		};
+
+		var scopeDesc = lead.Scope switch
+		{
+			"bathroom" => $"Ремонт на баня ({lead.BathroomCount} бр.)",
+			"full" => "Цялостен ремонт на апартамент",
+			_ => lead.Scope
+		};
+
+		var prompt = $@"Ти си Бончо Диков – строителен консултант и ръководител в BuildSmart (строителна платформа за цялостни и частични ремонти в София).
+Разговаряш с потенциален клиент, който току-що е изчислил оферта в нашия онлайн калкулатор и споделя детайли за своя имот и визия. Разговаряш топло, честно, земно и приятелски като човек от практиката, без преструвки и без да се представяш за инженер – ти си опитен строителен консултант, който познава реалностите на ремонтите от първо лице.
+
+ДАННИ ЗА КЛИЕНТА И ИМОТА:
+- Клиент: {(string.IsNullOrWhiteSpace(lead.Name) ? "Клиент" : lead.Name)}
+- Тип жилище / статус: {buildingStatusDesc}
+- Квадратура: {lead.SelectedArea} кв.м
+- Обхват: {scopeDesc}
+- Пакет материали: {lead.QualityTier}
+- Прогнозна цена: €{lead.MinPriceEur:N0} – €{lead.MaxPriceEur:N0} ({lead.MinPriceBgn:N0} – {lead.MaxPriceBgn:N0} лв.)
+
+ИСТОРИЯ НА ДИАЛОГА ДО МОМЕНТА:
+{historySb}
+
+ПОСЛЕДНО СЪОБЩЕНИЕ НА КЛИЕНТА:
+""{latestUserMessage}""
+
+ТВОЯТА ЦЕЛ И ИНСТРУКЦИИ:
+1. КРИТИЧНО ПРАВИЛО ЗА ПОЗДРАВИ: АБСОЛЮТНО ЗАБРАНЕНО Е да започваш с поздрави като ""Здравейте"", ""Здравейте отново"", ""Привет"" или обръщения по име. Диалогът вече тече напред и първоначалният поздрав вече е изпратен в първото съобщение. Започни ДИРЕКТНО по същество с реакция или коментар на казаното (например: ""Напълно разбирам..."", ""Това е отлична идея..."", ""Относно старите мебели..."", ""Ясно, в такъв случай..."").
+2. ПАЗИ ПЪЛЕН КОНТЕКСТ: Следи внимателно 'ИСТОРИЯ НА ДИАЛОГА ДО МОМЕНТА'. Ако клиентът вече е отговорил на въпрос (например за мебелите, етапа на сградата, преустройството или конкретните си желания), В НИКАКЪВ СЛУЧАЙ не го питай отново за същото! Надграждай разговора естествено и задълбочавай детайлите.
+3. Отговори топло, коректно, практично и изключително любезно като опитен консултант.
+4. Вземи под внимание какво казва клиентът:
+   - Ако има стари мебели или все още се живее в имота: Увери го, че ние от BuildSmart поемаме цялостната организация по изнасяне, транспорт и законно извозване на старите мебели и отпадъци до лицензирано депо, така че да не търси отделни хамали.
+   - Ако е ново строителство (БДС/Акт 16): Коментирай сроковете за въвеждане в експлоатация и че липсата на тежко къртене оптимизира бюджета и сроковете.
+   - Ако иска преустройство (събаряне на стена, обединяване на хол и кухня, усвояване на тераса): Посочи кои стени обикновено са неносещи и обясни как правим предварителен конструктивен оглед на място.
+   - Ако описва своята визия (големи плочи, вграден душ, настилки, скрито осветление): Одобри идеите му и дай кратка практическа насока за правилното им изпълнение.
+5. ЗАДЪЛЖИТЕЛНО ориентирай разговора към следващата стъпка:
+   Предложи безплатен 20-минутен предварителен оглед на място от наш технически ръководител или от мен (Бончо) в удобно за клиента време (делничен ден след работа или събота), за да снемем точни лазерни размери и да изготвим твърда количествено-стойностна сметка по договор.
+6. Стил: Стегнат и въздействащ (до 2-3 кратки параграфа, максимум 80-120 думи).
+7. ЗАБРАНЕНО Е използването на емоджита. Не слагай абсолютно никакви емотикони в отговора.
+8. Пиши на перфектен български език.
+
+Твоят отговор (БЕЗ поздрави като 'Здравейте' или 'Здравейте отново'):";
+
+		try
+		{
+			if (string.IsNullOrEmpty(_apiKey))
+			{
+				return StripRepeatedGreetings(GenerateFallbackConsultationReply(lead, latestUserMessage, isBg));
+			}
+
+			var reply = await ExecuteAiPromptAsync(prompt, useJsonMode: false, cancellationToken);
+			return StripRepeatedGreetings(CleanLanguagePrefix(reply).Trim());
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "[GeminiAiService] Failed to generate AI lead consultation reply. Using fallback.");
+			return StripRepeatedGreetings(GenerateFallbackConsultationReply(lead, latestUserMessage, isBg));
+		}
+	}
+
+	private static string StripRepeatedGreetings(string text)
+	{
+		if (string.IsNullOrWhiteSpace(text)) return text;
+		var trimmed = text.Trim();
+
+		// Strips any leading repetitive greetings like "Здравейте отново, Пешо!", "Здравейте, Пешо!", "Привет отново!"
+		var pattern = @"^(?:(?:Здравейте|Привет|Добър ден|Добро утро|Добър вечер|Здравей|Hello|Hi)\s*(?:отново|again)?(?:\s*,\s*[^!\n\r]+)?\s*[!.,:;—–-]\s*)+";
+		var cleaned = Regex.Replace(trimmed, pattern, "", RegexOptions.IgnoreCase).Trim();
+
+		if (!string.IsNullOrEmpty(cleaned) && char.IsLower(cleaned[0]))
+		{
+			cleaned = char.ToUpper(cleaned[0]) + cleaned.Substring(1);
+		}
+
+		return string.IsNullOrWhiteSpace(cleaned) ? trimmed : cleaned;
+	}
+
+	private static string GenerateFallbackConsultationReply(CalculatorLead lead, string userMessage, bool isBg)
+	{
+		var textLower = (userMessage ?? "").ToLowerInvariant();
+
+		if (!isBg)
+		{
+			return $"Thank you for sharing these details regarding your {lead.SelectedArea} sqm property. " +
+				   "We can arrange for our technical site supervisor to visit you for a free 20-minute on-site survey " +
+				   "to take exact laser measurements and provide a fixed bill of quantities under contract. " +
+				   "Would a weekday evening or Saturday suit you best?";
+		}
+
+		if (textLower.Contains("мебел") || textLower.Contains("багаж") || textLower.Contains("живеем") || textLower.Contains("изнасяне"))
+		{
+			return "Напълно разбирам ситуацията. В BuildSmart поемаме цялостната логистика – нашите екипи организират внимателно изнасяне, транспорт и депониране на старите мебели и строителни отпадъци до лицензирано сметище, така че да не търсите отделни хамали.\n\n" +
+				   "За да преценим обема за изнасяне и реалната организация на СМР дейностите, най-добре е наш технически ръководител да направи предварителен оглед на място за 20 минути. Безплатен е и не ви ангажира с нищо. Удобно ли ви е през седмицата след работа или през уикенда?";
+		}
+
+		if (textLower.Contains("акт 16") || textLower.Contains("нов") || textLower.Contains("бдс"))
+		{
+			return "Чудесно е, че имотът е ново строителство – това елиминира тежкото къртене и грубите инсталации, което директно оптимизира сроковете и бюджета ви за фините довършителни работи.\n\n" +
+				   "За да съобразим графика с получаването на ключа или Акт 16, можем да направим безплатен 20-минутен оглед на място, да свалим точни лазерни размери и да подготвим фиксирана оферта по договор. Кога би ви било удобно?";
+		}
+
+		if (textLower.Contains("стена") || textLower.Contains("хол") || textLower.Contains("кухня") || textLower.Contains("преустройство") || textLower.Contains("баня"))
+		{
+			return "Идеята за преустройство и оптимизиране на пространството е отлична. При премахване на преградни стени или усвояване на площи е важно на място да установим дали елементите не са носещи и как най-чисто да прекараме новите инсталации.\n\n" +
+				   "Предлагам наш технически ръководител да мине за 20 минути на безплатен предварителен оглед на място, за да проверим стените и да ви дадем точни технически съвети. Удобен ли ви е делничен ден или събота?";
+		}
+
+		return $"Благодаря ви за подробностите относно вашия ремонт от {lead.SelectedArea} кв.м. За да превърнем идеите ви в точен и оптимизиран бюджет, най-правилният следващ ход е наш технически ръководител да направи 20-минутен предварителен оглед на място. Огледът е напълно безплатен и на него сваляме точни лазерни размери за твърда оферта по договор.\n\n" +
+			   "Кога би ви било по-удобно – делничен ден след 17:30 ч. или през уикенда?";
 	}
 }
