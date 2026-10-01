@@ -15,20 +15,26 @@ namespace BuildSmart.Infrastructure.Services;
 public class GeminiAiService : IAiService
 {
 	private readonly string _apiKey;
-	private readonly string _model;
+	private string _model;
 	private readonly ILogger<GeminiAiService> _logger;
 	private readonly HttpClient _httpClient;
 
 	public GeminiAiService(IConfiguration configuration, ILogger<GeminiAiService> logger)
 	{
-		var geminiKey = configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"];
+		var geminiKey = new[]
+		{
+			configuration["Gemini:ApiKey"],
+			configuration["GEMINI_API_KEY"],
+			Environment.GetEnvironmentVariable("Gemini__ApiKey"),
+			Environment.GetEnvironmentVariable("GEMINI_API_KEY")
+		}.FirstOrDefault(k => !string.IsNullOrWhiteSpace(k) && !k.Contains("YOUR_GEMINI_API_KEY"));
 
-		_apiKey = geminiKey ?? string.Empty;
+		_apiKey = (geminiKey ?? string.Empty).Trim().Trim('"').Trim('\'');
 		if (string.IsNullOrEmpty(_apiKey))
 		{
-			logger.LogWarning("[GeminiAiService] Gemini:ApiKey / GEMINI_API_KEY is not configured in this environment. Fallback responses will be used.");
+			logger.LogWarning("[GeminiAiService] Gemini API Key is not configured in this environment. Fallback responses will be used.");
 		}
-		_model = configuration["Gemini:Model"] ?? "gemini-1.5-flash"; // Default to universally active production model
+		_model = configuration["Gemini:Model"] ?? "gemini-3.8-flash"; // Latest 2026 model
 
 		_logger = logger;
 		_httpClient = new HttpClient();
@@ -75,39 +81,59 @@ public class GeminiAiService : IAiService
 			};
 		}
 
-		var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
-		
-		int maxRetries = 3;
-		int delayMs = 2000;
+		var candidateModels = new[] { _model, "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro" }
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToList();
 
-		for (int i = 0; i < maxRetries; i++)
+		string lastError = string.Empty;
+
+		for (int m = 0; m < candidateModels.Count; m++)
 		{
-			var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
-
-			if (response.IsSuccessStatusCode)
-			{
-				var responseJson = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
-				return responseJson.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString() ?? string.Empty;
-			}
+			var currentModel = candidateModels[m];
+			var url = $"https://generativelanguage.googleapis.com/v1beta/models/{currentModel}:generateContent?key={_apiKey}";
 			
-			if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable || (int)response.StatusCode == 429)
+			int maxRetries = 2;
+			int delayMs = 1500;
+
+			for (int i = 0; i < maxRetries; i++)
 			{
-				if (i == maxRetries - 1)
+				var response = await _httpClient.PostAsJsonAsync(url, requestBody, cancellationToken);
+
+				if (response.IsSuccessStatusCode)
 				{
-					var errorString = await response.Content.ReadAsStringAsync(cancellationToken);
-					throw new Exception($"Gemini API failed with status {response.StatusCode} after {maxRetries} retries: {errorString}");
+					_model = currentModel;
+					var responseJson = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
+					return responseJson.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString() ?? string.Empty;
 				}
 				
-				_logger.LogWarning($"Gemini API returned {response.StatusCode}. Retrying in {delayMs}ms...");
-				await Task.Delay(delayMs, cancellationToken);
-				continue;
-			}
+				if (response.StatusCode == System.Net.HttpStatusCode.NotFound && m < candidateModels.Count - 1)
+				{
+					_logger.LogWarning($"[GeminiAiService] Model '{currentModel}' returned 404 Not Found. Trying fallback model '{candidateModels[m + 1]}'.");
+					break;
+				}
 
-			var fatalErrorString = await response.Content.ReadAsStringAsync(cancellationToken);
-			throw new Exception($"Gemini API failed with status {response.StatusCode}: {fatalErrorString}");
+				if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable || (int)response.StatusCode == 429)
+				{
+					if (i == maxRetries - 1)
+					{
+						var errorString = await response.Content.ReadAsStringAsync(cancellationToken);
+						lastError = $"Gemini API ({currentModel}) failed with status {response.StatusCode} after {maxRetries} retries: {errorString}";
+						break;
+					}
+					
+					_logger.LogWarning($"Gemini API returned {response.StatusCode}. Retrying in {delayMs}ms...");
+					await Task.Delay(delayMs, cancellationToken);
+					continue;
+				}
+
+				var fatalErrorString = await response.Content.ReadAsStringAsync(cancellationToken);
+				lastError = $"Gemini API ({currentModel}) failed with status {response.StatusCode}: {fatalErrorString}";
+				_logger.LogWarning($"[GeminiAiService] {lastError}");
+				break;
+			}
 		}
 
-		throw new Exception("Gemini API failed unexpectedly.");
+		throw new Exception(!string.IsNullOrEmpty(lastError) ? lastError : "Gemini API failed unexpectedly across all candidate models.");
 	}
 
 	private string CleanJsonMarkdown(string responseText)
@@ -622,6 +648,7 @@ public class GeminiAiService : IAiService
 		{
 			if (string.IsNullOrEmpty(_apiKey))
 			{
+				_logger.LogWarning("[GeminiAiService] Cannot generate AI reply: Gemini API key is missing or empty. Using fallback.");
 				return StripRepeatedGreetings(GenerateFallbackConsultationReply(lead, latestUserMessage, isBg));
 			}
 
@@ -630,7 +657,7 @@ public class GeminiAiService : IAiService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogWarning(ex, "[GeminiAiService] Failed to generate AI lead consultation reply. Using fallback.");
+			_logger.LogError(ex, "[GeminiAiService] Failed to generate AI lead consultation reply: {Message}. Using fallback.", ex.Message);
 			return StripRepeatedGreetings(GenerateFallbackConsultationReply(lead, latestUserMessage, isBg));
 		}
 	}

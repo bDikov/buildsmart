@@ -34,6 +34,7 @@ services:
       # Provide valid Gemini API Key on VPS
       - Gemini__ApiKey=${GEMINI_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - Gemini__Model=${GEMINI_MODEL:-gemini-3.8-flash}
       # Google OAuth
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
@@ -95,6 +96,7 @@ services:
       - ApiConfig__BaseUrlOverride=https://${DOMAIN_WEB:-app.buildsmart.localhost}
       - Gemini__ApiKey=${GEMINI_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - Gemini__Model=${GEMINI_MODEL:-gemini-3.8-flash}
       - Authentication__Facebook__EnableFacebookLogin=${FACEBOOK_ENABLE_LOGIN:-false}
       - PostHog__ApiKey=${POSTHOG_API_KEY}
       - PostHog__ApiHost=${POSTHOG_API_HOST:-https://us.i.posthog.com}

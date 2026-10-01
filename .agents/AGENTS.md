@@ -95,15 +95,20 @@
 - **Strict Snapshot & Migration Diff Validation**: Immediately after generating a migration, inspect `git diff BuildSmart.Infrastructure/Migrations/AppDbContextModelSnapshot.cs` and the generated migration `.cs` file. Verify that the changes bring **ONLY** the intended schema additions/modifications affiliated with your code, with zero unintended or out-of-scope model changes.
 - **User-Initiated Execution**: In accordance with Rule 1, the AI assistant must never automatically execute live database migrations. Provide the user with the update command (`dotnet ef database update --project BuildSmart.Infrastructure --startup-project BuildSmart.Api`) or explain that `BuildSmart.Api` automatically applies pending migrations via `context.Database.Migrate()` on startup.
 
-## 16. Autonomous Investigation & Implementation Plan Protocol
-- **Autonomous Investigation**: When assigned a task to diagnose an issue, investigate a bug, or design a feature, execute all necessary read-only searches, inspections, and diagnostic commands autonomously without interrupting for permissions or asking trivial conversational questions.
+## 16. Autonomous Investigation & Implementation Plan Protocol (Zero Permission Prompts)
+- **Zero Permission Interruptions During Q&A & Planning**: When the user is asking questions, discussing architecture, or until an implementation plan is formulated and explicitly approved, the agent must NEVER perform actions that trigger permission popups or interactive blocks.
+- **Autonomous & Non-Intrusive Research**:
+  - Use built-in read tools (`view_file`, internal search) for code exploration instead of arbitrary terminal commands (`run_command`) that trigger IDE approval dialogs.
+  - Do NOT call `ask_question` (the interactive UI modal tool). Formulate all clarifying questions naturally in regular chat markdown.
+- **Strictly Read-Only Gate**: Do NOT edit, create, or delete any source files (`write_to_file`, `replace_file_content`), nor run database migrations or state-mutating commands before the implementation plan is approved.
 - **Mandatory Implementation Plan Artifact**: Once findings and root causes are established, you must formulate and deliver a comprehensive Implementation Plan document (as a structured artifact with user review feedback enabled) before executing any modifications.
 - **Implementation Plan Structure**:
   1. **Findings & Root Cause**: Detailed breakdown of the issue with clickable file and line links.
   2. **Proposed Architecture & Strategy**: Concrete solution design adhering strictly to all project conventions.
   3. **Step-by-Step Task Breakdown**: Exact list of files to be created, modified, or removed.
   4. **Verification & Testing Strategy**: Verification steps, build checks, and test suites.
-- **Execution Gate**: Never modify source code, write files, or execute state-mutating commands until the user reviews and explicitly approves the Implementation Plan.
+- **Execution Gate**: Never modify source code, write files, or execute state-mutating commands until the user reviews and explicitly approves the Implementation Plan (via "Proceed", "Да", "Действай").
+
 
 
 

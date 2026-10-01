@@ -208,3 +208,13 @@ Because Windows Application Control policy blocks `UpdateQuestionsRunner.exe` on
 - Run `node GenerateSql.js` from the project root. This automatically parses `Categories_Seed_Templates.json` and builds secure `ON CONFLICT DO UPDATE` blocks for the categories inside `SeedLiveCategories.sql`.
 - **CRITICAL CI/CD OVERWRITE WARNING:** The GitHub Actions CI/CD pipeline (`main-pipeline.yml`) executes `SeedLiveCategories.sql` against the live production database on **every single deployment**. 
 - Because `GenerateSql.js` *only* updates the Category Templates, you **MUST manually update** the corresponding `UPDATE "ServiceSkus"` SQL commands inside `SeedLiveCategories.sql` to change formulas or prices. If you perform a manual SQL update directly on the live database but fail to commit it to `SeedLiveCategories.sql`, your changes will be instantly overwritten the next time you deploy!
+
+## Q&A, Exploration & Implementation Planning Protocol (Zero Permission Prompts)
+- **Zero Permission Interruptions During Q&A**: When the user asks questions, investigates issues, or explores architecture prior to the approval of an implementation plan, the agent must NEVER perform actions that trigger permission popups or interactive blocks.
+- **Strictly Read-Only Research**:
+  - Always use built-in read tools (`view_file`, internal search) for reading code rather than arbitrary terminal commands (`run_command`) that trigger IDE approval modals.
+  - Do NOT call `ask_question` (the interactive UI modal tool). Formulate all clarifying questions naturally in regular chat markdown.
+  - Do NOT modify, create, or delete files (`write_to_file`, `replace_file_content`) before the plan is approved.
+- **Mandatory Implementation Plan Artifact**: Formulate a comprehensive Implementation Plan document (with user review feedback enabled) before executing any modifications.
+- **Execution Gate**: Only after the user explicitly approves the Implementation Plan (e.g. "Proceed", "Да", "Действай"), the agent may proceed with code modifications and builds.
+

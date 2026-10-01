@@ -5311,6 +5311,11 @@
         }
     }
 
+    private static readonly System.Text.Json.JsonSerializerOptions s_chatJsonOptions = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private async Task SendAdminLiveMessageAsync()
     {
         if (_selectedLead == null || string.IsNullOrWhiteSpace(_adminLiveMessage) || _isSendingLiveMessage) return;
@@ -5330,12 +5335,12 @@
                 message = e.Message
             }).ToList();
 
-            while (jsonList.Count > 1 && System.Text.Json.JsonSerializer.Serialize(jsonList).Length > 3000)
+            while (jsonList.Count > 2 && System.Text.Json.JsonSerializer.Serialize(jsonList, s_chatJsonOptions).Length > 3500)
             {
                 jsonList.RemoveAt(0);
             }
 
-            var chatJson = System.Text.Json.JsonSerializer.Serialize(jsonList);
+            var chatJson = System.Text.Json.JsonSerializer.Serialize(jsonList, s_chatJsonOptions);
             var updatedNotes = UpdateAdminNotesWithChat(_selectedLead.AdminNotes, chatJson);
             // Ensure live takeover flag is active when operator sends a message
             updatedNotes = SetLiveTakeoverFlag(updatedNotes, true);

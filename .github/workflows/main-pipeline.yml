@@ -175,6 +175,8 @@ jobs:
             echo "POSTGRES_DB=buildsmart_db" >> .env
             echo "DOMAIN_WEB=${{ secrets.DOMAIN_WEB }}" >> .env
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            echo "Gemini__ApiKey=${{ secrets.GEMINI_API_KEY }}" >> .env
+            echo "Gemini__Model=gemini-3.8-flash" >> .env
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
             echo "FACEBOOK_ENABLE_LOGIN=${{ secrets.FACEBOOK_ENABLE_LOGIN }}" >> .env
