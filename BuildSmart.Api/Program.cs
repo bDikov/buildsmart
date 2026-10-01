@@ -299,7 +299,39 @@ public partial class Program
 				ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
 				ValidAudience = builder.Configuration["Jwt:Audience"]!,
 				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-				RoleClaimType = ClaimTypes.Role // Explicitly set the role claim type
+				RoleClaimType = "role",
+				NameClaimType = "nameid"
+			};
+			options.Events = new JwtBearerEvents
+			{
+				OnTokenValidated = context =>
+				{
+					if (context.Principal?.Identity is ClaimsIdentity identity)
+					{
+						// Ensure both "role" and ClaimTypes.Role claims are present for seamless authorization
+						var roleClaims = identity.FindAll(c => c.Type == "role" || c.Type == ClaimTypes.Role || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
+						foreach (var rc in roleClaims)
+						{
+							if (!identity.HasClaim(ClaimTypes.Role, rc.Value))
+								identity.AddClaim(new Claim(ClaimTypes.Role, rc.Value));
+							if (!identity.HasClaim("role", rc.Value))
+								identity.AddClaim(new Claim("role", rc.Value));
+						}
+
+						// Ensure NameIdentifier claims are present in all formats
+						var idClaim = identity.FindFirst(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "nameid" || c.Type == "sub" || c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+						if (idClaim != null)
+						{
+							if (!identity.HasClaim(ClaimTypes.NameIdentifier, idClaim.Value))
+								identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, idClaim.Value));
+							if (!identity.HasClaim("nameid", idClaim.Value))
+								identity.AddClaim(new Claim("nameid", idClaim.Value));
+							if (!identity.HasClaim("sub", idClaim.Value))
+								identity.AddClaim(new Claim("sub", idClaim.Value));
+						}
+					}
+					return Task.CompletedTask;
+				}
 			};
 		})
 		.AddGoogle(options =>

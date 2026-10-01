@@ -311,7 +311,7 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] IUserRepository userRepository)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 
 		if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
 		{
@@ -448,7 +448,7 @@ public class Query
 		[Service] IUnitOfWork unitOfWork,
 		[Service] AppDbContext context)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub") ?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user ID.");
@@ -515,7 +515,9 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] AppDbContext context)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) 
+			?? claimsPrincipal.FindFirst("sub") 
+			?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user ID in token.");
@@ -532,15 +534,19 @@ public class Query
 				.ToListAsync();
 		}
 
+		var tradesmanProfile = await context.TradesmanProfiles
+			.FirstOrDefaultAsync(tp => tp.UserId == userId);
+		var tradesmanProfileId = tradesmanProfile?.Id;
+
 		return await context.Projects
 			.Include(p => p.Homeowner)
 			.Include(p => p.JobPosts)
 				.ThenInclude(j => j.ServiceCategory)
 			.Where(p => p.HomeownerId == userId 
-				|| p.JobPosts.Any(j => j.AssignedTradesmanId == userId)
-				|| context.CategoryTradesmanAssignments.Any(a => a.ProjectId == p.Id && a.TradesmanId == userId)
-				|| context.Bids.Any(b => b.JobPost.ProjectId == p.Id && b.TradesmanProfile.UserId == userId)
-				|| context.Bookings.Any(b => b.JobPost.ProjectId == p.Id && b.TradesmanProfile.UserId == userId))
+				|| p.JobPosts.Any(j => j.AssignedTradesmanId == userId || (tradesmanProfileId != null && j.AssignedTradesmanId == tradesmanProfileId))
+				|| context.CategoryTradesmanAssignments.Any(a => a.ProjectId == p.Id && (a.TradesmanId == userId || (tradesmanProfileId != null && a.TradesmanId == tradesmanProfileId)))
+				|| context.Bids.Any(b => b.JobPost.ProjectId == p.Id && (b.TradesmanProfile.UserId == userId || (tradesmanProfileId != null && b.TradesmanProfileId == tradesmanProfileId)))
+				|| context.Bookings.Any(b => b.JobPost.ProjectId == p.Id && (b.TradesmanProfile.UserId == userId || (tradesmanProfileId != null && b.TradesmanProfileId == tradesmanProfileId))))
 			.OrderByDescending(p => p.CreatedAt)
 			.ToListAsync();
 	}
@@ -551,7 +557,9 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] AppDbContext context)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) 
+			?? claimsPrincipal.FindFirst("sub") 
+			?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user ID.");
@@ -562,6 +570,10 @@ public class Query
 			.Include(p => p.Homeowner)
 			.Include(p => p.JobPosts)
 				.ThenInclude(j => j.ServiceCategory)
+			.Include(p => p.JobPosts)
+				.ThenInclude(j => j.Bids)
+					.ThenInclude(b => b.TradesmanProfile)
+						.ThenInclude(tp => tp.User)
 			.Include(p => p.JobPosts)
 				.ThenInclude(j => j.Feedbacks)
 					.ThenInclude(f => f.Author)
@@ -583,10 +595,14 @@ public class Query
 		var isAdmin = claimsPrincipal.IsInRole("Admin");
 		if (!isAdmin && project.HomeownerId != userId)
 		{
-			var isAssigned = project.JobPosts.Any(j => j.AssignedTradesmanId == userId)
-				|| await context.CategoryTradesmanAssignments.AnyAsync(a => a.ProjectId == projectId && a.TradesmanId == userId)
-				|| await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId)
-				|| await context.Bookings.AnyAsync(b => b.JobPost.ProjectId == projectId && b.TradesmanProfile.UserId == userId);
+			var tradesmanProfile = await context.TradesmanProfiles
+				.FirstOrDefaultAsync(tp => tp.UserId == userId);
+			var tradesmanProfileId = tradesmanProfile?.Id;
+
+			var isAssigned = project.JobPosts.Any(j => j.AssignedTradesmanId == userId || (tradesmanProfileId != null && j.AssignedTradesmanId == tradesmanProfileId))
+				|| await context.CategoryTradesmanAssignments.AnyAsync(a => a.ProjectId == projectId && (a.TradesmanId == userId || (tradesmanProfileId != null && a.TradesmanId == tradesmanProfileId)))
+				|| await context.Bids.AnyAsync(b => b.JobPost.ProjectId == projectId && (b.TradesmanProfile.UserId == userId || (tradesmanProfileId != null && b.TradesmanProfileId == tradesmanProfileId)))
+				|| await context.Bookings.AnyAsync(b => b.JobPost.ProjectId == projectId && (b.TradesmanProfile.UserId == userId || (tradesmanProfileId != null && b.TradesmanProfileId == tradesmanProfileId)));
 
 			if (!isAssigned)
 			{
@@ -613,7 +629,9 @@ public class Query
 		ClaimsPrincipal claimsPrincipal,
 		[Service] INotificationRepository notificationRepository)
 	{
-		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("sub");
+		var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) 
+			?? claimsPrincipal.FindFirst("sub") 
+			?? claimsPrincipal.FindFirst("nameid");
 		if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 		{
 			throw new GraphQLException("Invalid user ID in token.");

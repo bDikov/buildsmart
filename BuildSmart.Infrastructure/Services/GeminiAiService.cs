@@ -21,14 +21,14 @@ public class GeminiAiService : IAiService
 
 	public GeminiAiService(IConfiguration configuration, ILogger<GeminiAiService> logger)
 	{
-		var geminiKey = configuration["Gemini:ApiKey"];
+		var geminiKey = configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"];
 
 		_apiKey = geminiKey ?? string.Empty;
 		if (string.IsNullOrEmpty(_apiKey))
 		{
-			logger.LogWarning("[GeminiAiService] Gemini:ApiKey is not configured in this environment. Fallback responses will be used.");
+			logger.LogWarning("[GeminiAiService] Gemini:ApiKey / GEMINI_API_KEY is not configured in this environment. Fallback responses will be used.");
 		}
-		_model = "gemini-2.5-flash"; // Updated to current 2026 model
+		_model = configuration["Gemini:Model"] ?? "gemini-1.5-flash"; // Default to universally active production model
 
 		_logger = logger;
 		_httpClient = new HttpClient();
@@ -77,8 +77,8 @@ public class GeminiAiService : IAiService
 
 		var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
 		
-		int maxRetries = 5;
-		int delayMs = 30000;
+		int maxRetries = 3;
+		int delayMs = 2000;
 
 		for (int i = 0; i < maxRetries; i++)
 		{
@@ -558,6 +558,7 @@ public class GeminiAiService : IAiService
 		string languageCode = "bg", 
 		CancellationToken cancellationToken = default)
 	{
+		lead ??= new CalculatorLead { SelectedArea = 80, BuildingStatus = "bds", Scope = "full", QualityTier = "standard" };
 		var isBg = languageCode.Equals("bg", StringComparison.OrdinalIgnoreCase);
 		var historySb = new StringBuilder();
 		if (chatHistory != null && chatHistory.Any())
@@ -573,14 +574,14 @@ public class GeminiAiService : IAiService
 			"old" => "Старо строителство (панел/тухла/ЕПК, нужда от основен ремонт)",
 			"bds" => "Ново строителство на БДС (шпакловка и замазка)",
 			"rough" => "Груб строеж / на тухла",
-			_ => lead.BuildingStatus
+			_ => lead.BuildingStatus ?? "bds"
 		};
 
 		var scopeDesc = lead.Scope switch
 		{
 			"bathroom" => $"Ремонт на баня ({lead.BathroomCount} бр.)",
 			"full" => "Цялостен ремонт на апартамент",
-			_ => lead.Scope
+			_ => lead.Scope ?? "full"
 		};
 
 		var prompt = $@"Ти си Бончо Диков – строителен консултант и ръководител в BuildSmart (строителна платформа за цялостни и частични ремонти в София).
@@ -651,13 +652,14 @@ public class GeminiAiService : IAiService
 		return string.IsNullOrWhiteSpace(cleaned) ? trimmed : cleaned;
 	}
 
-	private static string GenerateFallbackConsultationReply(CalculatorLead lead, string userMessage, bool isBg)
+	private static string GenerateFallbackConsultationReply(CalculatorLead? lead, string userMessage, bool isBg)
 	{
 		var textLower = (userMessage ?? "").ToLowerInvariant();
+		var area = lead?.SelectedArea > 0 ? lead.SelectedArea : 80;
 
 		if (!isBg)
 		{
-			return $"Thank you for sharing these details regarding your {lead.SelectedArea} sqm property. " +
+			return $"Thank you for sharing these details regarding your {area} sqm property. " +
 				   "We can arrange for our technical site supervisor to visit you for a free 20-minute on-site survey " +
 				   "to take exact laser measurements and provide a fixed bill of quantities under contract. " +
 				   "Would a weekday evening or Saturday suit you best?";
@@ -681,7 +683,7 @@ public class GeminiAiService : IAiService
 				   "Предлагам наш технически ръководител да мине за 20 минути на безплатен предварителен оглед на място, за да проверим стените и да ви дадем точни технически съвети. Удобен ли ви е делничен ден или събота?";
 		}
 
-		return $"Благодаря ви за подробностите относно вашия ремонт от {lead.SelectedArea} кв.м. За да превърнем идеите ви в точен и оптимизиран бюджет, най-правилният следващ ход е наш технически ръководител да направи 20-минутен предварителен оглед на място. Огледът е напълно безплатен и на него сваляме точни лазерни размери за твърда оферта по договор.\n\n" +
+		return $"Благодаря ви за подробностите относно вашия ремонт от {area} кв.м. За да превърнем идеите ви в точен и оптимизиран бюджет, най-правилният следващ ход е наш технически ръководител да направи 20-минутен предварителен оглед на място. Огледът е напълно безплатен и на него сваляме точни лазерни размери за твърда оферта по договор.\n\n" +
 			   "Кога би ви било по-удобно – делничен ден след 17:30 ч. или през уикенда?";
 	}
 }

@@ -66,29 +66,32 @@ public class ProjectChatService : IProjectChatService
         if (user.Role == UserRoleTypes.Admin) return true;
         if (project.HomeownerId == user.Id) return true;
 
+        TradesmanProfile? tradesmanProfile = null;
+        if (user.Role == UserRoleTypes.Tradesman && _unitOfWork.TradesmanProfiles != null)
+        {
+            tradesmanProfile = await _unitOfWork.TradesmanProfiles.GetByUserIdAsync(user.Id);
+        }
+
         if (_unitOfWork.JobPosts != null)
         {
             var jobPosts = await _unitOfWork.JobPosts.GetJobsByProjectIdAsync(project.Id);
-            if (jobPosts != null && jobPosts.Any(j => j.AssignedTradesmanId == user.Id))
+            if (jobPosts != null && jobPosts.Any(j => j.AssignedTradesmanId == user.Id || (tradesmanProfile != null && j.AssignedTradesmanId == tradesmanProfile.Id)))
             {
                 return true;
             }
 
-            if (user.Role == UserRoleTypes.Tradesman && _unitOfWork.TradesmanProfiles != null)
+            if (tradesmanProfile != null && _unitOfWork.Bids != null)
             {
-                var tradesmanProfile = await _unitOfWork.TradesmanProfiles.GetByUserIdAsync(user.Id);
-                if (tradesmanProfile != null && _unitOfWork.Bids != null)
+                var bids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfile.Id);
+                var jobPostIds = jobPosts?.Select(j => j.Id).ToHashSet() ?? new HashSet<Guid>();
+                if (bids != null && bids.Any(b => jobPostIds.Contains(b.JobPostId)))
                 {
-                    var bids = await _unitOfWork.Bids.GetBidsByTradesmanAsync(tradesmanProfile.Id);
-                    var jobPostIds = jobPosts?.Select(j => j.Id).ToHashSet() ?? new HashSet<Guid>();
-                    if (bids != null && bids.Any(b => jobPostIds.Contains(b.JobPostId)))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
-            if (await _unitOfWork.JobPosts.IsTradesmanAssignedToCategoryAsync(project.Id, user.Id))
+            if (await _unitOfWork.JobPosts.IsTradesmanAssignedToCategoryAsync(project.Id, user.Id)
+                || (tradesmanProfile != null && await _unitOfWork.JobPosts.IsTradesmanAssignedToCategoryAsync(project.Id, tradesmanProfile.Id)))
             {
                 return true;
             }
@@ -97,7 +100,7 @@ public class ProjectChatService : IProjectChatService
         if (_unitOfWork.Bookings != null)
         {
             var isBooked = await _unitOfWork.Bookings.GetQueryable()
-                .AnyAsync(b => b.JobPost.ProjectId == project.Id && b.TradesmanProfile.UserId == user.Id);
+                .AnyAsync(b => b.JobPost.ProjectId == project.Id && (b.TradesmanProfile.UserId == user.Id || (tradesmanProfile != null && b.TradesmanProfileId == tradesmanProfile.Id)));
             if (isBooked) return true;
         }
 

@@ -189,6 +189,11 @@ public class CalculatorLeadRepository : ICalculatorLeadRepository
         }
     }
 
+    private static readonly System.Text.Json.JsonSerializerOptions s_chatJsonOptions = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private static string? SafeTruncateNotes(string? notes, int maxLength = 3900)
     {
         if (string.IsNullOrEmpty(notes) || notes.Length <= maxLength) return notes;
@@ -208,11 +213,11 @@ public class CalculatorLeadRepository : ICalculatorLeadRepository
                 var items = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.Nodes.JsonObject>>(arrayStr);
                 if (items != null && items.Count > 1)
                 {
-                    while (items.Count > 1 && (before.Length + System.Text.Json.JsonSerializer.Serialize(items).Length + after.Length) > maxLength)
+                    while (items.Count > 1 && (before.Length + System.Text.Json.JsonSerializer.Serialize(items, s_chatJsonOptions).Length + after.Length) > maxLength)
                     {
                         items.RemoveAt(0);
                     }
-                    var updated = before + System.Text.Json.JsonSerializer.Serialize(items) + after;
+                    var updated = before + System.Text.Json.JsonSerializer.Serialize(items, s_chatJsonOptions) + after;
                     if (updated.Length <= maxLength) return updated;
                 }
             }

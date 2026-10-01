@@ -2480,6 +2480,11 @@
         }
     }
 
+    private static readonly System.Text.Json.JsonSerializerOptions s_chatJsonOptions = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private async Task PersistChatStateAsync()
     {
         if (_savedLead == null) return;
@@ -2493,12 +2498,12 @@
                 message = m.Text
             }).ToList();
 
-            while (chatEntriesList.Count > 1 && System.Text.Json.JsonSerializer.Serialize(chatEntriesList).Length > 3000)
+            while (chatEntriesList.Count > 2 && System.Text.Json.JsonSerializer.Serialize(chatEntriesList, s_chatJsonOptions).Length > 3500)
             {
                 chatEntriesList.RemoveAt(0);
             }
 
-            var chatJson = System.Text.Json.JsonSerializer.Serialize(chatEntriesList);
+            var chatJson = System.Text.Json.JsonSerializer.Serialize(chatEntriesList, s_chatJsonOptions);
             _savedLead.AdminNotes = UpdateAdminNotesWithChat(_savedLead.AdminNotes, chatJson);
             await LeadRepository.UpdateLeadAsync(_savedLead);
         }
@@ -2512,7 +2517,10 @@
     {
         if (e.Key == "Enter" && !e.ShiftKey)
         {
-            await HandleSendConsultantMessageAsync(null);
+            if (!string.IsNullOrWhiteSpace(_userConsultantInput))
+            {
+                await HandleSendConsultantMessageAsync(null);
+            }
         }
     }
 
@@ -2614,11 +2622,26 @@
                 .ToList();
 
             var lang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(25));
             string aiReply;
             try
             {
-                aiReply = await AiService.GenerateLeadConsultationReplyAsync(_savedLead!, historyList, textToSend, lang, cts.Token);
+                var leadForAi = _savedLead ?? new BuildSmart.Core.Domain.Entities.CalculatorLead
+                {
+                    Name = _name,
+                    Email = !string.IsNullOrWhiteSpace(_email) ? _email : "lead@buildsmart.bg",
+                    Phone = _phone,
+                    SelectedArea = _selectedArea,
+                    BuildingStatus = _buildingStatus,
+                    Scope = _activeScope,
+                    QualityTier = _finishQualityTier,
+                    MinPriceEur = GetMinPriceEur(),
+                    MaxPriceEur = GetMaxPriceEur(),
+                    MinPriceBgn = GetMinPriceBgn(),
+                    MaxPriceBgn = GetMaxPriceBgn()
+                };
+
+                aiReply = await AiService.GenerateLeadConsultationReplyAsync(leadForAi, historyList, textToSend, lang, cts.Token);
                 aiReply = StripRepeatedGreetings(aiReply);
             }
             catch (Exception ex)
@@ -2702,12 +2725,19 @@
 
             if (parsed.Count > 0)
             {
-                bool countChanged = parsed.Count != _consultantMessages.Count;
-                bool lastMsgChanged = _consultantMessages.Count > 0 && parsed[^1].Text != _consultantMessages[^1].Text;
-                if (countChanged || lastMsgChanged)
+                // Never shrink local message history from polling while user is actively texting
+                if (parsed.Count > _consultantMessages.Count)
                 {
                     _consultantMessages = parsed;
                     return true;
+                }
+                else if (parsed.Count == _consultantMessages.Count && _consultantMessages.Count > 0)
+                {
+                    if (parsed[^1].Text != _consultantMessages[^1].Text || parsed[^1].Sender != _consultantMessages[^1].Sender)
+                    {
+                        _consultantMessages = parsed;
+                        return true;
+                    }
                 }
             }
         }
