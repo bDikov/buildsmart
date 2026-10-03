@@ -729,8 +729,18 @@ public class MarkdownOfferParserService : IMarkdownOfferParserService
                         string compName = CleanMarkdown(cells[0]);
                         string share = cells.Length > 1 ? CleanMarkdown(cells[1]) : "";
                         string eurRange = cells.Length > 2 ? CleanMarkdown(cells[2]) : "";
-                        string bgnRange = cells.Length > 3 ? CleanMarkdown(cells[3]) : "";
-                        string desc = cells.Length > 4 ? CleanMarkdown(cells[4]) : "";
+                        string bgnRange = "";
+                        string desc = "";
+
+                        if (cells.Length >= 5)
+                        {
+                            bgnRange = CleanMarkdown(cells[3]);
+                            desc = CleanMarkdown(cells[4]);
+                        }
+                        else
+                        {
+                            desc = CleanMarkdown(cells[3]);
+                        }
 
                         result.InvestmentBreakdown.Add(new InvestmentComponentDto
                         {

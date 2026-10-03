@@ -3792,4 +3792,19 @@
   <data name="Admin_Leads_LiveChatRefresh" xml:space="preserve">
     <value>Обнови съобщенията</value>
   </data>
+  <data name="Estimator_Chat_Minimize" xml:space="preserve">
+    <value>Минимизирай чата</value>
+  </data>
+  <data name="Estimator_Chat_Close" xml:space="preserve">
+    <value>Затвори чата</value>
+  </data>
+  <data name="Estimator_Chat_Open" xml:space="preserve">
+    <value>Консултация с Бончо Диков</value>
+  </data>
+  <data name="Estimator_ChatTeaser_Cta" xml:space="preserve">
+    <value>Кликнете за отговор</value>
+  </data>
+  <data name="Estimator_ChatTeaser_Dismiss" xml:space="preserve">
+    <value>Скрий известието</value>
+  </data>
 </root>

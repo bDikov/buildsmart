@@ -491,7 +491,7 @@
                          CancelText="@Loc["MainLayout_LogoutAlert_Cancel"]"
                          OnConfirmationChanged="OnLogoutConfirmationChanged" />
 
-    @if (!IsActivePage("/project-messages") && !IsActivePage("/admin-support-chats"))
+    @if (!IsActivePage("/project-messages") && !IsActivePage("/admin-support-chats") && !IsActivePage("/renovation-estimator"))
     {
         <!-- Desktop Floating Chat Button -->
         <button class="bs-floating-chat-btn" @onclick="HandleSupportChatClick" title="@(_currentLang == "bg" ? "Чат за поддръжка" : "Support Chat")">
@@ -1867,48 +1867,40 @@
                     return;
                 }
                 
-                bool isAllowedPage = path.Equals("privacy", StringComparison.OrdinalIgnoreCase) ||
-                                     path.Equals("terms", StringComparison.OrdinalIgnoreCase) ||
-                                     path.Equals("project-messages", StringComparison.OrdinalIgnoreCase) ||
-                                     path.Equals("feed", StringComparison.OrdinalIgnoreCase) ||
-                                     path.Equals("my-projects", StringComparison.OrdinalIgnoreCase) ||
-                                     path.Equals("project-detail", StringComparison.OrdinalIgnoreCase) ||
-                                     string.IsNullOrEmpty(path);
-                                     
-                if (!isAllowedPage)
+                bool isRestrictedPage = path.Equals("job-wizard", StringComparison.OrdinalIgnoreCase) ||
+                                        path.Equals("user-profile", StringComparison.OrdinalIgnoreCase) ||
+                                        path.StartsWith("admin", StringComparison.OrdinalIgnoreCase);
+
+                if (isRestrictedPage)
                 {
-                    if (path.Equals("job-wizard", StringComparison.OrdinalIgnoreCase) || path.Equals("user-profile", StringComparison.OrdinalIgnoreCase))
+                    var returnUrl = Uri.EscapeDataString("/" + relative);
+                    NavManager.NavigateTo($"/login?ReturnUrl={returnUrl}");
+                    return;
+                }
+
+                bool isChatPage = path.Equals("project-messages", StringComparison.OrdinalIgnoreCase) ||
+                                  path.Equals("chat", StringComparison.OrdinalIgnoreCase);
+
+                if (isChatPage)
+                {
+                    var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+                    if (!_supportProjectId.HasValue)
                     {
-                        var returnUrl = Uri.EscapeDataString("/" + relative);
-                        NavManager.NavigateTo($"/login?ReturnUrl={returnUrl}");
-                    }
-                    else if (_supportProjectId.HasValue)
-                    {
-                        NavManager.NavigateTo($"/project-messages?projectId={_supportProjectId.Value}");
+                        // Check if we can parse the projectId from URL query parameters synchronously
+                        if (query.TryGetValue("projectId", out var projIdStr) && Guid.TryParse(projIdStr, out var parsedId))
+                        {
+                            _supportProjectId = parsedId;
+                        }
                     }
                     else
                     {
-                        NavManager.NavigateTo("/project-messages");
-                    }
-                }
-                else if (path.Equals("project-messages", StringComparison.OrdinalIgnoreCase) && !_supportProjectId.HasValue)
-                {
-                    // Check if we can parse the projectId from URL query parameters synchronously
-                    var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
-                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-                    if (query.TryGetValue("projectId", out var projIdStr) && Guid.TryParse(projIdStr, out var parsedId))
-                    {
-                        _supportProjectId = parsedId;
-                    }
-                }
-                else if (path.Equals("project-messages", StringComparison.OrdinalIgnoreCase) && _supportProjectId.HasValue)
-                {
-                    // If they are on the chat page but the URL doesn't have the correct projectId query parameter, redirect them to the correct one
-                    var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
-                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-                    if (!query.TryGetValue("projectId", out var projIdStr) || !Guid.TryParse(projIdStr, out var parsedId) || parsedId != _supportProjectId.Value)
-                    {
-                        NavManager.NavigateTo($"/project-messages?projectId={_supportProjectId.Value}");
+                        // If they are on the chat page but the URL doesn't have the correct projectId query parameter, redirect them to the correct one
+                        if (!query.TryGetValue("projectId", out var projIdStr) || !Guid.TryParse(projIdStr, out var parsedId) || parsedId != _supportProjectId.Value)
+                        {
+                            NavManager.NavigateTo($"/project-messages?projectId={_supportProjectId.Value}");
+                        }
                     }
                 }
             }

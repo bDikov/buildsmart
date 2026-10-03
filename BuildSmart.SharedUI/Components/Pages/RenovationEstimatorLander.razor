@@ -242,99 +242,6 @@
                 </p>
             </div>
 
-            <!-- Interactive AI Construction Consultant & Vision Card -->
-            <div class="proposal-ai-consultant-card mb-4 p-4 p-md-5 position-relative">
-                <div class="ai-consultant-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="ai-consultant-avatar-box">
-                            <svg class="ai-avatar-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <strong class="ai-consultant-name">@Loc["Estimator_AiConsultant_Name"]</strong>
-                                @if (_isLiveTakeoverActive)
-                                {
-                                    <span class="ai-consultant-badge live-operator-badge">@Loc["Estimator_AiConsultant_BadgeLive"]</span>
-                                }
-                                else
-                                {
-                                    <span class="ai-consultant-badge">@Loc["Estimator_AiConsultant_Badge"]</span>
-                                }
-                            </div>
-                            <span class="ai-consultant-role">@Loc["Estimator_AiConsultant_Role"]</span>
-                        </div>
-                    </div>
-                    <div class="ai-online-status @(_isLiveTakeoverActive ? "status-live" : "")">
-                        <span class="ai-status-pulse"></span>
-                        <span class="ai-status-text">@(_isLiveTakeoverActive ? Loc["Estimator_AiConsultant_StatusLiveHuman"] : Loc["Estimator_AiConsultant_StatusOnline"])</span>
-                    </div>
-                </div>
-
-                <!-- Chat Dialogue Thread -->
-                <div class="ai-chat-thread d-flex flex-column gap-3 mb-4" id="estimator-consultant-chat-thread">
-                    @foreach (var msg in _consultantMessages)
-                    {
-                        @if (msg.Sender == "consultant")
-                        {
-                            <div class="ai-message-bubble-wrapper d-flex align-items-start gap-2">
-                                <div class="ai-bubble-avatar">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.91 1.45 5.48 3.72 7.12.21.15.33.42.27.68l-.55 2.71c-.06.29.22.54.5.42l3.1-1.3c.21-.09.46-.06.65.07.74.52 1.52.8 2.31.8 5.52 0 10-4.14 10-9.25C22 6.14 17.52 2 12 2z"></path>
-                                    </svg>
-                                </div>
-                                <div class="ai-message-bubble">
-                                    <div class="ai-message-text">@((MarkupString)msg.Text.Replace("\n", "<br/>"))</div>
-                                    <span class="ai-message-time">@msg.Time.ToString("HH:mm")</span>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="user-message-bubble-wrapper d-flex justify-content-end align-items-start gap-2">
-                                <div class="user-message-bubble">
-                                    <div class="user-message-text">@msg.Text</div>
-                                    <span class="user-message-time">@msg.Time.ToString("HH:mm")</span>
-                                </div>
-                            </div>
-                        }
-                    }
-
-                    @if (_isAiConsultantTyping)
-                    {
-                        <div class="ai-typing-indicator d-flex align-items-center gap-2">
-                            <span class="ai-typing-dot"></span>
-                            <span class="ai-typing-dot"></span>
-                            <span class="ai-typing-dot"></span>
-                            <span class="ai-typing-text ms-1">@Loc["Estimator_AiConsultant_Typing"]</span>
-                        </div>
-                    }
-                </div>
-
-                <!-- Input Box -->
-                <div class="ai-consultant-input-wrapper position-relative">
-                    <textarea class="form-control ai-consultant-input" 
-                              rows="2"
-                              placeholder="@Loc["Estimator_AiConsultant_Placeholder"]" 
-                              disabled="@_isAiConsultantTyping"
-                              @bind="_userConsultantInput"
-                              @bind:event="oninput"
-                              @onkeydown="HandleConsultantKeyDown"></textarea>
-                    <button type="button" 
-                            class="ai-send-btn" 
-                            disabled="@(string.IsNullOrWhiteSpace(_userConsultantInput) || _isAiConsultantTyping)"
-                            @onclick='() => HandleSendConsultantMessageAsync(null)'>
-                        <span>@Loc["Estimator_AiConsultant_SendBtn"]</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
             <!-- Investment Composition Visualizer: Labor vs Rough Materials vs Finishes/Fitout -->
             <div class="proposal-cost-composition-card p-4 mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
@@ -1189,6 +1096,221 @@
 
 <ExitIntentModal />
 
+@if (_isProposalReady)
+{
+    <!-- Teaser Balloon Preview Notification (appears 10s after seeing proposal) -->
+    @if (_showChatTeaser && !_isChatModalOpen)
+    {
+        <div class="estimator-teaser-popover" @onclick="OpenChatModal">
+            <div class="estimator-teaser-header d-flex align-items-center justify-content-between mb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="estimator-teaser-avatar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <strong class="estimator-teaser-name">@Loc["Estimator_AiConsultant_Name"]</strong>
+                    <span class="estimator-teaser-badge">@Loc["Estimator_AiConsultant_Badge"]</span>
+                </div>
+                <button type="button" class="estimator-teaser-close-btn" @onclick="DismissChatTeaser" @onclick:stopPropagation="true" title="@Loc["Estimator_ChatTeaser_Dismiss"]">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="estimator-teaser-text">
+                @GetTeaserPreviewText()
+            </div>
+            <div class="estimator-teaser-footer d-flex align-items-center justify-content-between mt-2 pt-1 border-top border-secondary border-opacity-10">
+                <span class="estimator-teaser-time">@DateTime.Now.ToString("HH:mm")</span>
+                <span class="estimator-teaser-cta d-flex align-items-center gap-1">
+                    <span>@Loc["Estimator_ChatTeaser_Cta"]</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </span>
+            </div>
+        </div>
+    }
+
+    <!-- Floating Bubble Button (always accessible to toggle/reopen the modal) -->
+    <button type="button" 
+            class="estimator-floating-chat-bubble @(_isChatModalOpen ? "chat-open" : "") @(_hasUnreadConsultantMessage ? "has-unread" : "")" 
+            @onclick="ToggleChatModal" 
+            title="@Loc["Estimator_Chat_Open"]">
+        @if (_hasUnreadConsultantMessage && !_isChatModalOpen)
+        {
+            <span class="estimator-chat-unread-badge">1</span>
+            <span class="estimator-chat-pulse-ring"></span>
+        }
+        @if (_isChatModalOpen)
+        {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        }
+        else
+        {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+        }
+    </button>
+
+    <!-- Floating Chat Modal Window -->
+    @if (_isChatModalOpen)
+    {
+        <div class="estimator-chat-modal-backdrop" @onclick="MinimizeChatModal"></div>
+        <div class="estimator-chat-modal">
+            <!-- Mobile Drag Handle -->
+            <div class="estimator-modal-mobile-handle d-md-none">
+                <span class="handle-bar"></span>
+            </div>
+
+            <!-- Modal Header -->
+            <div class="estimator-chat-header d-flex align-items-center justify-content-between p-3 border-bottom">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="estimator-header-avatar position-relative">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="header-avatar-status-dot @(_isLiveTakeoverActive ? "status-live" : "")"></span>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <strong class="estimator-header-name">@Loc["Estimator_AiConsultant_Name"]</strong>
+                            @if (_isLiveTakeoverActive)
+                            {
+                                <span class="ai-consultant-badge live-operator-badge">@Loc["Estimator_AiConsultant_BadgeLive"]</span>
+                            }
+                            else
+                            {
+                                <span class="ai-consultant-badge">@Loc["Estimator_AiConsultant_Badge"]</span>
+                            }
+                        </div>
+                        <span class="estimator-header-role">@(_isLiveTakeoverActive ? Loc["Estimator_AiConsultant_StatusLiveHuman"] : Loc["Estimator_AiConsultant_Role"])</span>
+                    </div>
+                </div>
+                <div class="estimator-header-actions d-flex align-items-center gap-1">
+                    <!-- Minimize Button -->
+                    <button type="button" class="estimator-action-btn" @onclick="MinimizeChatModal" title="@Loc["Estimator_Chat_Minimize"]">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <!-- Close Button -->
+                    <button type="button" class="estimator-action-btn" @onclick="MinimizeChatModal" title="@Loc["Estimator_Chat_Close"]">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body: Chat Dialogue Thread -->
+            <div class="estimator-chat-body" id="estimator-consultant-chat-thread">
+                @foreach (var msg in _consultantMessages)
+                {
+                    @if (msg.Sender == "consultant")
+                    {
+                        <div class="ai-message-bubble-wrapper d-flex align-items-start gap-2">
+                            <div class="ai-bubble-avatar">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.91 1.45 5.48 3.72 7.12.21.15.33.42.27.68l-.55 2.71c-.06.29.22.54.5.42l3.1-1.3c.21-.09.46-.06.65.07.74.52 1.52.8 2.31.8 5.52 0 10-4.14 10-9.25C22 6.14 17.52 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="ai-message-bubble">
+                                <div class="ai-message-text">@((MarkupString)msg.Text.Replace("\n", "<br/>"))</div>
+                                <span class="ai-message-time">@msg.Time.ToString("HH:mm")</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="user-message-bubble-wrapper d-flex justify-content-end align-items-start gap-2">
+                            <div class="user-message-bubble">
+                                <div class="user-message-text">@msg.Text</div>
+                                <span class="user-message-time">@msg.Time.ToString("HH:mm")</span>
+                            </div>
+                        </div>
+                    }
+                }
+
+                @if (_isAiConsultantTyping)
+                {
+                    <div class="ai-typing-indicator d-flex align-items-center gap-2">
+                        <span class="ai-typing-dot"></span>
+                        <span class="ai-typing-dot"></span>
+                        <span class="ai-typing-dot"></span>
+                        <span class="ai-typing-text ms-1">@Loc["Estimator_AiConsultant_Typing"]</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Quick Suggestion Chips -->
+            @if (!_isAiConsultantTyping && _consultantMessages.Count <= 3)
+            {
+                <div class="estimator-quick-chips-wrapper">
+                    @if (_buildingStatus == "old")
+                    {
+                        <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_OldVacant"].Value)'>
+                            @Loc["Estimator_AiConsultant_Chip_OldVacant"]
+                        </button>
+                        <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_OldFurniture"].Value)'>
+                            @Loc["Estimator_AiConsultant_Chip_OldFurniture"]
+                        </button>
+                        <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_Remodel"].Value)'>
+                            @Loc["Estimator_AiConsultant_Chip_Remodel"]
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_BdsAct16"].Value)'>
+                            @Loc["Estimator_AiConsultant_Chip_BdsAct16"]
+                        </button>
+                        <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_BdsWaitingAct16"].Value)'>
+                            @Loc["Estimator_AiConsultant_Chip_BdsWaitingAct16"]
+                        </button>
+                        <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_DesignProject"].Value)'>
+                            @Loc["Estimator_AiConsultant_Chip_DesignProject"]
+                        </button>
+                    }
+                    <button type="button" class="estimator-quick-chip" @onclick='() => HandleSendConsultantMessageAsync(Loc["Estimator_AiConsultant_Chip_FreeInspection"].Value)'>
+                        @Loc["Estimator_AiConsultant_Chip_FreeInspection"]
+                    </button>
+                </div>
+            }
+
+            <!-- Modal Footer: Input Box -->
+            <div class="estimator-chat-footer p-3 border-top">
+                <div class="estimator-input-row d-flex align-items-end gap-2">
+                    <textarea class="form-control estimator-modal-textarea" 
+                              rows="1"
+                              placeholder="@Loc["Estimator_AiConsultant_Placeholder"]" 
+                              disabled="@_isAiConsultantTyping"
+                              @bind="_userConsultantInput"
+                              @bind:event="oninput"
+                              @onkeydown="HandleConsultantKeyDown"></textarea>
+                    <button type="button" 
+                            class="estimator-modal-send-btn" 
+                            disabled="@(string.IsNullOrWhiteSpace(_userConsultantInput) || _isAiConsultantTyping)"
+                            @onclick='() => HandleSendConsultantMessageAsync(null)'
+                            title="@Loc["Estimator_AiConsultant_SendBtn"]">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+}
+
 @code {
     [SupplyParameterFromQuery(Name = "scope")]
     public string? QueryScope { get; set; }
@@ -1342,6 +1464,123 @@
     private bool _isConsultantInitialized = false;
     private CancellationTokenSource? _livePollingCts;
     private bool _isLiveTakeoverActive = false;
+    private bool _isChatModalOpen = false;
+    private bool _showChatTeaser = false;
+    private bool _hasUnreadConsultantMessage = false;
+    private CancellationTokenSource? _teaserTimerCts;
+
+    private void StartConsultantTeaserTimer()
+    {
+        _teaserTimerCts?.Cancel();
+        _teaserTimerCts = new CancellationTokenSource();
+        var token = _teaserTimerCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(10000, token);
+                if (token.IsCancellationRequested) return;
+
+                await InvokeAsync(() =>
+                {
+                    if (!_isConsultantInitialized)
+                    {
+                        InitAiConsultantDialogue();
+                    }
+
+                    if (!_isChatModalOpen)
+                    {
+                        _hasUnreadConsultantMessage = true;
+                        _showChatTeaser = true;
+                        StateHasChanged();
+                    }
+                });
+
+                // Auto-dismiss teaser balloon after 20 seconds of showing, leaving the bubble badge intact
+                await Task.Delay(20000, token);
+                if (token.IsCancellationRequested) return;
+
+                await InvokeAsync(() =>
+                {
+                    if (_showChatTeaser)
+                    {
+                        _showChatTeaser = false;
+                        StateHasChanged();
+                    }
+                });
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Estimator Teaser Timer]: {ex.Message}");
+            }
+        });
+    }
+
+    private void ToggleChatModal()
+    {
+        if (_isChatModalOpen)
+        {
+            MinimizeChatModal();
+        }
+        else
+        {
+            OpenChatModal();
+        }
+    }
+
+    private void OpenChatModal()
+    {
+        _teaserTimerCts?.Cancel();
+        if (!_isConsultantInitialized)
+        {
+            InitAiConsultantDialogue();
+        }
+
+        _isChatModalOpen = true;
+        _showChatTeaser = false;
+        _hasUnreadConsultantMessage = false;
+        StateHasChanged();
+
+        _ = ScrollChatToBottomAsync();
+    }
+
+    private void MinimizeChatModal()
+    {
+        _isChatModalOpen = false;
+        StateHasChanged();
+    }
+
+    private void DismissChatTeaser()
+    {
+        _showChatTeaser = false;
+        StateHasChanged();
+    }
+
+    private string GetTeaserPreviewText()
+    {
+        var firstMsg = _consultantMessages.FirstOrDefault(m => m.Sender == "consultant");
+        if (firstMsg != null && !string.IsNullOrWhiteSpace(firstMsg.Text))
+        {
+            var plain = firstMsg.Text.Replace("\n", " ").Trim();
+            return plain.Length > 135 ? plain.Substring(0, 135) + "..." : plain;
+        }
+        return Loc["Estimator_AiConsultant_Role"].Value;
+    }
+
+    private async Task ScrollChatToBottomAsync()
+    {
+        try
+        {
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                var el = document.getElementById('estimator-consultant-chat-thread');
+                if (el) { el.scrollTop = el.scrollHeight; }
+            ");
+        }
+        catch { }
+    }
 
     protected override void OnParametersSet()
     {
@@ -1396,6 +1635,7 @@
         {
             _isProposalReady = true;
             InitAiConsultantDialogue();
+            StartConsultantTeaserTimer();
         }
 
         if (!string.IsNullOrWhiteSpace(QueryExcluded))
@@ -2325,6 +2565,7 @@
         _isProcessingModalOpen = false;
         _isProposalReady = true;
         InitAiConsultantDialogue();
+        StartConsultantTeaserTimer();
         StateHasChanged();
 
         try
@@ -2534,6 +2775,7 @@
         _consultantMessages.Add(new ConsultantChatMessage("user", textToSend, DateTime.Now));
         _isAiConsultantTyping = true;
         StateHasChanged();
+        _ = ScrollChatToBottomAsync();
 
         try
         {
@@ -2685,7 +2927,15 @@
         finally
         {
             _isAiConsultantTyping = false;
+            if (!_isChatModalOpen)
+            {
+                _hasUnreadConsultantMessage = true;
+            }
             StateHasChanged();
+            if (_isChatModalOpen)
+            {
+                _ = ScrollChatToBottomAsync();
+            }
         }
     }
 
@@ -2776,7 +3026,15 @@
                     if (takeoverChanged || messagesChanged)
                     {
                         _savedLead.AdminNotes = updated.AdminNotes;
+                        if (messagesChanged && !_isChatModalOpen)
+                        {
+                            _hasUnreadConsultantMessage = true;
+                        }
                         await InvokeAsync(StateHasChanged);
+                        if (_isChatModalOpen)
+                        {
+                            _ = ScrollChatToBottomAsync();
+                        }
                     }
                 }
             }
@@ -2793,6 +3051,9 @@
 
     public void Dispose()
     {
+        _teaserTimerCts?.Cancel();
+        _teaserTimerCts?.Dispose();
+        _teaserTimerCts = null;
         _livePollingCts?.Cancel();
         _livePollingCts?.Dispose();
         _livePollingCts = null;

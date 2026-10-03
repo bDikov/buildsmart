@@ -3843,4 +3843,19 @@ Boncho | BuildSmart</value>
   <data name="Admin_Leads_LiveChatRefresh" xml:space="preserve">
     <value>Refresh messages</value>
   </data>
+  <data name="Estimator_Chat_Minimize" xml:space="preserve">
+    <value>Minimize chat</value>
+  </data>
+  <data name="Estimator_Chat_Close" xml:space="preserve">
+    <value>Close chat</value>
+  </data>
+  <data name="Estimator_Chat_Open" xml:space="preserve">
+    <value>Consultation with Boncho Dikov</value>
+  </data>
+  <data name="Estimator_ChatTeaser_Cta" xml:space="preserve">
+    <value>Click to reply</value>
+  </data>
+  <data name="Estimator_ChatTeaser_Dismiss" xml:space="preserve">
+    <value>Dismiss preview</value>
+  </data>
 </root>
